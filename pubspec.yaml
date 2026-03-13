@@ -40,9 +40,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-assets:
-  - assets/images/
-  - assets/icons/
+  assets:
+    - assets/images/
+    - assets/icons/
 
 fonts:
   - family: Plus Jakarta Sans
