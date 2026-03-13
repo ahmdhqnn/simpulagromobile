@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class AppColors {
   // Primary - Rich greens for agriculture theme
@@ -25,7 +25,7 @@ class AppColors {
   static const Color background = Color(0xFFF5F7F5);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF0F4F0);
-  static const Color textPrimary = Color(0xFF1A1C1A);
+  static const Color textPrimary = Color(0xFF1D1D1D);
   static const Color textSecondary = Color(0xFF6B6E6B);
   static const Color textTertiary = Color(0xFF9E9E9E);
   static const Color divider = Color(0xFFE0E0E0);
@@ -53,13 +53,14 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      textTheme: GoogleFonts.interTextTheme(),
-      appBarTheme: AppBarTheme(
+      fontFamily: 'Plus Jakarta Sans',
+      appBarTheme: const AppBarTheme(
         elevation: 0,
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -79,7 +80,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
