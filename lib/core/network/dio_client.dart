@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
-import '../storage/secure_storage.dart.dart';
+import '../storage/secure_storage.dart';
 
 class DioClient {
   final Dio _dio;
@@ -52,7 +52,6 @@ class _AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
-      // Token expired or invalid — could trigger logout here
       debugPrint('🔒 Unauthorized: Token may be expired');
     }
     handler.next(err);

@@ -6,6 +6,8 @@ class SecureStorage {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
+  static const String onboardingCompletedKey = 'onboarding_completed';
+
   Future<void> saveToken(String token) async {
     await _storage.write(key: ApiConfig.tokenKey, value: token);
   }
@@ -24,6 +26,18 @@ class SecureStorage {
 
   Future<String?> getUserData() async {
     return await _storage.read(key: ApiConfig.userKey);
+  }
+
+  Future<void> setOnboardingCompleted(bool completed) async {
+    await _storage.write(
+      key: onboardingCompletedKey,
+      value: completed.toString(),
+    );
+  }
+
+  Future<bool> isOnboardingCompleted() async {
+    final value = await _storage.read(key: onboardingCompletedKey);
+    return value == 'true';
   }
 
   Future<void> clearAll() async {

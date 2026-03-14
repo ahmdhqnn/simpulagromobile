@@ -1,4 +1,4 @@
-import 'package:simpulagromobile/core/storage/secure_storage.dart.dart';
+import 'package:simpulagromobile/core/storage/secure_storage.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -16,7 +16,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String password,
   ) async {
     final response = await _remoteDataSource.login(username, password);
-    // Save token and user data
+
     await _storage.saveToken(response.token);
     await _storage.saveUserData(response.user.toJsonString());
     return (token: response.token, user: response.user as User);
