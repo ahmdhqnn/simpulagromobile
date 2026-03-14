@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/storage/secure_storage.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/user.dart';
@@ -124,3 +125,34 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return AuthNotifier(repository);
 });
+
+// ─── Onboarding Provider ─────────────────────────────────────
+final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((
+  ref,
+) {
+  final storage = ref.watch(secureStorageProvider);
+  return OnboardingNotifier(storage);
+});
+
+class OnboardingNotifier extends StateNotifier<bool> {
+  final SecureStorage _storage;
+
+  OnboardingNotifier(this._storage) : super(false) {
+    _checkOnboardingStatus();
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    final completed = await _storage.isOnboardingCompleted();
+    state = completed;
+  }
+
+  Future<void> completeOnboarding() async {
+    await _storage.setOnboardingCompleted(true);
+    state = true;
+  }
+
+  Future<void> resetOnboarding() async {
+    await _storage.setOnboardingCompleted(false);
+    state = false;
+  }
+}
