@@ -5,12 +5,14 @@ class AuthPillInput extends StatefulWidget {
   final TextEditingController controller;
   final String hint;
   final bool isPassword;
+  final bool enabled;
 
   const AuthPillInput({
     super.key,
     required this.controller,
     required this.hint,
     this.isPassword = false,
+    this.enabled = true,
   });
 
   @override
@@ -36,6 +38,7 @@ class _AuthPillInputState extends State<AuthPillInput> {
               controller: widget.controller,
               obscureText: widget.isPassword ? !passwordOpened : false,
               cursorColor: const Color(0xFF1D1D1D),
+              enabled: widget.enabled,
               style: const TextStyle(
                 fontFamily: "Plus Jakarta Sans",
                 fontSize: 14,
@@ -43,11 +46,13 @@ class _AuthPillInputState extends State<AuthPillInput> {
               ),
               decoration: InputDecoration(
                 hintText: widget.hint,
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontFamily: "Plus Jakarta Sans",
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
-                  color: Color(0x7F1D1D1D),
+                  color: widget.enabled
+                      ? const Color(0x7F1D1D1D)
+                      : const Color(0xFF1D1D1D).withValues(alpha: 0.5),
                 ),
                 filled: false,
                 border: InputBorder.none,

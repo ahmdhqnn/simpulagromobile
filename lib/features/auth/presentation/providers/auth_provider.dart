@@ -86,12 +86,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _loadPermissions();
       return true;
     } catch (e) {
-      String errorMsg = 'Login gagal';
-      if (e.toString().contains('404')) {
-        errorMsg = 'Username tidak ditemukan';
-      } else if (e.toString().contains('401')) {
-        errorMsg = 'Password salah';
-      } else if (e.toString().contains('SocketException') ||
+      String errorMsg = 'Username atau Password salah';
+      if (e.toString().contains('SocketException') ||
           e.toString().contains('connection')) {
         errorMsg = 'Tidak dapat terhubung ke server';
       }

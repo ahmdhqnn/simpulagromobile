@@ -14,17 +14,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggedIn = authState.status == AuthStatus.authenticated;
-      final isLoggingIn = state.matchedLocation == '/login';
       final isSplash = state.matchedLocation == '/splash';
+      final isLogin = state.matchedLocation == '/login';
       final isOnboarding = state.matchedLocation == '/onboarding';
 
-      if (authState.status == AuthStatus.initial ||
-          authState.status == AuthStatus.loading) {
+      if (authState.status == AuthStatus.initial) {
         return isSplash ? null : '/splash';
       }
 
+      if (authState.status == AuthStatus.loading && isLogin) {
+        return null;
+      }
+
       if (isLoggedIn) {
-        if (isSplash || isLoggingIn || isOnboarding) {
+        if (isSplash || isLogin || isOnboarding) {
           return '/';
         }
         return null;
@@ -35,7 +38,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return '/onboarding';
         }
 
-        if (isLoggingIn || isOnboarding) {
+        if (isLogin || isOnboarding) {
           return null;
         }
 

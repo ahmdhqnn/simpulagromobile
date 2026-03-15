@@ -18,7 +18,6 @@ class AuthPillButton extends StatefulWidget {
 
 class _AuthPillButtonState extends State<AuthPillButton>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
 
   @override
@@ -41,7 +40,6 @@ class _AuthPillButtonState extends State<AuthPillButton>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-
         double delay = index * 0.2;
         double value = (_controller.value - delay) % 1;
 
@@ -64,7 +62,6 @@ class _AuthPillButtonState extends State<AuthPillButton>
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: widget.loading ? null : widget.onPressed,
       child: AnimatedContainer(
@@ -73,8 +70,7 @@ class _AuthPillButtonState extends State<AuthPillButton>
 
         height: 60,
 
-        /// button mengecil saat loading
-        width: widget.loading ? 156 : double.infinity,
+        width: widget.loading ? 97 : double.infinity,
 
         decoration: BoxDecoration(
           color: Colors.white,
@@ -84,24 +80,24 @@ class _AuthPillButtonState extends State<AuthPillButton>
         child: Center(
           child: widget.loading
               ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              buildDot(0),
-              const SizedBox(width: 6),
-              buildDot(1),
-              const SizedBox(width: 6),
-              buildDot(2),
-            ],
-          )
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    buildDot(0),
+                    const SizedBox(width: 6),
+                    buildDot(1),
+                    const SizedBox(width: 6),
+                    buildDot(2),
+                  ],
+                )
               : Text(
-            widget.text,
-            style: const TextStyle(
-              fontFamily: "Plus Jakarta Sans",
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF1D1D1D),
-            ),
-          ),
+                  widget.text,
+                  style: const TextStyle(
+                    fontFamily: "Plus Jakarta Sans",
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF1D1D1D),
+                  ),
+                ),
         ),
       ),
     );

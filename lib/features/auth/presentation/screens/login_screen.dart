@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/auth_provider.dart';
 import '../widgets/auth_pill_input.dart';
@@ -16,18 +17,55 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  String? _usernameError;
+  String? _passwordError;
 
   Future<void> login() async {
+    setState(() {
+      _usernameError = null;
+      _passwordError = null;
+    });
+
+    final username = usernameController.text.trim();
+    final password = passwordController.text;
+
+    bool hasError = false;
+
+    if (username.isEmpty) {
+      setState(() {
+        _usernameError = 'Username tidak boleh kosong';
+      });
+      hasError = true;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _passwordError = 'Password tidak boleh kosong';
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
     final success = await ref
         .read(authProvider.notifier)
-        .login(usernameController.text.trim(), passwordController.text);
+        .login(username, password);
 
-    if (!success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
+      context.go('/');
+    } else {
       final error = ref.read(authProvider).error;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error ?? "Login gagal")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Username atau Password salah'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -49,7 +87,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            /// BACK BUTTON
             Positioned(
               top: 10,
               left: 20,
@@ -73,7 +110,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
 
-            /// MAIN CONTENT
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -110,7 +146,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     AuthPillInput(
                       controller: usernameController,
                       hint: "Your Username",
+                      enabled: !isLoading,
                     ),
+
+                    if (_usernameError != null) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _usernameError!,
+                          style: const TextStyle(
+                            fontFamily: "Plus Jakarta Sans",
+                            fontSize: 10,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 12),
 
@@ -118,7 +170,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       controller: passwordController,
                       hint: "Your Password",
                       isPassword: true,
+                      enabled: !isLoading,
                     ),
+
+                    if (_passwordError != null) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _passwordError!,
+                          style: const TextStyle(
+                            fontFamily: "Plus Jakarta Sans",
+                            fontSize: 10,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 8),
 
