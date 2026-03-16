@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:simpulagromobile/shared/widgets/custom_bottom_navigation.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -12,58 +13,43 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final _screens = const [DashboardScreen()];
+  final _screens = const [
+    DashboardScreen(),
+    _PlaceholderScreen(title: 'Monitoring'),
+    _PlaceholderScreen(title: 'Indicator'),
+    _PlaceholderScreen(title: 'Task'),
+    _PlaceholderScreen(title: 'Forum'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (i) => setState(() => _currentIndex = i),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          indicatorColor: AppColors.primaryLight.withValues(alpha: 0.15),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.dashboard_outlined),
-              selectedIcon: const Icon(
-                Icons.dashboard,
-                color: AppColors.primary,
-              ),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.sensors_outlined),
-              selectedIcon: const Icon(Icons.sensors, color: AppColors.primary),
-              label: 'Sensor',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.eco_outlined),
-              selectedIcon: const Icon(Icons.eco, color: AppColors.primary),
-              label: 'Tanaman',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.recommend_outlined),
-              selectedIcon: const Icon(
-                Icons.recommend,
-                color: AppColors.primary,
-              ),
-              label: 'Rekomendasi',
-            ),
-          ],
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+      ),
+    );
+  }
+}
+
+class _PlaceholderScreen extends StatelessWidget {
+  final String title;
+
+  const _PlaceholderScreen({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title), backgroundColor: AppColors.primary),
+      body: Center(
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );
