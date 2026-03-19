@@ -84,8 +84,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ),
           _buildNavItem(
             index: 2,
-            iconPath: 'assets/icons/indicator-outline-icon.svg',
-            activeIconPath: 'assets/icons/indicator-filled-icon.svg',
+            iconPath: 'assets/icons/plant-outline-icon.svg',
+            activeIconPath: 'assets/icons/plant-filled-icon.svg',
           ),
           _buildNavItem(
             index: 3,
