@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
 
 class BottomNavItem extends StatelessWidget {
   final String iconPath;
@@ -36,11 +35,8 @@ class BottomNavItem extends StatelessWidget {
             width: 24,
             height: 24,
             colorFilter: isActive
-                ? const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)
-                : const ColorFilter.mode(
-                    AppColors.textTertiary,
-                    BlendMode.srcIn,
-                  ),
+                ? const ColorFilter.mode(Color(0xFF1D1D1D), BlendMode.srcIn)
+                : const ColorFilter.mode(Color(0xFF1D1D1D), BlendMode.srcIn),
           ),
         ),
       ),
