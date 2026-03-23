@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../data/models/plant_model.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,7 +28,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   final _varietasIdController = TextEditingController();
 
   CropType? _selectedPlantType;
-  VarietasModel? _selectedVarietas;
   DateTime _plantDate = DateTime.now();
   bool _isSubmitting = false;
 
@@ -42,8 +40,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
   @override
   Widget build(BuildContext context) {
-    final varietasAsync = ref.watch(varietasProvider);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -54,7 +50,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
             children: [
               const SizedBox(height: 12),
 
-              /// TOP RIGHT BUTTON
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -78,7 +73,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
               const SizedBox(height: 24),
 
-              /// TITLE
               const Text(
                 'Add First Planting',
                 style: TextStyle(
@@ -91,7 +85,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
               const SizedBox(height: 24),
 
-              /// CARD
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -121,18 +114,15 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
                       _buildField(
                         'Varietas ID',
-                        varietasAsync.when(
-                          loading: () => _buildTextField(
-                            controller: _varietasIdController,
-                            hintText: 'Loading...',
-                            enabled: false,
-                          ),
-                          error: (_, __) => _buildTextField(
-                            controller: _varietasIdController,
-                            hintText: 'Error loading',
-                            enabled: false,
-                          ),
-                          data: (varietas) => _buildVarietasDropdown(varietas),
+                        _buildTextField(
+                          controller: _varietasIdController,
+                          hintText: 'Ex. VAR001',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter varietas ID';
+                            }
+                            return null;
+                          },
                         ),
                       ),
 
@@ -169,7 +159,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
                       const SizedBox(height: 30),
 
-                      /// ACTION BUTTONS
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -193,10 +182,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       ),
     );
   }
-
-  /// =========================
-  /// COMPONENTS
-  /// =========================
 
   Widget _buildField(String label, Widget field) {
     return Column(
@@ -275,37 +260,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     );
   }
 
-  Widget _buildVarietasDropdown(List<VarietasModel> varietas) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F7),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<VarietasModel>(
-          value: _selectedVarietas,
-          hint: const Text('Select varietas'),
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down),
-          items: varietas.map((v) {
-            return DropdownMenuItem(
-              value: v,
-              child: Text(v.varietasName ?? v.varietasId),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedVarietas = value;
-              _varietasIdController.text = value?.varietasId ?? '';
-            });
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildPlantTypeDropdown() {
     return Container(
       height: 40,
@@ -333,10 +287,6 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     );
   }
 
-  /// =========================
-  /// LOGIC (UNCHANGED)
-  /// =========================
-
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -355,10 +305,10 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedVarietas == null) {
+    if (_varietasIdController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a varietas')));
+      ).showSnackBar(const SnackBar(content: Text('Please enter varietas ID')));
       return;
     }
 
@@ -376,7 +326,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         .createPlant(
           siteId: widget.siteId,
           plantName: _plantNameController.text,
-          varietasId: _selectedVarietas!.varietasId,
+          varietasId: _varietasIdController.text,
           plantType: _selectedPlantType!,
           plantDate: _plantDate,
         );

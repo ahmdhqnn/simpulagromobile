@@ -5,13 +5,8 @@ import '../../domain/entities/plant.dart';
 
 class PlantDetailCard extends StatelessWidget {
   final Plant plant;
-  final VoidCallback onAddNew;
 
-  const PlantDetailCard({
-    super.key,
-    required this.plant,
-    required this.onAddNew,
-  });
+  const PlantDetailCard({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +28,6 @@ class PlantDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: 47),
 
-          // Plant Image Container
           Center(
             child: Container(
               width: 350,
@@ -50,7 +44,6 @@ class PlantDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Plant Details Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -61,7 +54,6 @@ class PlantDetailCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title and phase
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +82,7 @@ class PlantDetailCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // Status badge
+
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -119,7 +111,6 @@ class PlantDetailCard extends StatelessWidget {
                 const Divider(color: AppColors.divider),
                 const SizedBox(height: 16),
 
-                // Details grid
                 _buildDetailRow(
                   'Types of Plants',
                   plant.plantType?.displayName ?? '-',
@@ -143,51 +134,6 @@ class PlantDetailCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Add new plant button (if needed)
-          Center(
-            child: GestureDetector(
-              onTap: onAddNew,
-              child: Container(
-                width: 350,
-                height: 60,
-                padding: const EdgeInsets.symmetric(vertical: 19),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Add new planting',
-                      style: TextStyle(
-                        color: Color(0xFF1D1D1D),
-                        fontSize: 18,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                        height: 1.22,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -195,7 +141,6 @@ class PlantDetailCard extends StatelessWidget {
   }
 
   Widget _buildPlantImage() {
-    // Placeholder with plant icon
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
