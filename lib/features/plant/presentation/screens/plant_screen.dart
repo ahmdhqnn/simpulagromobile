@@ -81,13 +81,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
         );
       case PlantScreenState.hasData:
         final plant = plants.first;
-        return PlantDetailCard(
-          plant: plant,
-          onAddNew: () {
-            ref.read(plantScreenStateProvider.notifier).state =
-                PlantScreenState.input;
-          },
-        );
+        return PlantDetailCard(plant: plant);
       case PlantScreenState.loading:
         return const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
