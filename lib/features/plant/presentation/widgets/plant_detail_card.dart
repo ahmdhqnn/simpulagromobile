@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/plant.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'agro_indicator_button.dart';
 
 class PlantDetailCard extends StatelessWidget {
   final Plant plant;
@@ -10,198 +11,149 @@ class PlantDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          // Header
+          const SizedBox(height: 12),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/icons/more-icon.svg',
+                    width: 28,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
           const Text(
             'Plants Overview',
-            style: TextStyle(
-              fontSize: 22,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF1D1D1D),
-            ),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
           ),
-          const SizedBox(height: 47),
 
-          Center(
-            child: Container(
-              width: 350,
-              height: 299,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: _buildPlantImage(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
+          Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plant.plantName ?? 'Plant',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF1D1D1D),
-                          ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Image.asset(
+                          'assets/images/padi-perkecambahan-image.png',
+                          fit: BoxFit.contain,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          plant.growthPhase,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF1D1D1D),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
 
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: const AgroIndicatorButton(),
                       ),
-                      decoration: BoxDecoration(
-                        color: plant.isActive
-                            ? AppColors.success.withOpacity(0.1)
-                            : AppColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        plant.isActive ? 'Active' : 'Harvested',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: plant.isActive
-                              ? AppColors.success
-                              : AppColors.warning,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                const Divider(color: AppColors.divider),
+
                 const SizedBox(height: 16),
 
-                _buildDetailRow(
-                  'Types of Plants',
-                  plant.plantType?.displayName ?? '-',
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Plant’s Detail",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w300,
+                          height: 1,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        plant.growthPhase,
+                        style: const TextStyle(fontSize: 12, height: 1.8),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      _detailRow(
+                        "Types of Plants",
+                        plant.plantType?.displayName ?? "-",
+                      ),
+                      _detailRow(
+                        "Planting Date",
+                        plant.plantDate != null
+                            ? DateFormat('dd MMM yyyy').format(plant.plantDate!)
+                            : "-",
+                      ),
+                      _detailRow("HST", "${plant.hst} Day"),
+                      _detailRow("Growth Phase", plant.growthPhase),
+                      _detailRow(
+                        "Status",
+                        plant.isActive ? "Planting" : "Harvested",
+                      ),
+                    ],
+                  ),
                 ),
-                _buildDetailRow('Varietas', plant.varietasId ?? '-'),
-                _buildDetailRow(
-                  'Planting Date',
-                  plant.plantDate != null
-                      ? DateFormat('dd MMMM yyyy').format(plant.plantDate!)
-                      : '-',
-                ),
-                _buildDetailRow(
-                  'HST',
-                  '${plant.hst} Day${plant.hst != 1 ? 's' : ''}',
-                ),
-                _buildDetailRow('Growth Phase', plant.growthPhase),
-                _buildDetailRow(
-                  'Status',
-                  plant.isActive ? 'Planting' : 'Harvested',
-                ),
+
+                const SizedBox(height: 16),
               ],
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildPlantImage() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.primaryLight.withOpacity(0.3),
-            AppColors.primary.withOpacity(0.1),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: Icon(Icons.eco, size: 48, color: AppColors.primary),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              plant.plantType?.displayName ?? 'Plant',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
+  Widget _detailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1D1D1D),
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                height: 1.8,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w300,
-              color: Color(0xFF1D1D1D),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w300,
+                height: 1.8,
+              ),
             ),
           ),
         ],
