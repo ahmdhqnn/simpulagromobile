@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/responsive.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_pill_input.dart';
 import '../widgets/auth_pill_button.dart';
@@ -32,22 +33,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool hasError = false;
 
     if (username.isEmpty) {
-      setState(() {
-        _usernameError = 'Username tidak boleh kosong';
-      });
+      setState(() => _usernameError = 'Username tidak boleh kosong');
       hasError = true;
     }
 
     if (password.isEmpty) {
-      setState(() {
-        _passwordError = 'Password tidak boleh kosong';
-      });
+      setState(() => _passwordError = 'Password tidak boleh kosong');
       hasError = true;
     }
 
-    if (hasError) {
-      return;
-    }
+    if (hasError) return;
 
     final success = await ref
         .read(authProvider.notifier)
@@ -59,7 +54,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context.go('/');
     } else {
       final error = ref.read(authProvider).error;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Username atau Password salah'),
@@ -83,18 +77,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
-
       body: SafeArea(
         child: Stack(
           children: [
             Positioned(
-              top: 10,
-              left: 20,
+              top: context.rh(0.012),
+              left: context.rw(0.051),
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 58,
-                  height: 58,
+                  width: context.rw(0.148).clamp(48.0, 64.0),
+                  height: context.rw(0.148).clamp(48.0, 64.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(32),
@@ -102,8 +95,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Center(
                     child: SvgPicture.asset(
                       "assets/icons/chevron-left-icon.svg",
-                      width: 28,
-                      height: 28,
+                      width: context.rw(0.072).clamp(22.0, 30.0),
+                      height: context.rw(0.072).clamp(22.0, 30.0),
                     ),
                   ),
                 ),
@@ -111,37 +104,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
 
             Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       "Masa Depan\nBertani, Hari Ini.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: "Plus Jakarta Sans",
-                        fontSize: 32,
+                        fontSize: context.sp(32),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1D1D1D),
+                        color: const Color(0xFF1D1D1D),
                         height: 0.94,
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    SizedBox(height: context.rh(0.012)),
 
-                    const Text(
+                    Text(
                       "Please SignIn to your account",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: "Plus Jakarta Sans",
-                        fontSize: 12,
-                        color: Color(0xFF1D1D1D),
+                        fontSize: context.sp(12),
+                        color: const Color(0xFF1D1D1D),
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    SizedBox(height: context.rh(0.048)),
 
                     AuthPillInput(
                       controller: usernameController,
@@ -150,21 +142,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
 
                     if (_usernameError != null) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: context.rh(0.005)),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           _usernameError!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: "Plus Jakarta Sans",
-                            fontSize: 10,
+                            fontSize: context.sp(10),
                             color: Colors.red,
                           ),
                         ),
                       ),
                     ],
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: context.rh(0.015)),
 
                     AuthPillInput(
                       controller: passwordController,
@@ -174,35 +166,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
 
                     if (_passwordError != null) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: context.rh(0.005)),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           _passwordError!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: "Plus Jakarta Sans",
-                            fontSize: 10,
+                            fontSize: context.sp(10),
                             color: Colors.red,
                           ),
                         ),
                       ),
                     ],
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: context.rh(0.01)),
 
-                    const Align(
+                    Align(
                       alignment: Alignment.centerRight,
                       child: Text(
                         "Forgot Password?",
                         style: TextStyle(
                           fontFamily: "Plus Jakarta Sans",
-                          fontSize: 10,
-                          color: Color(0xFF1D1D1D),
+                          fontSize: context.sp(10),
+                          color: const Color(0xFF1D1D1D),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: context.rh(0.036)),
 
                     AuthPillButton(
                       text: "SignIn",

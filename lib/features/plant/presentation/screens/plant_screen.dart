@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/models/plant_model.dart';
 import '../providers/plant_provider.dart';
@@ -37,14 +38,15 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
-          error: (error, stack) => _buildErrorState(error.toString()),
-          data: (plants) => _buildContent(plants, screenState, siteId),
+          error: (error, stack) => _buildErrorState(context, error.toString()),
+          data: (plants) => _buildContent(context, plants, screenState, siteId),
         ),
       ),
     );
   }
 
   Widget _buildContent(
+    BuildContext context,
     List<PlantModel> plants,
     PlantScreenState screenState,
     String siteId,
@@ -80,8 +82,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
           },
         );
       case PlantScreenState.hasData:
-        final plant = plants.first;
-        return PlantDetailCard(plant: plant);
+        return PlantDetailCard(plant: plants.first);
       case PlantScreenState.loading:
         return const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -89,30 +90,37 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
     }
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(BuildContext context, String error) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(context.rw(0.061)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.error_outline,
+              size: context.rw(0.164).clamp(48.0, 72.0),
+              color: AppColors.error,
+            ),
+            SizedBox(height: context.rh(0.02)),
             Text(
               'Terjadi kesalahan',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: context.sp(18),
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.rh(0.01)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: context.sp(14),
+                color: AppColors.textSecondary,
+              ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: context.rh(0.03)),
             ElevatedButton(
               onPressed: () => ref.invalidate(plantsProvider),
               child: const Text('Coba Lagi'),

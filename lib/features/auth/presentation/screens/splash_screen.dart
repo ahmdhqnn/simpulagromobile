@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/auth_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -37,9 +38,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _controller.forward();
 
     Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        ref.read(authProvider.notifier).checkAuthStatus();
-      }
+      if (mounted) ref.read(authProvider.notifier).checkAuthStatus();
     });
   }
 
@@ -60,7 +59,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             scale: _scaleAnimation,
             child: SvgPicture.asset(
               'assets/images/simpulagro_logo.svg',
-              width: 180,
+              width: (context.sw * 0.46).clamp(120.0, 220.0),
             ),
           ),
         ),

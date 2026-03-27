@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/utils/responsive.dart';
 
 class BottomNavItem extends StatelessWidget {
   final String iconPath;
@@ -56,10 +57,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Container(
       width: double.infinity,
       height: 60,
-      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 30),
+      margin: EdgeInsets.only(
+        left: context.rw(0.061),
+        right: context.rw(0.061),
+        bottom: (bottomInset > 0 ? bottomInset + 8 : 16).toDouble(),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
