@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/auth_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -38,22 +39,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     },
   ];
 
-  final List<Map<String, dynamic>> textLayout = [
-    {
-      "top": 365.0,
-      "align": CrossAxisAlignment.center,
-      "textAlign": TextAlign.center,
-    },
-    {
-      "top": 543.0,
-      "align": CrossAxisAlignment.start,
-      "textAlign": TextAlign.left,
-    },
-    {
-      "top": 187.0,
-      "align": CrossAxisAlignment.end,
-      "textAlign": TextAlign.right,
-    },
+  final List<Alignment> _textAlignments = [
+    Alignment.center,
+    Alignment.centerLeft,
+    Alignment.centerRight,
+  ];
+
+  final List<CrossAxisAlignment> _crossAlignments = [
+    CrossAxisAlignment.center,
+    CrossAxisAlignment.start,
+    CrossAxisAlignment.end,
+  ];
+
+  final List<TextAlign> _textAligns = [
+    TextAlign.center,
+    TextAlign.left,
+    TextAlign.right,
   ];
 
   void nextPage() {
@@ -85,122 +86,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: PageView.builder(
         controller: _controller,
         itemCount: onboardingData.length,
-        onPageChanged: (index) {
-          setState(() {
-            currentPage = index;
-          });
-        },
+        onPageChanged: (index) => setState(() => currentPage = index),
         itemBuilder: (context, index) {
           final data = onboardingData[index];
-          final layout = textLayout[index];
 
           return Stack(
             children: [
               Positioned.fill(
-                child: SvgPicture.asset(
-                  data["bg"]!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-              ),
-
-              Positioned(
-                left: 0,
-                right: 0,
-                top: layout["top"],
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: index == 0
-                        ? Alignment.center
-                        : index == 1
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
-                    child: SizedBox(
-                      width: 335,
-                      child: Column(
-                        crossAxisAlignment: layout["align"],
-                        children: [
-                          Text(
-                            data["title"]!,
-                            textAlign: layout["textAlign"],
-                            style: const TextStyle(
-                              color: Color(0xFF1D1D1D),
-                              fontSize: 32,
-                              fontFamily: "Plus Jakarta Sans",
-                              fontWeight: FontWeight.w700,
-                              height: 0.94,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Text(
-                            data["desc"]!,
-                            textAlign: layout["textAlign"],
-                            style: const TextStyle(
-                              color: Color(0xFF1D1D1D),
-                              fontSize: 12,
-                              fontFamily: "Plus Jakarta Sans",
-                              fontWeight: FontWeight.w400,
-                              height: 1.17,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                child: SvgPicture.asset(data["bg"]!, fit: BoxFit.cover),
               ),
 
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 20),
+                      SizedBox(height: context.rh(0.022)),
 
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          double totalSpacing =
-                              (onboardingData.length - 1) * 10;
+                      _buildIndicators(context),
 
-                          double indicatorWidth =
-                              (constraints.maxWidth - totalSpacing) /
-                              onboardingData.length;
-
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                              onboardingData.length,
-                              (i) => _indicator(i, indicatorWidth),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 20),
+                      SizedBox(height: context.rh(0.022)),
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             "Welcome to SimpulAgro",
                             style: TextStyle(
-                              color: Color(0x7F1D1D1D),
-                              fontSize: 12,
+                              color: const Color(0x7F1D1D1D),
+                              fontSize: context.sp(12),
                               fontFamily: "Plus Jakarta Sans",
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           GestureDetector(
                             onTap: skip,
-                            child: const Text(
+                            child: Text(
                               "Skip",
                               style: TextStyle(
-                                color: Color(0xFF1D1D1D),
-                                fontSize: 12,
+                                color: const Color(0xFF1D1D1D),
+                                fontSize: context.sp(12),
                                 fontFamily: "Plus Jakarta Sans",
                                 fontWeight: FontWeight.w700,
                               ),
@@ -211,10 +137,51 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                       const Spacer(),
 
+                      Align(
+                        alignment: _textAlignments[index],
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: context.rw(0.86),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: _crossAlignments[index],
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                data["title"]!,
+                                textAlign: _textAligns[index],
+                                style: TextStyle(
+                                  color: const Color(0xFF1D1D1D),
+                                  fontSize: context.sp(32),
+                                  fontFamily: "Plus Jakarta Sans",
+                                  fontWeight: FontWeight.w700,
+                                  height: 0.94,
+                                ),
+                              ),
+                              SizedBox(height: context.rh(0.018)),
+                              Text(
+                                data["desc"]!,
+                                textAlign: _textAligns[index],
+                                style: TextStyle(
+                                  color: const Color(0xFF1D1D1D),
+                                  fontSize: context.sp(12),
+                                  fontFamily: "Plus Jakarta Sans",
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: context.rh(0.04)),
+
+                      // Next / Get Started button
                       GestureDetector(
                         onTap: nextPage,
                         child: Container(
-                          height: 60,
+                          height: context.rh(0.072).clamp(52.0, 68.0),
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -227,19 +194,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 index == onboardingData.length - 1
                                     ? "Get Started"
                                     : "Next",
-                                style: const TextStyle(
-                                  color: Color(0xFF1D1D1D),
-                                  fontSize: 18,
+                                style: TextStyle(
+                                  color: const Color(0xFF1D1D1D),
+                                  fontSize: context.sp(18),
                                   fontFamily: "Plus Jakarta Sans",
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
                               Positioned(
-                                right: 16,
+                                right: context.rw(0.04),
                                 child: SvgPicture.asset(
                                   "assets/icons/chevron-right-icon.svg",
-                                  width: 28,
-                                  height: 28,
+                                  width: context.rw(0.072).clamp(24.0, 32.0),
+                                  height: context.rw(0.072).clamp(24.0, 32.0),
                                   colorFilter: const ColorFilter.mode(
                                     Color(0xFF1D1D1D),
                                     BlendMode.srcIn,
@@ -251,7 +218,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 30),
+                      SizedBox(height: context.rh(0.04)),
                     ],
                   ),
                 ),
@@ -263,20 +230,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _indicator(int index, double width) {
-    bool active = index == currentPage;
+  Widget _buildIndicators(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = (onboardingData.length - 1) * 10.0;
+        final indicatorWidth =
+            (constraints.maxWidth - spacing) / onboardingData.length;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      width: width,
-      height: 2,
-      margin: EdgeInsets.only(
-        right: index == onboardingData.length - 1 ? 0 : 10,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1D1D1D).withOpacity(active ? 1 : 0.35),
-        borderRadius: BorderRadius.circular(2),
-      ),
+        return Row(
+          children: List.generate(onboardingData.length, (i) {
+            final active = i == currentPage;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: indicatorWidth,
+              height: 2,
+              margin: EdgeInsets.only(
+                right: i == onboardingData.length - 1 ? 0 : 10,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1D1D1D).withOpacity(active ? 1 : 0.35),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }
