@@ -248,7 +248,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 right: i == onboardingData.length - 1 ? 0 : 10,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1D1D1D).withOpacity(active ? 1 : 0.35),
+                color: const Color(
+                  0xFF1D1D1D,
+                ).withValues(alpha: active ? 1 : 0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             );

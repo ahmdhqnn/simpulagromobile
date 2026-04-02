@@ -1,89 +1,93 @@
-/// Enum for plant types based on backend
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'plant.freezed.dart';
+
+/// Crop Type Enum
+// ignore: constant_identifier_names
 enum CropType { PADI, JAGUNG, KEDELAI }
 
 extension CropTypeExtension on CropType {
   String get displayName {
     switch (this) {
       case CropType.PADI:
-        return 'PADI';
+        return 'Padi';
       case CropType.JAGUNG:
-        return 'JAGUNG';
+        return 'Jagung';
       case CropType.KEDELAI:
-        return 'KEDELAI';
+        return 'Kedelai';
     }
   }
 
-  static CropType fromString(String? value) {
-    switch (value?.toUpperCase()) {
-      case 'PADI':
-        return CropType.PADI;
-      case 'JAGUNG':
-        return CropType.JAGUNG;
-      case 'KEDELAI':
-        return CropType.KEDELAI;
-      default:
-        return CropType.PADI;
+  String get icon {
+    switch (this) {
+      case CropType.PADI:
+        return '🌾';
+      case CropType.JAGUNG:
+        return '🌽';
+      case CropType.KEDELAI:
+        return '🫘';
     }
   }
 }
 
-class Plant {
-  final String plantId;
-  final String? siteId;
-  final String? varietasId;
-  final String? plantName;
-  final CropType? plantType;
-  final String? plantSpecies;
-  final DateTime? plantDate;
-  final DateTime? plantHarvest;
-  final int? plantSts;
+@freezed
+class Plant with _$Plant {
+  const Plant._();
 
-  const Plant({
-    required this.plantId,
-    this.siteId,
-    this.varietasId,
-    this.plantName,
-    this.plantType,
-    this.plantSpecies,
-    this.plantDate,
-    this.plantHarvest,
-    this.plantSts,
-  });
-
-  /// Calculate HST (Hari Sesudah Tanam - Days After Planting)
-  int get hst {
-    if (plantDate == null) return 0;
-    return DateTime.now().difference(plantDate!).inDays;
-  }
+  const factory Plant({
+    required String plantId,
+    String? siteId,
+    String? varietasId,
+    String? plantName,
+    CropType? plantType,
+    String? plantSpecies,
+    DateTime? plantDate,
+    DateTime? plantHarvest,
+    int? plantSts,
+  }) = _Plant;
 
   /// Check if plant is active (not harvested)
   bool get isActive => plantSts == 1 && plantHarvest == null;
 
-  /// Get growth phase based on HST and crop type
-  String get growthPhase {
-    final days = hst;
-    if (plantType == null) return 'Unknown';
+  /// Check if plant is harvested
+  bool get isHarvested => plantHarvest != null;
 
-    switch (plantType!) {
-      case CropType.PADI:
-        if (days < 7) return 'Germination';
-        if (days < 21) return 'Vegetatif Awal';
-        if (days < 35) return 'Vegetatif';
-        if (days < 50) return 'Generatif (Pembungaan)';
-        if (days < 70) return 'Pengisian Bulir';
-        return 'Maturity (Panen)';
-      case CropType.JAGUNG:
-        if (days < 10) return 'Germination';
-        if (days < 25) return 'Vegetatif';
-        if (days < 45) return 'Pembungaan';
-        if (days < 65) return 'Pengisian Biji';
-        return 'Maturity (Panen)';
-      case CropType.KEDELAI:
-        if (days < 7) return 'Germination';
-        if (days < 25) return 'Vegetatif';
-        if (days < 40) return 'Pembungaan';
-        if (days < 60) return 'Pembentukan Polong';
-        return 'Maturity (Panen)';
-    }
+  /// Get display name (fallback to ID if name is null)
+  String get displayName => plantName ?? plantId;
+
+  /// Calculate days since planting (HST - Hari Setelah Tanam)
+  int? get daysSincePlanting {
+    if (plantDate == null) return null;
+    return DateTime.now().difference(plantDate!).inDays;
+  }
+
+  /// Alias for daysSincePlanting (HST)
+  int? get hst => daysSincePlanting;
+
+  /// Get growth phase based on HST
+  String? get growthPhase {
+    final days = hst;
+    if (days == null) return null;
+
+    // Default phases for rice (adjust based on crop type)
+    if (days < 20) return 'Vegetatif Awal';
+    if (days < 40) return 'Vegetatif';
+    if (days < 60) return 'Reproduktif Awal';
+    if (days < 80) return 'Reproduktif';
+    if (days < 100) return 'Pemasakan';
+    return 'Siap Panen';
+  }
+
+  /// Calculate days until harvest (if not harvested yet)
+  int? get daysUntilHarvest {
+    if (plantHarvest == null || isHarvested) return null;
+    return plantHarvest!.difference(DateTime.now()).inDays;
+  }
+
+  /// Get planting status text
+  String get statusText {
+    if (isHarvested) return 'Sudah Panen';
+    if (isActive) return 'Sedang Tumbuh';
+    return 'Tidak Aktif';
   }
 }

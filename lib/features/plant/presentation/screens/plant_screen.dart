@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../site/presentation/providers/site_provider.dart';
-import '../../data/models/plant_model.dart';
+import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../widgets/plant_empty_state.dart';
 import '../widgets/plant_input_form.dart';
@@ -47,7 +47,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
 
   Widget _buildContent(
     BuildContext context,
-    List<PlantModel> plants,
+    List<Plant> plants,
     PlantScreenState screenState,
     String siteId,
   ) {

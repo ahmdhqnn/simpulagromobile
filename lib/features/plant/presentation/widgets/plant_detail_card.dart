@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/plant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'agro_indicator_button.dart';
+import '../../../phase/presentation/screens/phase_list_screen.dart';
 
 class PlantDetailCard extends StatelessWidget {
   final Plant plant;
@@ -65,6 +66,53 @@ class PlantDetailCard extends StatelessWidget {
                         bottom: 0,
                         child: const AgroIndicatorButton(),
                       ),
+
+                      // Phase Tracking Button
+                      Positioned(
+                        left: 0,
+                        bottom: 0,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              // Use direct navigation instead of named route
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PhaseListScreen(
+                                    plantId: plant.plantId,
+                                    plantName:
+                                        plant.plantType?.displayName ??
+                                        plant.plantName ??
+                                        'Plant',
+                                  ),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(32),
+                            child: Container(
+                              width: 58,
+                              height: 58,
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(32),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green.withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.timeline,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -94,7 +142,7 @@ class PlantDetailCard extends StatelessWidget {
                       const SizedBox(height: 2),
 
                       Text(
-                        plant.growthPhase,
+                        plant.growthPhase ?? 'N/A',
                         style: const TextStyle(fontSize: 12, height: 1.8),
                       ),
 
@@ -110,8 +158,8 @@ class PlantDetailCard extends StatelessWidget {
                             ? DateFormat('dd MMM yyyy').format(plant.plantDate!)
                             : "-",
                       ),
-                      _detailRow("HST", "${plant.hst} Day"),
-                      _detailRow("Growth Phase", plant.growthPhase),
+                      _detailRow("HST", "${plant.hst ?? 0} Day"),
+                      _detailRow("Growth Phase", plant.growthPhase ?? 'N/A'),
                       _detailRow(
                         "Status",
                         plant.isActive ? "Planting" : "Harvested",
