@@ -1,110 +1,168 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../data/datasources/task_remote_datasource.dart';
-import '../../data/models/task_model.dart';
+import '../../data/repositories/task_repository_impl.dart';
+import '../../domain/entities/task.dart';
+import '../../domain/repositories/task_repository.dart';
 
-final taskRemoteDataSourceProvider = Provider<TaskRemoteDataSource>((ref) {
+/// Task datasource provider
+final taskDatasourceProvider = Provider<TaskRemoteDatasource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
-  return TaskRemoteDataSource(dioClient.dio);
+  return TaskRemoteDatasourceImpl(dioClient.dio);
 });
 
-/// All tasks
-final tasksProvider = FutureProvider.autoDispose<List<TaskModel>>((ref) async {
-  final ds = ref.watch(taskRemoteDataSourceProvider);
-  return ds.getTasks();
+/// Task repository provider
+final taskRepositoryProvider = Provider<TaskRepository>((ref) {
+  final datasource = ref.watch(taskDatasourceProvider);
+  return TaskRepositoryImpl(datasource);
 });
 
-/// Search/filter query
-final taskSearchQueryProvider = StateProvider<String>((ref) => '');
+/// Task list provider
+final taskListProvider = FutureProvider<List<Task>>((ref) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  final result = await repository.getTasks();
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (tasks) => List<Task>.from(tasks),
+  );
+});
 
-/// Filtered tasks based on search query
-final filteredTasksProvider = Provider.autoDispose<AsyncValue<List<TaskModel>>>(
-  (ref) {
-    final tasksAsync = ref.watch(tasksProvider);
-    final query = ref.watch(taskSearchQueryProvider).toLowerCase().trim();
+/// Tasks by site provider
+final tasksBySiteProvider = FutureProvider.family<List<Task>, String>((
+  ref,
+  siteId,
+) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  final result = await repository.getTasksBySite(siteId);
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (tasks) => List<Task>.from(tasks),
+  );
+});
 
-    return tasksAsync.whenData((tasks) {
-      if (query.isEmpty) return tasks;
-      return tasks
-          .where(
-            (t) =>
-                (t.taskName?.toLowerCase().contains(query) ?? false) ||
-                (t.taskDesc?.toLowerCase().contains(query) ?? false),
-          )
-          .toList();
-    });
-  },
-);
+/// Task detail provider
+final taskDetailProvider = FutureProvider.family<Task, String>((
+  ref,
+  taskId,
+) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  final result = await repository.getTaskById(taskId);
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (task) => task,
+  );
+});
 
-// ─── Mutation State ─────────────────────────────────────
-class TaskMutationState {
-  final bool isLoading;
-  final String? error;
+/// Task filter provider
+final taskFilterProvider = StateProvider<TaskFilter>((ref) => TaskFilter.all);
 
-  const TaskMutationState({this.isLoading = false, this.error});
+/// Filtered tasks provider
+final filteredTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
+  final tasksAsync = ref.watch(taskListProvider);
+  final filter = ref.watch(taskFilterProvider);
 
-  TaskMutationState copyWith({bool? isLoading, String? error}) =>
-      TaskMutationState(isLoading: isLoading ?? this.isLoading, error: error);
-}
-
-class TaskMutationNotifier extends StateNotifier<TaskMutationState> {
-  final TaskRemoteDataSource _ds;
-  final Ref _ref;
-
-  TaskMutationNotifier(this._ds, this._ref) : super(const TaskMutationState());
-
-  Future<bool> createTask({required String taskName, String? taskDesc}) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _ds.createTask(taskName: taskName, taskDesc: taskDesc);
-      _ref.invalidate(tasksProvider);
-      state = const TaskMutationState();
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+  return tasksAsync.whenData((tasks) {
+    switch (filter) {
+      case TaskFilter.all:
+        return tasks;
+      case TaskFilter.pending:
+        return tasks.where((t) => t.taskStatus == TaskStatus.pending).toList();
+      case TaskFilter.inProgress:
+        return tasks
+            .where((t) => t.taskStatus == TaskStatus.inProgress)
+            .toList();
+      case TaskFilter.completed:
+        return tasks
+            .where((t) => t.taskStatus == TaskStatus.completed)
+            .toList();
+      case TaskFilter.overdue:
+        return tasks.where((t) => t.isOverdue).toList();
+      case TaskFilter.dueSoon:
+        return tasks.where((t) => t.isDueSoon).toList();
     }
-  }
+  });
+});
 
-  Future<bool> updateTask({
-    required String taskId,
-    required String taskName,
-    String? taskDesc,
-  }) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _ds.updateTask(
-        taskId: taskId,
-        taskName: taskName,
-        taskDesc: taskDesc,
+/// Task statistics provider
+final taskStatsProvider = Provider<TaskStats>((ref) {
+  final tasksAsync = ref.watch(taskListProvider);
+
+  return tasksAsync.when(
+    data: (tasks) {
+      final total = tasks.length;
+      final pending = tasks
+          .where((t) => t.taskStatus == TaskStatus.pending)
+          .length;
+      final inProgress = tasks
+          .where((t) => t.taskStatus == TaskStatus.inProgress)
+          .length;
+      final completed = tasks
+          .where((t) => t.taskStatus == TaskStatus.completed)
+          .length;
+      final overdue = tasks.where((t) => t.isOverdue).length;
+      final dueSoon = tasks.where((t) => t.isDueSoon).length;
+
+      return TaskStats(
+        total: total,
+        pending: pending,
+        inProgress: inProgress,
+        completed: completed,
+        overdue: overdue,
+        dueSoon: dueSoon,
       );
-      _ref.invalidate(tasksProvider);
-      state = const TaskMutationState();
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+    },
+    loading: () => const TaskStats(),
+    error: (_, __) => const TaskStats(),
+  );
+});
+
+/// Task filter enum
+enum TaskFilter {
+  all,
+  pending,
+  inProgress,
+  completed,
+  overdue,
+  dueSoon;
+
+  String get label {
+    switch (this) {
+      case TaskFilter.all:
+        return 'Semua';
+      case TaskFilter.pending:
+        return 'Menunggu';
+      case TaskFilter.inProgress:
+        return 'Dikerjakan';
+      case TaskFilter.completed:
+        return 'Selesai';
+      case TaskFilter.overdue:
+        return 'Terlambat';
+      case TaskFilter.dueSoon:
+        return 'Segera';
     }
   }
-
-  Future<bool> deleteTask(String taskId) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _ds.deleteTask(taskId);
-      _ref.invalidate(tasksProvider);
-      state = const TaskMutationState();
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
-    }
-  }
-
-  void reset() => state = const TaskMutationState();
 }
 
-final taskMutationProvider =
-    StateNotifierProvider<TaskMutationNotifier, TaskMutationState>((ref) {
-      final ds = ref.watch(taskRemoteDataSourceProvider);
-      return TaskMutationNotifier(ds, ref);
-    });
+/// Task statistics model
+class TaskStats {
+  final int total;
+  final int pending;
+  final int inProgress;
+  final int completed;
+  final int overdue;
+  final int dueSoon;
+
+  const TaskStats({
+    this.total = 0,
+    this.pending = 0,
+    this.inProgress = 0,
+    this.completed = 0,
+    this.overdue = 0,
+    this.dueSoon = 0,
+  });
+
+  double get completionRate {
+    if (total == 0) return 0;
+    return (completed / total) * 100;
+  }
+}

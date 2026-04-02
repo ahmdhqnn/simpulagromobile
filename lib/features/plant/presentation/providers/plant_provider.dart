@@ -11,17 +11,16 @@ final plantRemoteDataSourceProvider = Provider<PlantRemoteDataSource>((ref) {
 });
 
 /// Plants for selected site
-final plantsProvider = FutureProvider.autoDispose<List<PlantModel>>((
-  ref,
-) async {
+final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   final ds = ref.watch(plantRemoteDataSourceProvider);
-  return ds.getPlants(siteId);
+  final models = await ds.getPlants(siteId);
+  return models.map((m) => m.toEntity()).toList();
 });
 
 /// First plant for the selected site (most recent)
-final currentPlantProvider = Provider<PlantModel?>((ref) {
+final currentPlantProvider = Provider<Plant?>((ref) {
   final plantsAsync = ref.watch(plantsProvider);
   return plantsAsync.whenOrNull(
     data: (plants) => plants.isNotEmpty ? plants.first : null,
@@ -105,6 +104,19 @@ final createPlantProvider =
       final dataSource = ref.watch(plantRemoteDataSourceProvider);
       return CreatePlantNotifier(dataSource, ref);
     });
+
+/// Plant detail provider
+final plantDetailProvider = FutureProvider.family<Plant, String>((
+  ref,
+  plantId,
+) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) throw Exception('No site selected');
+
+  final ds = ref.watch(plantRemoteDataSourceProvider);
+  final model = await ds.getPlantById(siteId, plantId);
+  return model.toEntity();
+});
 
 /// Plant screen state for managing UI flow
 enum PlantScreenState { loading, empty, input, hasData }

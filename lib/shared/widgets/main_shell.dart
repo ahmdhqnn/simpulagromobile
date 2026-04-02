@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:simpulagromobile/features/monitoring/presentation/screens/monitoring_screen.dart';
 import 'package:simpulagromobile/features/plant/presentation/screens/plant_screen.dart';
+import 'package:simpulagromobile/features/task/presentation/screens/task_list_screen.dart';
 import 'package:simpulagromobile/shared/widgets/custom_bottom_navigation.dart';
 
 class MainShell extends StatefulWidget {
@@ -16,9 +18,9 @@ class _MainShellState extends State<MainShell> {
 
   final _screens = const [
     DashboardScreen(),
-    _PlaceholderScreen(title: 'Monitoring'),
+    MonitoringScreen(),
     PlantScreen(),
-    _PlaceholderScreen(title: 'Task'),
+    TaskListScreen(),
     _PlaceholderScreen(title: 'Forum'),
   ];
 

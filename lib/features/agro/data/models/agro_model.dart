@@ -1,4 +1,5 @@
 /// Models for /api/sites/:siteId/agro endpoint
+library;
 
 class VdpModel {
   final double? vdp;

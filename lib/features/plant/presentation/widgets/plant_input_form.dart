@@ -243,7 +243,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
+          color: AppColors.textSecondary.withValues(alpha: 0.5),
           fontStyle: FontStyle.italic,
         ),
         filled: true,

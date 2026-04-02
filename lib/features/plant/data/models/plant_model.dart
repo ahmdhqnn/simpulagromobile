@@ -1,67 +1,86 @@
+// ignore_for_file: invalid_annotation_target
+
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/plant.dart';
 
-class PlantModel extends Plant {
-  const PlantModel({
-    required super.plantId,
-    super.siteId,
-    super.varietasId,
-    super.plantName,
-    super.plantType,
-    super.plantSpecies,
-    super.plantDate,
-    super.plantHarvest,
-    super.plantSts,
-  });
+part 'plant_model.freezed.dart';
+part 'plant_model.g.dart';
 
-  factory PlantModel.fromJson(Map<String, dynamic> json) {
-    return PlantModel(
-      plantId: json['plant_id'] ?? '',
-      siteId: json['site_id'],
-      varietasId: json['varietas_id'],
-      plantName: json['plant_name'],
-      plantType: CropTypeExtension.fromString(json['plant_type']),
-      plantSpecies: json['plant_species'],
-      plantDate: json['plant_date'] != null
-          ? DateTime.tryParse(json['plant_date'])
-          : null,
-      plantHarvest: json['plant_harvest'] != null
-          ? DateTime.tryParse(json['plant_harvest'])
-          : null,
-      plantSts: json['plant_sts'] as int?,
-    );
+@freezed
+class PlantModel with _$PlantModel {
+  const PlantModel._();
+
+  const factory PlantModel({
+    @JsonKey(name: 'plant_id') required String plantId,
+    @JsonKey(name: 'site_id') String? siteId,
+    @JsonKey(name: 'varietas_id') String? varietasId,
+    @JsonKey(name: 'plant_name') String? plantName,
+    @JsonKey(name: 'plant_type') String? plantType, // PADI, JAGUNG, KEDELAI
+    @JsonKey(name: 'plant_species') String? plantSpecies,
+    @JsonKey(name: 'plant_date') DateTime? plantDate,
+    @JsonKey(name: 'plant_harvest') DateTime? plantHarvest,
+    @JsonKey(name: 'plant_sts') int? plantSts,
+  }) = _PlantModel;
+
+  factory PlantModel.fromJson(Map<String, dynamic> json) =>
+      _$PlantModelFromJson(json);
+
+  /// Convert Model to Entity
+  Plant toEntity() => Plant(
+    plantId: plantId,
+    siteId: siteId,
+    varietasId: varietasId,
+    plantName: plantName,
+    plantType: _parseCropType(plantType),
+    plantSpecies: plantSpecies,
+    plantDate: plantDate,
+    plantHarvest: plantHarvest,
+    plantSts: plantSts,
+  );
+
+  /// Parse crop type from string safely
+  CropType? _parseCropType(String? type) {
+    if (type == null) return null;
+
+    final upperType = type.toUpperCase();
+    try {
+      return CropType.values.firstWhere(
+        (e) => e.name == upperType,
+        orElse: () => CropType.PADI,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'plant_name': plantName,
-      'plant_type': plantType?.displayName,
-      'plant_species': plantSpecies,
-      'varietas_id': varietasId,
-      'plant_date': plantDate?.toIso8601String().split('T').first,
-    };
-  }
+  /// Convert Entity to Model
+  factory PlantModel.fromEntity(Plant entity) => PlantModel(
+    plantId: entity.plantId,
+    siteId: entity.siteId,
+    varietasId: entity.varietasId,
+    plantName: entity.plantName,
+    plantType: entity.plantType?.name,
+    plantSpecies: entity.plantSpecies,
+    plantDate: entity.plantDate,
+    plantHarvest: entity.plantHarvest,
+    plantSts: entity.plantSts,
+  );
 }
 
-/// Model for varietas (plant varieties)
-class VarietasModel {
-  final String varietasId;
-  final String? varietasName;
-  final String? varietasDesc;
-  final int? varietasSts;
+@freezed
+class VarietasModel with _$VarietasModel {
+  const VarietasModel._();
 
-  const VarietasModel({
-    required this.varietasId,
-    this.varietasName,
-    this.varietasDesc,
-    this.varietasSts,
-  });
+  const factory VarietasModel({
+    @JsonKey(name: 'varietas_id') required String varietasId,
+    @JsonKey(name: 'varietas_name') String? varietasName,
+    @JsonKey(name: 'varietas_desc') String? varietasDesc,
+    @JsonKey(name: 'varietas_sts') int? varietasSts,
+  }) = _VarietasModel;
 
-  factory VarietasModel.fromJson(Map<String, dynamic> json) {
-    return VarietasModel(
-      varietasId: json['varietas_id'] ?? '',
-      varietasName: json['varietas_name'],
-      varietasDesc: json['varietas_desc'],
-      varietasSts: json['varietas_sts'] as int?,
-    );
-  }
+  factory VarietasModel.fromJson(Map<String, dynamic> json) =>
+      _$VarietasModelFromJson(json);
+
+  bool get isActive => varietasSts == 1;
+  String get displayName => varietasName ?? varietasId;
 }
