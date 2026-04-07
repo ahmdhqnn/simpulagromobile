@@ -17,20 +17,56 @@ class MonitoringRemoteDataSource {
 
   /// GET /api/sites/:siteId/reads/today — today's readings
   Future<List<SensorReadModel>> getTodayReads(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/reads/today');
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final response = await _dio.get('/sites/$siteId/reads/today');
+      final responseData = response.data;
+
+      // Handle jika data adalah Map (single object) atau List
+      if (responseData['data'] is List) {
+        final data = responseData['data'] as List? ?? [];
+        return data
+            .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else if (responseData['data'] is Map) {
+        // Jika backend mengembalikan object, wrap dalam list
+        return [
+          SensorReadModel.fromJson(
+            responseData['data'] as Map<String, dynamic>,
+          ),
+        ];
+      }
+
+      return [];
+    } catch (e) {
+      // Jika error atau data kosong, return empty list
+      return [];
+    }
   }
 
   /// GET /api/sites/:siteId/reads/seven-day
   Future<List<SensorReadModel>> getSevenDayReads(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/reads/seven-day');
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final response = await _dio.get('/sites/$siteId/reads/seven-day');
+      final responseData = response.data;
+
+      // Handle jika data adalah Map atau List
+      if (responseData['data'] is List) {
+        final data = responseData['data'] as List? ?? [];
+        return data
+            .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else if (responseData['data'] is Map) {
+        return [
+          SensorReadModel.fromJson(
+            responseData['data'] as Map<String, dynamic>,
+          ),
+        ];
+      }
+
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   /// GET /api/sites/:siteId/reads/date-range?startDate=&endDate=
@@ -39,23 +75,55 @@ class MonitoringRemoteDataSource {
     required String startDate,
     required String endDate,
   }) async {
-    final response = await _dio.get(
-      '/sites/$siteId/reads/date-range',
-      queryParameters: {'startDate': startDate, 'endDate': endDate},
-    );
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final response = await _dio.get(
+        '/sites/$siteId/reads/date-range',
+        queryParameters: {'startDate': startDate, 'endDate': endDate},
+      );
+      final responseData = response.data;
+
+      if (responseData['data'] is List) {
+        final data = responseData['data'] as List? ?? [];
+        return data
+            .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else if (responseData['data'] is Map) {
+        return [
+          SensorReadModel.fromJson(
+            responseData['data'] as Map<String, dynamic>,
+          ),
+        ];
+      }
+
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   /// GET /api/sites/:siteId/reads/planting-date
   Future<List<SensorReadModel>> getPlantingDateReads(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/reads/planting-date');
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final response = await _dio.get('/sites/$siteId/reads/planting-date');
+      final responseData = response.data;
+
+      if (responseData['data'] is List) {
+        final data = responseData['data'] as List? ?? [];
+        return data
+            .map((e) => SensorReadModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else if (responseData['data'] is Map) {
+        return [
+          SensorReadModel.fromJson(
+            responseData['data'] as Map<String, dynamic>,
+          ),
+        ];
+      }
+
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   /// GET /api/sites/:siteId/reads/daily — daily recap
