@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
@@ -25,100 +26,94 @@ class RealtimeTab extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(context.rw(0.051)),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.rw(0.051),
+          vertical: context.rh(0.015),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Sensor Cards ──────────────────────────────
             _SectionTitle('Status Sensor Terkini'),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: context.rh(0.014)),
             latestAsync.when(
-              loading: () => _shimmerGrid(context),
+              loading: () => _shimmerCard(context, 195),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(latestReadsProvider),
               ),
               data: (reads) => reads.isEmpty
-                  ? _EmptyCard(message: 'Belum ada data sensor')
+                  ? _EmptyStateCard(
+                      height: 195,
+                      message: 'Belum ada data sensor',
+                    )
                   : _SensorGrid(reads: reads),
             ),
 
-            SizedBox(height: context.rh(0.03)),
+            SizedBox(height: context.rh(0.024)),
 
-            // ─── Today Chart ───────────────────────────────
             _SectionTitle('Grafik Hari Ini'),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: context.rh(0.014)),
             todayAsync.when(
-              loading: () => _shimmerBox(context, 220),
+              loading: () => _shimmerCard(context, 195),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(todayReadsProvider),
               ),
               data: (reads) => reads.isEmpty
-                  ? _EmptyCard(message: 'Belum ada data hari ini')
+                  ? const _EmptyStateCard(
+                      height: 195,
+                      message: 'Belum ada data sensor',
+                      iconPath: 'assets/icons/monitoring-filled-icon.svg',
+                    )
                   : _TodayChart(reads: reads),
             ),
 
-            SizedBox(height: context.rh(0.03)),
+            SizedBox(height: context.rh(0.024)),
 
-            // ─── Sensor Status ─────────────────────────────
             _SectionTitle('Status Sensor'),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: context.rh(0.014)),
             latestAsync.when(
-              loading: () => _shimmerBox(context, 120),
+              loading: () => _shimmerCard(context, 195),
               error: (_, __) => const SizedBox.shrink(),
-              data: (reads) => _SensorStatusList(reads: reads),
+              data: (reads) => reads.isEmpty
+                  ? _EmptyStateCard(
+                      height: 195,
+                      message: 'Belum ada data sensor',
+                    )
+                  : _SensorStatusList(reads: reads),
             ),
 
-            SizedBox(height: context.rh(0.03)),
+            SizedBox(height: context.rh(0.024)),
 
-            // ─── Log Sensor ────────────────────────────────
             _SectionTitle('Log Sensor'),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: context.rh(0.014)),
             logsAsync.when(
-              loading: () => _shimmerBox(context, 160),
+              loading: () => _shimmerCard(context, 97),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(logsProvider),
               ),
               data: (logs) => logs.isEmpty
-                  ? _EmptyCard(message: 'Belum ada log')
+                  ? _EmptyStateCard(
+                      height: 97,
+                      message: 'Belum ada data sensor',
+                    )
                   : _LogList(logs: logs.take(20).toList()),
             ),
 
-            SizedBox(height: context.rh(0.04)),
+            SizedBox(height: context.rh(0.02)),
           ],
         ),
       ),
     );
   }
 
-  Widget _shimmerGrid(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: 6,
-      itemBuilder: (_, __) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    );
-  }
-
-  Widget _shimmerBox(BuildContext context, double height) {
+  Widget _shimmerCard(BuildContext context, double height) {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
@@ -127,10 +122,41 @@ class RealtimeTab extends ConsumerWidget {
   }
 }
 
-// ─── Sensor Grid ─────────────────────────────────────────
 class _SensorGrid extends StatelessWidget {
   final List<SensorReadUpdate> reads;
   const _SensorGrid({required this.reads});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 195,
+      padding: EdgeInsets.all(context.rw(0.041)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 1.0,
+          crossAxisSpacing: context.rw(0.025),
+          mainAxisSpacing: context.rh(0.012),
+        ),
+        itemCount: reads.length.clamp(0, 6),
+        itemBuilder: (context, i) {
+          final r = reads[i];
+          return _SensorCard(read: r);
+        },
+      ),
+    );
+  }
+}
+
+class _SensorCard extends StatelessWidget {
+  final SensorReadUpdate read;
+  const _SensorCard({required this.read});
 
   Color _color(String dsId) {
     switch (dsId) {
@@ -172,81 +198,45 @@ class _SensorGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: context.sw >= 600 ? 3 : 2,
-        childAspectRatio: 1.35,
-        crossAxisSpacing: context.rw(0.03),
-        mainAxisSpacing: context.rw(0.03),
-      ),
-      itemCount: reads.length,
-      itemBuilder: (context, i) {
-        final r = reads[i];
-        final color = _color(r.dsId);
-        return Container(
-          padding: EdgeInsets.all(context.rw(0.04)),
+    final color = _color(read.dsId);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: EdgeInsets.all(context.rw(0.02)),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(context.rw(0.02)),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  _icon(r.dsId),
-                  size: context.rw(0.051).clamp(16.0, 22.0),
-                  color: color,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(20),
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              SizedBox(height: context.rh(0.003)),
-              Text(
-                SensorMeta.label(r.dsId),
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(11),
-                  color: AppColors.textSecondary,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (r.readUpdateDate != null) ...[
-                SizedBox(height: context.rh(0.003)),
-                Text(
-                  DateFormat('HH:mm').format(r.readUpdateDate!),
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(10),
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ],
-            ],
+          child: Icon(_icon(read.dsId), size: 20, color: color),
+        ),
+        SizedBox(height: context.rh(0.006)),
+        Text(
+          '${read.readUpdateValue ?? '-'}${SensorMeta.unit(read.dsId)}',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
           ),
-        );
-      },
+        ),
+        SizedBox(height: context.rh(0.002)),
+        Text(
+          SensorMeta.label(read.dsId),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(10),
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
 
-// ─── Today Chart ─────────────────────────────────────────
 class _TodayChart extends StatefulWidget {
   final List<SensorReadModel> reads;
   const _TodayChart({required this.reads});
@@ -259,7 +249,11 @@ class _TodayChartState extends State<_TodayChart> {
   String _selected = 'env_temp';
 
   List<String> get _availableParams {
-    return widget.reads.map((r) => r.dsId ?? '').toSet().toList();
+    return widget.reads
+        .map((r) => r.dsId ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList();
   }
 
   @override
@@ -273,140 +267,185 @@ class _TodayChartState extends State<_TodayChart> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.reads.isEmpty) {
+      return const _EmptyStateCard(
+        height: 195,
+        message: 'Belum ada data sensor',
+        iconPath: 'assets/icons/grafik_filled_icon.svg',
+      );
+    }
+
     final filtered = widget.reads.where((r) => r.dsId == _selected).toList()
       ..sort(
         (a, b) =>
             (a.readDate ?? DateTime(0)).compareTo(b.readDate ?? DateTime(0)),
       );
 
-    final spots = filtered.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.numericValue);
-    }).toList();
+    if (filtered.isEmpty) {
+      return Container(
+        height: 195,
+        padding: EdgeInsets.all(context.rw(0.041)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/icons/grafik_filled_icon.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                  BlendMode.srcIn,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Belum ada data untuk sensor ini',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 12,
+                  color: Color(0xFF1D1D1D),
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final spots = filtered
+        .asMap()
+        .entries
+        .where((e) => e.value.numericValue > 0)
+        .map((e) {
+          return FlSpot(e.key.toDouble(), e.value.numericValue);
+        })
+        .toList();
+
+    if (spots.isEmpty) {
+      return Container(
+        height: 195,
+        padding: EdgeInsets.all(context.rw(0.041)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/icons/grafik_filled_icon.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                  BlendMode.srcIn,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Data sensor tidak valid',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 12,
+                  color: Color(0xFF1D1D1D),
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     final color = _colorFor(_selected);
 
     return Container(
+      height: 195,
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Param selector
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _availableParams.map((p) {
-                final isSelected = p == _selected;
-                return GestureDetector(
-                  onTap: () => setState(() => _selected = p),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: 1,
+            getDrawingHorizontalLine: (_) =>
+                FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
+          ),
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 24,
+                interval: (spots.length / 4).ceilToDouble().clamp(
+                  1,
+                  double.infinity,
+                ),
+                getTitlesWidget: (v, _) {
+                  final idx = v.toInt();
+                  if (idx < 0 || idx >= filtered.length) {
+                    return const SizedBox.shrink();
+                  }
+                  final d = filtered[idx].readDate;
+                  return Text(
+                    d != null ? DateFormat('HH:mm').format(d) : '',
+                    style: TextStyle(
+                      fontSize: context.sp(9),
+                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                      fontFamily: 'Plus Jakarta Sans',
                     ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      SensorMeta.label(p),
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(11),
-                        fontWeight: FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                  );
+                },
+              ),
             ),
           ),
-          SizedBox(height: context.rh(0.015)),
-          SizedBox(
-            height: 160,
-            child: spots.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Belum ada data',
-                      style: TextStyle(color: AppColors.textTertiary),
-                    ),
-                  )
-                : LineChart(
-                    LineChartData(
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                        getDrawingHorizontalLine: (_) =>
-                            FlLine(color: AppColors.divider, strokeWidth: 1),
-                      ),
-                      titlesData: FlTitlesData(
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 24,
-                            interval: (spots.length / 4).ceilToDouble().clamp(
-                              1,
-                              double.infinity,
-                            ),
-                            getTitlesWidget: (v, _) {
-                              final idx = v.toInt();
-                              if (idx < 0 || idx >= filtered.length) {
-                                return const SizedBox.shrink();
-                              }
-                              final d = filtered[idx].readDate;
-                              return Text(
-                                d != null ? DateFormat('HH:mm').format(d) : '',
-                                style: TextStyle(
-                                  fontSize: context.sp(9),
-                                  color: AppColors.textTertiary,
-                                  fontFamily: 'Plus Jakarta Sans',
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: spots,
-                          isCurved: true,
-                          color: color,
-                          barWidth: 2,
-                          dotData: const FlDotData(show: false),
-                          belowBarData: BarAreaData(
-                            show: true,
-                            color: color.withValues(alpha: 0.12),
-                          ),
-                        ),
-                      ],
-                      lineTouchData: LineTouchData(
-                        touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: color,
+              barWidth: 2.5,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    color.withValues(alpha: 0.3),
+                    color.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => Colors.white,
+              tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -414,59 +453,64 @@ class _TodayChartState extends State<_TodayChart> {
   Color _colorFor(String dsId) {
     switch (dsId) {
       case 'env_temp':
-        return AppColors.temperature;
+        return const Color(0xFF4FC3F7);
       case 'env_hum':
-        return AppColors.humidity;
+        return const Color(0xFF81C784);
       case 'soil_nitro':
-        return AppColors.nitrogen;
+        return const Color(0xFFFFB74D);
       case 'soil_phos':
-        return AppColors.phosphorus;
+        return const Color(0xFFBA68C8);
       case 'soil_pot':
-        return AppColors.potassium;
+        return const Color(0xFFE57373);
       case 'soil_ph':
-        return AppColors.ph;
+        return const Color(0xFF64B5F6);
       default:
         return AppColors.primaryLight;
     }
   }
 }
 
-// ─── Sensor Status List ───────────────────────────────────
 class _SensorStatusList extends StatelessWidget {
   final List<SensorReadUpdate> reads;
   const _SensorStatusList({required this.reads});
 
   @override
   Widget build(BuildContext context) {
-    if (reads.isEmpty) return _EmptyCard(message: 'Belum ada data sensor');
+    if (reads.isEmpty) {
+      return const _EmptyStateCard(
+        height: 195,
+        message: 'Belum ada data sensor',
+      );
+    }
     return Container(
+      height: 195,
+      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        children: reads.asMap().entries.map((e) {
-          final r = e.value;
-          final isLast = e.key == reads.length - 1;
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: reads.length.clamp(0, 4),
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+        ),
+        itemBuilder: (context, i) {
+          final r = reads[i];
           final val = r.numericValue;
           final isOk = val > 0;
-          return Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.rw(0.041),
-              vertical: context.rh(0.015),
-            ),
-            decoration: BoxDecoration(
-              border: isLast
-                  ? null
-                  : const Border(bottom: BorderSide(color: AppColors.divider)),
-            ),
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: context.rh(0.01)),
             child: Row(
               children: [
                 Container(
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: isOk ? AppColors.success : AppColors.textTertiary,
+                    color: isOk
+                        ? AppColors.success
+                        : const Color(0xFF1D1D1D).withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -476,8 +520,8 @@ class _SensorStatusList extends StatelessWidget {
                     SensorMeta.label(r.dsId),
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(13),
-                      color: AppColors.textPrimary,
+                      fontSize: context.sp(12),
+                      color: const Color(0xFF1D1D1D),
                     ),
                   ),
                 ),
@@ -485,9 +529,9 @@ class _SensorStatusList extends StatelessWidget {
                   '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
+                    fontSize: context.sp(12),
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: const Color(0xFF1D1D1D),
                   ),
                 ),
                 SizedBox(width: context.rw(0.02)),
@@ -499,7 +543,7 @@ class _SensorStatusList extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isOk
                         ? AppColors.success.withValues(alpha: 0.1)
-                        : AppColors.textTertiary.withValues(alpha: 0.1),
+                        : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -508,20 +552,21 @@ class _SensorStatusList extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(10),
                       fontWeight: FontWeight.w500,
-                      color: isOk ? AppColors.success : AppColors.textTertiary,
+                      color: isOk
+                          ? AppColors.success
+                          : const Color(0xFF1D1D1D).withValues(alpha: 0.5),
                     ),
                   ),
                 ),
               ],
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }
 }
 
-// ─── Log List ─────────────────────────────────────────────
 class _LogList extends StatelessWidget {
   final List<LogModel> logs;
   const _LogList({required this.logs});
@@ -529,24 +574,23 @@ class _LogList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 97,
+      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        children: logs.asMap().entries.map((e) {
-          final log = e.value;
-          final isLast = e.key == logs.length - 1;
-          return Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.rw(0.041),
-              vertical: context.rh(0.012),
-            ),
-            decoration: BoxDecoration(
-              border: isLast
-                  ? null
-                  : const Border(bottom: BorderSide(color: AppColors.divider)),
-            ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: logs.length.clamp(0, 2),
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+        ),
+        itemBuilder: (context, i) {
+          final log = logs[i];
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -564,10 +608,10 @@ class _LogList extends StatelessWidget {
                         log.logRxPayload ?? '-',
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          color: AppColors.textPrimary,
+                          fontSize: context.sp(11),
+                          color: const Color(0xFF1D1D1D),
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (log.logRxDate != null)
@@ -575,8 +619,10 @@ class _LogList extends StatelessWidget {
                           DateFormat('dd MMM HH:mm:ss').format(log.logRxDate!),
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(10),
-                            color: AppColors.textTertiary,
+                            fontSize: context.sp(9),
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.5),
                           ),
                         ),
                     ],
@@ -585,13 +631,12 @@ class _LogList extends StatelessWidget {
               ],
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }
 }
 
-// ─── Shared Widgets ───────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle(this.title);
@@ -602,34 +647,60 @@ class _SectionTitle extends StatelessWidget {
       title,
       style: TextStyle(
         fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(16),
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
+        fontSize: context.sp(22),
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1D1D1D),
+        height: 1.0,
       ),
     );
   }
 }
 
-class _EmptyCard extends StatelessWidget {
+class _EmptyStateCard extends StatelessWidget {
+  final double height;
   final String message;
-  const _EmptyCard({required this.message});
+  final String? iconPath;
+
+  const _EmptyStateCard({
+    required this.height,
+    required this.message,
+    this.iconPath,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(context.rw(0.061)),
+      height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Center(
-        child: Text(
-          message,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(13),
-            color: AppColors.textSecondary,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              iconPath ?? 'assets/icons/device-filled-icon.svg',
+              width: 28,
+              height: 28,
+              colorFilter: ColorFilter.mode(
+                const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                BlendMode.srcIn,
+              ),
+            ),
+            SizedBox(height: context.rh(0.005)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w300,
+                color: const Color(0xFF1D1D1D),
+                height: 1.83,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -647,7 +718,7 @@ class _ErrorCard extends StatelessWidget {
       padding: EdgeInsets.all(context.rw(0.051)),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Column(

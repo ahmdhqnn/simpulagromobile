@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
@@ -15,6 +16,8 @@ class HistoryTab extends ConsumerStatefulWidget {
 }
 
 class _HistoryTabState extends ConsumerState<HistoryTab> {
+  bool _showFilterMenu = false;
+
   @override
   Widget build(BuildContext context) {
     final filter = ref.watch(historyFilterProvider);
@@ -26,46 +29,67 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
       onRefresh: () async => ref.invalidate(historyReadsProvider),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(context.rw(0.051)),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.rw(0.051),
+          vertical: context.rh(0.015),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Filter Chips ──────────────────────────────
-            _FilterRow(
-              current: filter,
-              onChanged: (f) =>
-                  ref.read(historyFilterProvider.notifier).state = f,
+            // ─── Filter Row ────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _FilterChip(
+                  label: _getFilterLabel(filter),
+                  isSelected: true,
+                  onTap: () =>
+                      setState(() => _showFilterMenu = !_showFilterMenu),
+                ),
+                GestureDetector(
+                  onTap: () =>
+                      setState(() => _showFilterMenu = !_showFilterMenu),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/icons/filter_icon.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ),
+              ],
             ),
 
-            // ─── Date Range Picker ─────────────────────────
+            if (_showFilterMenu) ...[
+              SizedBox(height: context.rh(0.012)),
+              _FilterMenu(
+                current: filter,
+                onChanged: (f) {
+                  ref.read(historyFilterProvider.notifier).state = f;
+                  setState(() => _showFilterMenu = false);
+                },
+              ),
+            ],
+
             if (filter == HistoryFilter.dateRange) ...[
               SizedBox(height: context.rh(0.015)),
               _DateRangePicker(),
             ],
 
-            SizedBox(height: context.rh(0.02)),
+            SizedBox(height: context.rh(0.024)),
 
-            // ─── Param Selector ────────────────────────────
+            _SectionTitle('Grafik History'),
+            SizedBox(height: context.rh(0.014)),
+
             historyAsync.when(
-              data: (reads) {
-                final params = reads.map((r) => r.dsId ?? '').toSet().toList();
-                if (params.isEmpty) return const SizedBox.shrink();
-                return _ParamSelector(
-                  params: params,
-                  selected: selectedParam ?? params.first,
-                  onChanged: (p) =>
-                      ref.read(selectedSensorParamProvider.notifier).state = p,
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-            ),
-
-            SizedBox(height: context.rh(0.02)),
-
-            // ─── Chart ─────────────────────────────────────
-            historyAsync.when(
-              loading: () => _shimmerBox(context, 240),
+              loading: () => _shimmerCard(context, 195),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(historyReadsProvider),
@@ -75,7 +99,10 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
                 final param =
                     selectedParam ?? (params.isNotEmpty ? params.first : null);
                 if (param == null || reads.isEmpty) {
-                  return _EmptyCard(message: 'Belum ada data riwayat');
+                  return _EmptyStateCard(
+                    height: 195,
+                    message: 'Belum ada data riwayat',
+                  );
                 }
                 final filtered = reads.where((r) => r.dsId == param).toList()
                   ..sort(
@@ -87,28 +114,23 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
               },
             ),
 
-            SizedBox(height: context.rh(0.03)),
+            SizedBox(height: context.rh(0.024)),
 
-            // ─── Data Table ────────────────────────────────
-            Text(
-              'Data Riwayat',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(16),
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            SizedBox(height: context.rh(0.015)),
+            _SectionTitle('Data Riwayat'),
+            SizedBox(height: context.rh(0.014)),
+
             historyAsync.when(
-              loading: () => _shimmerBox(context, 200),
+              loading: () => _shimmerCard(context, 195),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) {
                 final params = reads.map((r) => r.dsId ?? '').toSet().toList();
                 final param =
                     selectedParam ?? (params.isNotEmpty ? params.first : null);
                 if (param == null) {
-                  return _EmptyCard(message: 'Pilih parameter sensor');
+                  return _EmptyStateCard(
+                    height: 195,
+                    message: 'Pilih parameter sensor',
+                  );
                 }
                 final filtered = reads.where((r) => r.dsId == param).toList()
                   ..sort(
@@ -120,19 +142,30 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
               },
             ),
 
-            SizedBox(height: context.rh(0.04)),
+            SizedBox(height: context.rh(0.02)),
           ],
         ),
       ),
     );
   }
 
-  Widget _shimmerBox(BuildContext context, double height) {
+  String _getFilterLabel(HistoryFilter filter) {
+    switch (filter) {
+      case HistoryFilter.sevenDay:
+        return '7 Hari';
+      case HistoryFilter.dateRange:
+        return 'Rentang Tanggal';
+      case HistoryFilter.plantingDate:
+        return 'Sejak Tanam';
+    }
+  }
+
+  Widget _shimmerCard(BuildContext context, double height) {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
@@ -141,12 +174,50 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
   }
 }
 
-// ─── Filter Row ───────────────────────────────────────────
-class _FilterRow extends StatelessWidget {
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(12),
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+              height: 1.83,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterMenu extends StatelessWidget {
   final HistoryFilter current;
   final ValueChanged<HistoryFilter> onChanged;
 
-  const _FilterRow({required this.current, required this.onChanged});
+  const _FilterMenu({required this.current, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -155,31 +226,53 @@ class _FilterRow extends StatelessWidget {
       (HistoryFilter.dateRange, 'Rentang Tanggal'),
       (HistoryFilter.plantingDate, 'Sejak Tanam'),
     ];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         children: filters.map((f) {
           final isSelected = f.$1 == current;
-          return GestureDetector(
+          return InkWell(
             onTap: () => onChanged(f.$1),
             child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : AppColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.divider,
-                ),
-              ),
-              child: Text(
-                f.$2,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(13),
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(
+                    isSelected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textTertiary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    f.$2,
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(13),
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      color: isSelected
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -189,7 +282,6 @@ class _FilterRow extends StatelessWidget {
   }
 }
 
-// ─── Date Range Picker ────────────────────────────────────
 class _DateRangePicker extends ConsumerWidget {
   const _DateRangePicker();
 
@@ -318,61 +410,25 @@ class _DateButton extends StatelessWidget {
   }
 }
 
-// ─── Param Selector ───────────────────────────────────────
-class _ParamSelector extends StatelessWidget {
-  final List<String> params;
-  final String selected;
-  final ValueChanged<String> onChanged;
-
-  const _ParamSelector({
-    required this.params,
-    required this.selected,
-    required this.onChanged,
-  });
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle(this.title);
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: params.map((p) {
-          final isSelected = p == selected;
-          return GestureDetector(
-            onTap: () => onChanged(p),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primaryLight.withValues(alpha: 0.15)
-                    : AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryLight
-                      : Colors.transparent,
-                ),
-              ),
-              child: Text(
-                SensorMeta.label(p),
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(11),
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
+    return Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(22),
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1D1D1D),
+        height: 1.0,
       ),
     );
   }
 }
 
-// ─── History Chart ────────────────────────────────────────
 class _HistoryChart extends StatelessWidget {
   final List<SensorReadModel> reads;
   final String param;
@@ -382,17 +438,17 @@ class _HistoryChart extends StatelessWidget {
   Color get _color {
     switch (param) {
       case 'env_temp':
-        return AppColors.temperature;
+        return const Color(0xFF4FC3F7);
       case 'env_hum':
-        return AppColors.humidity;
+        return const Color(0xFF81C784);
       case 'soil_nitro':
-        return AppColors.nitrogen;
+        return const Color(0xFFFFB74D);
       case 'soil_phos':
-        return AppColors.phosphorus;
+        return const Color(0xFFBA68C8);
       case 'soil_pot':
-        return AppColors.potassium;
+        return const Color(0xFFE57373);
       case 'soil_ph':
-        return AppColors.ph;
+        return const Color(0xFF64B5F6);
       default:
         return AppColors.primaryLight;
     }
@@ -400,226 +456,203 @@ class _HistoryChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spots = reads.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.numericValue);
-    }).toList();
+    if (reads.isEmpty) {
+      return _EmptyStateCard(height: 195, message: 'Belum ada data riwayat');
+    }
 
-    final step = reads.length > 6 ? (reads.length / 6).ceil() : 1;
+    final spots = reads
+        .asMap()
+        .entries
+        .where((e) => e.value.numericValue > 0)
+        .map((e) {
+          return FlSpot(e.key.toDouble(), e.value.numericValue);
+        })
+        .toList();
+
+    if (spots.isEmpty) {
+      return _EmptyStateCard(height: 195, message: 'Data sensor tidak valid');
+    }
 
     return Container(
+      height: 195,
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            SensorMeta.label(param),
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: 1,
+            getDrawingHorizontalLine: (_) =>
+                FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
           ),
-          SizedBox(height: context.rh(0.015)),
-          SizedBox(
-            height: 180,
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: AppColors.divider, strokeWidth: 1),
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 24,
+                interval: (spots.length / 4).ceilToDouble().clamp(
+                  1,
+                  double.infinity,
                 ),
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 28,
-                      interval: step.toDouble(),
-                      getTitlesWidget: (v, _) {
-                        final idx = v.toInt();
-                        if (idx < 0 || idx >= reads.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final d = reads[idx].readDate;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            d != null ? DateFormat('d/M').format(d) : '',
-                            style: TextStyle(
-                              fontSize: context.sp(9),
-                              color: AppColors.textTertiary,
-                              fontFamily: 'Plus Jakarta Sans',
-                            ),
-                          ),
-                        );
-                      },
+                getTitlesWidget: (v, _) {
+                  final idx = v.toInt();
+                  if (idx < 0 || idx >= reads.length) {
+                    return const SizedBox.shrink();
+                  }
+                  final d = reads[idx].readDate;
+                  return Text(
+                    d != null ? DateFormat('d/M').format(d) : '',
+                    style: TextStyle(
+                      fontSize: context.sp(9),
+                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                      fontFamily: 'Plus Jakarta Sans',
                     ),
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: _color,
-                    barWidth: 2,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: _color.withValues(alpha: 0.12),
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => Colors.white,
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
-        ],
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: _color,
+              barWidth: 2.5,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    _color.withValues(alpha: 0.3),
+                    _color.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => Colors.white,
+              tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-// ─── Data Table ───────────────────────────────────────────
 class _DataTable extends StatelessWidget {
   final List<SensorReadModel> reads;
   const _DataTable({required this.reads});
 
   @override
   Widget build(BuildContext context) {
-    if (reads.isEmpty) return _EmptyCard(message: 'Tidak ada data');
+    if (reads.isEmpty) {
+      return _EmptyStateCard(height: 195, message: 'Tidak ada data');
+    }
+
     return Container(
+      height: 195,
+      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.rw(0.041),
-              vertical: context.rh(0.012),
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: reads.length.clamp(0, 10),
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+        ),
+        itemBuilder: (context, i) {
+          final r = reads[i];
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Waktu',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
+                Text(
+                  r.readDate != null
+                      ? DateFormat('dd/MM HH:mm').format(r.readDate!)
+                      : '-',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(11),
+                    color: const Color(0xFF1D1D1D),
                   ),
                 ),
                 Text(
-                  'Nilai',
+                  '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(12),
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                    color: const Color(0xFF1D1D1D),
                   ),
                 ),
               ],
             ),
-          ),
-          // Rows
-          ...reads.asMap().entries.map((e) {
-            final r = e.value;
-            final isLast = e.key == reads.length - 1;
-            return Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.rw(0.041),
-                vertical: context.rh(0.012),
-              ),
-              decoration: BoxDecoration(
-                border: isLast
-                    ? null
-                    : const Border(
-                        bottom: BorderSide(color: AppColors.divider),
-                      ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      r.readDate != null
-                          ? DateFormat('dd/MM HH:mm').format(r.readDate!)
-                          : '-',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(13),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
+          );
+        },
       ),
     );
   }
 }
 
-class _EmptyCard extends StatelessWidget {
+class _EmptyStateCard extends StatelessWidget {
+  final double height;
   final String message;
-  const _EmptyCard({required this.message});
+
+  const _EmptyStateCard({required this.height, required this.message});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(context.rw(0.061)),
+      height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Center(
-        child: Text(
-          message,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(13),
-            color: AppColors.textSecondary,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history,
+              size: 28,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+            ),
+            SizedBox(height: context.rh(0.005)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w300,
+                color: const Color(0xFF1D1D1D),
+                height: 1.83,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -634,32 +667,35 @@ class _ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 195,
       padding: EdgeInsets.all(context.rw(0.051)),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(12),
-              color: AppColors.error,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.error, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                color: AppColors.error,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          TextButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh, size: 16),
-            label: const Text('Coba Lagi'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
       ),
     );
   }

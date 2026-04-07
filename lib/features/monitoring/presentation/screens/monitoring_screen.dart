@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../site/presentation/providers/site_provider.dart';
 import '../tabs/analytics_tab.dart';
 import '../tabs/history_tab.dart';
 import '../tabs/maps_tab.dart';
@@ -15,135 +14,107 @@ class MonitoringScreen extends ConsumerStatefulWidget {
   ConsumerState<MonitoringScreen> createState() => _MonitoringScreenState();
 }
 
-class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
+  int _selectedTabIndex = 0;
 
-  static const _tabs = [
-    (label: 'Realtime', icon: Icons.sensors_rounded),
-    (label: 'History', icon: Icons.history_rounded),
-    (label: 'Maps', icon: Icons.map_outlined),
-    (label: 'Analytics', icon: Icons.analytics_outlined),
+  static const _tabs = ['Realtime', 'History', 'Maps', 'Analytics'];
+
+  static const _tabWidgets = [
+    RealtimeTab(),
+    HistoryTab(),
+    MapsTab(),
+    AnalyticsTab(),
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final selectedSite = ref.watch(selectedSiteProvider);
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            expandedHeight: context.rh(0.14).clamp(100.0, 140.0),
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.primary,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primaryDark, Color(0xFF2E7D32)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      context.rw(0.051),
-                      context.rh(0.02),
-                      context.rw(0.051),
-                      0,
+      backgroundColor: const Color(0xFFF0F0F0),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Fixed Header dengan More Button
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.rw(0.051),
+                vertical: context.rh(0.015),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(32),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Monitoring',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(22),
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: context.rh(0.005)),
-                        Text(
-                          selectedSite?.siteName ?? 'Pilih site di Dashboard',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(13),
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
+                    child: IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/more-icon.svg',
+                        width: 28,
+                        height: 28,
+                      ),
+                      onPressed: () {
+                        // TODO: Implement more menu
+                      },
                     ),
                   ),
+                ],
+              ),
+            ),
+
+            // Custom Pill-Style Tab Navigation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.rw(0.054)),
+              child: SizedBox(
+                height: 38,
+                child: Row(
+                  children: [
+                    for (int index = 0; index < _tabs.length; index++) ...[
+                      Flexible(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedTabIndex = index),
+                          child: Container(
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _selectedTabIndex == index
+                                  ? Colors.white
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _tabs[index],
+                                style: TextStyle(
+                                  color: _selectedTabIndex == index
+                                      ? Colors.black
+                                      : Colors.black.withValues(alpha: 0.5),
+                                  fontSize: 12,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.83,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (index < _tabs.length - 1) const SizedBox(width: 2),
+                    ],
+                  ],
                 ),
               ),
             ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
-              child: Container(
-                color: AppColors.primary,
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  indicatorColor: Colors.white,
-                  indicatorWeight: 3,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white60,
-                  labelStyle: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  unselectedLabelStyle: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
-                    fontWeight: FontWeight.w400,
-                  ),
-                  tabs: _tabs
-                      .map(
-                        (t) => Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(t.icon, size: 16),
-                              const SizedBox(width: 6),
-                              Text(t.label),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-          ),
-        ],
-        body: TabBarView(
-          controller: _tabController,
-          children: const [
-            RealtimeTab(),
-            HistoryTab(),
-            MapsTab(),
-            AnalyticsTab(),
+
+            SizedBox(height: context.rh(0.026)),
+
+            // Tab Content
+            Expanded(child: _tabWidgets[_selectedTabIndex]),
           ],
         ),
       ),
