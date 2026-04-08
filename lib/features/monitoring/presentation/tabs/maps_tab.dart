@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
@@ -25,23 +26,26 @@ class _MapsTabState extends ConsumerState<MapsTab> {
       onRefresh: () async => ref.invalidate(devicesProvider),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.rw(0.051),
+          vertical: context.rh(0.015),
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Stats Bar ─────────────────────────────────
             devicesAsync.when(
               data: (devices) => _StatsBar(devices: devices),
-              loading: () => _shimmerBar(context),
+              loading: () => _shimmerCard(context, 70),
               error: (_, __) => const SizedBox.shrink(),
             ),
 
-            // ─── Map View ──────────────────────────────────
+            SizedBox(height: context.rh(0.024)),
+
+            _SectionTitle('Maps'),
+            SizedBox(height: context.rh(0.014)),
+
             devicesAsync.when(
-              loading: () => SizedBox(
-                height: context.rh(0.45),
-                child: const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
-              ),
+              loading: () => _shimmerCard(context, 195),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(devicesProvider),
@@ -63,54 +67,59 @@ class _MapsTabState extends ConsumerState<MapsTab> {
               },
             ),
 
-            // ─── Device List ───────────────────────────────
-            Padding(
-              padding: EdgeInsets.all(context.rw(0.051)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Daftar Device & Sensor',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(16),
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.015)),
-                  devicesAsync.when(
-                    loading: () => _shimmerList(context),
-                    error: (_, __) => const SizedBox.shrink(),
-                    data: (devices) => devices.isEmpty
-                        ? _EmptyCard(message: 'Belum ada device')
-                        : _DeviceList(devices: devices),
-                  ),
-                ],
-              ),
+            SizedBox(height: context.rh(0.024)),
+
+            _SectionTitle('Daftar Device & Sensor'),
+            SizedBox(height: context.rh(0.014)),
+
+            devicesAsync.when(
+              loading: () => _shimmerCard(context, 73),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (devices) => devices.isEmpty
+                  ? _EmptyStateCard(height: 73, message: 'Belum ada device')
+                  : _DeviceList(devices: devices),
             ),
+
+            SizedBox(height: context.rh(0.02)),
           ],
         ),
       ),
     );
   }
 
-  Widget _shimmerBar(BuildContext context) {
-    return Container(height: 72, color: AppColors.surfaceVariant);
-  }
-
-  Widget _shimmerList(BuildContext context) {
+  Widget _shimmerCard(BuildContext context, double height) {
     return Container(
-      height: 120,
+      height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
       ),
     );
   }
 }
 
-// ─── Stats Bar ────────────────────────────────────────────
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(22),
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1D1D1D),
+        height: 1.0,
+      ),
+    );
+  }
+}
+
 class _StatsBar extends StatelessWidget {
   final List<DeviceModel> devices;
   const _StatsBar({required this.devices});
@@ -124,102 +133,130 @@ class _StatsBar extends StatelessWidget {
     final activeDevices = devices.where((d) => d.isActive).length;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.02),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
       ),
-      color: AppColors.surface,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _StatItem(
-            icon: Icons.devices_rounded,
-            label: 'Total Device',
+            icon: 'assets/icons/device-filled-icon.svg',
+            label: 'Device',
             value: '${devices.length}',
-            color: AppColors.primary,
+            color: const Color(0xFFE8EFE9),
+            spacing: 4,
           ),
-          _divider(),
           _StatItem(
-            icon: Icons.sensors_rounded,
-            label: 'Total Sensor',
+            icon: 'assets/icons/sensor-icon.svg',
+            label: 'Sensor',
             value: '$totalSensors',
-            color: AppColors.info,
+            color: const Color(0xFFECF6FE),
+            spacing: 2,
           ),
-          _divider(),
           _StatItem(
-            icon: Icons.check_circle_outline_rounded,
+            icon: 'assets/icons/check-icon.svg',
             label: 'Aktif',
             value: '$activeDevices',
-            color: AppColors.success,
+            color: const Color(0xFFEDF7EE),
+            spacing: 3,
           ),
         ],
       ),
     );
   }
-
-  Widget _divider() => Container(
-    width: 1,
-    height: 40,
-    color: AppColors.divider,
-    margin: const EdgeInsets.symmetric(horizontal: 16),
-  );
 }
 
 class _StatItem extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String label;
   final String value;
   final Color color;
+  final double spacing;
 
   const _StatItem({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    required this.spacing,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          padding: const EdgeInsets.only(
+            top: 11,
+            left: 10,
+            right: 10,
+            bottom: 9,
+          ),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: SvgPicture.asset(
+              icon,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+              colorFilter: ColorFilter.mode(_getIconColor(), BlendMode.srcIn),
             ),
-            child: Icon(icon, size: 18, color: color),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(18),
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
+        ),
+        const SizedBox(width: 11),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1D1D1D),
+                height: 1.0,
               ),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(10),
-                  color: AppColors.textSecondary,
-                ),
+            ),
+            SizedBox(height: spacing),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1D1D1D),
+                height: 1.83,
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  Color _getIconColor() {
+    if (icon.contains('device-filled-icon')) {
+      return const Color(0xFF1B5E20);
+    } else if (icon.contains('sensor-icon')) {
+      return const Color(0xFF42A5F5);
+    } else if (icon.contains('check-icon')) {
+      return const Color(0xFF4CAF50);
+    }
+    return const Color(0xFF1D1D1D);
   }
 }
 
-// ─── Map View (OpenStreetMap via WebView) ─────────────────
 class _MapView extends StatefulWidget {
   final double centerLat;
   final double centerLon;
@@ -294,14 +331,20 @@ class _MapViewState extends State<_MapView> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: context.rh(0.45),
-      child: WebViewWidget(controller: _controller),
+    return Container(
+      height: 195,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: WebViewWidget(controller: _controller),
+      ),
     );
   }
 }
 
-// ─── Device List ──────────────────────────────────────────
 class _DeviceList extends StatelessWidget {
   final List<DeviceModel> devices;
   const _DeviceList({required this.devices});
@@ -331,116 +374,142 @@ class _DeviceCardState extends State<_DeviceCard> {
     return Container(
       margin: EdgeInsets.only(bottom: context.rh(0.012)),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
-          // Device header
           InkWell(
             onTap: () => setState(() => _expanded = !_expanded),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             child: Padding(
-              padding: EdgeInsets.all(context.rw(0.041)),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.rw(0.031),
+                vertical: context.rh(0.015),
+              ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: d.isActive
-                          ? AppColors.primary.withValues(alpha: 0.1)
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.router_rounded,
-                      size: 20,
-                      color: d.isActive
-                          ? AppColors.primary
-                          : AppColors.textTertiary,
-                    ),
-                  ),
-                  SizedBox(width: context.rw(0.03)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          d.devName ?? d.devId,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(14),
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8EFE9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: SvgPicture.asset(
+                          'assets/icons/device-filled-icon.svg',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF1B5E20),
+                            BlendMode.srcIn,
                           ),
                         ),
-                        Text(
-                          d.devLocation ?? 'Lokasi tidak diketahui',
+                      ),
+                      SizedBox(width: context.rw(0.02)),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            d.devName ?? d.devId,
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(22),
+                              fontWeight: FontWeight.w300,
+                              color: const Color(0xFF1D1D1D),
+                              height: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: context.rh(0.002)),
+                          Text(
+                            d.devLocation ?? 'Lokasi tidak diketahui',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(11),
+                              fontWeight: FontWeight.w400,
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.6),
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: d.isActive
+                              ? const Color(0xFFEDF7EE)
+                              : const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          d.isActive ? 'Aktif' : 'Offline',
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: context.sp(12),
-                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            color: d.isActive
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFF9E9E9E),
+                            height: 1.0,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: d.isActive
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.textTertiary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      d.isActive ? 'Aktif' : 'Offline',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(11),
-                        fontWeight: FontWeight.w500,
-                        color: d.isActive
-                            ? AppColors.success
-                            : AppColors.textTertiary,
                       ),
-                    ),
-                  ),
-                  SizedBox(width: context.rw(0.02)),
-                  Icon(
-                    _expanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textTertiary,
+                      SizedBox(width: context.rw(0.02)),
+                      SvgPicture.asset(
+                        _expanded
+                            ? 'assets/icons/chevron-down-icon.svg'
+                            : 'assets/icons/chevron-right-icon.svg',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
 
-          // Sensors (expanded)
           if (_expanded && d.sensors.isNotEmpty)
             Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.rw(0.051),
+                vertical: context.rh(0.012),
+              ),
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.divider)),
+                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
               ),
               child: Column(
                 children: d.sensors.map((s) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.rw(0.051),
-                      vertical: context.rh(0.01),
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.sensors_rounded,
-                          size: 16,
-                          color: AppColors.info,
+                        SvgPicture.asset(
+                          'assets/icons/sensor-icon.svg',
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF42A5F5),
+                            BlendMode.srcIn,
+                          ),
                         ),
                         SizedBox(width: context.rw(0.025)),
                         Expanded(
@@ -449,7 +518,7 @@ class _DeviceCardState extends State<_DeviceCard> {
                             style: TextStyle(
                               fontFamily: 'Plus Jakarta Sans',
                               fontSize: context.sp(12),
-                              color: AppColors.textPrimary,
+                              color: const Color(0xFF1D1D1D),
                             ),
                           ),
                         ),
@@ -458,7 +527,9 @@ class _DeviceCardState extends State<_DeviceCard> {
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: context.sp(11),
-                            color: AppColors.textTertiary,
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -473,26 +544,46 @@ class _DeviceCardState extends State<_DeviceCard> {
   }
 }
 
-class _EmptyCard extends StatelessWidget {
+class _EmptyStateCard extends StatelessWidget {
+  final double height;
   final String message;
-  const _EmptyCard({required this.message});
+
+  const _EmptyStateCard({required this.height, required this.message});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(context.rw(0.061)),
+      height: height,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Center(
-        child: Text(
-          message,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(13),
-            color: AppColors.textSecondary,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              'assets/icons/device-filled-icon.svg',
+              width: 28,
+              height: 28,
+              colorFilter: ColorFilter.mode(
+                const Color(0xFF1B5E20).withValues(alpha: 0.3),
+                BlendMode.srcIn,
+              ),
+            ),
+            SizedBox(height: context.rh(0.005)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w300,
+                color: const Color(0xFF1D1D1D),
+                height: 1.83,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -507,33 +598,35 @@ class _ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(context.rw(0.051)),
+      height: 195,
       padding: EdgeInsets.all(context.rw(0.051)),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
-        children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(12),
-              color: AppColors.error,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.error, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                color: AppColors.error,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          TextButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh, size: 16),
-            label: const Text('Coba Lagi'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
       ),
     );
   }
