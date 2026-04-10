@@ -126,15 +126,6 @@ class MonitoringRemoteDataSource {
     }
   }
 
-  /// GET /api/sites/:siteId/reads/daily — daily recap
-  Future<List<SensorDailyModel>> getDailyReads(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/reads/daily');
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((e) => SensorDailyModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
-
   /// GET /api/sites/:siteId/devices — devices with coordinates
   Future<List<DeviceModel>> getDevices(String siteId) async {
     final response = await _dio.get('/sites/$siteId/devices');
@@ -155,15 +146,55 @@ class MonitoringRemoteDataSource {
 
   /// GET /api/sites/:siteId/recommendations/plant-by-site
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId) async {
-    final response = await _dio.get(
-      '/sites/$siteId/recommendations/plant-by-site',
-    );
-    return response.data as Map<String, dynamic>? ?? {};
+    try {
+      final response = await _dio.get(
+        '/sites/$siteId/recommendations/plant-by-site',
+      );
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      // Return empty map if endpoint returns 404 or any error
+      return {};
+    }
   }
 
   /// GET /api/sites/:siteId/agro/environmental-health
   Future<Map<String, dynamic>> getEnvironmentalHealth(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/agro/environmental-health');
-    return response.data['data'] as Map<String, dynamic>? ?? {};
+    try {
+      final response = await _dio.get(
+        '/sites/$siteId/agro/environmental-health',
+      );
+      return response.data['data'] as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      // Return empty map if error
+      return {};
+    }
+  }
+
+  /// GET /api/sites/:siteId/reads/daily — daily recap
+  Future<List<SensorDailyModel>> getDailyReads(String siteId) async {
+    try {
+      final response = await _dio.get('/sites/$siteId/reads/daily');
+      final responseData = response.data;
+
+      // Handle if data is Map or List
+      if (responseData['data'] is List) {
+        final data = responseData['data'] as List? ?? [];
+        return data
+            .map((e) => SensorDailyModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else if (responseData['data'] is Map) {
+        // If backend returns single object, wrap in list
+        return [
+          SensorDailyModel.fromJson(
+            responseData['data'] as Map<String, dynamic>,
+          ),
+        ];
+      }
+
+      return [];
+    } catch (e) {
+      // Return empty list if error
+      return [];
+    }
   }
 }
