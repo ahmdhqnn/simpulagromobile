@@ -51,6 +51,13 @@ class _MapsTabState extends ConsumerState<MapsTab> {
                 onRetry: () => ref.invalidate(devicesProvider),
               ),
               data: (devices) {
+                if (devices.isEmpty) {
+                  return _EmptyStateCard(
+                    height: 195,
+                    message: 'Belum ada lokasi device untuk ditampilkan',
+                    iconPath: 'assets/icons/maps-dot-filled-icon.svg',
+                  );
+                }
                 final lat =
                     selectedSite?.siteLat ??
                     (devices.isNotEmpty ? devices.first.devLat : null) ??
@@ -76,7 +83,11 @@ class _MapsTabState extends ConsumerState<MapsTab> {
               loading: () => _shimmerCard(context, 73),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => devices.isEmpty
-                  ? _EmptyStateCard(height: 73, message: 'Belum ada device')
+                  ? _EmptyStateCard(
+                      height: 73,
+                      message: 'Belum ada device tersedia',
+                      iconPath: 'assets/icons/device-filled-icon.svg',
+                    )
                   : _DeviceList(devices: devices),
             ),
 
@@ -126,6 +137,44 @@ class _StatsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (devices.isEmpty) {
+      return Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/icons/device-filled-icon.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                  BlendMode.srcIn,
+                ),
+              ),
+              SizedBox(height: context.rh(0.005)),
+              Text(
+                'Belum ada statistik device',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w300,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.83,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final totalSensors = devices.fold<int>(
       0,
       (sum, d) => sum + d.sensors.length,
@@ -547,8 +596,13 @@ class _DeviceCardState extends State<_DeviceCard> {
 class _EmptyStateCard extends StatelessWidget {
   final double height;
   final String message;
+  final String? iconPath;
 
-  const _EmptyStateCard({required this.height, required this.message});
+  const _EmptyStateCard({
+    required this.height,
+    required this.message,
+    this.iconPath,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -563,11 +617,11 @@ class _EmptyStateCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              'assets/icons/device-filled-icon.svg',
+              iconPath ?? 'assets/icons/device-filled-icon.svg',
               width: 28,
               height: 28,
               colorFilter: ColorFilter.mode(
-                const Color(0xFF1B5E20).withValues(alpha: 0.3),
+                const Color(0xFF1D1D1D).withValues(alpha: 0.3),
                 BlendMode.srcIn,
               ),
             ),
