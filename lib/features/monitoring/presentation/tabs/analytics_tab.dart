@@ -228,7 +228,7 @@ class _EnvironmentalHealthCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(22),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1,
             ),
           ),
@@ -239,7 +239,7 @@ class _EnvironmentalHealthCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(12),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1.83,
             ),
           ),
@@ -311,7 +311,7 @@ class _EnvironmentalHealthCard extends StatelessWidget {
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(9),
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textPrimary,
+                    color: const Color(0xFF1D1D1D),
                     height: 1.33,
                   ),
                 ),
@@ -346,7 +346,7 @@ class _ActionRequiredCard extends StatelessWidget {
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(22),
                     fontWeight: FontWeight.w300,
-                    color: AppColors.textPrimary,
+                    color: const Color(0xFF1D1D1D),
                     height: 1,
                   ),
                 ),
@@ -378,7 +378,7 @@ class _ActionRequiredCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(12),
               fontWeight: FontWeight.w300,
-              color: Colors.black,
+              color: const Color(0xFF1D1D1D),
             ),
           ),
         ],
@@ -398,37 +398,33 @@ class _PlantRecommendationCard extends StatelessWidget {
     if (recData == null || recData.isEmpty) {
       return Container(
         height: 195,
-        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 67),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Center(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
-                'assets/icons/plant-total-outline-icon.svg',
+                'assets/icons/recomendation-filled-icon.svg',
                 width: 28,
                 height: 28,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textPrimary,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
                   BlendMode.srcIn,
                 ),
               ),
-              const SizedBox(height: 1),
-              SizedBox(
-                width: 256,
-                child: Text(
-                  'Belum ada rekomendasi untuk tanaman',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w300,
-                    color: AppColors.textPrimary,
-                    height: 1.50,
-                  ),
+              SizedBox(height: context.rh(0.005)),
+              Text(
+                'Belum ada rekomendasi untuk tanaman',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w300,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.83,
                 ),
               ),
             ],
@@ -454,15 +450,29 @@ class _PlantRecommendationCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.only(
+                  top: 11,
+                  left: 10,
+                  right: 10,
+                  bottom: 9,
+                ),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.1),
+                  color: const Color(0xFFE8F5E9),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.eco_rounded,
-                  color: AppColors.accent,
-                  size: 22,
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/icons/recomendation-filled-icon.svg',
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF4CAF50),
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: context.rw(0.03)),
@@ -484,7 +494,7 @@ class _PlantRecommendationCard extends StatelessWidget {
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(18),
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: const Color(0xFF1D1D1D),
                       ),
                     ),
                   ],
@@ -554,7 +564,10 @@ class _PlantStatisticsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (plant == null) {
-      return _EmptyCard(message: 'Belum ada tanaman aktif');
+      return _EmptyCard(
+        message: 'Belum ada tanaman aktif',
+        iconPath: 'assets/icons/plant-total-outline-icon.svg',
+      );
     }
 
     return Container(
@@ -564,25 +577,24 @@ class _PlantStatisticsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _StatItem(
-            icon: 'assets/icons/plant-total-outline-icon.svg',
+            icon: 'assets/icons/tag-total-outline-icon.svg',
             label: 'Total',
             value: '1',
             color: const Color(0xFFECF6FE),
             spacing: 4,
           ),
-          const SizedBox(width: 11),
           _StatItem(
-            icon: 'assets/icons/check-total-icon.svg',
+            icon: 'assets/icons/plant-total-outline-icon.svg',
             label: 'Aktif',
             value: '1',
             color: const Color(0xFFEDF7EE),
             spacing: 2,
           ),
-          const SizedBox(width: 11),
           _StatItem(
-            icon: 'assets/icons/tag-total-outline-icon.svg',
+            icon: 'assets/icons/check-total-icon.svg',
             label: 'Dipanen',
             value: '0',
             color: const Color(0xFFE8EFE9),
@@ -611,66 +623,62 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            padding: const EdgeInsets.only(
-              top: 11,
-              left: 10,
-              right: 10,
-              bottom: 9,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          padding: const EdgeInsets.only(
+            top: 11,
+            left: 10,
+            right: 10,
+            bottom: 9,
+          ),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: SvgPicture.asset(
+              icon,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
             ),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                icon,
-                width: 20,
-                height: 20,
-                fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(width: 11),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1D1D1D),
+                height: 1.0,
               ),
             ),
-          ),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(22),
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1D1D1D),
-                    height: 1.0,
-                  ),
-                ),
-                SizedBox(height: spacing),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1D1D1D),
-                    height: 1.83,
-                  ),
-                ),
-              ],
+            SizedBox(height: spacing),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1D1D1D),
+                height: 1.83,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -681,12 +689,10 @@ class _GrowthPhaseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Safely extract values with proper null handling
     final phase = (plant?.growthPhase as String?) ?? '-';
     final plantDate = plant?.plantDate as DateTime?;
     final hst = (plant?.hst as int?) ?? 0;
 
-    // Get plantType and handle displayName safely
     String plantTypeDisplay = '-';
     try {
       final plantType = plant?.plantType;
@@ -712,7 +718,7 @@ class _GrowthPhaseCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(22),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1,
             ),
           ),
@@ -723,7 +729,7 @@ class _GrowthPhaseCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(12),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1.83,
             ),
           ),
@@ -740,7 +746,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -750,7 +756,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -760,7 +766,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -770,7 +776,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -780,7 +786,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -795,7 +801,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -807,7 +813,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -817,7 +823,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -827,7 +833,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -837,7 +843,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -859,7 +865,6 @@ class _PlantDistributionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hst = (plant?.hst as int?) ?? 0;
 
-    // Get plantType and handle displayName safely
     String plantTypeDisplay = '-';
     try {
       final plantType = plant?.plantType;
@@ -885,7 +890,7 @@ class _PlantDistributionCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(22),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1,
             ),
           ),
@@ -919,7 +924,7 @@ class _PlantDistributionCard extends StatelessWidget {
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: const Color(0xFF1D1D1D),
                   height: 1.83,
                 ),
               ),
@@ -943,7 +948,7 @@ class _PlantDistributionCard extends StatelessWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.w300,
-                      color: AppColors.textPrimary,
+                      color: const Color(0xFF1D1D1D),
                       height: 1.83,
                     ),
                   ),
@@ -958,7 +963,7 @@ class _PlantDistributionCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(12),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1.83,
             ),
           ),
@@ -969,7 +974,7 @@ class _PlantDistributionCard extends StatelessWidget {
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(22),
               fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
+              color: const Color(0xFF1D1D1D),
               height: 1,
             ),
           ),
@@ -985,6 +990,44 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (devices.isEmpty) {
+      return Container(
+        height: 74,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/icons/device-filled-icon.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                  BlendMode.srcIn,
+                ),
+              ),
+              SizedBox(height: context.rh(0.005)),
+              Text(
+                'Belum ada perangkat tersedia',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w300,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.83,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final totalSensors = devices.fold<int>(0, (s, d) => s + d.sensors.length);
 
     return Row(
@@ -1007,9 +1050,14 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: SvgPicture.asset(
-                    'assets/icons/device-outline-icon.svg',
+                    'assets/icons/device-filled-icon.svg',
                     width: 20,
                     height: 20,
+                    fit: BoxFit.contain,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF1B5E20),
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 11),
@@ -1023,7 +1071,7 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1D1D1D),
                           height: 1,
                         ),
                       ),
@@ -1034,7 +1082,7 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(12),
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1D1D1D),
                           height: 1.83,
                         ),
                       ),
@@ -1080,7 +1128,7 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1D1D1D),
                           height: 1,
                         ),
                       ),
@@ -1091,7 +1139,7 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(12),
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1D1D1D),
                           height: 1.83,
                         ),
                       ),
@@ -1107,129 +1155,199 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
   }
 }
 
-class _SensorByTypeCard extends StatelessWidget {
+class _SensorByTypeCard extends StatefulWidget {
   final List<DeviceModel> devices;
   const _SensorByTypeCard({required this.devices});
 
   @override
+  State<_SensorByTypeCard> createState() => _SensorByTypeCardState();
+}
+
+class _SensorByTypeCardState extends State<_SensorByTypeCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (devices.isEmpty) {
+    if (widget.devices.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final firstDevice = devices.first;
+    final firstDevice = widget.devices.first;
     final isActive = firstDevice.isActive;
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Sensor Berdasarkan Jenis',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(22),
-              fontWeight: FontWeight.w300,
-              color: const Color(0xFF1D1D1D),
-              height: 1,
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Sensor Berdasarkan Jenis',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(22),
+                      fontWeight: FontWeight.w300,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        padding: const EdgeInsets.only(
+                          top: 11,
+                          left: 10,
+                          right: 10,
+                          bottom: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8EFE9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            'assets/icons/device-filled-icon.svg',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF1B5E20),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              firstDevice.devName ?? firstDevice.devId,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(22),
+                                fontWeight: FontWeight.w300,
+                                color: const Color(0xFF1D1D1D),
+                                height: 1,
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              firstDevice.devLocation ?? '-',
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(12),
+                                fontWeight: FontWeight.w300,
+                                color: const Color(0xFF1D1D1D),
+                                height: 1.83,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? const Color(0xFFEDF7EE)
+                              : const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          isActive ? 'Aktif' : 'Offline',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w500,
+                            color: isActive
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFF9E9E9E),
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        _expanded
+                            ? 'assets/icons/chevron-down-icon.svg'
+                            : 'assets/icons/chevron-right-icon.svg',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.only(
-                  top: 11,
-                  left: 10,
-                  right: 10,
-                  bottom: 9,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8EFE9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    'assets/icons/device-filled-icon.svg',
-                    width: 20,
-                    height: 20,
-                    fit: BoxFit.contain,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF1B5E20),
-                      BlendMode.srcIn,
+          if (_expanded && firstDevice.sensors.isNotEmpty)
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.rw(0.051),
+                vertical: context.rh(0.012),
+              ),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+              ),
+              child: Column(
+                children: firstDevice.sensors.map((s) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/sensor-icon.svg',
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF42A5F5),
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        SizedBox(width: context.rw(0.025)),
+                        Expanded(
+                          child: Text(
+                            s.sensName ?? s.sensId,
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(12),
+                              color: const Color(0xFF1D1D1D),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          s.sensAddress ?? '',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(11),
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
+                  );
+                }).toList(),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      firstDevice.devName ?? firstDevice.devId,
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(22),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      firstDevice.devLocation ?? '-',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.83,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFFEDF7EE)
-                      : const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  isActive ? 'Aktif' : 'Offline',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w500,
-                    color: isActive
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF9E9E9E),
-                    height: 1.0,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              SvgPicture.asset(
-                'assets/icons/chevron-right-icon.svg',
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
+            ),
         ],
       ),
     );
@@ -1274,7 +1392,7 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(22),
                 fontWeight: FontWeight.w300,
-                color: AppColors.textPrimary,
+                color: const Color(0xFF1D1D1D),
                 height: 1,
               ),
             ),
@@ -1285,7 +1403,7 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(12),
                 fontWeight: FontWeight.w300,
-                color: AppColors.textPrimary,
+                color: const Color(0xFF1D1D1D),
                 height: 1.83,
               ),
             ),
@@ -1295,30 +1413,27 @@ class _DailySensorChartState extends State<_DailySensorChart> {
               padding: const EdgeInsets.all(12),
               child: Center(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
                       'assets/icons/sensor-icon.svg',
                       width: 28,
                       height: 28,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.textPrimary,
+                      colorFilter: ColorFilter.mode(
+                        const Color(0xFF1D1D1D).withValues(alpha: 0.3),
                         BlendMode.srcIn,
                       ),
                     ),
-                    const SizedBox(height: 1),
-                    SizedBox(
-                      width: 256,
-                      child: Text(
-                        'Tidak ada data sensor yang tersedia untuk hari ini',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.textPrimary,
-                          height: 1.50,
-                        ),
+                    SizedBox(height: context.rh(0.005)),
+                    Text(
+                      'Tidak ada data sensor yang tersedia untuk hari ini',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1.83,
                       ),
                     ),
                   ],
@@ -1350,10 +1465,17 @@ class _DailySensorChartState extends State<_DailySensorChart> {
         .toList();
 
     return Container(
-      padding: EdgeInsets.all(context.rw(0.041)),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1368,22 +1490,33 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 14,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: isSel
-                          ? AppColors.primary
-                          : AppColors.surfaceVariant,
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: isSel
+                          ? [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF4CAF50,
+                                ).withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Text(
                       SensorMeta.label(p),
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(11),
-                        fontWeight: FontWeight.w500,
-                        color: isSel ? Colors.white : AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        color: isSel ? Colors.white : const Color(0xFF757575),
                       ),
                     ),
                   ),
@@ -1391,24 +1524,26 @@ class _DailySensorChartState extends State<_DailySensorChart> {
               }).toList(),
             ),
           ),
-          SizedBox(height: context.rh(0.015)),
+          SizedBox(height: context.rh(0.02)),
           if (filtered.isEmpty)
             const Center(
               child: Text(
                 'Belum ada data harian',
-                style: TextStyle(color: AppColors.textTertiary),
+                style: TextStyle(color: Color(0xFF9E9E9E)),
               ),
             )
           else
-            SizedBox(
-              height: 180,
+            Container(
+              height: 200,
+              padding: const EdgeInsets.only(top: 10, right: 10),
               child: LineChart(
                 LineChartData(
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
+                    horizontalInterval: 1,
                     getDrawingHorizontalLine: (_) =>
-                        FlLine(color: AppColors.divider, strokeWidth: 1),
+                        FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
                   ),
                   titlesData: FlTitlesData(
                     leftTitles: const AxisTitles(
@@ -1423,7 +1558,7 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 28,
+                        reservedSize: 32,
                         interval: (filtered.length / 5).ceilToDouble().clamp(
                           1,
                           double.infinity,
@@ -1435,13 +1570,14 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                           }
                           final d = filtered[idx].day;
                           return Padding(
-                            padding: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               d != null ? DateFormat('d/M').format(d) : '',
                               style: TextStyle(
-                                fontSize: context.sp(9),
-                                color: AppColors.textTertiary,
+                                fontSize: context.sp(10),
+                                color: const Color(0xFF757575),
                                 fontFamily: 'Plus Jakarta Sans',
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           );
@@ -1451,26 +1587,47 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                   ),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
-                    _bar(avgSpots, AppColors.primary),
-                    _bar(minSpots, AppColors.info.withValues(alpha: 0.7)),
-                    _bar(maxSpots, AppColors.warning.withValues(alpha: 0.7)),
+                    _bar(avgSpots, const Color(0xFF4CAF50)),
+                    _bar(minSpots, const Color(0xFF42A5F5)),
+                    _bar(maxSpots, const Color(0xFFFF9800)),
                   ],
                   lineTouchData: LineTouchData(
+                    enabled: true,
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipColor: (_) => Colors.white,
+                      tooltipRoundedRadius: 8,
+                      tooltipPadding: const EdgeInsets.all(8),
+                      tooltipBorder: const BorderSide(
+                        color: Color(0xFFE0E0E0),
+                        width: 1,
+                      ),
+                      getTooltipItems: (spots) {
+                        return spots.map((spot) {
+                          return LineTooltipItem(
+                            spot.y.toStringAsFixed(1),
+                            const TextStyle(
+                              color: Color(0xFF1D1D1D),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          );
+                        }).toList();
+                      },
                     ),
                   ),
+                  minY: 0,
                 ),
               ),
             ),
-          SizedBox(height: context.rh(0.01)),
-          Row(
+          SizedBox(height: context.rh(0.015)),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
             children: [
-              _legend(AppColors.primary, 'Rata-rata'),
-              const SizedBox(width: 12),
-              _legend(AppColors.info, 'Min'),
-              const SizedBox(width: 12),
-              _legend(AppColors.warning, 'Max'),
+              _legend(const Color(0xFF4CAF50), 'Rata-rata'),
+              _legend(const Color(0xFF42A5F5), 'Min'),
+              _legend(const Color(0xFFFF9800), 'Max'),
             ],
           ),
         ],
@@ -1482,12 +1639,27 @@ class _DailySensorChartState extends State<_DailySensorChart> {
     return LineChartBarData(
       spots: spots,
       isCurved: true,
+      curveSmoothness: 0.35,
       color: color,
-      barWidth: 2,
-      dotData: const FlDotData(show: false),
+      barWidth: 3,
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, percent, barData, index) {
+          return FlDotCirclePainter(
+            radius: 4,
+            color: color,
+            strokeWidth: 2,
+            strokeColor: Colors.white,
+          );
+        },
+      ),
       belowBarData: BarAreaData(
         show: true,
-        color: color.withValues(alpha: 0.08),
+        gradient: LinearGradient(
+          colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.05)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
       ),
     );
   }
@@ -1520,7 +1692,8 @@ class _DailySensorChartState extends State<_DailySensorChart> {
 
 class _EmptyCard extends StatelessWidget {
   final String message;
-  const _EmptyCard({required this.message});
+  final String? iconPath;
+  const _EmptyCard({required this.message, this.iconPath});
 
   @override
   Widget build(BuildContext context) {
@@ -1535,7 +1708,7 @@ class _EmptyCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              'assets/icons/plant-total-outline-icon.svg',
+              iconPath ?? 'assets/icons/plant-total-outline-icon.svg',
               width: 28,
               height: 28,
               colorFilter: ColorFilter.mode(
@@ -1573,13 +1746,14 @@ class _ErrorCard extends StatelessWidget {
       padding: EdgeInsets.all(context.rw(0.051)),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, color: AppColors.error, size: 28),
-          const SizedBox(height: 8),
+          SizedBox(height: context.rh(0.01)),
           Text(
             message,
             textAlign: TextAlign.center,
@@ -1589,7 +1763,7 @@ class _ErrorCard extends StatelessWidget {
               color: AppColors.error,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.rh(0.01)),
           TextButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh, size: 16),
