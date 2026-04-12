@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -10,7 +10,8 @@ import '../../domain/entities/user_profile.dart';
 final profileRemoteDatasourceProvider = Provider<ProfileRemoteDatasource>((
   ref,
 ) {
-  return ProfileRemoteDatasource(Dio());
+  final dioClient = ref.watch(dioClientProvider);
+  return ProfileRemoteDatasource(dioClient.dio);
 });
 
 // Repository provider
@@ -21,6 +22,12 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 // User profile provider
 final userProfileProvider = FutureProvider<UserProfile>((ref) async {
   return ref.read(profileRepositoryProvider).getUserProfile();
+});
+
+// User permissions provider
+final userPermissionsProvider = FutureProvider<List<String>>((ref) async {
+  final datasource = ref.read(profileRemoteDatasourceProvider);
+  return datasource.getUserPermissions();
 });
 
 // Settings provider

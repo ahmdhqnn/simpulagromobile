@@ -2,31 +2,45 @@ import 'package:dio/dio.dart';
 import '../models/user_profile_model.dart';
 
 class ProfileRemoteDatasource {
-  // ignore: unused_field
   final Dio _dio;
 
   ProfileRemoteDatasource(this._dio);
 
+  /// GET /api/profile/me
+  /// Mendapatkan informasi user yang sedang login
   Future<UserProfileModel> getUserProfile() async {
-    // TODO: Replace with real API
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final response = await _dio.get('/profile/me');
 
-    return UserProfileModel(
-      id: 'user-1',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+62 812-3456-7890',
-      role: 'Admin',
-      permissions: ['read', 'write', 'delete', 'manage_users'],
-      avatar: null,
-      createdAt: DateTime.now().subtract(const Duration(days: 90)),
-      updatedAt: DateTime.now(),
-    );
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        return UserProfileModel.fromJson(response.data['data']);
+      }
 
-    /* Real API:
-    final response = await _dio.get('/profile');
-    return UserProfileModel.fromJson(response.data['data']);
-    */
+      throw Exception('Failed to load profile');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('Unauthorized - Token expired');
+      }
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
+  /// GET /api/profile/permissions
+  /// Mendapatkan daftar permissions yang dimiliki user saat ini
+  Future<List<String>> getUserPermissions() async {
+    try {
+      final response = await _dio.get('/profile/permissions');
+
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final permissions =
+            response.data['data']['permissions'] as List<dynamic>?;
+        return permissions?.map((e) => e.toString()).toList() ?? [];
+      }
+
+      return [];
+    } on DioException catch (_) {
+      return [];
+    }
   }
 
   Future<UserProfileModel> updateProfile(
@@ -34,25 +48,19 @@ class ProfileRemoteDatasource {
     String email,
     String phone,
   ) async {
-    // TODO: Replace with real API
+    // TODO: Implement update profile API when available
     await Future.delayed(const Duration(seconds: 1));
 
-    return UserProfileModel(
-      id: 'user-1',
-      name: name,
-      email: email,
-      phone: phone,
-      role: 'Admin',
-      permissions: ['read', 'write', 'delete', 'manage_users'],
-      avatar: null,
-      createdAt: DateTime.now().subtract(const Duration(days: 90)),
-      updatedAt: DateTime.now(),
-    );
+    throw UnimplementedError('Update profile API not yet implemented');
 
-    /* Real API:
+    /* Real API (when available):
     final response = await _dio.put(
-      '/profile',
-      data: {'name': name, 'email': email, 'phone': phone},
+      '/profile/update',
+      data: {
+        'user_name': name,
+        'user_email': email,
+        'user_phone': phone,
+      },
     );
     return UserProfileModel.fromJson(response.data['data']);
     */
