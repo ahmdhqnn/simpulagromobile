@@ -11,29 +11,31 @@ class UserProfileModel with _$UserProfileModel {
   const UserProfileModel._();
 
   const factory UserProfileModel({
-    @JsonKey(name: 'id') required String id,
-    @JsonKey(name: 'name') required String name,
-    @JsonKey(name: 'email') required String email,
-    @JsonKey(name: 'phone') required String phone,
-    @JsonKey(name: 'role') required String role,
-    @JsonKey(name: 'permissions') required List<String> permissions,
-    @JsonKey(name: 'avatar') String? avatar,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'user_name') required String userName,
+    @JsonKey(name: 'user_email') String? userEmail,
+    @JsonKey(name: 'user_phone') String? userPhone,
+    @JsonKey(name: 'user_sts') String? userSts,
+    @JsonKey(name: 'role_id') String? roleId,
+    @JsonKey(name: 'role_name') String? roleName,
+    @JsonKey(name: 'permissions') List<String>? permissions,
+    @JsonKey(name: 'user_created') DateTime? userCreated,
+    @JsonKey(name: 'user_update') DateTime? userUpdate,
   }) = _UserProfileModel;
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
       _$UserProfileModelFromJson(json);
 
   UserProfile toEntity() => UserProfile(
-    id: id,
-    name: name,
-    email: email,
-    phone: phone,
-    role: role,
-    permissions: permissions,
-    avatar: avatar,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    userId: userId,
+    userName: userName,
+    userEmail: userEmail,
+    userPhone: userPhone,
+    userSts: userSts,
+    roleId: roleId,
+    roleName: roleName ?? (roleId == 'ROLE001' ? 'Admin' : 'User'),
+    permissions: permissions ?? [],
+    userCreated: userCreated,
+    userUpdate: userUpdate,
   );
 }

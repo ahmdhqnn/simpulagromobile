@@ -21,24 +21,26 @@ UserProfileModel _$UserProfileModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UserProfileModel {
-  @JsonKey(name: 'id')
-  String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'name')
-  String get name => throw _privateConstructorUsedError;
-  @JsonKey(name: 'email')
-  String get email => throw _privateConstructorUsedError;
-  @JsonKey(name: 'phone')
-  String get phone => throw _privateConstructorUsedError;
-  @JsonKey(name: 'role')
-  String get role => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
+  String get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_name')
+  String get userName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_email')
+  String? get userEmail => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_phone')
+  String? get userPhone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_sts')
+  String? get userSts => throw _privateConstructorUsedError;
+  @JsonKey(name: 'role_id')
+  String? get roleId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'role_name')
+  String? get roleName => throw _privateConstructorUsedError;
   @JsonKey(name: 'permissions')
-  List<String> get permissions => throw _privateConstructorUsedError;
-  @JsonKey(name: 'avatar')
-  String? get avatar => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  List<String>? get permissions => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_created')
+  DateTime? get userCreated => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_update')
+  DateTime? get userUpdate => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfileModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,15 +60,16 @@ abstract class $UserProfileModelCopyWith<$Res> {
   ) = _$UserProfileModelCopyWithImpl<$Res, UserProfileModel>;
   @useResult
   $Res call({
-    @JsonKey(name: 'id') String id,
-    @JsonKey(name: 'name') String name,
-    @JsonKey(name: 'email') String email,
-    @JsonKey(name: 'phone') String phone,
-    @JsonKey(name: 'role') String role,
-    @JsonKey(name: 'permissions') List<String> permissions,
-    @JsonKey(name: 'avatar') String? avatar,
-    @JsonKey(name: 'created_at') DateTime createdAt,
-    @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'user_id') String userId,
+    @JsonKey(name: 'user_name') String userName,
+    @JsonKey(name: 'user_email') String? userEmail,
+    @JsonKey(name: 'user_phone') String? userPhone,
+    @JsonKey(name: 'user_sts') String? userSts,
+    @JsonKey(name: 'role_id') String? roleId,
+    @JsonKey(name: 'role_name') String? roleName,
+    @JsonKey(name: 'permissions') List<String>? permissions,
+    @JsonKey(name: 'user_created') DateTime? userCreated,
+    @JsonKey(name: 'user_update') DateTime? userUpdate,
   });
 }
 
@@ -85,54 +88,59 @@ class _$UserProfileModelCopyWithImpl<$Res, $Val extends UserProfileModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? phone = null,
-    Object? role = null,
-    Object? permissions = null,
-    Object? avatar = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? userId = null,
+    Object? userName = null,
+    Object? userEmail = freezed,
+    Object? userPhone = freezed,
+    Object? userSts = freezed,
+    Object? roleId = freezed,
+    Object? roleName = freezed,
+    Object? permissions = freezed,
+    Object? userCreated = freezed,
+    Object? userUpdate = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
                       as String,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
+            userName: null == userName
+                ? _value.userName
+                : userName // ignore: cast_nullable_to_non_nullable
                       as String,
-            email: null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                      as String,
-            phone: null == phone
-                ? _value.phone
-                : phone // ignore: cast_nullable_to_non_nullable
-                      as String,
-            role: null == role
-                ? _value.role
-                : role // ignore: cast_nullable_to_non_nullable
-                      as String,
-            permissions: null == permissions
+            userEmail: freezed == userEmail
+                ? _value.userEmail
+                : userEmail // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userPhone: freezed == userPhone
+                ? _value.userPhone
+                : userPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userSts: freezed == userSts
+                ? _value.userSts
+                : userSts // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            roleId: freezed == roleId
+                ? _value.roleId
+                : roleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            roleName: freezed == roleName
+                ? _value.roleName
+                : roleName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            permissions: freezed == permissions
                 ? _value.permissions
                 : permissions // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            avatar: freezed == avatar
-                ? _value.avatar
-                : avatar // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            updatedAt: null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+                      as List<String>?,
+            userCreated: freezed == userCreated
+                ? _value.userCreated
+                : userCreated // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            userUpdate: freezed == userUpdate
+                ? _value.userUpdate
+                : userUpdate // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -149,15 +157,16 @@ abstract class _$$UserProfileModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: 'id') String id,
-    @JsonKey(name: 'name') String name,
-    @JsonKey(name: 'email') String email,
-    @JsonKey(name: 'phone') String phone,
-    @JsonKey(name: 'role') String role,
-    @JsonKey(name: 'permissions') List<String> permissions,
-    @JsonKey(name: 'avatar') String? avatar,
-    @JsonKey(name: 'created_at') DateTime createdAt,
-    @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'user_id') String userId,
+    @JsonKey(name: 'user_name') String userName,
+    @JsonKey(name: 'user_email') String? userEmail,
+    @JsonKey(name: 'user_phone') String? userPhone,
+    @JsonKey(name: 'user_sts') String? userSts,
+    @JsonKey(name: 'role_id') String? roleId,
+    @JsonKey(name: 'role_name') String? roleName,
+    @JsonKey(name: 'permissions') List<String>? permissions,
+    @JsonKey(name: 'user_created') DateTime? userCreated,
+    @JsonKey(name: 'user_update') DateTime? userUpdate,
   });
 }
 
@@ -175,54 +184,59 @@ class __$$UserProfileModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? phone = null,
-    Object? role = null,
-    Object? permissions = null,
-    Object? avatar = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? userId = null,
+    Object? userName = null,
+    Object? userEmail = freezed,
+    Object? userPhone = freezed,
+    Object? userSts = freezed,
+    Object? roleId = freezed,
+    Object? roleName = freezed,
+    Object? permissions = freezed,
+    Object? userCreated = freezed,
+    Object? userUpdate = freezed,
   }) {
     return _then(
       _$UserProfileModelImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
                   as String,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
+        userName: null == userName
+            ? _value.userName
+            : userName // ignore: cast_nullable_to_non_nullable
                   as String,
-        email: null == email
-            ? _value.email
-            : email // ignore: cast_nullable_to_non_nullable
-                  as String,
-        phone: null == phone
-            ? _value.phone
-            : phone // ignore: cast_nullable_to_non_nullable
-                  as String,
-        role: null == role
-            ? _value.role
-            : role // ignore: cast_nullable_to_non_nullable
-                  as String,
-        permissions: null == permissions
+        userEmail: freezed == userEmail
+            ? _value.userEmail
+            : userEmail // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userPhone: freezed == userPhone
+            ? _value.userPhone
+            : userPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userSts: freezed == userSts
+            ? _value.userSts
+            : userSts // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        roleId: freezed == roleId
+            ? _value.roleId
+            : roleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        roleName: freezed == roleName
+            ? _value.roleName
+            : roleName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        permissions: freezed == permissions
             ? _value._permissions
             : permissions // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        avatar: freezed == avatar
-            ? _value.avatar
-            : avatar // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        updatedAt: null == updatedAt
-            ? _value.updatedAt
-            : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+                  as List<String>?,
+        userCreated: freezed == userCreated
+            ? _value.userCreated
+            : userCreated // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        userUpdate: freezed == userUpdate
+            ? _value.userUpdate
+            : userUpdate // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -232,15 +246,16 @@ class __$$UserProfileModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserProfileModelImpl extends _UserProfileModel {
   const _$UserProfileModelImpl({
-    @JsonKey(name: 'id') required this.id,
-    @JsonKey(name: 'name') required this.name,
-    @JsonKey(name: 'email') required this.email,
-    @JsonKey(name: 'phone') required this.phone,
-    @JsonKey(name: 'role') required this.role,
-    @JsonKey(name: 'permissions') required final List<String> permissions,
-    @JsonKey(name: 'avatar') this.avatar,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: 'user_id') required this.userId,
+    @JsonKey(name: 'user_name') required this.userName,
+    @JsonKey(name: 'user_email') this.userEmail,
+    @JsonKey(name: 'user_phone') this.userPhone,
+    @JsonKey(name: 'user_sts') this.userSts,
+    @JsonKey(name: 'role_id') this.roleId,
+    @JsonKey(name: 'role_name') this.roleName,
+    @JsonKey(name: 'permissions') final List<String>? permissions,
+    @JsonKey(name: 'user_created') this.userCreated,
+    @JsonKey(name: 'user_update') this.userUpdate,
   }) : _permissions = permissions,
        super._();
 
@@ -248,42 +263,47 @@ class _$UserProfileModelImpl extends _UserProfileModel {
       _$$UserProfileModelImplFromJson(json);
 
   @override
-  @JsonKey(name: 'id')
-  final String id;
+  @JsonKey(name: 'user_id')
+  final String userId;
   @override
-  @JsonKey(name: 'name')
-  final String name;
+  @JsonKey(name: 'user_name')
+  final String userName;
   @override
-  @JsonKey(name: 'email')
-  final String email;
+  @JsonKey(name: 'user_email')
+  final String? userEmail;
   @override
-  @JsonKey(name: 'phone')
-  final String phone;
+  @JsonKey(name: 'user_phone')
+  final String? userPhone;
   @override
-  @JsonKey(name: 'role')
-  final String role;
-  final List<String> _permissions;
+  @JsonKey(name: 'user_sts')
+  final String? userSts;
+  @override
+  @JsonKey(name: 'role_id')
+  final String? roleId;
+  @override
+  @JsonKey(name: 'role_name')
+  final String? roleName;
+  final List<String>? _permissions;
   @override
   @JsonKey(name: 'permissions')
-  List<String> get permissions {
+  List<String>? get permissions {
+    final value = _permissions;
+    if (value == null) return null;
     if (_permissions is EqualUnmodifiableListView) return _permissions;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_permissions);
+    return EqualUnmodifiableListView(value);
   }
 
   @override
-  @JsonKey(name: 'avatar')
-  final String? avatar;
+  @JsonKey(name: 'user_created')
+  final DateTime? userCreated;
   @override
-  @JsonKey(name: 'created_at')
-  final DateTime createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  final DateTime updatedAt;
+  @JsonKey(name: 'user_update')
+  final DateTime? userUpdate;
 
   @override
   String toString() {
-    return 'UserProfileModel(id: $id, name: $name, email: $email, phone: $phone, role: $role, permissions: $permissions, avatar: $avatar, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserProfileModel(userId: $userId, userName: $userName, userEmail: $userEmail, userPhone: $userPhone, userSts: $userSts, roleId: $roleId, roleName: $roleName, permissions: $permissions, userCreated: $userCreated, userUpdate: $userUpdate)';
   }
 
   @override
@@ -291,35 +311,41 @@ class _$UserProfileModelImpl extends _UserProfileModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$UserProfileModelImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.role, role) || other.role == role) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.userName, userName) ||
+                other.userName == userName) &&
+            (identical(other.userEmail, userEmail) ||
+                other.userEmail == userEmail) &&
+            (identical(other.userPhone, userPhone) ||
+                other.userPhone == userPhone) &&
+            (identical(other.userSts, userSts) || other.userSts == userSts) &&
+            (identical(other.roleId, roleId) || other.roleId == roleId) &&
+            (identical(other.roleName, roleName) ||
+                other.roleName == roleName) &&
             const DeepCollectionEquality().equals(
               other._permissions,
               _permissions,
             ) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.userCreated, userCreated) ||
+                other.userCreated == userCreated) &&
+            (identical(other.userUpdate, userUpdate) ||
+                other.userUpdate == userUpdate));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
-    name,
-    email,
-    phone,
-    role,
+    userId,
+    userName,
+    userEmail,
+    userPhone,
+    userSts,
+    roleId,
+    roleName,
     const DeepCollectionEquality().hash(_permissions),
-    avatar,
-    createdAt,
-    updatedAt,
+    userCreated,
+    userUpdate,
   );
 
   /// Create a copy of UserProfileModel
@@ -341,15 +367,16 @@ class _$UserProfileModelImpl extends _UserProfileModel {
 
 abstract class _UserProfileModel extends UserProfileModel {
   const factory _UserProfileModel({
-    @JsonKey(name: 'id') required final String id,
-    @JsonKey(name: 'name') required final String name,
-    @JsonKey(name: 'email') required final String email,
-    @JsonKey(name: 'phone') required final String phone,
-    @JsonKey(name: 'role') required final String role,
-    @JsonKey(name: 'permissions') required final List<String> permissions,
-    @JsonKey(name: 'avatar') final String? avatar,
-    @JsonKey(name: 'created_at') required final DateTime createdAt,
-    @JsonKey(name: 'updated_at') required final DateTime updatedAt,
+    @JsonKey(name: 'user_id') required final String userId,
+    @JsonKey(name: 'user_name') required final String userName,
+    @JsonKey(name: 'user_email') final String? userEmail,
+    @JsonKey(name: 'user_phone') final String? userPhone,
+    @JsonKey(name: 'user_sts') final String? userSts,
+    @JsonKey(name: 'role_id') final String? roleId,
+    @JsonKey(name: 'role_name') final String? roleName,
+    @JsonKey(name: 'permissions') final List<String>? permissions,
+    @JsonKey(name: 'user_created') final DateTime? userCreated,
+    @JsonKey(name: 'user_update') final DateTime? userUpdate,
   }) = _$UserProfileModelImpl;
   const _UserProfileModel._() : super._();
 
@@ -357,32 +384,35 @@ abstract class _UserProfileModel extends UserProfileModel {
       _$UserProfileModelImpl.fromJson;
 
   @override
-  @JsonKey(name: 'id')
-  String get id;
+  @JsonKey(name: 'user_id')
+  String get userId;
   @override
-  @JsonKey(name: 'name')
-  String get name;
+  @JsonKey(name: 'user_name')
+  String get userName;
   @override
-  @JsonKey(name: 'email')
-  String get email;
+  @JsonKey(name: 'user_email')
+  String? get userEmail;
   @override
-  @JsonKey(name: 'phone')
-  String get phone;
+  @JsonKey(name: 'user_phone')
+  String? get userPhone;
   @override
-  @JsonKey(name: 'role')
-  String get role;
+  @JsonKey(name: 'user_sts')
+  String? get userSts;
+  @override
+  @JsonKey(name: 'role_id')
+  String? get roleId;
+  @override
+  @JsonKey(name: 'role_name')
+  String? get roleName;
   @override
   @JsonKey(name: 'permissions')
-  List<String> get permissions;
+  List<String>? get permissions;
   @override
-  @JsonKey(name: 'avatar')
-  String? get avatar;
+  @JsonKey(name: 'user_created')
+  DateTime? get userCreated;
   @override
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt;
+  @JsonKey(name: 'user_update')
+  DateTime? get userUpdate;
 
   /// Create a copy of UserProfileModel
   /// with the given fields replaced by the non-null parameter values.

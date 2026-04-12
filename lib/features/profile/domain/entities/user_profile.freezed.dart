@@ -17,15 +17,16 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$UserProfile {
-  String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  String get phone => throw _privateConstructorUsedError;
-  String get role => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  String get userName => throw _privateConstructorUsedError;
+  String? get userEmail => throw _privateConstructorUsedError;
+  String? get userPhone => throw _privateConstructorUsedError;
+  String? get userSts => throw _privateConstructorUsedError;
+  String? get roleId => throw _privateConstructorUsedError;
+  String? get roleName => throw _privateConstructorUsedError;
   List<String> get permissions => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  DateTime? get userCreated => throw _privateConstructorUsedError;
+  DateTime? get userUpdate => throw _privateConstructorUsedError;
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.
@@ -42,15 +43,16 @@ abstract class $UserProfileCopyWith<$Res> {
   ) = _$UserProfileCopyWithImpl<$Res, UserProfile>;
   @useResult
   $Res call({
-    String id,
-    String name,
-    String email,
-    String phone,
-    String role,
+    String userId,
+    String userName,
+    String? userEmail,
+    String? userPhone,
+    String? userSts,
+    String? roleId,
+    String? roleName,
     List<String> permissions,
-    String? avatar,
-    DateTime createdAt,
-    DateTime updatedAt,
+    DateTime? userCreated,
+    DateTime? userUpdate,
   });
 }
 
@@ -69,54 +71,59 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? phone = null,
-    Object? role = null,
+    Object? userId = null,
+    Object? userName = null,
+    Object? userEmail = freezed,
+    Object? userPhone = freezed,
+    Object? userSts = freezed,
+    Object? roleId = freezed,
+    Object? roleName = freezed,
     Object? permissions = null,
-    Object? avatar = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? userCreated = freezed,
+    Object? userUpdate = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
                       as String,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
+            userName: null == userName
+                ? _value.userName
+                : userName // ignore: cast_nullable_to_non_nullable
                       as String,
-            email: null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                      as String,
-            phone: null == phone
-                ? _value.phone
-                : phone // ignore: cast_nullable_to_non_nullable
-                      as String,
-            role: null == role
-                ? _value.role
-                : role // ignore: cast_nullable_to_non_nullable
-                      as String,
+            userEmail: freezed == userEmail
+                ? _value.userEmail
+                : userEmail // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userPhone: freezed == userPhone
+                ? _value.userPhone
+                : userPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userSts: freezed == userSts
+                ? _value.userSts
+                : userSts // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            roleId: freezed == roleId
+                ? _value.roleId
+                : roleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            roleName: freezed == roleName
+                ? _value.roleName
+                : roleName // ignore: cast_nullable_to_non_nullable
+                      as String?,
             permissions: null == permissions
                 ? _value.permissions
                 : permissions // ignore: cast_nullable_to_non_nullable
                       as List<String>,
-            avatar: freezed == avatar
-                ? _value.avatar
-                : avatar // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            updatedAt: null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+            userCreated: freezed == userCreated
+                ? _value.userCreated
+                : userCreated // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            userUpdate: freezed == userUpdate
+                ? _value.userUpdate
+                : userUpdate // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -133,15 +140,16 @@ abstract class _$$UserProfileImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String id,
-    String name,
-    String email,
-    String phone,
-    String role,
+    String userId,
+    String userName,
+    String? userEmail,
+    String? userPhone,
+    String? userSts,
+    String? roleId,
+    String? roleName,
     List<String> permissions,
-    String? avatar,
-    DateTime createdAt,
-    DateTime updatedAt,
+    DateTime? userCreated,
+    DateTime? userUpdate,
   });
 }
 
@@ -159,54 +167,59 @@ class __$$UserProfileImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? phone = null,
-    Object? role = null,
+    Object? userId = null,
+    Object? userName = null,
+    Object? userEmail = freezed,
+    Object? userPhone = freezed,
+    Object? userSts = freezed,
+    Object? roleId = freezed,
+    Object? roleName = freezed,
     Object? permissions = null,
-    Object? avatar = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? userCreated = freezed,
+    Object? userUpdate = freezed,
   }) {
     return _then(
       _$UserProfileImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
                   as String,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
+        userName: null == userName
+            ? _value.userName
+            : userName // ignore: cast_nullable_to_non_nullable
                   as String,
-        email: null == email
-            ? _value.email
-            : email // ignore: cast_nullable_to_non_nullable
-                  as String,
-        phone: null == phone
-            ? _value.phone
-            : phone // ignore: cast_nullable_to_non_nullable
-                  as String,
-        role: null == role
-            ? _value.role
-            : role // ignore: cast_nullable_to_non_nullable
-                  as String,
+        userEmail: freezed == userEmail
+            ? _value.userEmail
+            : userEmail // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userPhone: freezed == userPhone
+            ? _value.userPhone
+            : userPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userSts: freezed == userSts
+            ? _value.userSts
+            : userSts // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        roleId: freezed == roleId
+            ? _value.roleId
+            : roleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        roleName: freezed == roleName
+            ? _value.roleName
+            : roleName // ignore: cast_nullable_to_non_nullable
+                  as String?,
         permissions: null == permissions
             ? _value._permissions
             : permissions // ignore: cast_nullable_to_non_nullable
                   as List<String>,
-        avatar: freezed == avatar
-            ? _value.avatar
-            : avatar // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        updatedAt: null == updatedAt
-            ? _value.updatedAt
-            : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+        userCreated: freezed == userCreated
+            ? _value.userCreated
+            : userCreated // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        userUpdate: freezed == userUpdate
+            ? _value.userUpdate
+            : userUpdate // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -216,29 +229,35 @@ class __$$UserProfileImplCopyWithImpl<$Res>
 
 class _$UserProfileImpl implements _UserProfile {
   const _$UserProfileImpl({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.role,
-    required final List<String> permissions,
-    this.avatar,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.userId,
+    required this.userName,
+    this.userEmail,
+    this.userPhone,
+    this.userSts,
+    this.roleId,
+    this.roleName,
+    final List<String> permissions = const [],
+    this.userCreated,
+    this.userUpdate,
   }) : _permissions = permissions;
 
   @override
-  final String id;
+  final String userId;
   @override
-  final String name;
+  final String userName;
   @override
-  final String email;
+  final String? userEmail;
   @override
-  final String phone;
+  final String? userPhone;
   @override
-  final String role;
+  final String? userSts;
+  @override
+  final String? roleId;
+  @override
+  final String? roleName;
   final List<String> _permissions;
   @override
+  @JsonKey()
   List<String> get permissions {
     if (_permissions is EqualUnmodifiableListView) return _permissions;
     // ignore: implicit_dynamic_type
@@ -246,15 +265,13 @@ class _$UserProfileImpl implements _UserProfile {
   }
 
   @override
-  final String? avatar;
+  final DateTime? userCreated;
   @override
-  final DateTime createdAt;
-  @override
-  final DateTime updatedAt;
+  final DateTime? userUpdate;
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, name: $name, email: $email, phone: $phone, role: $role, permissions: $permissions, avatar: $avatar, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserProfile(userId: $userId, userName: $userName, userEmail: $userEmail, userPhone: $userPhone, userSts: $userSts, roleId: $roleId, roleName: $roleName, permissions: $permissions, userCreated: $userCreated, userUpdate: $userUpdate)';
   }
 
   @override
@@ -262,34 +279,40 @@ class _$UserProfileImpl implements _UserProfile {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$UserProfileImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.role, role) || other.role == role) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.userName, userName) ||
+                other.userName == userName) &&
+            (identical(other.userEmail, userEmail) ||
+                other.userEmail == userEmail) &&
+            (identical(other.userPhone, userPhone) ||
+                other.userPhone == userPhone) &&
+            (identical(other.userSts, userSts) || other.userSts == userSts) &&
+            (identical(other.roleId, roleId) || other.roleId == roleId) &&
+            (identical(other.roleName, roleName) ||
+                other.roleName == roleName) &&
             const DeepCollectionEquality().equals(
               other._permissions,
               _permissions,
             ) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.userCreated, userCreated) ||
+                other.userCreated == userCreated) &&
+            (identical(other.userUpdate, userUpdate) ||
+                other.userUpdate == userUpdate));
   }
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
-    name,
-    email,
-    phone,
-    role,
+    userId,
+    userName,
+    userEmail,
+    userPhone,
+    userSts,
+    roleId,
+    roleName,
     const DeepCollectionEquality().hash(_permissions),
-    avatar,
-    createdAt,
-    updatedAt,
+    userCreated,
+    userUpdate,
   );
 
   /// Create a copy of UserProfile
@@ -303,35 +326,38 @@ class _$UserProfileImpl implements _UserProfile {
 
 abstract class _UserProfile implements UserProfile {
   const factory _UserProfile({
-    required final String id,
-    required final String name,
-    required final String email,
-    required final String phone,
-    required final String role,
-    required final List<String> permissions,
-    final String? avatar,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
+    required final String userId,
+    required final String userName,
+    final String? userEmail,
+    final String? userPhone,
+    final String? userSts,
+    final String? roleId,
+    final String? roleName,
+    final List<String> permissions,
+    final DateTime? userCreated,
+    final DateTime? userUpdate,
   }) = _$UserProfileImpl;
 
   @override
-  String get id;
+  String get userId;
   @override
-  String get name;
+  String get userName;
   @override
-  String get email;
+  String? get userEmail;
   @override
-  String get phone;
+  String? get userPhone;
   @override
-  String get role;
+  String? get userSts;
+  @override
+  String? get roleId;
+  @override
+  String? get roleName;
   @override
   List<String> get permissions;
   @override
-  String? get avatar;
+  DateTime? get userCreated;
   @override
-  DateTime get createdAt;
-  @override
-  DateTime get updatedAt;
+  DateTime? get userUpdate;
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.

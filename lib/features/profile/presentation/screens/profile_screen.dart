@@ -1,8 +1,15 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
-import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -11,268 +18,479 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
+    final permissionsAsync = ref.watch(userPermissionsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
+      backgroundColor: const Color(0xFFF0F0F0),
+      body: SafeArea(
+        child: profileAsync.when(
+          data: (profile) => RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              ref.invalidate(userProfileProvider);
+              ref.invalidate(userPermissionsProvider);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  SizedBox(height: context.rh(0.022)),
+                  _buildHeader(context, ref),
+                  SizedBox(height: context.rh(0.022)),
+                  _buildProfileAvatar(context, profile),
+                  SizedBox(height: context.rh(0.024)),
+                  _buildUserInfo(context, profile),
+                  SizedBox(height: context.rh(0.024)),
+                  _buildAccountInfoSection(context, profile),
+                  SizedBox(height: context.rh(0.024)),
+                  _buildPermissionsSection(context, permissionsAsync),
+                  SizedBox(height: context.rh(0.024)),
+                  _buildSignoutButton(context, ref),
+                  SizedBox(height: context.rh(0.04)),
+                ],
+              ),
+            ),
+          ),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+          error: (error, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text('Error: $error'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(userProfileProvider),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 58,
+              height: 58,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/chevron-left-icon.svg',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
+            child: Container(
+              width: 58,
+              height: 58,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/setting-outline-icon.svg',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
         ],
       ),
-      body: profileAsync.when(
-        data: (profile) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(userProfileProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildProfileHeader(context, profile),
-              const SizedBox(height: 24),
-              _buildInfoSection(context, profile),
-              const SizedBox(height: 16),
-              _buildPermissionsSection(context, profile),
-              const SizedBox(height: 24),
-              _buildActionButtons(context, ref, profile),
-              const SizedBox(height: 16),
-              _buildLogoutButton(context, ref),
-            ],
-          ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Error: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(userProfileProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+    );
+  }
+
+  Widget _buildProfileAvatar(BuildContext context, UserProfile profile) {
+    return Container(
+      width: 210,
+      height: 210,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          profile.userName.isNotEmpty
+              ? profile.userName.substring(0, 1).toUpperCase()
+              : 'U',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(80),
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, UserProfile profile) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Theme.of(context).primaryColor,
-              child: Text(
-                profile.name.substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 36,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+  Widget _buildUserInfo(BuildContext context, UserProfile profile) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFECF6FE),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            profile.roleName ?? 'User',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(12),
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF42A5F5),
+              height: 1.83,
             ),
-            const SizedBox(height: 16),
-            Text(
-              profile.name,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                profile.role,
-                style: TextStyle(
-                  color: Colors.blue[900],
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        SizedBox(height: context.rh(0.004)),
+        Text(
+          profile.userName,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(22),
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF1D1D1D),
+            height: 1.0,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, UserProfile profile) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Informasi Akun',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+  Widget _buildAccountInfoSection(BuildContext context, UserProfile profile) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Informasi Akun',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(22),
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF1D1D1D),
+              height: 1.0,
             ),
-            const SizedBox(height: 16),
-            _buildInfoRow(context, Icons.email, 'Email', profile.email),
-            const Divider(height: 24),
-            _buildInfoRow(context, Icons.phone, 'Telepon', profile.phone),
-            const Divider(height: 24),
-            _buildInfoRow(
-              context,
-              Icons.calendar_today,
-              'Bergabung',
-              _formatDate(profile.createdAt),
+          ),
+          SizedBox(height: context.rh(0.014)),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
-        ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(
+                  context,
+                  'assets/icons/mail-outline-icon.svg',
+                  'Email',
+                  profile.userEmail ?? '-',
+                ),
+                const SizedBox(height: 3),
+                _buildInfoRow(
+                  context,
+                  'assets/icons/phone-outline-icon.svg',
+                  'Telepon',
+                  profile.userPhone ?? '-',
+                ),
+                const SizedBox(height: 3),
+                _buildInfoRow(
+                  context,
+                  'assets/icons/date-outline-icon.svg',
+                  'Bergabung',
+                  _formatJoinDate(profile.userCreated),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInfoRow(
     BuildContext context,
-    IconData icon,
+    String iconPath,
     String label,
     String value,
   ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    // Handle empty or whitespace-only strings
+    final displayValue = value.trim().isEmpty ? '-' : value;
+
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              SvgPicture.asset(
+                iconPath,
+                width: 20,
+                height: 20,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF1D1D1D),
+                  BlendMode.srcIn,
+                ),
+              ),
+              const SizedBox(width: 3),
               Text(
                 label,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-              ),
-              Text(
-                value,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(14),
+                  fontWeight: FontWeight.w300,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.57,
+                ),
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPermissionsSection(BuildContext context, UserProfile profile) {
-    final permissions = profile.permissions;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hak Akses',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          Text(
+            displayValue,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(12),
+              fontWeight: FontWeight.w300,
+              color: const Color(0xFF1D1D1D),
+              height: 1.83,
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: permissions.map((permission) {
-                return Chip(
-                  label: Text(
-                    _formatPermission(permission),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  backgroundColor: Colors.green[100],
-                  labelStyle: TextStyle(color: Colors.green[900]),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildActionButtons(
+  Widget _buildPermissionsSection(
     BuildContext context,
-    WidgetRef ref,
-    UserProfile profile,
+    AsyncValue<List<String>> permissionsAsync,
   ) {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditProfileScreen(
-                    profile: {
-                      'name': profile.name,
-                      'email': profile.email,
-                      'phone': profile.phone,
-                    },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hak Akses',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(22),
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF1D1D1D),
+              height: 1.0,
+            ),
+          ),
+          SizedBox(height: context.rh(0.014)),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: permissionsAsync.when(
+              data: (permissions) {
+                if (permissions.isEmpty) {
+                  return SizedBox(
+                    height: 70,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/setting-outline-icon.svg',
+                            width: 28,
+                            height: 28,
+                            colorFilter: ColorFilter.mode(
+                              const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          SizedBox(height: context.rh(0.005)),
+                          Text(
+                            'Tidak ada hak akses',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(12),
+                              fontWeight: FontWeight.w300,
+                              color: const Color(0xFF1D1D1D),
+                              height: 1.83,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: permissions.map((permission) {
+                    final color = _getPermissionColor(permission);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _formatPermissionLabel(permission),
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w500,
+                          color: color,
+                          height: 1.83,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const SizedBox(
+                height: 70,
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              ),
+              error: (_, __) => SizedBox(
+                height: 70,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: AppColors.error,
+                        size: 28,
+                      ),
+                      SizedBox(height: context.rh(0.005)),
+                      Text(
+                        'Gagal memuat hak akses',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w300,
+                          color: AppColors.error,
+                          height: 1.83,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-            icon: const Icon(Icons.edit),
-            label: const Text('Edit Profil'),
-            style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-            icon: const Icon(Icons.settings),
-            label: const Text('Pengaturan'),
-            style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () => _showLogoutDialog(context, ref),
-        icon: const Icon(Icons.logout),
-        label: const Text('Keluar'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.all(16),
+  Color _getPermissionColor(String permission) {
+    // Assign colors based on permission type
+    if (permission.contains('create')) {
+      return const Color(0xFF4CAF50); // Green
+    } else if (permission.contains('read') || permission.contains('view')) {
+      return const Color(0xFF42A5F5); // Blue
+    } else if (permission.contains('update') || permission.contains('edit')) {
+      return const Color(0xFFFF9800); // Orange
+    } else if (permission.contains('delete')) {
+      return const Color(0xFFF44336); // Red
+    } else if (permission.contains('manage') || permission.contains('admin')) {
+      return const Color(0xFF9C27B0); // Purple
+    }
+    return const Color(0xFF757575);
+  }
+
+  String _formatPermissionLabel(String permission) {
+    final parts = permission.split(':');
+    if (parts.length == 2) {
+      final module = _capitalizeFirst(parts[0]);
+      final action = _capitalizeFirst(parts[1]);
+      return '$module $action';
+    }
+    return _capitalizeFirst(permission);
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  String _formatJoinDate(DateTime? date) {
+    if (date == null) return '-';
+    try {
+      return DateFormat('d/M/yyyy').format(date);
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  Widget _buildSignoutButton(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: GestureDetector(
+        onTap: () => _showLogoutDialog(context, ref),
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Center(
+            child: Text(
+              'Signout',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(18),
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
+                height: 1.22,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -281,43 +499,49 @@ class ProfileScreen extends ConsumerWidget {
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Keluar'),
-        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Konfirmasi Keluar',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari aplikasi?',
+          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(
+              'Batal',
+              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
-              final logout = ref.read(logoutProvider);
-              await logout();
+              Navigator.pop(dialogContext);
+              await ref.read(authProvider.notifier).logout();
               if (context.mounted) {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-                // Navigate to login screen
-                // You'll need to implement navigation to login
+                context.go('/login');
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
             ),
-            child: const Text('Keluar'),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
           ),
         ],
       ),
     );
-  }
-
-  String _formatPermission(String permission) {
-    return permission
-        .split('_')
-        .map((word) => word[0].toUpperCase() + word.substring(1))
-        .join(' ');
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

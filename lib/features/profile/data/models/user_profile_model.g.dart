@@ -9,29 +9,35 @@ part of 'user_profile_model.dart';
 _$UserProfileModelImpl _$$UserProfileModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$UserProfileModelImpl(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  email: json['email'] as String,
-  phone: json['phone'] as String,
-  role: json['role'] as String,
-  permissions: (json['permissions'] as List<dynamic>)
-      .map((e) => e as String)
+  userId: json['user_id'] as String,
+  userName: json['user_name'] as String,
+  userEmail: json['user_email'] as String?,
+  userPhone: json['user_phone'] as String?,
+  userSts: json['user_sts'] as String?,
+  roleId: json['role_id'] as String?,
+  roleName: json['role_name'] as String?,
+  permissions: (json['permissions'] as List<dynamic>?)
+      ?.map((e) => e as String)
       .toList(),
-  avatar: json['avatar'] as String?,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  updatedAt: DateTime.parse(json['updated_at'] as String),
+  userCreated: json['user_created'] == null
+      ? null
+      : DateTime.parse(json['user_created'] as String),
+  userUpdate: json['user_update'] == null
+      ? null
+      : DateTime.parse(json['user_update'] as String),
 );
 
 Map<String, dynamic> _$$UserProfileModelImplToJson(
   _$UserProfileModelImpl instance,
 ) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  'email': instance.email,
-  'phone': instance.phone,
-  'role': instance.role,
+  'user_id': instance.userId,
+  'user_name': instance.userName,
+  'user_email': instance.userEmail,
+  'user_phone': instance.userPhone,
+  'user_sts': instance.userSts,
+  'role_id': instance.roleId,
+  'role_name': instance.roleName,
   'permissions': instance.permissions,
-  'avatar': instance.avatar,
-  'created_at': instance.createdAt.toIso8601String(),
-  'updated_at': instance.updatedAt.toIso8601String(),
+  'user_created': instance.userCreated?.toIso8601String(),
+  'user_update': instance.userUpdate?.toIso8601String(),
 };
