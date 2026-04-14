@@ -23,6 +23,16 @@ TaskModel _$TaskModelFromJson(Map<String, dynamic> json) {
 mixin _$TaskModel {
   @JsonKey(name: 'task_id')
   String get taskId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
+  String? get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'task_name')
+  String get taskName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'task_desc')
+  String? get taskDescription => throw _privateConstructorUsedError;
+  @JsonKey(name: 'task_created')
+  DateTime? get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'task_update')
+  DateTime? get updatedAt => throw _privateConstructorUsedError; // Extended fields (not in API but useful for frontend)
   @JsonKey(name: 'site_id')
   String? get siteId => throw _privateConstructorUsedError;
   @JsonKey(name: 'site_name')
@@ -31,16 +41,12 @@ mixin _$TaskModel {
   String? get plantId => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_name')
   String? get plantName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'task_name')
-  String get taskName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'task_description')
-  String? get taskDescription => throw _privateConstructorUsedError;
   @JsonKey(name: 'task_type')
-  String get taskType => throw _privateConstructorUsedError;
+  String? get taskType => throw _privateConstructorUsedError;
   @JsonKey(name: 'task_status')
-  String get taskStatus => throw _privateConstructorUsedError;
+  String? get taskStatus => throw _privateConstructorUsedError;
   @JsonKey(name: 'task_priority')
-  String get taskPriority => throw _privateConstructorUsedError;
+  String? get taskPriority => throw _privateConstructorUsedError;
   @JsonKey(name: 'task_due_date')
   DateTime? get taskDueDate => throw _privateConstructorUsedError;
   @JsonKey(name: 'task_completed_date')
@@ -51,10 +57,6 @@ mixin _$TaskModel {
   String? get assignedToName => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_by')
   String? get createdBy => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
-  DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'notes')
   String? get notes => throw _privateConstructorUsedError;
 
@@ -75,22 +77,23 @@ abstract class $TaskModelCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(name: 'task_id') String taskId,
+    @JsonKey(name: 'user_id') String? userId,
+    @JsonKey(name: 'task_name') String taskName,
+    @JsonKey(name: 'task_desc') String? taskDescription,
+    @JsonKey(name: 'task_created') DateTime? createdAt,
+    @JsonKey(name: 'task_update') DateTime? updatedAt,
     @JsonKey(name: 'site_id') String? siteId,
     @JsonKey(name: 'site_name') String? siteName,
     @JsonKey(name: 'plant_id') String? plantId,
     @JsonKey(name: 'plant_name') String? plantName,
-    @JsonKey(name: 'task_name') String taskName,
-    @JsonKey(name: 'task_description') String? taskDescription,
-    @JsonKey(name: 'task_type') String taskType,
-    @JsonKey(name: 'task_status') String taskStatus,
-    @JsonKey(name: 'task_priority') String taskPriority,
+    @JsonKey(name: 'task_type') String? taskType,
+    @JsonKey(name: 'task_status') String? taskStatus,
+    @JsonKey(name: 'task_priority') String? taskPriority,
     @JsonKey(name: 'task_due_date') DateTime? taskDueDate,
     @JsonKey(name: 'task_completed_date') DateTime? taskCompletedDate,
     @JsonKey(name: 'assigned_to') String? assignedTo,
     @JsonKey(name: 'assigned_to_name') String? assignedToName,
     @JsonKey(name: 'created_by') String? createdBy,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
     @JsonKey(name: 'notes') String? notes,
   });
 }
@@ -111,22 +114,23 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
   @override
   $Res call({
     Object? taskId = null,
+    Object? userId = freezed,
+    Object? taskName = null,
+    Object? taskDescription = freezed,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
     Object? siteId = freezed,
     Object? siteName = freezed,
     Object? plantId = freezed,
     Object? plantName = freezed,
-    Object? taskName = null,
-    Object? taskDescription = freezed,
-    Object? taskType = null,
-    Object? taskStatus = null,
-    Object? taskPriority = null,
+    Object? taskType = freezed,
+    Object? taskStatus = freezed,
+    Object? taskPriority = freezed,
     Object? taskDueDate = freezed,
     Object? taskCompletedDate = freezed,
     Object? assignedTo = freezed,
     Object? assignedToName = freezed,
     Object? createdBy = freezed,
-    Object? createdAt = freezed,
-    Object? updatedAt = freezed,
     Object? notes = freezed,
   }) {
     return _then(
@@ -135,6 +139,26 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
                 ? _value.taskId
                 : taskId // ignore: cast_nullable_to_non_nullable
                       as String,
+            userId: freezed == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            taskName: null == taskName
+                ? _value.taskName
+                : taskName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            taskDescription: freezed == taskDescription
+                ? _value.taskDescription
+                : taskDescription // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            updatedAt: freezed == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
             siteId: freezed == siteId
                 ? _value.siteId
                 : siteId // ignore: cast_nullable_to_non_nullable
@@ -151,26 +175,18 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
                 ? _value.plantName
                 : plantName // ignore: cast_nullable_to_non_nullable
                       as String?,
-            taskName: null == taskName
-                ? _value.taskName
-                : taskName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            taskDescription: freezed == taskDescription
-                ? _value.taskDescription
-                : taskDescription // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            taskType: null == taskType
+            taskType: freezed == taskType
                 ? _value.taskType
                 : taskType // ignore: cast_nullable_to_non_nullable
-                      as String,
-            taskStatus: null == taskStatus
+                      as String?,
+            taskStatus: freezed == taskStatus
                 ? _value.taskStatus
                 : taskStatus // ignore: cast_nullable_to_non_nullable
-                      as String,
-            taskPriority: null == taskPriority
+                      as String?,
+            taskPriority: freezed == taskPriority
                 ? _value.taskPriority
                 : taskPriority // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             taskDueDate: freezed == taskDueDate
                 ? _value.taskDueDate
                 : taskDueDate // ignore: cast_nullable_to_non_nullable
@@ -191,14 +207,6 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
                 ? _value.createdBy
                 : createdBy // ignore: cast_nullable_to_non_nullable
                       as String?,
-            createdAt: freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            updatedAt: freezed == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
             notes: freezed == notes
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
@@ -220,22 +228,23 @@ abstract class _$$TaskModelImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(name: 'task_id') String taskId,
+    @JsonKey(name: 'user_id') String? userId,
+    @JsonKey(name: 'task_name') String taskName,
+    @JsonKey(name: 'task_desc') String? taskDescription,
+    @JsonKey(name: 'task_created') DateTime? createdAt,
+    @JsonKey(name: 'task_update') DateTime? updatedAt,
     @JsonKey(name: 'site_id') String? siteId,
     @JsonKey(name: 'site_name') String? siteName,
     @JsonKey(name: 'plant_id') String? plantId,
     @JsonKey(name: 'plant_name') String? plantName,
-    @JsonKey(name: 'task_name') String taskName,
-    @JsonKey(name: 'task_description') String? taskDescription,
-    @JsonKey(name: 'task_type') String taskType,
-    @JsonKey(name: 'task_status') String taskStatus,
-    @JsonKey(name: 'task_priority') String taskPriority,
+    @JsonKey(name: 'task_type') String? taskType,
+    @JsonKey(name: 'task_status') String? taskStatus,
+    @JsonKey(name: 'task_priority') String? taskPriority,
     @JsonKey(name: 'task_due_date') DateTime? taskDueDate,
     @JsonKey(name: 'task_completed_date') DateTime? taskCompletedDate,
     @JsonKey(name: 'assigned_to') String? assignedTo,
     @JsonKey(name: 'assigned_to_name') String? assignedToName,
     @JsonKey(name: 'created_by') String? createdBy,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
     @JsonKey(name: 'notes') String? notes,
   });
 }
@@ -255,22 +264,23 @@ class __$$TaskModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? taskId = null,
+    Object? userId = freezed,
+    Object? taskName = null,
+    Object? taskDescription = freezed,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
     Object? siteId = freezed,
     Object? siteName = freezed,
     Object? plantId = freezed,
     Object? plantName = freezed,
-    Object? taskName = null,
-    Object? taskDescription = freezed,
-    Object? taskType = null,
-    Object? taskStatus = null,
-    Object? taskPriority = null,
+    Object? taskType = freezed,
+    Object? taskStatus = freezed,
+    Object? taskPriority = freezed,
     Object? taskDueDate = freezed,
     Object? taskCompletedDate = freezed,
     Object? assignedTo = freezed,
     Object? assignedToName = freezed,
     Object? createdBy = freezed,
-    Object? createdAt = freezed,
-    Object? updatedAt = freezed,
     Object? notes = freezed,
   }) {
     return _then(
@@ -279,6 +289,26 @@ class __$$TaskModelImplCopyWithImpl<$Res>
             ? _value.taskId
             : taskId // ignore: cast_nullable_to_non_nullable
                   as String,
+        userId: freezed == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        taskName: null == taskName
+            ? _value.taskName
+            : taskName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        taskDescription: freezed == taskDescription
+            ? _value.taskDescription
+            : taskDescription // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        updatedAt: freezed == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
         siteId: freezed == siteId
             ? _value.siteId
             : siteId // ignore: cast_nullable_to_non_nullable
@@ -295,26 +325,18 @@ class __$$TaskModelImplCopyWithImpl<$Res>
             ? _value.plantName
             : plantName // ignore: cast_nullable_to_non_nullable
                   as String?,
-        taskName: null == taskName
-            ? _value.taskName
-            : taskName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        taskDescription: freezed == taskDescription
-            ? _value.taskDescription
-            : taskDescription // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        taskType: null == taskType
+        taskType: freezed == taskType
             ? _value.taskType
             : taskType // ignore: cast_nullable_to_non_nullable
-                  as String,
-        taskStatus: null == taskStatus
+                  as String?,
+        taskStatus: freezed == taskStatus
             ? _value.taskStatus
             : taskStatus // ignore: cast_nullable_to_non_nullable
-                  as String,
-        taskPriority: null == taskPriority
+                  as String?,
+        taskPriority: freezed == taskPriority
             ? _value.taskPriority
             : taskPriority // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         taskDueDate: freezed == taskDueDate
             ? _value.taskDueDate
             : taskDueDate // ignore: cast_nullable_to_non_nullable
@@ -335,14 +357,6 @@ class __$$TaskModelImplCopyWithImpl<$Res>
             ? _value.createdBy
             : createdBy // ignore: cast_nullable_to_non_nullable
                   as String?,
-        createdAt: freezed == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        updatedAt: freezed == updatedAt
-            ? _value.updatedAt
-            : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
         notes: freezed == notes
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
@@ -357,22 +371,23 @@ class __$$TaskModelImplCopyWithImpl<$Res>
 class _$TaskModelImpl extends _TaskModel {
   const _$TaskModelImpl({
     @JsonKey(name: 'task_id') required this.taskId,
+    @JsonKey(name: 'user_id') this.userId,
+    @JsonKey(name: 'task_name') required this.taskName,
+    @JsonKey(name: 'task_desc') this.taskDescription,
+    @JsonKey(name: 'task_created') this.createdAt,
+    @JsonKey(name: 'task_update') this.updatedAt,
     @JsonKey(name: 'site_id') this.siteId,
     @JsonKey(name: 'site_name') this.siteName,
     @JsonKey(name: 'plant_id') this.plantId,
     @JsonKey(name: 'plant_name') this.plantName,
-    @JsonKey(name: 'task_name') required this.taskName,
-    @JsonKey(name: 'task_description') this.taskDescription,
-    @JsonKey(name: 'task_type') required this.taskType,
-    @JsonKey(name: 'task_status') required this.taskStatus,
-    @JsonKey(name: 'task_priority') required this.taskPriority,
+    @JsonKey(name: 'task_type') this.taskType,
+    @JsonKey(name: 'task_status') this.taskStatus,
+    @JsonKey(name: 'task_priority') this.taskPriority,
     @JsonKey(name: 'task_due_date') this.taskDueDate,
     @JsonKey(name: 'task_completed_date') this.taskCompletedDate,
     @JsonKey(name: 'assigned_to') this.assignedTo,
     @JsonKey(name: 'assigned_to_name') this.assignedToName,
     @JsonKey(name: 'created_by') this.createdBy,
-    @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'updated_at') this.updatedAt,
     @JsonKey(name: 'notes') this.notes,
   }) : super._();
 
@@ -382,6 +397,22 @@ class _$TaskModelImpl extends _TaskModel {
   @override
   @JsonKey(name: 'task_id')
   final String taskId;
+  @override
+  @JsonKey(name: 'user_id')
+  final String? userId;
+  @override
+  @JsonKey(name: 'task_name')
+  final String taskName;
+  @override
+  @JsonKey(name: 'task_desc')
+  final String? taskDescription;
+  @override
+  @JsonKey(name: 'task_created')
+  final DateTime? createdAt;
+  @override
+  @JsonKey(name: 'task_update')
+  final DateTime? updatedAt;
+  // Extended fields (not in API but useful for frontend)
   @override
   @JsonKey(name: 'site_id')
   final String? siteId;
@@ -395,20 +426,14 @@ class _$TaskModelImpl extends _TaskModel {
   @JsonKey(name: 'plant_name')
   final String? plantName;
   @override
-  @JsonKey(name: 'task_name')
-  final String taskName;
-  @override
-  @JsonKey(name: 'task_description')
-  final String? taskDescription;
-  @override
   @JsonKey(name: 'task_type')
-  final String taskType;
+  final String? taskType;
   @override
   @JsonKey(name: 'task_status')
-  final String taskStatus;
+  final String? taskStatus;
   @override
   @JsonKey(name: 'task_priority')
-  final String taskPriority;
+  final String? taskPriority;
   @override
   @JsonKey(name: 'task_due_date')
   final DateTime? taskDueDate;
@@ -425,18 +450,12 @@ class _$TaskModelImpl extends _TaskModel {
   @JsonKey(name: 'created_by')
   final String? createdBy;
   @override
-  @JsonKey(name: 'created_at')
-  final DateTime? createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  final DateTime? updatedAt;
-  @override
   @JsonKey(name: 'notes')
   final String? notes;
 
   @override
   String toString() {
-    return 'TaskModel(taskId: $taskId, siteId: $siteId, siteName: $siteName, plantId: $plantId, plantName: $plantName, taskName: $taskName, taskDescription: $taskDescription, taskType: $taskType, taskStatus: $taskStatus, taskPriority: $taskPriority, taskDueDate: $taskDueDate, taskCompletedDate: $taskCompletedDate, assignedTo: $assignedTo, assignedToName: $assignedToName, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, notes: $notes)';
+    return 'TaskModel(taskId: $taskId, userId: $userId, taskName: $taskName, taskDescription: $taskDescription, createdAt: $createdAt, updatedAt: $updatedAt, siteId: $siteId, siteName: $siteName, plantId: $plantId, plantName: $plantName, taskType: $taskType, taskStatus: $taskStatus, taskPriority: $taskPriority, taskDueDate: $taskDueDate, taskCompletedDate: $taskCompletedDate, assignedTo: $assignedTo, assignedToName: $assignedToName, createdBy: $createdBy, notes: $notes)';
   }
 
   @override
@@ -445,16 +464,21 @@ class _$TaskModelImpl extends _TaskModel {
         (other.runtimeType == runtimeType &&
             other is _$TaskModelImpl &&
             (identical(other.taskId, taskId) || other.taskId == taskId) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.taskName, taskName) ||
+                other.taskName == taskName) &&
+            (identical(other.taskDescription, taskDescription) ||
+                other.taskDescription == taskDescription) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             (identical(other.siteId, siteId) || other.siteId == siteId) &&
             (identical(other.siteName, siteName) ||
                 other.siteName == siteName) &&
             (identical(other.plantId, plantId) || other.plantId == plantId) &&
             (identical(other.plantName, plantName) ||
                 other.plantName == plantName) &&
-            (identical(other.taskName, taskName) ||
-                other.taskName == taskName) &&
-            (identical(other.taskDescription, taskDescription) ||
-                other.taskDescription == taskDescription) &&
             (identical(other.taskType, taskType) ||
                 other.taskType == taskType) &&
             (identical(other.taskStatus, taskStatus) ||
@@ -471,24 +495,23 @@ class _$TaskModelImpl extends _TaskModel {
                 other.assignedToName == assignedToName) &&
             (identical(other.createdBy, createdBy) ||
                 other.createdBy == createdBy) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt) &&
             (identical(other.notes, notes) || other.notes == notes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     taskId,
+    userId,
+    taskName,
+    taskDescription,
+    createdAt,
+    updatedAt,
     siteId,
     siteName,
     plantId,
     plantName,
-    taskName,
-    taskDescription,
     taskType,
     taskStatus,
     taskPriority,
@@ -497,10 +520,8 @@ class _$TaskModelImpl extends _TaskModel {
     assignedTo,
     assignedToName,
     createdBy,
-    createdAt,
-    updatedAt,
     notes,
-  );
+  ]);
 
   /// Create a copy of TaskModel
   /// with the given fields replaced by the non-null parameter values.
@@ -519,22 +540,23 @@ class _$TaskModelImpl extends _TaskModel {
 abstract class _TaskModel extends TaskModel {
   const factory _TaskModel({
     @JsonKey(name: 'task_id') required final String taskId,
+    @JsonKey(name: 'user_id') final String? userId,
+    @JsonKey(name: 'task_name') required final String taskName,
+    @JsonKey(name: 'task_desc') final String? taskDescription,
+    @JsonKey(name: 'task_created') final DateTime? createdAt,
+    @JsonKey(name: 'task_update') final DateTime? updatedAt,
     @JsonKey(name: 'site_id') final String? siteId,
     @JsonKey(name: 'site_name') final String? siteName,
     @JsonKey(name: 'plant_id') final String? plantId,
     @JsonKey(name: 'plant_name') final String? plantName,
-    @JsonKey(name: 'task_name') required final String taskName,
-    @JsonKey(name: 'task_description') final String? taskDescription,
-    @JsonKey(name: 'task_type') required final String taskType,
-    @JsonKey(name: 'task_status') required final String taskStatus,
-    @JsonKey(name: 'task_priority') required final String taskPriority,
+    @JsonKey(name: 'task_type') final String? taskType,
+    @JsonKey(name: 'task_status') final String? taskStatus,
+    @JsonKey(name: 'task_priority') final String? taskPriority,
     @JsonKey(name: 'task_due_date') final DateTime? taskDueDate,
     @JsonKey(name: 'task_completed_date') final DateTime? taskCompletedDate,
     @JsonKey(name: 'assigned_to') final String? assignedTo,
     @JsonKey(name: 'assigned_to_name') final String? assignedToName,
     @JsonKey(name: 'created_by') final String? createdBy,
-    @JsonKey(name: 'created_at') final DateTime? createdAt,
-    @JsonKey(name: 'updated_at') final DateTime? updatedAt,
     @JsonKey(name: 'notes') final String? notes,
   }) = _$TaskModelImpl;
   const _TaskModel._() : super._();
@@ -545,6 +567,21 @@ abstract class _TaskModel extends TaskModel {
   @override
   @JsonKey(name: 'task_id')
   String get taskId;
+  @override
+  @JsonKey(name: 'user_id')
+  String? get userId;
+  @override
+  @JsonKey(name: 'task_name')
+  String get taskName;
+  @override
+  @JsonKey(name: 'task_desc')
+  String? get taskDescription;
+  @override
+  @JsonKey(name: 'task_created')
+  DateTime? get createdAt;
+  @override
+  @JsonKey(name: 'task_update')
+  DateTime? get updatedAt; // Extended fields (not in API but useful for frontend)
   @override
   @JsonKey(name: 'site_id')
   String? get siteId;
@@ -558,20 +595,14 @@ abstract class _TaskModel extends TaskModel {
   @JsonKey(name: 'plant_name')
   String? get plantName;
   @override
-  @JsonKey(name: 'task_name')
-  String get taskName;
-  @override
-  @JsonKey(name: 'task_description')
-  String? get taskDescription;
-  @override
   @JsonKey(name: 'task_type')
-  String get taskType;
+  String? get taskType;
   @override
   @JsonKey(name: 'task_status')
-  String get taskStatus;
+  String? get taskStatus;
   @override
   @JsonKey(name: 'task_priority')
-  String get taskPriority;
+  String? get taskPriority;
   @override
   @JsonKey(name: 'task_due_date')
   DateTime? get taskDueDate;
@@ -587,12 +618,6 @@ abstract class _TaskModel extends TaskModel {
   @override
   @JsonKey(name: 'created_by')
   String? get createdBy;
-  @override
-  @JsonKey(name: 'created_at')
-  DateTime? get createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  DateTime? get updatedAt;
   @override
   @JsonKey(name: 'notes')
   String? get notes;
