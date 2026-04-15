@@ -78,7 +78,28 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
   @override
   Future<TaskModel> createTask(TaskModel task) async {
     try {
-      final response = await _dio.post('/tasks', data: task.toJson());
+      // Note: Backend API endpoint for creating tasks is not yet implemented
+      // According to API documentation, only GET /api/tasks is available
+      // This will return 404 error until backend adds POST /api/tasks endpoint
+
+      final response = await _dio.post(
+        '/tasks',
+        data: {
+          'task_name': task.taskName,
+          'task_desc': task.taskDescription,
+          'user_id': task.userId,
+          // Extended fields (if backend supports them)
+          if (task.siteId != null) 'site_id': task.siteId,
+          if (task.plantId != null) 'plant_id': task.plantId,
+          if (task.taskType != null) 'task_type': task.taskType,
+          if (task.taskStatus != null) 'task_status': task.taskStatus,
+          if (task.taskPriority != null) 'task_priority': task.taskPriority,
+          if (task.taskDueDate != null)
+            'task_due_date': task.taskDueDate!.toIso8601String(),
+          if (task.assignedTo != null) 'assigned_to': task.assignedTo,
+          if (task.notes != null) 'notes': task.notes,
+        },
+      );
 
       if (response.data['status'] == 201 && response.data['data'] != null) {
         return TaskModel.fromJson(
@@ -87,6 +108,14 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
       }
 
       throw Exception('Failed to create task');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw Exception(
+          'Endpoint untuk membuat task belum tersedia di backend. '
+          'Silakan hubungi backend developer untuk menambahkan endpoint POST /api/tasks',
+        );
+      }
+      throw Exception('Failed to create task: ${e.message}');
     } catch (e) {
       throw Exception('Failed to create task: $e');
     }

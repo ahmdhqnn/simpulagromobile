@@ -39,7 +39,6 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with Add Button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -78,17 +77,14 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
                 SizedBox(height: context.rh(0.024)),
 
-                // Statistics Cards
                 _buildStatsCards(stats),
 
                 SizedBox(height: context.rh(0.024)),
 
-                // Filter Tabs
                 _buildFilterTabs(currentFilter),
 
                 SizedBox(height: context.rh(0.024)),
 
-                // Task List
                 filteredTasksAsync.when(
                   loading: () => _shimmerCard(context, 195),
                   error: (error, stack) => _ErrorCard(
@@ -127,6 +123,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
   Widget _buildStatsCards(TaskStats stats) {
     return Container(
+      height: 115,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -265,10 +262,8 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: context.rh(0.012),
-          horizontal: context.rw(0.01),
-        ),
+        height: 90,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(10),
@@ -280,41 +275,35 @@ class _StatItem extends StatelessWidget {
           children: [
             SvgPicture.asset(
               icon,
-              width: 18,
-              height: 18,
+              width: 20,
+              height: 20,
               colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
-            SizedBox(height: context.rh(0.004)),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: context.sp(20),
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w500,
-                  height: 1,
-                ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 22,
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: FontWeight.w500,
+                height: 1,
               ),
             ),
-            SizedBox(height: context.rh(0.002)),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: context.sp(11),
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w500,
-                  height: 1.0,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: FontWeight.w500,
+                height: 1.0,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -395,11 +384,9 @@ class _TaskCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with title and status badge
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Priority indicator bar
                 Container(
                   width: 4,
                   height: 50,
@@ -471,25 +458,23 @@ class _TaskCard extends StatelessWidget {
 
             SizedBox(height: context.rh(0.015)),
 
-            // Task metadata
             Wrap(
               spacing: 12,
               runSpacing: 8,
               children: [
-                // Task type
                 _MetaChip(
                   icon: Icons.category_outlined,
                   label: task.taskType.label,
                   color: AppColors.primary,
                 ),
-                // Priority
+
                 if (task.taskPriority != TaskPriority.medium)
                   _MetaChip(
                     icon: Icons.flag_outlined,
                     label: task.taskPriority.label,
                     color: priorityColor,
                   ),
-                // Due date
+
                 if (task.taskDueDate != null)
                   _MetaChip(
                     icon: task.isOverdue
@@ -502,7 +487,7 @@ class _TaskCard extends StatelessWidget {
                         ? const Color(0xFFFFA929)
                         : const Color(0xFF1D1D1D).withValues(alpha: 0.6),
                   ),
-                // Assigned to
+
                 if (task.assignedToName != null)
                   _MetaChip(
                     icon: Icons.person_outline,
