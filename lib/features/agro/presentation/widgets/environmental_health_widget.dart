@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../data/models/agro_model.dart';
 
 class EnvironmentalHealthWidget extends StatelessWidget {
@@ -12,53 +13,79 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     final healthScore = _calculateHealthScore();
     final healthStatus = _getHealthStatus(healthScore);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.eco, color: AppColors.success, size: 24),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Kesehatan Lingkungan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Environmental Health Score',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildHealthScore(healthScore, healthStatus),
-            const SizedBox(height: 24),
-            _buildParameterScores(),
-            const SizedBox(height: 16),
-            _buildRecommendations(healthStatus),
-          ],
-        ),
+                child: const Icon(
+                  Icons.eco,
+                  color: Color(0xFF4CAF50),
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: context.rw(0.02)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Kesehatan Lingkungan',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(22),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Environmental Health Score',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1.83,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildHealthScore(context, healthScore, healthStatus),
+          const SizedBox(height: 24),
+          _buildParameterScores(context),
+          const SizedBox(height: 16),
+          _buildRecommendations(context, healthStatus),
+        ],
       ),
     );
   }
 
-  Widget _buildHealthScore(double score, HealthStatus status) {
+  Widget _buildHealthScore(
+    BuildContext context,
+    double score,
+    HealthStatus status,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -69,7 +96,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: status.color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -80,7 +106,8 @@ class EnvironmentalHealthWidget extends StatelessWidget {
               Text(
                 score.toStringAsFixed(0),
                 style: TextStyle(
-                  fontSize: 56,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(56),
                   fontWeight: FontWeight.bold,
                   color: status.color,
                   height: 1,
@@ -91,7 +118,8 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                 child: Text(
                   '/100',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(24),
                     color: status.color.withValues(alpha: 0.7),
                   ),
                 ),
@@ -112,8 +140,9 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   status.label,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(14),
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -125,9 +154,10 @@ class EnvironmentalHealthWidget extends StatelessWidget {
           Text(
             status.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(13),
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -135,7 +165,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildParameterScores() {
+  Widget _buildParameterScores(BuildContext context) {
     final vdpScore = _calculateVdpScore();
     final gddScore = _calculateGddScore();
     final etcScore = _calculateEtcScore();
@@ -143,26 +173,45 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Skor Parameter',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
+          ),
         ),
         const SizedBox(height: 12),
-        _buildParameterBar('VDP', vdpScore, Icons.water_drop, AppColors.info),
+        _buildParameterBar(
+          context,
+          'VDP',
+          vdpScore,
+          Icons.water_drop,
+          AppColors.info,
+        ),
         const SizedBox(height: 8),
         _buildParameterBar(
+          context,
           'GDD',
           gddScore,
           Icons.thermostat,
           AppColors.warning,
         ),
         const SizedBox(height: 8),
-        _buildParameterBar('ETC', etcScore, Icons.opacity, AppColors.primary),
+        _buildParameterBar(
+          context,
+          'ETC',
+          etcScore,
+          Icons.opacity,
+          AppColors.primary,
+        ),
       ],
     );
   }
 
   Widget _buildParameterBar(
+    BuildContext context,
     String label,
     double score,
     IconData icon,
@@ -177,13 +226,19 @@ class EnvironmentalHealthWidget extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1D1D1D),
+              ),
             ),
             const Spacer(),
             Text(
               '${score.toStringAsFixed(0)}/100',
               style: TextStyle(
-                fontSize: 13,
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
                 fontWeight: FontWeight.w600,
                 color: color,
               ),
@@ -204,7 +259,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommendations(HealthStatus status) {
+  Widget _buildRecommendations(BuildContext context, HealthStatus status) {
     final recommendations = _getRecommendations(status);
     if (recommendations.isEmpty) return const SizedBox.shrink();
 
@@ -225,7 +280,8 @@ class EnvironmentalHealthWidget extends StatelessWidget {
               Text(
                 'Rekomendasi',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(13),
                   fontWeight: FontWeight.w600,
                   color: status.color,
                 ),
@@ -241,14 +297,19 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                 children: [
                   Text(
                     '• ',
-                    style: TextStyle(fontSize: 12, color: status.color),
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(12),
+                      color: status.color,
+                    ),
                   ),
                   Expanded(
                     child: Text(
                       rec,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        color: const Color(0xFF1D1D1D),
                       ),
                     ),
                   ),
@@ -268,7 +329,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     final gddScore = _calculateGddScore();
     final etcScore = _calculateEtcScore();
 
-    // Weighted average: VDP 30%, GDD 30%, ETC 40%
     return (vdpScore * 0.3) + (gddScore * 0.3) + (etcScore * 0.4);
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../data/models/agro_model.dart';
 
 class VdpWidget extends StatelessWidget {
@@ -10,134 +11,114 @@ class VdpWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (vdpData == null) {
-      return _buildEmptyState();
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.water_drop,
-                    color: AppColors.info,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'VDP (Vapor Pressure Deficit)',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Defisit Tekanan Uap',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _buildStatusBadge(vdpData!.status),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    vdpData!.vdp?.toStringAsFixed(2) ?? '-',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: _getVdpColor(vdpData!.vdp),
-                    ),
-                  ),
-                  const Text(
-                    'kPa',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildVdpIndicator(vdpData!.vdp),
-            const SizedBox(height: 16),
-            _buildVdpInfo(vdpData!.vdp),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(String? status) {
-    if (status == null) return const SizedBox.shrink();
-
-    Color color;
-    switch (status.toLowerCase()) {
-      case 'optimal':
-        color = AppColors.success;
-        break;
-      case 'low':
-        color = AppColors.warning;
-        break;
-      case 'high':
-        color = AppColors.error;
-        break;
-      default:
-        color = AppColors.textSecondary;
+      return _buildEmptyState(context);
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Text(
-        status,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.water_drop,
+                  color: Color(0xFF42A5F5),
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: context.rw(0.02)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'VDP',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(22),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Defisit Tekanan Uap',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1.83,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  vdpData!.vdp?.toStringAsFixed(2) ?? '-',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(48),
+                    fontWeight: FontWeight.bold,
+                    color: _getVdpColor(vdpData!.vdp),
+                  ),
+                ),
+                Text(
+                  'kPa',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(16),
+                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildVdpIndicator(context, vdpData!.vdp),
+          const SizedBox(height: 16),
+          _buildVdpInfo(context, vdpData!.vdp),
+        ],
       ),
     );
   }
 
-  Widget _buildVdpIndicator(double? vdp) {
+  Widget _buildVdpIndicator(BuildContext context, double? vdp) {
     if (vdp == null) return const SizedBox.shrink();
 
-    // VDP ranges: 0-0.4 (Low), 0.4-1.2 (Optimal), 1.2+ (High)
     final percentage = (vdp / 2.0).clamp(0.0, 1.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'VDP Range',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(12),
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+          ),
         ),
         const SizedBox(height: 8),
         LayoutBuilder(
@@ -176,24 +157,40 @@ class VdpWidget extends StatelessWidget {
           },
         ),
         const SizedBox(height: 8),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               '0',
-              style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(10),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
             ),
             Text(
               '0.4',
-              style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(10),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
             ),
             Text(
               '1.2',
-              style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(10),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
             ),
             Text(
               '2.0+',
-              style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(10),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
             ),
           ],
         ),
@@ -201,7 +198,7 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpInfo(double? vdp) {
+  Widget _buildVdpInfo(BuildContext context, double? vdp) {
     if (vdp == null) return const SizedBox.shrink();
 
     String title;
@@ -254,7 +251,8 @@ class VdpWidget extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(14),
                     fontWeight: FontWeight.w600,
                     color: color,
                   ),
@@ -262,9 +260,10 @@ class VdpWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
+                    color: const Color(0xFF1D1D1D),
                   ),
                 ),
               ],
@@ -275,32 +274,38 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(
-                Icons.water_drop_outlined,
-                size: 48,
-                color: AppColors.textSecondary.withValues(alpha: 0.5),
+  Widget _buildEmptyState(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.water_drop_outlined,
+              size: 48,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Data VDP tidak tersedia',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(14),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Data VDP tidak tersedia',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Color _getVdpColor(double? vdp) {
-    if (vdp == null) return AppColors.textSecondary;
+    if (vdp == null) return const Color(0xFF1D1D1D).withValues(alpha: 0.6);
     if (vdp < 0.4) return AppColors.info;
     if (vdp <= 1.2) return AppColors.success;
     if (vdp <= 1.6) return AppColors.warning;
