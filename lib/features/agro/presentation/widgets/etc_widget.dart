@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../data/models/agro_model.dart';
 
 class EtcWidget extends StatelessWidget {
@@ -11,74 +12,86 @@ class EtcWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (etcData.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(context);
     }
 
     final latestData = etcData.first;
     final weekData = etcData.take(7).toList();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.opacity,
-                    color: AppColors.primary,
-                    size: 24,
-                  ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ETC (Evapotranspiration)',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Kebutuhan Air Tanaman',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: const Icon(
+                  Icons.opacity,
+                  color: Color(0xFF4CAF50),
+                  size: 20,
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildLatestEtc(latestData),
-            const SizedBox(height: 20),
-            _buildEtcChart(weekData),
-            const SizedBox(height: 16),
-            _buildWaterNeedsInfo(latestData),
-          ],
-        ),
+              ),
+              SizedBox(width: context.rw(0.02)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ETC',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(22),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Kebutuhan Air Tanaman',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1.83,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildLatestEtc(context, latestData),
+          const SizedBox(height: 20),
+          _buildEtcChart(context, weekData),
+          const SizedBox(height: 16),
+          _buildWaterNeedsInfo(context, latestData),
+        ],
       ),
     );
   }
 
-  Widget _buildLatestEtc(EtcDailyModel data) {
+  Widget _buildLatestEtc(BuildContext context, EtcDailyModel data) {
     return Row(
       children: [
         Expanded(
           child: _buildMetricCard(
+            context,
             'ETC',
             data.etc?.toStringAsFixed(2) ?? '-',
             'mm/hari',
@@ -89,6 +102,7 @@ class EtcWidget extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _buildMetricCard(
+            context,
             'Kc',
             data.kc?.toStringAsFixed(2) ?? '-',
             'koefisien',
@@ -99,6 +113,7 @@ class EtcWidget extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _buildMetricCard(
+            context,
             'Kebutuhan',
             data.waterNeeds?.toStringAsFixed(1) ?? '-',
             'L/m²',
@@ -111,6 +126,7 @@ class EtcWidget extends StatelessWidget {
   }
 
   Widget _buildMetricCard(
+    BuildContext context,
     String label,
     String value,
     String unit,
@@ -122,7 +138,6 @@ class EtcWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -131,7 +146,8 @@ class EtcWidget extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(20),
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -139,30 +155,41 @@ class EtcWidget extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             unit,
-            style: const TextStyle(
-              fontSize: 10,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(10),
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(11),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1D1D1D),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEtcChart(List<EtcDailyModel> weekData) {
+  Widget _buildEtcChart(BuildContext context, List<EtcDailyModel> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Trend ETC (7 Hari)',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -191,8 +218,9 @@ class EtcWidget extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           day.split('-').last,
-                          style: const TextStyle(
-                            fontSize: 10,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(10),
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -207,8 +235,9 @@ class EtcWidget extends StatelessWidget {
                     getTitlesWidget: (value, meta) {
                       return Text(
                         value.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 10,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(10),
                           color: AppColors.textSecondary,
                         ),
                       );
@@ -274,7 +303,11 @@ class EtcWidget extends StatelessWidget {
                       final label = spot.barIndex == 0 ? 'ETC' : 'Kebutuhan';
                       return LineTooltipItem(
                         '$label\n$day\n${spot.y.toStringAsFixed(2)}',
-                        const TextStyle(color: Colors.white, fontSize: 12),
+                        TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          color: Colors.white,
+                          fontSize: context.sp(12),
+                        ),
                       );
                     }).toList();
                   },
@@ -287,16 +320,21 @@ class EtcWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLegendItem('ETC', AppColors.primary, false),
+            _buildLegendItem(context, 'ETC', AppColors.primary, false),
             const SizedBox(width: 16),
-            _buildLegendItem('Kebutuhan Air', AppColors.info, true),
+            _buildLegendItem(context, 'Kebutuhan Air', AppColors.info, true),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildLegendItem(String label, Color color, bool dashed) {
+  Widget _buildLegendItem(
+    BuildContext context,
+    String label,
+    Color color,
+    bool dashed,
+  ) {
     return Row(
       children: [
         Container(
@@ -313,13 +351,17 @@ class EtcWidget extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(11),
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildWaterNeedsInfo(EtcDailyModel data) {
+  Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyModel data) {
     final waterNeeds = data.waterNeeds ?? 0;
     String recommendation;
     Color color;
@@ -365,7 +407,8 @@ class EtcWidget extends StatelessWidget {
                 Text(
                   'Rekomendasi Penyiraman',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(14),
                     fontWeight: FontWeight.w600,
                     color: color,
                   ),
@@ -373,8 +416,9 @@ class EtcWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   recommendation,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -386,25 +430,32 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(
-                Icons.opacity_outlined,
-                size: 48,
-                color: AppColors.textSecondary.withValues(alpha: 0.5),
+  Widget _buildEmptyState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.opacity_outlined,
+              size: 48,
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Data ETC tidak tersedia',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(14),
+                color: AppColors.textSecondary,
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Data ETC tidak tersedia',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
