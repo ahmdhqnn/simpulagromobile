@@ -18,6 +18,9 @@ import '../../features/site/presentation/screens/site_detail_screen.dart';
 import '../../features/site/presentation/screens/site_form_screen.dart';
 import '../../features/plant/presentation/screens/plant_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart';
+import '../../features/forum/presentation/screens/forum_screen.dart';
+import '../../features/forum/presentation/screens/my_posts_screen.dart';
+import '../../features/forum/presentation/screens/post_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -140,6 +143,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/plant/:id',
         builder: (_, state) =>
             PlantDetailScreen(plantId: state.pathParameters['id']!),
+      ),
+
+      // Forum routes
+      GoRoute(path: '/forum', builder: (_, __) => const ForumScreen()),
+      GoRoute(
+        path: '/forum/create',
+        builder: (_, __) => const PostFormScreen(),
+      ),
+      GoRoute(
+        path: '/forum/edit/:id',
+        builder: (_, state) =>
+            PostFormScreen(postId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/forum/my-posts',
+        builder: (_, __) => const MyPostsScreen(),
       ),
     ],
   );

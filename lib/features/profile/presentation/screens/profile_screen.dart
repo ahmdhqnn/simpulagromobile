@@ -43,6 +43,8 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.024)),
                   _buildAccountInfoSection(context, profile),
                   SizedBox(height: context.rh(0.024)),
+                  _buildForumManagementSection(context),
+                  SizedBox(height: context.rh(0.024)),
                   _buildPermissionsSection(context, permissionsAsync),
                   SizedBox(height: context.rh(0.024)),
                   _buildSignoutButton(context, ref),
@@ -290,6 +292,99 @@ class ProfileScreen extends ConsumerWidget {
               fontWeight: FontWeight.w300,
               color: const Color(0xFF1D1D1D),
               height: 1.83,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForumManagementSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Forum',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(22),
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF1D1D1D),
+              height: 1.0,
+            ),
+          ),
+          SizedBox(height: context.rh(0.014)),
+          GestureDetector(
+            onTap: () => context.push('/forum/my-posts'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF32A527).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/icons/forum-filled-icon.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF32A527),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Postingan Saya',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(14),
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.57,
+                          ),
+                        ),
+                        Text(
+                          'Kelola postingan forum Anda',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SvgPicture.asset(
+                    'assets/icons/chevron-right-icon.svg',
+                    width: 20,
+                    height: 20,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF1D1D1D),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
