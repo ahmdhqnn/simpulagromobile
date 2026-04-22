@@ -164,6 +164,21 @@ class ApiEndpoints {
   static const String alarmData = '/sites/alarms/data';
 
   // ═══════════════════════════════════════════════════════════
+  // FORUM ENDPOINTS
+  // ═══════════════════════════════════════════════════════════
+  static const String forumPosts = '/forum/posts';
+  static String forumPostById(String postId) => '/forum/posts/$postId';
+  static String forumPostLike(String postId) => '/forum/posts/$postId/like';
+  static String forumPostShare(String postId) => '/forum/posts/$postId/share';
+  static String forumPostComments(String postId) =>
+      '/forum/posts/$postId/comments';
+  static String forumPostReactions(String postId) =>
+      '/forum/posts/$postId/reactions';
+  static String forumDeleteComment(String postId, String commentId) =>
+      '/forum/posts/$postId/comments/$commentId';
+  static const String forumMyPosts = '/forum/my-posts';
+
+  // ═══════════════════════════════════════════════════════════
   // LOG ENDPOINTS
   // ═══════════════════════════════════════════════════════════
   static const String logs = '/sites/logs';
