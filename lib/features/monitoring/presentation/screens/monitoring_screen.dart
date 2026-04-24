@@ -33,15 +33,25 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed Header dengan More Button
+            // Fixed Header dengan Title dan More Button
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: context.rw(0.051),
                 vertical: context.rh(0.015),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Text(
+                    'Monitoring',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(28),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1.0,
+                    ),
+                  ),
                   Container(
                     width: 58,
                     height: 58,
@@ -74,7 +84,8 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
                     for (int index = 0; index < _tabs.length; index++) ...[
                       Flexible(
                         child: GestureDetector(
-                          onTap: () => setState(() => _selectedTabIndex = index),
+                          onTap: () =>
+                              setState(() => _selectedTabIndex = index),
                           child: Container(
                             height: 36,
                             padding: const EdgeInsets.symmetric(

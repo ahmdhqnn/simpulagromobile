@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:simpulagromobile/features/monitoring/presentation/screens/monitoring_screen.dart';
 import 'package:simpulagromobile/features/plant/presentation/screens/plant_screen.dart';
