@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/forum_provider.dart';
 import '../widgets/post_card.dart';
 
-/// Forum Screen
-/// Main screen untuk menampilkan feed postingan
 class ForumScreen extends ConsumerStatefulWidget {
   const ForumScreen({super.key});
 
@@ -21,12 +20,11 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
   @override
   void initState() {
     super.initState();
-    // Load posts on init
+
     Future.microtask(
       () => ref.read(forumProvider.notifier).loadPosts(refresh: true),
     );
 
-    // Setup infinite scroll
     _scrollController.addListener(_onScroll);
   }
 
@@ -54,10 +52,8 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(context, currentUser?.userName ?? 'User'),
 
-            // Content
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
@@ -114,17 +110,32 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
         ),
       ),
 
-      // Floating Action Button (Add Post)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/forum/create');
-        },
-        backgroundColor: const Color(0xFF32A527),
-        child: SvgPicture.asset(
-          'assets/icons/plus-outline-icon.svg',
-          width: 24,
-          height: 24,
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      floatingActionButton: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              context.push('/forum/create');
+            },
+            borderRadius: BorderRadius.circular(32),
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/icons/plus-outline-icon.svg',
+                width: 28,
+                height: 28,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF1D1D1D),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -132,89 +143,40 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
 
   Widget _buildHeader(BuildContext context, String userName) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.015),
+      ),
+      color: const Color(0xFFF0F0F0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Avatar
+          Text(
+            'Forum',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(28),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1D1D1D),
+              height: 1.0,
+            ),
+          ),
           Container(
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(32),
             ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/user-outline-icon.svg',
+            child: IconButton(
+              icon: SvgPicture.asset(
+                'assets/icons/more-icon.svg',
                 width: 28,
                 height: 28,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF1D1D1D),
-                  BlendMode.srcIn,
-                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // User Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: const TextStyle(
-                    color: Color(0xFF1D1D1D),
-                    fontSize: 16,
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontWeight: FontWeight.w400,
-                    height: 1.38,
-                  ),
-                ),
-                Row(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/maps-dot-filled-icon.svg',
-                      width: 14,
-                      height: 14,
-                    ),
-                    const SizedBox(width: 2),
-                    const Text(
-                      'Bandung, Indonesia',
-                      style: TextStyle(
-                        color: Color(0xFF1D1D1D),
-                        fontSize: 12,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                        height: 1.83,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Notification Icon
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0),
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/mail-outline-icon.svg',
-                width: 28,
-                height: 28,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF1D1D1D),
-                  BlendMode.srcIn,
-                ),
-              ),
+              onPressed: () {
+                // TODO: Implement more menu
+              },
             ),
           ),
         ],

@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/forum_provider.dart';
 import '../widgets/post_card.dart';
 
-/// My Posts Screen
-/// Screen untuk management postingan user sendiri
 class MyPostsScreen extends ConsumerWidget {
   const MyPostsScreen({super.key});
 

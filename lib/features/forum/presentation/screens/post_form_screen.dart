@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/forum_provider.dart';
 
-/// Post Form Screen
-/// Screen untuk create/edit postingan
 class PostFormScreen extends ConsumerStatefulWidget {
-  final String? postId; // null = create, not null = edit
+  final String? postId;
 
   const PostFormScreen({super.key, this.postId});
 
@@ -60,7 +58,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         );
       } else {
         await repository.createPost(
-          siteId: 'SITE001', // TODO: Get from selected site
+          siteId: 'SITE001',
           content: _contentController.text.trim(),
           imageUrl: _imageUrlController.text.trim().isEmpty
               ? null
@@ -68,7 +66,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         );
       }
 
-      // Refresh forum posts
       ref.invalidate(forumProvider);
       ref.invalidate(myPostsProvider);
 
@@ -149,7 +146,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            // Content Input
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -182,7 +178,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Image URL Input (Optional)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -236,7 +231,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
             const SizedBox(height: 24),
 
-            // Info Card
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
