@@ -82,45 +82,41 @@ class ProfileScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 58,
-              height: 58,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: SvgPicture.asset(
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: IconButton(
+              icon: SvgPicture.asset(
                 'assets/icons/chevron-left-icon.svg',
                 width: 28,
                 height: 28,
-                fit: BoxFit.contain,
               ),
+              onPressed: () => context.pop(),
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-            child: Container(
-              width: 58,
-              height: 58,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: SvgPicture.asset(
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: IconButton(
+              icon: SvgPicture.asset(
                 'assets/icons/setting-outline-icon.svg',
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain,
+                width: 28,
+                height: 28,
               ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
             ),
           ),
         ],
@@ -316,77 +312,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: context.rh(0.014)),
-          GestureDetector(
-            onTap: () => context.push('/forum/my-posts'),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF32A527).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/forum-filled-icon.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF32A527),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Postingan Saya',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(14),
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1D1D1D),
-                            height: 1.57,
-                          ),
-                        ),
-                        Text(
-                          'Kelola postingan forum Anda',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(12),
-                            fontWeight: FontWeight.w300,
-                            color: const Color(0xFF1D1D1D),
-                            height: 1.83,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SvgPicture.asset(
-                    'assets/icons/chevron-right-icon.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF1D1D1D),
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const _ForumCard(),
         ],
       ),
     );
@@ -412,146 +338,10 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: context.rh(0.014)),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: permissionsAsync.when(
-              data: (permissions) {
-                if (permissions.isEmpty) {
-                  return SizedBox(
-                    height: 70,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/setting-outline-icon.svg',
-                            width: 28,
-                            height: 28,
-                            colorFilter: ColorFilter.mode(
-                              const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          SizedBox(height: context.rh(0.005)),
-                          Text(
-                            'Tidak ada hak akses',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(12),
-                              fontWeight: FontWeight.w300,
-                              color: const Color(0xFF1D1D1D),
-                              height: 1.83,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: permissions.map((permission) {
-                    final color = _getPermissionColor(permission);
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _formatPermissionLabel(permission),
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          fontWeight: FontWeight.w500,
-                          color: color,
-                          height: 1.83,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-              loading: () => const SizedBox(
-                height: 70,
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
-              ),
-              error: (_, __) => SizedBox(
-                height: 70,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: AppColors.error,
-                        size: 28,
-                      ),
-                      SizedBox(height: context.rh(0.005)),
-                      Text(
-                        'Gagal memuat hak akses',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.error,
-                          height: 1.83,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _PermissionsCard(permissionsAsync: permissionsAsync),
         ],
       ),
     );
-  }
-
-  Color _getPermissionColor(String permission) {
-    // Assign colors based on permission type
-    if (permission.contains('create')) {
-      return const Color(0xFF4CAF50); // Green
-    } else if (permission.contains('read') || permission.contains('view')) {
-      return const Color(0xFF42A5F5); // Blue
-    } else if (permission.contains('update') || permission.contains('edit')) {
-      return const Color(0xFFFF9800); // Orange
-    } else if (permission.contains('delete')) {
-      return const Color(0xFFF44336); // Red
-    } else if (permission.contains('manage') || permission.contains('admin')) {
-      return const Color(0xFF9C27B0); // Purple
-    }
-    return const Color(0xFF757575);
-  }
-
-  String _formatPermissionLabel(String permission) {
-    final parts = permission.split(':');
-    if (parts.length == 2) {
-      final module = _capitalizeFirst(parts[0]);
-      final action = _capitalizeFirst(parts[1]);
-      return '$module $action';
-    }
-    return _capitalizeFirst(permission);
-  }
-
-  String _capitalizeFirst(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 
   String _formatJoinDate(DateTime? date) {
@@ -638,5 +428,575 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+// Expandable Forum Card Widget
+class _ForumCard extends StatefulWidget {
+  const _ForumCard();
+
+  @override
+  State<_ForumCard> createState() => _ForumCardState();
+}
+
+class _ForumCardState extends State<_ForumCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(18),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECF6FE),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/icons/forum-filled-icon.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF42A5F5),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: context.rw(0.02)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Forum Management',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Kelola postingan dan komentar',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SvgPicture.asset(
+                    _expanded
+                        ? 'assets/icons/chevron-down-icon.svg'
+                        : 'assets/icons/chevron-right-icon.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _buildForumItem(
+                    context,
+                    'assets/icons/comment-outline-icon.svg',
+                    'Postingan Saya',
+                    'Lihat dan kelola postingan',
+                    () {
+                      // Navigate to my posts
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildForumItem(
+                    context,
+                    'assets/icons/like-outline-icon.svg',
+                    'Postingan Disukai',
+                    'Postingan yang Anda sukai',
+                    () {
+                      // Navigate to liked posts
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildForumItem(
+                    context,
+                    'assets/icons/message-outline-icon.svg',
+                    'Komentar Saya',
+                    'Lihat semua komentar',
+                    () {
+                      // Navigate to my comments
+                    },
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForumItem(
+    BuildContext context,
+    String iconPath,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F7F7),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              width: 20,
+              height: 20,
+              colorFilter: const ColorFilter.mode(
+                Color(0xFF1D1D1D),
+                BlendMode.srcIn,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(14),
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1D1D1D),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(11),
+                      fontWeight: FontWeight.w300,
+                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SvgPicture.asset(
+              'assets/icons/chevron-right-icon.svg',
+              width: 16,
+              height: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Expandable Permissions Card Widget
+class _PermissionsCard extends StatefulWidget {
+  final AsyncValue<List<String>> permissionsAsync;
+
+  const _PermissionsCard({required this.permissionsAsync});
+
+  @override
+  State<_PermissionsCard> createState() => _PermissionsCardState();
+}
+
+class _PermissionsCardState extends State<_PermissionsCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.permissionsAsync.when(
+      data: (permissions) => _buildPermissionsCard(context, permissions),
+      loading: () => Container(
+        height: 82,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
+      error: (_, __) => Container(
+        height: 82,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 20,
+              ),
+            ),
+            SizedBox(width: context.rw(0.02)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Gagal Memuat',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(22),
+                      fontWeight: FontWeight.w300,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    'Tidak dapat memuat hak akses',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(12),
+                      fontWeight: FontWeight.w300,
+                      color: AppColors.error,
+                      height: 1.83,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPermissionsCard(BuildContext context, List<String> permissions) {
+    if (permissions.isEmpty) {
+      return Container(
+        height: 82,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/setting-outline-icon.svg',
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(
+                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+            SizedBox(width: context.rw(0.02)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Tidak Ada Akses',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(22),
+                      fontWeight: FontWeight.w300,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    'Belum ada hak akses tersedia',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(12),
+                      fontWeight: FontWeight.w300,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1.83,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final groupedPermissions = _groupPermissions(permissions);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(18),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/icons/setting-outline-icon.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: context.rw(0.02)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hak Akses Sistem',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          '${permissions.length} Permission${permissions.length > 1 ? 's' : ''}',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SvgPicture.asset(
+                    _expanded
+                        ? 'assets/icons/chevron-down-icon.svg'
+                        : 'assets/icons/chevron-right-icon.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  ...groupedPermissions.entries.map((entry) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildPermissionGroup(
+                        context,
+                        entry.key,
+                        entry.value,
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, List<String>> _groupPermissions(List<String> permissions) {
+    final Map<String, List<String>> grouped = {};
+
+    for (final permission in permissions) {
+      final parts = permission.split(':');
+      if (parts.length == 2) {
+        final module = parts[0];
+        final action = parts[1];
+
+        if (!grouped.containsKey(module)) {
+          grouped[module] = [];
+        }
+        grouped[module]!.add(action);
+      }
+    }
+
+    return grouped;
+  }
+
+  Widget _buildPermissionGroup(
+    BuildContext context,
+    String module,
+    List<String> actions,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _capitalizeFirst(module),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: actions.map((action) {
+            final actionColor = _getActionColor(action);
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: actionColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: actionColor.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(_getActionIcon(action), size: 14, color: actionColor),
+                  const SizedBox(width: 6),
+                  Text(
+                    _capitalizeFirst(action),
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(12),
+                      fontWeight: FontWeight.w500,
+                      color: actionColor,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  IconData _getActionIcon(String action) {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return Icons.add_circle_outline;
+      case 'read':
+      case 'view':
+        return Icons.visibility_outlined;
+      case 'update':
+      case 'edit':
+        return Icons.edit_outlined;
+      case 'delete':
+        return Icons.delete_outline;
+      case 'manage':
+      case 'admin':
+        return Icons.admin_panel_settings_outlined;
+      default:
+        return Icons.check_circle_outline;
+    }
+  }
+
+  Color _getActionColor(String action) {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return const Color(0xFF4CAF50); // Green
+      case 'read':
+      case 'view':
+        return const Color(0xFF42A5F5); // Blue
+      case 'update':
+      case 'edit':
+        return const Color(0xFFFF9800); // Orange
+      case 'delete':
+        return const Color(0xFFF44336); // Red
+      case 'manage':
+      case 'admin':
+        return const Color(0xFF9C27B0); // Purple
+      default:
+        return const Color(0xFF757575); // Grey
+    }
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 }
