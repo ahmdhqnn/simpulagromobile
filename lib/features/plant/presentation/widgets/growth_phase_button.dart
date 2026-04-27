@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../agro/presentation/screens/agro_indicator_screen.dart';
+import '../../../phase/presentation/screens/phase_list_screen.dart';
 
-class AgroIndicatorButton extends StatelessWidget {
-  const AgroIndicatorButton({super.key});
+class GrowthPhaseButton extends StatelessWidget {
+  final String plantId;
+  final String plantName;
+
+  const GrowthPhaseButton({
+    super.key,
+    required this.plantId,
+    required this.plantName,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const AgroIndicatorScreen())),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              PhaseListScreen(plantId: plantId, plantName: plantName),
+        ),
+      ),
       child: Container(
         width: 130,
         height: 38,
@@ -23,7 +33,7 @@ class AgroIndicatorButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Agro Indicator',
+              'Growth Phase',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
