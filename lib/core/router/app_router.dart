@@ -21,6 +21,24 @@ import '../../features/plant/presentation/screens/plant_detail_screen.dart';
 import '../../features/forum/presentation/screens/forum_screen.dart';
 import '../../features/forum/presentation/screens/my_posts_screen.dart';
 import '../../features/forum/presentation/screens/post_form_screen.dart';
+import '../../features/utilitas/presentation/screens/utilitas_menu_screen.dart';
+import '../../features/utilitas/presentation/screens/sensors/sensor_list_screen.dart';
+import '../../features/utilitas/presentation/screens/sensors/sensor_form_screen.dart';
+import '../../features/utilitas/presentation/screens/devices/device_list_screen.dart';
+import '../../features/utilitas/presentation/screens/devices/device_form_screen.dart';
+import '../../features/utilitas/presentation/screens/plants/plant_list_screen.dart'
+    as utilitas_plant;
+import '../../features/utilitas/presentation/screens/plants/plant_form_screen.dart'
+    as utilitas_plant_form;
+import '../../features/utilitas/presentation/screens/units/unit_list_screen.dart';
+import '../../features/utilitas/presentation/screens/units/unit_form_screen.dart';
+import '../../features/utilitas/presentation/screens/users/user_list_screen.dart';
+import '../../features/utilitas/presentation/screens/users/user_form_screen.dart';
+import '../../features/utilitas/presentation/screens/roles/role_list_screen.dart';
+import '../../features/utilitas/presentation/screens/roles/role_form_screen.dart';
+import '../../features/utilitas/presentation/screens/permissions/permission_list_screen.dart';
+import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_list_screen.dart';
+import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -159,6 +177,160 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forum/my-posts',
         builder: (_, __) => const MyPostsScreen(),
+      ),
+
+      // Utilitas routes
+      GoRoute(
+        path: '/utilitas',
+        builder: (_, __) => const UtilitasMenuScreen(),
+      ),
+
+      // Utilitas - Sensors
+      GoRoute(
+        path: '/utilitas/sensors',
+        builder: (_, __) => const SensorListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/sensors/create',
+        builder: (_, __) => const SensorFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/sensors/:id/edit',
+        builder: (_, state) =>
+            SensorFormScreen(sensorId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/sensors/:id',
+        builder: (_, state) =>
+            SensorFormScreen(sensorId: state.pathParameters['id']),
+      ),
+
+      // Utilitas - Devices
+      GoRoute(
+        path: '/utilitas/devices',
+        builder: (_, __) => const DeviceListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/devices/create',
+        builder: (_, __) => const DeviceFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/devices/:id/edit',
+        builder: (_, state) =>
+            DeviceFormScreen(deviceId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/devices/:id',
+        builder: (_, state) =>
+            DeviceFormScreen(deviceId: state.pathParameters['id']),
+      ),
+
+      // Utilitas - Plants
+      GoRoute(
+        path: '/utilitas/plants',
+        builder: (_, __) => const utilitas_plant.PlantListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/plants/create',
+        builder: (_, __) => const utilitas_plant_form.PlantFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/plants/:id/edit',
+        builder: (_, state) => utilitas_plant_form.PlantFormScreen(
+          plantId: state.pathParameters['id'],
+        ),
+      ),
+      GoRoute(
+        path: '/utilitas/plants/:id',
+        builder: (_, state) => utilitas_plant_form.PlantFormScreen(
+          plantId: state.pathParameters['id'],
+        ),
+      ),
+
+      // Utilitas - Units
+      GoRoute(
+        path: '/utilitas/units',
+        builder: (_, __) => const UnitListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/units/create',
+        builder: (_, __) => const UnitFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/units/:id/edit',
+        builder: (_, state) =>
+            UnitFormScreen(unitId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/units/:id',
+        builder: (_, state) =>
+            UnitFormScreen(unitId: state.pathParameters['id']),
+      ),
+
+      // Utilitas - Users
+      GoRoute(
+        path: '/utilitas/users',
+        builder: (_, __) => const UserListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/users/create',
+        builder: (_, __) => const UserFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/users/:id/edit',
+        builder: (_, state) =>
+            UserFormScreen(userId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/users/:id',
+        builder: (_, state) =>
+            UserFormScreen(userId: state.pathParameters['id']),
+      ),
+
+      // Utilitas - Roles
+      GoRoute(
+        path: '/utilitas/roles',
+        builder: (_, __) => const RoleListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/roles/create',
+        builder: (_, __) => const RoleFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/roles/:id/edit',
+        builder: (_, state) =>
+            RoleFormScreen(roleId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/roles/:id',
+        builder: (_, state) =>
+            RoleFormScreen(roleId: state.pathParameters['id']),
+      ),
+
+      // Utilitas - Permissions (read-only)
+      GoRoute(
+        path: '/utilitas/permissions',
+        builder: (_, __) => const PermissionListScreen(),
+      ),
+
+      // Utilitas - Device Sensors
+      GoRoute(
+        path: '/utilitas/device-sensors',
+        builder: (_, __) => const DeviceSensorListScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/device-sensors/create',
+        builder: (_, __) => const DeviceSensorFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/device-sensors/:id/edit',
+        builder: (_, state) =>
+            DeviceSensorFormScreen(dsId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/utilitas/device-sensors/:id',
+        builder: (_, state) =>
+            DeviceSensorFormScreen(dsId: state.pathParameters['id']),
       ),
     ],
   );
