@@ -43,6 +43,8 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.024)),
                   _buildAccountInfoSection(context, profile),
                   SizedBox(height: context.rh(0.024)),
+                  _buildUtilitasSection(context, ref),
+                  SizedBox(height: context.rh(0.024)),
                   _buildForumManagementSection(context),
                   SizedBox(height: context.rh(0.024)),
                   _buildPermissionsSection(context, permissionsAsync),
@@ -288,6 +290,99 @@ class ProfileScreen extends ConsumerWidget {
               fontWeight: FontWeight.w300,
               color: const Color(0xFF1D1D1D),
               height: 1.83,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUtilitasSection(BuildContext context, WidgetRef ref) {
+    // Only show for Admin
+    final authState = ref.watch(authProvider);
+    if (!authState.isAdmin) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Utilitas',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(22),
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF1D1D1D),
+              height: 1.0,
+            ),
+          ),
+          SizedBox(height: context.rh(0.014)),
+          InkWell(
+            onTap: () => context.push('/utilitas'),
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF7043).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/icons/setting-outline-icon.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFFF7043),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: context.rw(0.02)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Utilitas',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Kelola master data sistem',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SvgPicture.asset(
+                    'assets/icons/chevron-right-icon.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

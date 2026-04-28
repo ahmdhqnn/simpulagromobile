@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+
+/// Loading overlay widget that can be placed on top of any widget
+/// Shows a semi-transparent black overlay with circular progress indicator
+class LoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final Widget child;
+  final String? message;
+
+  const LoadingOverlay({
+    super.key,
+    required this.isLoading,
+    required this.child,
+    this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Container(
+            color: Colors.black54,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                  if (message != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      message!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
