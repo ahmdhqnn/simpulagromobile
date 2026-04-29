@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/sensor_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/sensor.dart';
 import 'package:simpulagromobile/features/monitoring/presentation/providers/monitoring_provider.dart';
 
 class SensorFormScreen extends ConsumerStatefulWidget {
-  final String? sensorId; // null = create, not null = edit
+  final String? sensorId;
 
   const SensorFormScreen({super.key, this.sensorId});
 
@@ -21,7 +22,6 @@ class SensorFormScreen extends ConsumerStatefulWidget {
 class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Form controllers
   late final TextEditingController _idController;
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
@@ -64,29 +64,30 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(sensorFormProvider);
 
-    // Load sensor data for edit mode
     if (isEditMode && !_isInitialized) {
       final sensorAsync = ref.watch(
         utilitasSensorDetailProvider(widget.sensorId!),
       );
-
       sensorAsync.whenData((sensor) {
-        if (!_isInitialized) {
-          _initializeForm(sensor);
-        }
+        if (!_isInitialized) _initializeForm(sensor);
       });
 
       if (sensorAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (sensorAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${sensorAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: sensorAsync.error!,
+            onRetry: () =>
+                ref.invalidate(utilitasSensorDetailProvider(widget.sensorId!)),
+          ),
         );
       }
     }
@@ -95,37 +96,182 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditMode ? 'Edit Sensor' : 'Tambah Sensor'),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat sensor...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildSensorIdField(),
-                const Gap(16),
-                _buildSensorNameField(),
-                const Gap(16),
-                _buildDeviceDropdown(),
-                const Gap(16),
-                _buildAddressField(),
-                const Gap(16),
-                _buildLocationField(),
-                const Gap(24),
-                _buildCoordinatesSection(),
-                const Gap(24),
-                _buildStatusSwitch(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit Sensor' : 'Tambah Sensor',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat sensor...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit Sensor' : 'Tambah Sensor',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              // ── Informasi Dasar ──────────────────────────
+              UtilitasSectionCard(
+                title: 'Informasi Dasar',
+                child: Column(
+                  children: [
+                    _buildField(
+                      controller: _idController,
+                      label: 'Sensor ID',
+                      hint: 'Contoh: soil_nitro',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Sensor ID wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildField(
+                      controller: _nameController,
+                      label: 'Nama Sensor',
+                      hint: 'Contoh: Nitrogen Sensor',
+                      icon: Icons.sensors,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama sensor wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildDeviceDropdown(),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              // ── Konfigurasi ──────────────────────────────
+              UtilitasSectionCard(
+                title: 'Konfigurasi',
+                child: Column(
+                  children: [
+                    _buildField(
+                      controller: _addressController,
+                      label: 'Alamat Sensor',
+                      hint: 'Contoh: 0x10',
+                      icon: Icons.location_searching,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildField(
+                      controller: _locationController,
+                      label: 'Lokasi',
+                      hint: 'Contoh: Soil Layer 1',
+                      icon: Icons.place,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              // ── Koordinat ────────────────────────────────
+              UtilitasSectionCard(
+                title: 'Koordinat',
+                subtitle: 'Opsional — untuk pemetaan lokasi sensor',
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildField(
+                            controller: _latController,
+                            label: 'Latitude',
+                            hint: '-7.7956',
+                            icon: Icons.my_location,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            validator: (v) {
+                              if (v != null && v.isNotEmpty) {
+                                final lat = double.tryParse(v);
+                                if (lat == null || lat < -90 || lat > 90) {
+                                  return 'Tidak valid';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        SizedBox(width: context.rw(0.03)),
+                        Expanded(
+                          child: _buildField(
+                            controller: _lonController,
+                            label: 'Longitude',
+                            hint: '110.3695',
+                            icon: Icons.location_on,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            validator: (v) {
+                              if (v != null && v.isNotEmpty) {
+                                final lon = double.tryParse(v);
+                                if (lon == null || lon < -180 || lon > 180) {
+                                  return 'Tidak valid';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildField(
+                      controller: _altController,
+                      label: 'Altitude (meter)',
+                      hint: '113.5',
+                      icon: Icons.terrain,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              // ── Status ───────────────────────────────────
+              UtilitasSectionCard(
+                title: 'Status',
+                child: _buildStatusToggle(
+                  label: 'Status Sensor',
+                  value: _status == 1,
+                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              // ── Submit ───────────────────────────────────
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Sensor',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
           ),
         ),
       ),
@@ -145,46 +291,67 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     _isInitialized = true;
   }
 
-  Widget _buildSensorIdField() {
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool enabled = true,
+    bool required = false,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
     return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode, // ID cannot be changed in edit mode
+      controller: controller,
+      enabled: enabled,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(14),
+        color: const Color(0xFF1D1D1D),
+      ),
       decoration: InputDecoration(
-        labelText: 'Sensor ID *',
-        hintText: 'Contoh: soil_nitro',
-        prefixIcon: const Icon(Icons.tag),
+        labelText: required ? '$label *' : label,
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20),
         filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
+        fillColor: enabled
+            ? AppColors.surfaceVariant
+            : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(14),
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+        ),
+        hintStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(13),
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+        ),
       ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Sensor ID wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Sensor ID minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildSensorNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Sensor *',
-        hintText: 'Contoh: Nitrogen Sensor',
-        prefixIcon: Icon(Icons.sensors),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama sensor wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Nama sensor minimal 3 karakter';
-        }
-        return null;
-      },
+      validator: validator,
     );
   }
 
@@ -192,185 +359,149 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     final devicesAsync = ref.watch(devicesProvider);
 
     return devicesAsync.when(
-      data: (devices) {
-        return DropdownButtonFormField<String>(
-          value: _selectedDeviceId,
-          decoration: const InputDecoration(
-            labelText: 'Device',
-            hintText: 'Pilih device (opsional)',
-            prefixIcon: Icon(Icons.device_hub),
+      data: (devices) => DropdownButtonFormField<String>(
+        value: _selectedDeviceId,
+        style: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(14),
+          color: const Color(0xFF1D1D1D),
+        ),
+        decoration: InputDecoration(
+          labelText: 'Device',
+          hintText: 'Pilih device (opsional)',
+          prefixIcon: const Icon(Icons.device_hub, size: 20),
+          filled: true,
+          fillColor: AppColors.surfaceVariant,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
           ),
-          items: [
-            const DropdownMenuItem(
-              value: null,
-              child: Text('Tidak ada device'),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          labelStyle: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+          ),
+        ),
+        items: [
+          const DropdownMenuItem(value: null, child: Text('Tidak ada device')),
+          ...devices.map(
+            (d) => DropdownMenuItem(
+              value: d.devId,
+              child: Text('${d.devName ?? d.devId} (${d.devId})'),
             ),
-            ...devices.map((device) {
-              return DropdownMenuItem(
-                value: device.devId,
-                child: Text(
-                  '${device.devName ?? device.devId} (${device.devId})',
-                ),
-              );
-            }),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _selectedDeviceId = value;
-            });
-          },
-        );
-      },
-      loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const Text('Gagal memuat device'),
-    );
-  }
-
-  Widget _buildAddressField() {
-    return TextFormField(
-      controller: _addressController,
-      decoration: const InputDecoration(
-        labelText: 'Alamat Sensor',
-        hintText: 'Contoh: 0x10',
-        prefixIcon: Icon(Icons.location_searching),
+          ),
+        ],
+        onChanged: (v) => setState(() => _selectedDeviceId = v),
+      ),
+      loading: () => Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ),
+      error: (_, __) => Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            'Gagal memuat device',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(13),
+              color: AppColors.error,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildLocationField() {
-    return TextFormField(
-      controller: _locationController,
-      decoration: const InputDecoration(
-        labelText: 'Lokasi',
-        hintText: 'Contoh: Soil Layer 1',
-        prefixIcon: Icon(Icons.place),
-      ),
-      maxLines: 2,
-    );
-  }
-
-  Widget _buildCoordinatesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildStatusToggle({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
       children: [
-        Text(
-          'Koordinat (Opsional)',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const Gap(12),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _latController,
-                decoration: const InputDecoration(
-                  labelText: 'Latitude',
-                  hintText: '-7.7956',
-                  prefixIcon: Icon(Icons.my_location),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final lat = double.tryParse(value);
-                    if (lat == null || lat < -90 || lat > 90) {
-                      return 'Latitude tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: (value ? AppColors.success : Colors.grey).withValues(
+              alpha: 0.1,
             ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _lonController,
-                decoration: const InputDecoration(
-                  labelText: 'Longitude',
-                  hintText: '110.3695',
-                  prefixIcon: Icon(Icons.location_on),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final lon = double.tryParse(value);
-                    if (lon == null || lon < -180 || lon > 180) {
-                      return 'Longitude tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-        const Gap(12),
-        TextFormField(
-          controller: _altController,
-          decoration: const InputDecoration(
-            labelText: 'Altitude (meter)',
-            hintText: '113.5',
-            prefixIcon: Icon(Icons.terrain),
+            borderRadius: BorderRadius.circular(10),
           ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (value) {
-            if (value != null && value.isNotEmpty) {
-              final alt = double.tryParse(value);
-              if (alt == null || alt < 0) {
-                return 'Altitude tidak valid';
-              }
-            }
-            return null;
-          },
+          child: Icon(
+            value ? Icons.check_circle_outline : Icons.cancel_outlined,
+            color: value ? AppColors.success : Colors.grey,
+            size: 22,
+          ),
+        ),
+        SizedBox(width: context.rw(0.03)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(14),
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1D1D1D),
+                ),
+              ),
+              Text(
+                value ? 'Aktif' : 'Nonaktif',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w300,
+                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: AppColors.primary,
         ),
       ],
     );
   }
 
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: const Text('Status Sensor'),
-      subtitle: Text(_status == 1 ? 'Aktif' : 'Nonaktif'),
-      value: _status == 1,
-      onChanged: (value) {
-        setState(() {
-          _status = value ? 1 : 0;
-        });
-      },
-      secondary: Icon(
-        _status == 1 ? Icons.check_circle : Icons.cancel,
-        color: _status == 1 ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah Sensor',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    // Create sensor entity
     final sensor = Sensor(
       sensId: _idController.text.trim(),
       devId: _selectedDeviceId,
@@ -393,7 +524,6 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       sensSts: _status,
     );
 
-    // Submit
     final success = isEditMode
         ? await ref
               .read(sensorFormProvider.notifier)

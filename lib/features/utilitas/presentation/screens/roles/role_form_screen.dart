@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/role_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_checkbox_group.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/role.dart';
 
@@ -53,24 +55,26 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
 
     if (isEditMode && !_isInitialized) {
       final roleAsync = ref.watch(utilitasRoleDetailProvider(widget.roleId!));
-
       roleAsync.whenData((role) {
-        if (!_isInitialized) {
-          _initializeForm(role);
-        }
+        if (!_isInitialized) _initializeForm(role);
       });
 
       if (roleAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (roleAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${roleAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: roleAsync.error!,
+            onRetry: () =>
+                ref.invalidate(utilitasRoleDetailProvider(widget.roleId!)),
+          ),
         );
       }
     }
@@ -79,33 +83,163 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditMode ? 'Edit Role' : 'Tambah Role'),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat role...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildRoleIdField(),
-                const Gap(16),
-                _buildRoleNameField(),
-                const Gap(16),
-                _buildDescriptionField(),
-                const Gap(24),
-                _buildStatusSwitch(),
-                const Gap(24),
-                _buildPermissionsSection(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit Role' : 'Tambah Role',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat role...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit Role' : 'Tambah Role',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              UtilitasSectionCard(
+                title: 'Informasi Role',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _idController,
+                      label: 'Role ID',
+                      hint: 'Contoh: ROLE001',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Role ID wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _nameController,
+                      label: 'Nama Role',
+                      hint: 'Contoh: Admin, Operator, Viewer',
+                      icon: Icons.admin_panel_settings,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama role wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _descController,
+                      label: 'Deskripsi',
+                      hint: 'Contoh: Role untuk administrator sistem',
+                      icon: Icons.description,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Status',
+                child: UtilitasFormFields.buildStatusToggle(
+                  context,
+                  label: 'Status Role',
+                  value: _status == 1,
+                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              // ── Permissions ──────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Permissions',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(16),
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1D1D1D),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.info.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${_selectedPermissionIds.length} dipilih',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(11),
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.info,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: context.rh(0.006)),
+                    Text(
+                      'Pilih permissions yang dapat diakses oleh role ini',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    PermissionCheckboxGroup(
+                      selectedPermissionIds: _selectedPermissionIds,
+                      onChanged: (newSelected) {
+                        setState(() => _selectedPermissionIds = newSelected);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Role',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
           ),
         ),
       ),
@@ -121,151 +255,8 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
     _isInitialized = true;
   }
 
-  Widget _buildRoleIdField() {
-    return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode,
-      decoration: InputDecoration(
-        labelText: 'Role ID *',
-        hintText: 'Contoh: ROLE001',
-        prefixIcon: const Icon(Icons.tag),
-        filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Role ID wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Role ID minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildRoleNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Role *',
-        hintText: 'Contoh: Admin, Operator, Viewer',
-        prefixIcon: Icon(Icons.admin_panel_settings),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama role wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Nama role minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDescriptionField() {
-    return TextFormField(
-      controller: _descController,
-      decoration: const InputDecoration(
-        labelText: 'Deskripsi',
-        hintText: 'Contoh: Role untuk administrator sistem',
-        prefixIcon: Icon(Icons.description),
-      ),
-      maxLines: 2,
-    );
-  }
-
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: const Text('Status Role'),
-      subtitle: Text(_status == 1 ? 'Aktif' : 'Nonaktif'),
-      value: _status == 1,
-      onChanged: (value) {
-        setState(() {
-          _status = value ? 1 : 0;
-        });
-      },
-      secondary: Icon(
-        _status == 1 ? Icons.check_circle : Icons.cancel,
-        color: _status == 1 ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-
-  Widget _buildPermissionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'Permissions',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const Gap(8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                '${_selectedPermissionIds.length} dipilih',
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 12,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Gap(4),
-        Text(
-          'Pilih permissions yang dapat diakses oleh role ini',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 12,
-            color: Colors.grey[500],
-          ),
-        ),
-        const Gap(16),
-        PermissionCheckboxGroup(
-          selectedPermissionIds: _selectedPermissionIds,
-          onChanged: (newSelected) {
-            setState(() {
-              _selectedPermissionIds = newSelected;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah Role',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final role = Role(
       roleId: _idController.text.trim(),
