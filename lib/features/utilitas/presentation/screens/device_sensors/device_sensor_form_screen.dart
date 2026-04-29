@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/device_sensor_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/device_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/sensor_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/unit_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/device_sensor.dart';
 
 class DeviceSensorFormScreen extends ConsumerStatefulWidget {
@@ -85,24 +87,27 @@ class _DeviceSensorFormScreenState
       final dsAsync = ref.watch(
         utilitasDeviceSensorDetailProvider(widget.dsId!),
       );
-
       dsAsync.whenData((ds) {
-        if (!_isInitialized) {
-          _initializeForm(ds);
-        }
+        if (!_isInitialized) _initializeForm(ds);
       });
 
       if (dsAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (dsAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${dsAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: dsAsync.error!,
+            onRetry: () => ref.invalidate(
+              utilitasDeviceSensorDetailProvider(widget.dsId!),
+            ),
+          ),
         );
       }
     }
@@ -111,43 +116,386 @@ class _DeviceSensorFormScreenState
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            isEditMode ? 'Edit Device Sensor' : 'Tambah Device Sensor',
-          ),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat mapping...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildIdField(),
-                const Gap(16),
-                _buildNameField(),
-                const Gap(16),
-                _buildDeviceDropdown(),
-                const Gap(16),
-                _buildSensorDropdown(),
-                const Gap(16),
-                _buildUnitDropdown(),
-                const Gap(16),
-                _buildAddressField(),
-                const Gap(16),
-                _buildSeqField(),
-                const Gap(24),
-                _buildThresholdSection(),
-                const Gap(24),
-                _buildStatusSwitch(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit Device Sensor' : 'Tambah Device Sensor',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat mapping...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit Device Sensor' : 'Tambah Device Sensor',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              UtilitasSectionCard(
+                title: 'Informasi Mapping',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _idController,
+                      label: 'DS ID',
+                      hint: 'Contoh: DS001',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'DS ID wajib diisi';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _nameController,
+                      label: 'Nama',
+                      hint: 'Contoh: Nitrogen Sensor DEV001',
+                      icon: Icons.cable,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama wajib diisi';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildDeviceDropdown(context),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildSensorDropdown(context),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildUnitDropdown(context),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _addressController,
+                      label: 'Alamat',
+                      hint: 'Contoh: 0x10',
+                      icon: Icons.location_searching,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _seqController,
+                      label: 'Urutan (Seq)',
+                      hint: 'Contoh: 1',
+                      icon: Icons.format_list_numbered,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Threshold',
+                subtitle: 'Konfigurasi batas nilai sensor',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _normalValueController,
+                      label: 'Nilai Normal',
+                      hint: 'Contoh: 25.0',
+                      icon: Icons.check_circle_outline,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildThresholdRow(
+                      context,
+                      leftController: _minNormController,
+                      leftLabel: 'Min Normal',
+                      leftIcon: Icons.arrow_downward,
+                      leftColor: AppColors.success,
+                      rightController: _maxNormController,
+                      rightLabel: 'Max Normal',
+                      rightIcon: Icons.arrow_upward,
+                      rightColor: AppColors.success,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildThresholdRow(
+                      context,
+                      leftController: _minValueController,
+                      leftLabel: 'Min Absolut',
+                      leftIcon: Icons.arrow_downward,
+                      leftColor: AppColors.info,
+                      rightController: _maxValueController,
+                      rightLabel: 'Max Absolut',
+                      rightIcon: Icons.arrow_upward,
+                      rightColor: AppColors.info,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildThresholdRow(
+                      context,
+                      leftController: _minWarnController,
+                      leftLabel: 'Min Warning',
+                      leftIcon: Icons.warning_amber,
+                      leftColor: AppColors.warning,
+                      rightController: _maxWarnController,
+                      rightLabel: 'Max Warning',
+                      rightIcon: Icons.warning_amber,
+                      rightColor: AppColors.warning,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Status',
+                child: UtilitasFormFields.buildStatusToggle(
+                  context,
+                  label: 'Status Mapping',
+                  value: _status == 1,
+                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Mapping',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThresholdRow(
+    BuildContext context, {
+    required TextEditingController leftController,
+    required String leftLabel,
+    required IconData leftIcon,
+    required Color leftColor,
+    required TextEditingController rightController,
+    required String rightLabel,
+    required IconData rightIcon,
+    required Color rightColor,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: leftController,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(14),
+              color: const Color(0xFF1D1D1D),
+            ),
+            decoration: InputDecoration(
+              labelText: leftLabel,
+              prefixIcon: Icon(leftIcon, size: 18, color: leftColor),
+              filled: true,
+              fillColor: AppColors.surfaceVariant,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
+              labelStyle: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+              signed: true,
+            ),
+          ),
+        ),
+        SizedBox(width: context.rw(0.03)),
+        Expanded(
+          child: TextFormField(
+            controller: rightController,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(14),
+              color: const Color(0xFF1D1D1D),
+            ),
+            decoration: InputDecoration(
+              labelText: rightLabel,
+              prefixIcon: Icon(rightIcon, size: 18, color: rightColor),
+              filled: true,
+              fillColor: AppColors.surfaceVariant,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
+              labelStyle: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+              signed: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDeviceDropdown(BuildContext context) {
+    final devicesAsync = ref.watch(utilitasDeviceListProvider);
+    return devicesAsync.when(
+      data: (devices) => UtilitasFormFields.buildDropdown<String>(
+        context,
+        value: _selectedDeviceId,
+        label: 'Device *',
+        hint: 'Pilih device',
+        icon: Icons.device_hub,
+        items: devices
+            .map(
+              (d) => DropdownMenuItem(
+                value: d.devId,
+                child: Text('${d.displayName} (${d.devId})'),
+              ),
+            )
+            .toList(),
+        onChanged: (v) => setState(() => _selectedDeviceId = v),
+        validator: (v) => v == null ? 'Device wajib dipilih' : null,
+      ),
+      loading: () => _loadingDropdown(context),
+      error: (_, __) => _errorDropdown(context, 'Gagal memuat device'),
+    );
+  }
+
+  Widget _buildSensorDropdown(BuildContext context) {
+    final sensorsAsync = ref.watch(utilitasSensorListProvider);
+    return sensorsAsync.when(
+      data: (sensors) => UtilitasFormFields.buildDropdown<String>(
+        context,
+        value: _selectedSensorId,
+        label: 'Sensor',
+        hint: 'Pilih sensor (opsional)',
+        icon: Icons.sensors,
+        items: [
+          const DropdownMenuItem(value: null, child: Text('Tidak ada')),
+          ...sensors.map(
+            (s) => DropdownMenuItem(
+              value: s.sensId,
+              child: Text('${s.displayName} (${s.sensId})'),
+            ),
+          ),
+        ],
+        onChanged: (v) => setState(() => _selectedSensorId = v),
+      ),
+      loading: () => _loadingDropdown(context),
+      error: (_, __) => _errorDropdown(context, 'Gagal memuat sensor'),
+    );
+  }
+
+  Widget _buildUnitDropdown(BuildContext context) {
+    final unitsAsync = ref.watch(utilitasUnitListProvider);
+    return unitsAsync.when(
+      data: (units) => UtilitasFormFields.buildDropdown<String>(
+        context,
+        value: _selectedUnitId,
+        label: 'Unit',
+        hint: 'Pilih unit (opsional)',
+        icon: Icons.straighten,
+        items: [
+          const DropdownMenuItem(value: null, child: Text('Tidak ada')),
+          ...units.map(
+            (u) => DropdownMenuItem(
+              value: u.unitId,
+              child: Text(u.displayNameWithSymbol),
+            ),
+          ),
+        ],
+        onChanged: (v) => setState(() => _selectedUnitId = v),
+      ),
+      loading: () => _loadingDropdown(context),
+      error: (_, __) => _errorDropdown(context, 'Gagal memuat unit'),
+    );
+  }
+
+  Widget _loadingDropdown(BuildContext context) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _errorDropdown(BuildContext context, String message) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          message,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(13),
+            color: AppColors.error,
           ),
         ),
       ),
@@ -171,305 +519,6 @@ class _DeviceSensorFormScreenState
     _selectedUnitId = ds.unitId;
     _status = ds.dsSts ?? 1;
     _isInitialized = true;
-  }
-
-  Widget _buildIdField() {
-    return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode,
-      decoration: InputDecoration(
-        labelText: 'DS ID *',
-        hintText: 'Contoh: DS001',
-        prefixIcon: const Icon(Icons.tag),
-        filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'DS ID wajib diisi';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama *',
-        hintText: 'Contoh: Nitrogen Sensor DEV001',
-        prefixIcon: Icon(Icons.cable),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama wajib diisi';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDeviceDropdown() {
-    final devicesAsync = ref.watch(utilitasDeviceListProvider);
-
-    return devicesAsync.when(
-      data: (devices) => DropdownButtonFormField<String>(
-        value: _selectedDeviceId,
-        decoration: const InputDecoration(
-          labelText: 'Device *',
-          prefixIcon: Icon(Icons.device_hub),
-        ),
-        items: devices
-            .map(
-              (d) => DropdownMenuItem(
-                value: d.devId,
-                child: Text('${d.displayName} (${d.devId})'),
-              ),
-            )
-            .toList(),
-        onChanged: (value) => setState(() => _selectedDeviceId = value),
-        validator: (value) => value == null ? 'Device wajib dipilih' : null,
-      ),
-      loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const Text('Gagal memuat device'),
-    );
-  }
-
-  Widget _buildSensorDropdown() {
-    final sensorsAsync = ref.watch(utilitasSensorListProvider);
-
-    return sensorsAsync.when(
-      data: (sensors) => DropdownButtonFormField<String>(
-        value: _selectedSensorId,
-        decoration: const InputDecoration(
-          labelText: 'Sensor',
-          prefixIcon: Icon(Icons.sensors),
-        ),
-        items: [
-          const DropdownMenuItem(value: null, child: Text('Tidak ada')),
-          ...sensors.map(
-            (s) => DropdownMenuItem(
-              value: s.sensId,
-              child: Text('${s.displayName} (${s.sensId})'),
-            ),
-          ),
-        ],
-        onChanged: (value) => setState(() => _selectedSensorId = value),
-      ),
-      loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const Text('Gagal memuat sensor'),
-    );
-  }
-
-  Widget _buildUnitDropdown() {
-    final unitsAsync = ref.watch(utilitasUnitListProvider);
-
-    return unitsAsync.when(
-      data: (units) => DropdownButtonFormField<String>(
-        value: _selectedUnitId,
-        decoration: const InputDecoration(
-          labelText: 'Unit',
-          prefixIcon: Icon(Icons.straighten),
-        ),
-        items: [
-          const DropdownMenuItem(value: null, child: Text('Tidak ada')),
-          ...units.map(
-            (u) => DropdownMenuItem(
-              value: u.unitId,
-              child: Text(u.displayNameWithSymbol),
-            ),
-          ),
-        ],
-        onChanged: (value) => setState(() => _selectedUnitId = value),
-      ),
-      loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const Text('Gagal memuat unit'),
-    );
-  }
-
-  Widget _buildAddressField() {
-    return TextFormField(
-      controller: _addressController,
-      decoration: const InputDecoration(
-        labelText: 'Alamat',
-        hintText: 'Contoh: 0x10',
-        prefixIcon: Icon(Icons.location_searching),
-      ),
-    );
-  }
-
-  Widget _buildSeqField() {
-    return TextFormField(
-      controller: _seqController,
-      decoration: const InputDecoration(
-        labelText: 'Urutan (Seq)',
-        hintText: 'Contoh: 1',
-        prefixIcon: Icon(Icons.format_list_numbered),
-      ),
-      keyboardType: TextInputType.number,
-    );
-  }
-
-  Widget _buildThresholdSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Konfigurasi Threshold',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const Gap(4),
-        Text(
-          'Atur batas nilai normal dan peringatan sensor',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 12,
-            color: Colors.grey[500],
-          ),
-        ),
-        const Gap(16),
-        // Normal value
-        TextFormField(
-          controller: _normalValueController,
-          decoration: const InputDecoration(
-            labelText: 'Nilai Normal',
-            prefixIcon: Icon(Icons.check_circle_outline, color: Colors.green),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const Gap(12),
-        // Normal range
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _minNormController,
-                decoration: const InputDecoration(
-                  labelText: 'Min Normal',
-                  prefixIcon: Icon(Icons.arrow_downward, color: Colors.green),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _maxNormController,
-                decoration: const InputDecoration(
-                  labelText: 'Max Normal',
-                  prefixIcon: Icon(Icons.arrow_upward, color: Colors.green),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Gap(12),
-        // Absolute range
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _minValueController,
-                decoration: const InputDecoration(
-                  labelText: 'Min Absolut',
-                  prefixIcon: Icon(Icons.arrow_downward, color: Colors.blue),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _maxValueController,
-                decoration: const InputDecoration(
-                  labelText: 'Max Absolut',
-                  prefixIcon: Icon(Icons.arrow_upward, color: Colors.blue),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Gap(12),
-        // Warning range
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _minWarnController,
-                decoration: const InputDecoration(
-                  labelText: 'Min Warning',
-                  prefixIcon: Icon(Icons.warning_amber, color: Colors.orange),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _maxWarnController,
-                decoration: const InputDecoration(
-                  labelText: 'Max Warning',
-                  prefixIcon: Icon(Icons.warning_amber, color: Colors.orange),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: const Text('Status Mapping'),
-      subtitle: Text(_status == 1 ? 'Aktif' : 'Nonaktif'),
-      value: _status == 1,
-      onChanged: (value) => setState(() => _status = value ? 1 : 0),
-      secondary: Icon(
-        _status == 1 ? Icons.check_circle : Icons.cancel,
-        color: _status == 1 ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah Mapping',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
   }
 
   double? _parseDouble(String text) =>

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/user_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 
 class UserFormScreen extends ConsumerStatefulWidget {
@@ -59,24 +61,26 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
     if (isEditMode && !_isInitialized) {
       final userAsync = ref.watch(utilitasUserDetailProvider(widget.userId!));
-
       userAsync.whenData((user) {
-        if (!_isInitialized) {
-          _initializeForm(user);
-        }
+        if (!_isInitialized) _initializeForm(user);
       });
 
       if (userAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (userAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${userAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: userAsync.error!,
+            onRetry: () =>
+                ref.invalidate(utilitasUserDetailProvider(widget.userId!)),
+          ),
         );
       }
     }
@@ -85,36 +89,167 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditMode ? 'Edit User' : 'Tambah User'),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat user...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildUserIdField(),
-                const Gap(16),
-                _buildUserNameField(),
-                const Gap(16),
-                _buildEmailField(),
-                const Gap(16),
-                _buildPhoneField(),
-                const Gap(16),
-                if (!isEditMode) ...[_buildPasswordField(), const Gap(16)],
-                _buildRoleDropdown(),
-                const Gap(16),
-                _buildStatusDropdown(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit User' : 'Tambah User',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat user...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit User' : 'Tambah User',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              UtilitasSectionCard(
+                title: 'Informasi Akun',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _idController,
+                      label: 'User ID',
+                      hint: 'Contoh: USER001',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'User ID wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _nameController,
+                      label: 'Nama Lengkap',
+                      hint: 'Contoh: John Doe',
+                      icon: Icons.person,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _emailController,
+                      label: 'Email',
+                      hint: 'Contoh: user@example.com',
+                      icon: Icons.email,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v != null && v.isNotEmpty) {
+                          final emailRegex = RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          );
+                          if (!emailRegex.hasMatch(v)) {
+                            return 'Format email tidak valid';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _phoneController,
+                      label: 'No. Telepon',
+                      hint: 'Contoh: 081234567890',
+                      icon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                      validator: (v) {
+                        if (v != null && v.isNotEmpty) {
+                          if (v.length < 10 || v.length > 15) {
+                            return 'No. telepon tidak valid';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              if (!isEditMode) ...[
+                UtilitasSectionCard(
+                  title: 'Keamanan',
+                  child: _buildPasswordField(context),
+                ),
+                SizedBox(height: context.rh(0.02)),
+              ],
+
+              UtilitasSectionCard(
+                title: 'Role & Status',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildDropdown<String>(
+                      context,
+                      value: _selectedRoleId,
+                      label: 'Role *',
+                      hint: 'Pilih role',
+                      icon: Icons.admin_panel_settings,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'ROLE001',
+                          child: Text('Admin'),
+                        ),
+                        DropdownMenuItem(value: 'ROLE002', child: Text('User')),
+                        DropdownMenuItem(
+                          value: 'ROLE003',
+                          child: Text('Viewer'),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _selectedRoleId = v),
+                      validator: (v) => v == null ? 'Role wajib dipilih' : null,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildDropdown<String>(
+                      context,
+                      value: _status,
+                      label: 'Status',
+                      hint: 'Pilih status',
+                      icon: Icons.toggle_on,
+                      items: const [
+                        DropdownMenuItem(value: 'active', child: Text('Aktif')),
+                        DropdownMenuItem(
+                          value: 'inactive',
+                          child: Text('Nonaktif'),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _status = v ?? 'active'),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah User',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
           ),
         ),
       ),
@@ -131,185 +266,65 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     _isInitialized = true;
   }
 
-  Widget _buildUserIdField() {
-    return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode,
-      decoration: InputDecoration(
-        labelText: 'User ID *',
-        hintText: 'Contoh: USER001',
-        prefixIcon: const Icon(Icons.tag),
-        filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'User ID wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'User ID minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildUserNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Lengkap *',
-        hintText: 'Contoh: John Doe',
-        prefixIcon: Icon(Icons.person),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Nama minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextFormField(
-      controller: _emailController,
-      decoration: const InputDecoration(
-        labelText: 'Email',
-        hintText: 'Contoh: user@example.com',
-        prefixIcon: Icon(Icons.email),
-      ),
-      keyboardType: TextInputType.emailAddress,
-      validator: (value) {
-        if (value != null && value.isNotEmpty) {
-          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-          if (!emailRegex.hasMatch(value)) {
-            return 'Format email tidak valid';
-          }
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPhoneField() {
-    return TextFormField(
-      controller: _phoneController,
-      decoration: const InputDecoration(
-        labelText: 'No. Telepon',
-        hintText: 'Contoh: 081234567890',
-        prefixIcon: Icon(Icons.phone),
-      ),
-      keyboardType: TextInputType.phone,
-      validator: (value) {
-        if (value != null && value.isNotEmpty) {
-          if (value.length < 10 || value.length > 15) {
-            return 'No. telepon tidak valid';
-          }
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordField() {
+  Widget _buildPasswordField(BuildContext context) {
     return TextFormField(
       controller: _passwordController,
       obscureText: _obscurePassword,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(14),
+        color: const Color(0xFF1D1D1D),
+      ),
       decoration: InputDecoration(
         labelText: 'Password *',
         hintText: 'Minimal 6 karakter',
-        prefixIcon: const Icon(Icons.lock),
+        prefixIcon: const Icon(Icons.lock, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            size: 20,
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.4),
           ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        ),
+        filled: true,
+        fillColor: AppColors.surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(14),
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password wajib diisi';
-        }
-        if (value.length < 6) {
-          return 'Password minimal 6 karakter';
-        }
+      validator: (v) {
+        if (v == null || v.isEmpty) return 'Password wajib diisi';
+        if (v.length < 6) return 'Password minimal 6 karakter';
         return null;
       },
-    );
-  }
-
-  Widget _buildRoleDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedRoleId,
-      decoration: const InputDecoration(
-        labelText: 'Role *',
-        hintText: 'Pilih role',
-        prefixIcon: Icon(Icons.admin_panel_settings),
-      ),
-      items: const [
-        DropdownMenuItem(value: 'ROLE001', child: Text('Admin')),
-        DropdownMenuItem(value: 'ROLE002', child: Text('User')),
-        DropdownMenuItem(value: 'ROLE003', child: Text('Viewer')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _selectedRoleId = value;
-        });
-      },
-      validator: (value) {
-        if (value == null) {
-          return 'Role wajib dipilih';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildStatusDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _status,
-      decoration: const InputDecoration(
-        labelText: 'Status',
-        prefixIcon: Icon(Icons.toggle_on),
-      ),
-      items: const [
-        DropdownMenuItem(value: 'active', child: Text('Aktif')),
-        DropdownMenuItem(value: 'inactive', child: Text('Nonaktif')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _status = value ?? 'active';
-        });
-      },
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah User',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
     );
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final user = User(
       userId: _idController.text.trim(),

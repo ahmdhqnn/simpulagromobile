@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/unit_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/unit.dart';
 
 class UnitFormScreen extends ConsumerStatefulWidget {
@@ -54,24 +56,26 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
 
     if (isEditMode && !_isInitialized) {
       final unitAsync = ref.watch(utilitasUnitDetailProvider(widget.unitId!));
-
       unitAsync.whenData((unit) {
-        if (!_isInitialized) {
-          _initializeForm(unit);
-        }
+        if (!_isInitialized) _initializeForm(unit);
       });
 
       if (unitAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (unitAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${unitAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: unitAsync.error!,
+            onRetry: () =>
+                ref.invalidate(utilitasUnitDetailProvider(widget.unitId!)),
+          ),
         );
       }
     }
@@ -80,33 +84,111 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditMode ? 'Edit Unit' : 'Tambah Unit'),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat unit...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildUnitIdField(),
-                const Gap(16),
-                _buildUnitNameField(),
-                const Gap(16),
-                _buildSymbolField(),
-                const Gap(16),
-                _buildDescriptionField(),
-                const Gap(24),
-                _buildStatusSwitch(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit Unit' : 'Tambah Unit',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat unit...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit Unit' : 'Tambah Unit',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              UtilitasSectionCard(
+                title: 'Informasi Unit',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _idController,
+                      label: 'Unit ID',
+                      hint: 'Contoh: TEMP_C',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Unit ID wajib diisi';
+                        if (v.length < 2) return 'Minimal 2 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _nameController,
+                      label: 'Nama Unit',
+                      hint: 'Contoh: Celsius',
+                      icon: Icons.straighten,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama unit wajib diisi';
+                        if (v.length < 2) return 'Minimal 2 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _symbolController,
+                      label: 'Simbol',
+                      hint: 'Contoh: °C',
+                      icon: Icons.text_fields,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Simbol wajib diisi';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _descController,
+                      label: 'Deskripsi',
+                      hint: 'Contoh: Satuan suhu dalam derajat Celsius',
+                      icon: Icons.description,
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Status',
+                child: UtilitasFormFields.buildStatusToggle(
+                  context,
+                  label: 'Status Unit',
+                  value: _status == 1,
+                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Unit',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
           ),
         ),
       ),
@@ -122,113 +204,8 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
     _isInitialized = true;
   }
 
-  Widget _buildUnitIdField() {
-    return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode,
-      decoration: InputDecoration(
-        labelText: 'Unit ID *',
-        hintText: 'Contoh: TEMP_C',
-        prefixIcon: const Icon(Icons.tag),
-        filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Unit ID wajib diisi';
-        }
-        if (value.length < 2) {
-          return 'Unit ID minimal 2 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildUnitNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Unit *',
-        hintText: 'Contoh: Celsius',
-        prefixIcon: Icon(Icons.straighten),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama unit wajib diisi';
-        }
-        if (value.length < 2) {
-          return 'Nama unit minimal 2 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildSymbolField() {
-    return TextFormField(
-      controller: _symbolController,
-      decoration: const InputDecoration(
-        labelText: 'Simbol *',
-        hintText: 'Contoh: °C',
-        prefixIcon: Icon(Icons.text_fields),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Simbol wajib diisi';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDescriptionField() {
-    return TextFormField(
-      controller: _descController,
-      decoration: const InputDecoration(
-        labelText: 'Deskripsi',
-        hintText: 'Contoh: Satuan suhu dalam derajat Celsius',
-        prefixIcon: Icon(Icons.description),
-      ),
-      maxLines: 3,
-    );
-  }
-
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: const Text('Status Unit'),
-      subtitle: Text(_status == 1 ? 'Aktif' : 'Nonaktif'),
-      value: _status == 1,
-      onChanged: (value) {
-        setState(() {
-          _status = value ? 1 : 0;
-        });
-      },
-      secondary: Icon(
-        _status == 1 ? Icons.check_circle : Icons.cancel,
-        color: _status == 1 ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah Unit',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final unit = Unit(
       unitId: _idController.text.trim(),

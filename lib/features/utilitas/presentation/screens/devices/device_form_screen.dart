@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:simpulagromobile/shared/widgets/loading_overlay.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
+import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/device_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/device.dart';
 
 class DeviceFormScreen extends ConsumerStatefulWidget {
-  final String? deviceId; // null = create, not null = edit
+  final String? deviceId;
 
   const DeviceFormScreen({super.key, this.deviceId});
 
@@ -20,7 +22,6 @@ class DeviceFormScreen extends ConsumerStatefulWidget {
 class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Form controllers
   late final TextEditingController _idController;
   late final TextEditingController _nameController;
   late final TextEditingController _locationController;
@@ -65,29 +66,30 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(deviceFormProvider);
 
-    // Load device data for edit mode
     if (isEditMode && !_isInitialized) {
       final deviceAsync = ref.watch(
         utilitasDeviceDetailProvider(widget.deviceId!),
       );
-
       deviceAsync.whenData((device) {
-        if (!_isInitialized) {
-          _initializeForm(device);
-        }
+        if (!_isInitialized) _initializeForm(device);
       });
 
       if (deviceAsync.isLoading) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Loading...')),
-          body: const Center(child: CircularProgressIndicator()),
+        return UtilitasFormScaffold(
+          title: 'Memuat...',
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
         );
       }
-
       if (deviceAsync.hasError) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error: ${deviceAsync.error}')),
+        return UtilitasFormScaffold(
+          title: 'Error',
+          body: UtilitasErrorState(
+            error: deviceAsync.error!,
+            onRetry: () =>
+                ref.invalidate(utilitasDeviceDetailProvider(widget.deviceId!)),
+          ),
         );
       }
     }
@@ -96,35 +98,171 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
 
     return PermissionGuardScreen(
       permission: permission,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditMode ? 'Edit Device' : 'Tambah Device'),
-          centerTitle: true,
-        ),
-        body: LoadingOverlay(
-          isLoading: formState.isLoading,
-          message: isEditMode ? 'Menyimpan perubahan...' : 'Membuat device...',
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildDeviceIdField(),
-                const Gap(16),
-                _buildDeviceNameField(),
-                const Gap(16),
-                _buildLocationField(),
-                const Gap(24),
-                _buildConnectionSection(),
-                const Gap(24),
-                _buildCoordinatesSection(),
-                const Gap(24),
-                _buildStatusSwitch(),
-                const Gap(32),
-                _buildSubmitButton(),
-                const Gap(16),
-              ],
+      child: UtilitasFormScaffold(
+        title: isEditMode ? 'Edit Device' : 'Tambah Device',
+        isLoading: formState.isLoading,
+        loadingMessage: isEditMode
+            ? 'Menyimpan perubahan...'
+            : 'Membuat device...',
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
             ),
+            children: [
+              SizedBox(height: context.rh(0.01)),
+              Text(
+                isEditMode ? 'Edit Device' : 'Tambah Device',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF1D1D1D),
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(height: context.rh(0.014)),
+              UtilitasSectionCard(
+                title: 'Informasi Dasar',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _idController,
+                      label: 'Device ID',
+                      hint: 'Contoh: DEV001',
+                      icon: Icons.tag,
+                      enabled: !isEditMode,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Device ID wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _nameController,
+                      label: 'Nama Device',
+                      hint: 'Contoh: Main Gateway',
+                      icon: Icons.device_hub,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Nama device wajib diisi';
+                        if (v.length < 3) return 'Minimal 3 karakter';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _locationController,
+                      label: 'Lokasi',
+                      hint: 'Contoh: Greenhouse A',
+                      icon: Icons.place,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Koneksi',
+                subtitle: 'Opsional — IP address dan port device',
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: UtilitasFormFields.buildField(
+                        context,
+                        controller: _ipController,
+                        label: 'IP Address',
+                        hint: '192.168.1.100',
+                        icon: Icons.wifi,
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (v != null && v.isNotEmpty) {
+                            final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+                            if (!ipRegex.hasMatch(v)) return 'IP tidak valid';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    SizedBox(width: context.rw(0.03)),
+                    Expanded(
+                      child: UtilitasFormFields.buildField(
+                        context,
+                        controller: _portController,
+                        label: 'Port',
+                        hint: '8080',
+                        icon: Icons.settings_ethernet,
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (v != null && v.isNotEmpty) {
+                            final port = int.tryParse(v);
+                            if (port == null || port < 1 || port > 65535) {
+                              return 'Tidak valid';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Koordinat',
+                subtitle: 'Opsional — untuk pemetaan lokasi device',
+                child: Column(
+                  children: [
+                    UtilitasFormFields.buildCoordinateRow(
+                      context,
+                      latController: _latController,
+                      lonController: _lonController,
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    UtilitasFormFields.buildField(
+                      context,
+                      controller: _altController,
+                      label: 'Altitude (meter)',
+                      hint: '113.5',
+                      icon: Icons.terrain,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+
+              UtilitasSectionCard(
+                title: 'Status',
+                child: UtilitasFormFields.buildStatusToggle(
+                  context,
+                  label: 'Status Device',
+                  value: _status == 1,
+                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
+                ),
+              ),
+              SizedBox(height: context.rh(0.03)),
+
+              UtilitasSubmitButton(
+                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Device',
+                onPressed: _handleSubmit,
+              ),
+              SizedBox(height: context.rh(0.04)),
+            ],
           ),
         ),
       ),
@@ -144,244 +282,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
     _isInitialized = true;
   }
 
-  Widget _buildDeviceIdField() {
-    return TextFormField(
-      controller: _idController,
-      enabled: !isEditMode,
-      decoration: InputDecoration(
-        labelText: 'Device ID *',
-        hintText: 'Contoh: DEV001',
-        prefixIcon: const Icon(Icons.tag),
-        filled: true,
-        fillColor: isEditMode ? Colors.grey[100] : null,
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Device ID wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Device ID minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDeviceNameField() {
-    return TextFormField(
-      controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Device *',
-        hintText: 'Contoh: Main Gateway',
-        prefixIcon: Icon(Icons.device_hub),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Nama device wajib diisi';
-        }
-        if (value.length < 3) {
-          return 'Nama device minimal 3 karakter';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildLocationField() {
-    return TextFormField(
-      controller: _locationController,
-      decoration: const InputDecoration(
-        labelText: 'Lokasi',
-        hintText: 'Contoh: Greenhouse A',
-        prefixIcon: Icon(Icons.place),
-      ),
-      maxLines: 2,
-    );
-  }
-
-  Widget _buildConnectionSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Koneksi (Opsional)',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const Gap(12),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                controller: _ipController,
-                decoration: const InputDecoration(
-                  labelText: 'IP Address',
-                  hintText: '192.168.1.100',
-                  prefixIcon: Icon(Icons.wifi),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                    if (!ipRegex.hasMatch(value)) {
-                      return 'IP tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _portController,
-                decoration: const InputDecoration(
-                  labelText: 'Port',
-                  hintText: '8080',
-                  prefixIcon: Icon(Icons.settings_ethernet),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final port = int.tryParse(value);
-                    if (port == null || port < 1 || port > 65535) {
-                      return 'Port tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoordinatesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Koordinat (Opsional)',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const Gap(12),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _latController,
-                decoration: const InputDecoration(
-                  labelText: 'Latitude',
-                  hintText: '-7.7956',
-                  prefixIcon: Icon(Icons.my_location),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final lat = double.tryParse(value);
-                    if (lat == null || lat < -90 || lat > 90) {
-                      return 'Latitude tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: TextFormField(
-                controller: _lonController,
-                decoration: const InputDecoration(
-                  labelText: 'Longitude',
-                  hintText: '110.3695',
-                  prefixIcon: Icon(Icons.location_on),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final lon = double.tryParse(value);
-                    if (lon == null || lon < -180 || lon > 180) {
-                      return 'Longitude tidak valid';
-                    }
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-        const Gap(12),
-        TextFormField(
-          controller: _altController,
-          decoration: const InputDecoration(
-            labelText: 'Altitude (meter)',
-            hintText: '113.5',
-            prefixIcon: Icon(Icons.terrain),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (value) {
-            if (value != null && value.isNotEmpty) {
-              final alt = double.tryParse(value);
-              if (alt == null || alt < 0) {
-                return 'Altitude tidak valid';
-              }
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: const Text('Status Device'),
-      subtitle: Text(_status == 1 ? 'Aktif' : 'Nonaktif'),
-      value: _status == 1,
-      onChanged: (value) {
-        setState(() {
-          _status = value ? 1 : 0;
-        });
-      },
-      secondary: Icon(
-        _status == 1 ? Icons.check_circle : Icons.cancel,
-        color: _status == 1 ? Colors.green : Colors.grey,
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _handleSubmit,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        isEditMode ? 'Simpan Perubahan' : 'Tambah Device',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    // Create device entity
     final device = Device(
       devId: _idController.text.trim(),
       devName: _nameController.text.trim(),
@@ -406,7 +309,6 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
       devSts: _status,
     );
 
-    // Submit
     final success = isEditMode
         ? await ref
               .read(deviceFormProvider.notifier)

@@ -47,6 +47,18 @@ class PermissionListScreen extends ConsumerWidget {
                   vertical: context.rh(0.01),
                 ),
                 children: [
+                  SizedBox(height: context.rh(0.01)),
+                  Text(
+                    'Permission',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(22),
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF1D1D1D),
+                      height: 1.0,
+                    ),
+                  ),
+                  SizedBox(height: context.rh(0.014)),
                   _SummaryCard(
                     totalPermissions: totalCount,
                     totalGroups: grouped.length,
@@ -89,10 +101,10 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
@@ -162,15 +174,15 @@ class _PermissionGroupCardState extends State<_PermissionGroupCard> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
                   Container(
@@ -256,7 +268,7 @@ class _PermissionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
         children: [
           const SizedBox(width: 62),
