@@ -1,78 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 
-/// Quick actions widget for dashboard
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      _QuickAction(
-        icon: Icons.add_circle_outline,
-        label: 'Tambah Task',
-        color: AppColors.primary,
-        onTap: () => context.push('/task/create'),
-      ),
-      _QuickAction(
-        icon: Icons.sensors_outlined,
-        label: 'Monitoring',
-        color: AppColors.info,
-        onTap: () {
-          // Navigate to monitoring tab (index 1)
-          // This would need to be handled by MainShell
-        },
-      ),
-      _QuickAction(
-        icon: Icons.grass_outlined,
-        label: 'Tanaman',
-        color: AppColors.success,
-        onTap: () {
-          // Navigate to plant tab (index 2)
-        },
-      ),
-      _QuickAction(
-        icon: Icons.analytics_outlined,
-        label: 'Laporan',
-        color: AppColors.warning,
-        onTap: () {
-          // Navigate to reports
-        },
-      ),
-    ];
-
     return Container(
-      padding: EdgeInsets.all(context.rw(0.041)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            'Aksi Cepat',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+          _QuickActionItem(
+            svgIcon: 'assets/icons/check-task-outline-icon.svg',
+            label: 'Task',
+            bgColor: const Color(0xFFE8EFE9),
+            iconColor: AppColors.primary,
+            onTap: () => context.push('/tasks'),
           ),
-          SizedBox(height: context.rh(0.015)),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              childAspectRatio: 0.85,
-              crossAxisSpacing: context.rw(0.02),
-              mainAxisSpacing: context.rw(0.02),
-            ),
-            itemCount: actions.length,
-            itemBuilder: (context, index) => actions[index],
+          SizedBox(width: context.rw(0.025)),
+          _QuickActionItem(
+            svgIcon: 'assets/icons/monitoring-outline-icon.svg',
+            label: 'Monitoring',
+            bgColor: const Color(0xFFFFF6E9),
+            iconColor: const Color(0xFFFFA929),
+            onTap: () {},
+          ),
+          SizedBox(width: context.rw(0.025)),
+          _QuickActionItem(
+            svgIcon: 'assets/icons/plant-outline-icon.svg',
+            label: 'Tanaman',
+            bgColor: const Color(0xFFEDF7EE),
+            iconColor: AppColors.success,
+            onTap: () {},
+          ),
+          SizedBox(width: context.rw(0.025)),
+          _QuickActionItem(
+            svgIcon: 'assets/icons/grafik_outline_icon.svg',
+            label: 'Laporan',
+            bgColor: const Color(0xFFFDEEEE),
+            iconColor: AppColors.error,
+            onTap: () {},
           ),
         ],
       ),
@@ -80,53 +55,56 @@ class QuickActionsWidget extends StatelessWidget {
   }
 }
 
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
+class _QuickActionItem extends StatelessWidget {
+  final String svgIcon;
   final String label;
-  final Color color;
+  final Color bgColor;
+  final Color iconColor;
   final VoidCallback onTap;
 
-  const _QuickAction({
-    required this.icon,
+  const _QuickActionItem({
+    required this.svgIcon,
     required this.label,
-    required this.color,
+    required this.bgColor,
+    required this.iconColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final itemWidth =
+        (context.sw - context.rw(0.051) * 2 - 24 - context.rw(0.025) * 3) / 4;
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(context.rw(0.02)),
+        width: itemWidth.clamp(60.0, 90.0),
+        height: itemWidth.clamp(60.0, 90.0),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.1)),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.all(context.rw(0.025)),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            SvgPicture.asset(
+              svgIcon,
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
-            SizedBox(height: context.rh(0.008)),
+            const SizedBox(height: 5),
             Text(
               label,
-              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(10),
+                fontSize: context.sp(11),
                 fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+                color: iconColor,
+                height: 1.0,
               ),
-              maxLines: 2,
+              textAlign: TextAlign.center,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
