@@ -1,5 +1,6 @@
 /// Summary models untuk dashboard cards
 /// Data dari API: devices, sensors, plants
+library;
 
 class DashboardDeviceSummary {
   final int total;

@@ -2,37 +2,71 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/dashboard_remote_datasource.dart';
+import '../../data/models/dashboard_summary_model.dart';
 import '../../data/models/environmental_health_model.dart';
 
-final dashboardDataSourceProvider =
-    Provider<DashboardRemoteDataSource>((ref) {
+final dashboardDataSourceProvider = Provider<DashboardRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   return DashboardRemoteDataSource(dioClient.dio);
 });
 
-/// Environmental health for selected site
+// ─── Environmental Health ─────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/agro/environmental-health
 final environmentalHealthProvider =
     FutureProvider.autoDispose<EnvironmentalHealth?>((ref) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return null;
-  final ds = ref.watch(dashboardDataSourceProvider);
-  return ds.getEnvironmentalHealth(siteId);
-});
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return null;
+      final ds = ref.watch(dashboardDataSourceProvider);
+      return ds.getEnvironmentalHealth(siteId);
+    });
 
-/// Latest sensor reads for selected site
+// ─── Device Summary ───────────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/devices
+final deviceSummaryProvider =
+    FutureProvider.autoDispose<DashboardDeviceSummary?>((ref) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return null;
+      final ds = ref.watch(dashboardDataSourceProvider);
+      return ds.getDeviceSummary(siteId);
+    });
+
+// ─── Sensor Summary ───────────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/sensors
+final sensorSummaryProvider =
+    FutureProvider.autoDispose<DashboardSensorSummary?>((ref) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return null;
+      final ds = ref.watch(dashboardDataSourceProvider);
+      return ds.getSensorSummary(siteId);
+    });
+
+// ─── Plant Summary ────────────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/plants
+final plantSummaryProvider = FutureProvider.autoDispose<DashboardPlantSummary?>(
+  (ref) async {
+    final siteId = ref.watch(selectedSiteIdProvider);
+    if (siteId == null) return null;
+    final ds = ref.watch(dashboardDataSourceProvider);
+    return ds.getPlantSummary(siteId);
+  },
+);
+
+// ─── Latest Sensor Reads ──────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/reads/updates
 final latestSensorReadsProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final ds = ref.watch(dashboardDataSourceProvider);
-  return ds.getLatestSensorReads(siteId);
-});
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+      final ds = ref.watch(dashboardDataSourceProvider);
+      return ds.getLatestSensorReads(siteId);
+    });
 
-/// Seven day reads for chart
+// ─── Seven Day Reads ──────────────────────────────────────────────────────────
+/// GET /api/sites/:siteId/reads/seven-day
 final sevenDayReadsProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final ds = ref.watch(dashboardDataSourceProvider);
-  return ds.getSevenDayReads(siteId);
-});
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+      final ds = ref.watch(dashboardDataSourceProvider);
+      return ds.getSevenDayReads(siteId);
+    });
