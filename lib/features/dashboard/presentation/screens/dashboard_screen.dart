@@ -23,6 +23,9 @@ class DashboardScreen extends ConsumerWidget {
     final sitesAsync = ref.watch(sitesProvider);
     final selectedSite = ref.watch(selectedSiteProvider);
     final healthAsync = ref.watch(environmentalHealthProvider);
+    final deviceSummaryAsync = ref.watch(deviceSummaryProvider);
+    final sensorSummaryAsync = ref.watch(sensorSummaryProvider);
+    final plantSummaryAsync = ref.watch(plantSummaryProvider);
     final taskStats = ref.watch(taskStatsProvider);
 
     return Scaffold(
@@ -32,6 +35,10 @@ class DashboardScreen extends ConsumerWidget {
           color: AppColors.primary,
           onRefresh: () async {
             ref.invalidate(environmentalHealthProvider);
+            ref.invalidate(deviceSummaryProvider);
+            ref.invalidate(sensorSummaryProvider);
+            ref.invalidate(plantSummaryProvider);
+            ref.invalidate(latestSensorReadsProvider);
             ref.invalidate(sitesProvider);
             await Future.delayed(const Duration(milliseconds: 500));
           },
@@ -209,7 +216,11 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           SummaryCardWidget(
                             title: 'Device',
-                            value: '8',
+                            value: deviceSummaryAsync.when(
+                              data: (d) => d?.total.toString() ?? '0',
+                              loading: () => '...',
+                              error: (_, __) => '-',
+                            ),
                             svgIcon: 'assets/icons/device-outline-icon.svg',
                             iconBgColor: const Color(0xFFE8EFE9),
                             iconColor: AppColors.primary,
@@ -217,7 +228,11 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           SummaryCardWidget(
                             title: 'Sensor',
-                            value: '24',
+                            value: sensorSummaryAsync.when(
+                              data: (s) => s?.total.toString() ?? '0',
+                              loading: () => '...',
+                              error: (_, __) => '-',
+                            ),
                             svgIcon: 'assets/icons/sensor-icon.svg',
                             iconBgColor: const Color(0xFFECF6FE),
                             iconColor: AppColors.info,
@@ -225,7 +240,11 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           SummaryCardWidget(
                             title: 'Tanaman',
-                            value: '3',
+                            value: plantSummaryAsync.when(
+                              data: (p) => p?.active.toString() ?? '0',
+                              loading: () => '...',
+                              error: (_, __) => '-',
+                            ),
                             svgIcon: 'assets/icons/plant-outline-icon.svg',
                             iconBgColor: const Color(0xFFEDF7EE),
                             iconColor: AppColors.success,

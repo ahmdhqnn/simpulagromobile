@@ -9,14 +9,32 @@ class DashboardRemoteDataSource {
 
   // ─── Environmental Health ─────────────────────────────
   /// GET /api/sites/:siteId/agro/environmental-health
+  ///
+  /// Response structure (nested):
+  /// { "message": "Success", "data": { "status": 200, "data": { "overall_health": ..., "sensors": [...] } } }
   Future<EnvironmentalHealth> getEnvironmentalHealth(String siteId) async {
     try {
       final response = await _dio.get(
         '/sites/$siteId/agro/environmental-health',
       );
-      final data = response.data['data'];
-      if (data == null) return EnvironmentalHealth.empty();
-      return EnvironmentalHealth.fromJson(data as Map<String, dynamic>);
+
+      // Handle nested response: response.data.data.data
+      final outer = response.data;
+      if (outer == null) return EnvironmentalHealth.empty();
+
+      dynamic inner = outer['data'];
+      if (inner == null) return EnvironmentalHealth.empty();
+
+      // Agro endpoint wraps data twice: { data: { status, data: { ... } } }
+      if (inner is Map && inner.containsKey('data')) {
+        inner = inner['data'];
+      }
+
+      if (inner == null || inner is! Map<String, dynamic>) {
+        return EnvironmentalHealth.empty();
+      }
+
+      return EnvironmentalHealth.fromJson(inner);
     } catch (_) {
       return EnvironmentalHealth.empty();
     }
@@ -46,11 +64,8 @@ class DashboardRemoteDataSource {
       final response = await _dio.get('/sites/$siteId/sensors');
       final data = response.data['data'] as List? ?? [];
       final total = data.length;
-      final active = data.where((s) {
-        final sts = s['sens_sts'];
-        return sts == 1 || sts == '1';
-      }).length;
-      return DashboardSensorSummary(total: total, active: active);
+      // Sensor tidak memiliki field sens_sts di response — hitung semua sebagai aktif
+      return DashboardSensorSummary(total: total, active: total);
     } catch (_) {
       return const DashboardSensorSummary(total: 0, active: 0);
     }

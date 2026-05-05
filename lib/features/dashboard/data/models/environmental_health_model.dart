@@ -13,6 +13,7 @@
 ///     }
 ///   ]
 /// }
+library;
 
 class SensorHealth {
   final String devId;
