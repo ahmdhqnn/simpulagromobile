@@ -13,6 +13,7 @@ import '../widgets/summary_card_widget.dart';
 import '../widgets/quick_actions_widget.dart';
 import '../widgets/task_overview_widget.dart';
 import '../widgets/smart_score_gauge.dart';
+import '../widgets/sensor_status_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -194,7 +195,7 @@ class DashboardScreen extends ConsumerWidget {
                           if (health == null || health.sensors.isEmpty) {
                             return const _SensorEmptyCard();
                           }
-                          return _SensorGrid(sensors: health.sensors);
+                          return SensorStatusGrid(sensors: health.sensors);
                         },
                         loading: () => _ShimmerCard(
                           height: context.rh(0.25).clamp(180.0, 240.0),
@@ -616,113 +617,6 @@ class _SensorEmptyCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SensorGrid extends StatelessWidget {
-  final List sensors;
-  const _SensorGrid({required this.sensors});
-
-  Color _colorFor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return AppColors.temperature;
-      case 'env_hum':
-        return AppColors.humidity;
-      case 'soil_nitro':
-        return AppColors.nitrogen;
-      case 'soil_phos':
-        return AppColors.phosphorus;
-      case 'soil_pot':
-        return AppColors.potassium;
-      case 'soil_ph':
-        return AppColors.ph;
-      default:
-        return AppColors.primaryLight;
-    }
-  }
-
-  IconData _iconFor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return Icons.thermostat_outlined;
-      case 'env_hum':
-        return Icons.water_drop_outlined;
-      case 'soil_nitro':
-        return Icons.grass_outlined;
-      case 'soil_phos':
-        return Icons.science_outlined;
-      case 'soil_pot':
-        return Icons.diamond_outlined;
-      case 'soil_ph':
-        return Icons.speed_outlined;
-      default:
-        return Icons.sensors_outlined;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 1.0,
-          crossAxisSpacing: context.rw(0.025),
-          mainAxisSpacing: context.rh(0.012),
-        ),
-        itemCount: sensors.length.clamp(0, 6),
-        itemBuilder: (context, i) {
-          final sensor = sensors[i];
-          final color = _colorFor(sensor.dsId);
-          final icon = _iconFor(sensor.dsId);
-
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(context.rw(0.02)),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 20, color: color),
-              ),
-              SizedBox(height: context.rh(0.006)),
-              Text(
-                '${sensor.readUpdateValue}${sensor.unit}',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1D1D1D),
-                ),
-              ),
-              SizedBox(height: context.rh(0.002)),
-              Text(
-                sensor.label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(10),
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          );
-        },
       ),
     );
   }
