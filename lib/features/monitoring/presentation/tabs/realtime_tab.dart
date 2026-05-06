@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../dashboard/presentation/widgets/sensor_status_card.dart';
 import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
 
@@ -33,50 +34,53 @@ class RealtimeTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle('Status Sensor Terkini'),
+            // ── Status Sensor Terkini (card berwarna dari dashboard) ──
+            const _SectionTitle('Status Sensor Terkini'),
             SizedBox(height: context.rh(0.014)),
             latestAsync.when(
-              loading: () => _shimmerCard(context, 195),
+              loading: () => _shimmerCard(context, 220),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(latestReadsProvider),
               ),
               data: (reads) => reads.isEmpty
-                  ? _EmptyStateCard(
+                  ? const _EmptyStateCard(
                       height: 195,
                       message: 'Belum ada data sensor',
                     )
-                  : _SensorGrid(reads: reads),
+                  : _RealtimeSensorGrid(reads: reads),
             ),
 
             SizedBox(height: context.rh(0.024)),
 
-            _SectionTitle('Grafik Hari Ini'),
+            // ── Grafik Hari Ini ───────────────────────────────────────
+            const _SectionTitle('Grafik Hari Ini'),
             SizedBox(height: context.rh(0.014)),
             todayAsync.when(
-              loading: () => _shimmerCard(context, 195),
+              loading: () => _shimmerCard(context, 260),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(todayReadsProvider),
               ),
               data: (reads) => reads.isEmpty
                   ? const _EmptyStateCard(
-                      height: 195,
-                      message: 'Belum ada data sensor',
-                      iconPath: 'assets/icons/monitoring-filled-icon.svg',
+                      height: 260,
+                      message: 'Belum ada data grafik hari ini',
+                      iconPath: 'assets/icons/grafik_outline_icon.svg',
                     )
                   : _TodayChart(reads: reads),
             ),
 
             SizedBox(height: context.rh(0.024)),
 
-            _SectionTitle('Status Sensor'),
+            // ── Status Sensor (list detail) ───────────────────────────
+            const _SectionTitle('Detail Status Sensor'),
             SizedBox(height: context.rh(0.014)),
             latestAsync.when(
               loading: () => _shimmerCard(context, 195),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) => reads.isEmpty
-                  ? _EmptyStateCard(
+                  ? const _EmptyStateCard(
                       height: 195,
                       message: 'Belum ada data sensor',
                     )
@@ -85,18 +89,19 @@ class RealtimeTab extends ConsumerWidget {
 
             SizedBox(height: context.rh(0.024)),
 
-            _SectionTitle('Log Sensor'),
+            // ── Log Sensor ────────────────────────────────────────────
+            const _SectionTitle('Log Sensor'),
             SizedBox(height: context.rh(0.014)),
             logsAsync.when(
-              loading: () => _shimmerCard(context, 97),
+              loading: () => _shimmerCard(context, 120),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(logsProvider),
               ),
               data: (logs) => logs.isEmpty
-                  ? _EmptyStateCard(
+                  ? const _EmptyStateCard(
                       height: 97,
-                      message: 'Belum ada data sensor',
+                      message: 'Belum ada log sensor',
                     )
                   : _LogList(logs: logs.take(20).toList()),
             ),
@@ -122,120 +127,37 @@ class RealtimeTab extends ConsumerWidget {
   }
 }
 
-class _SensorGrid extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// REALTIME SENSOR GRID — pakai SensorStatusCard dari dashboard
+// SensorReadUpdate tidak punya persentase, jadi kita derive dari nilai:
+//   nilai > 0 → Optimal (100), nilai == 0 → Kritis (0)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RealtimeSensorGrid extends StatelessWidget {
   final List<SensorReadUpdate> reads;
-  const _SensorGrid({required this.reads});
+  const _RealtimeSensorGrid({required this.reads});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 1.0,
-          crossAxisSpacing: context.rw(0.025),
-          mainAxisSpacing: context.rh(0.012),
-        ),
-        itemCount: reads.length.clamp(0, 6),
-        itemBuilder: (context, i) {
-          final r = reads[i];
-          return _SensorCard(read: r);
-        },
-      ),
-    );
+    final proxies = reads.map((r) => _SensorProxy(r)).toList();
+    return SensorStatusGrid(sensors: proxies, defaultCount: 6);
   }
 }
 
-class _SensorCard extends StatelessWidget {
-  final SensorReadUpdate read;
-  const _SensorCard({required this.read});
+/// Adapter agar SensorReadUpdate kompatibel dengan SensorStatusGrid
+class _SensorProxy {
+  final SensorReadUpdate _r;
+  const _SensorProxy(this._r);
 
-  Color _color(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return AppColors.temperature;
-      case 'env_hum':
-        return AppColors.humidity;
-      case 'soil_nitro':
-        return AppColors.nitrogen;
-      case 'soil_phos':
-        return AppColors.phosphorus;
-      case 'soil_pot':
-        return AppColors.potassium;
-      case 'soil_ph':
-        return AppColors.ph;
-      default:
-        return AppColors.primaryLight;
-    }
-  }
-
-  IconData _icon(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return Icons.thermostat_outlined;
-      case 'env_hum':
-        return Icons.water_drop_outlined;
-      case 'soil_nitro':
-        return Icons.grass_outlined;
-      case 'soil_phos':
-        return Icons.science_outlined;
-      case 'soil_pot':
-        return Icons.diamond_outlined;
-      case 'soil_ph':
-        return Icons.speed_outlined;
-      default:
-        return Icons.sensors_outlined;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _color(read.dsId);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: EdgeInsets.all(context.rw(0.02)),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(_icon(read.dsId), size: 20, color: color),
-        ),
-        SizedBox(height: context.rh(0.006)),
-        Text(
-          '${read.readUpdateValue ?? '-'}${SensorMeta.unit(read.dsId)}',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(14),
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1D1D1D),
-          ),
-        ),
-        SizedBox(height: context.rh(0.002)),
-        Text(
-          SensorMeta.label(read.dsId),
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(10),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
+  String get dsId => _r.dsId;
+  String get readUpdateValue => _r.readUpdateValue ?? '0';
+  // Nilai > 0 → Optimal, nilai == 0 → Kritis
+  double get persentase => _r.numericValue > 0 ? 100.0 : 0.0;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRAFIK HARI INI — dengan selector parameter sensor
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _TodayChart extends StatefulWidget {
   final List<SensorReadModel> reads;
@@ -248,13 +170,11 @@ class _TodayChart extends StatefulWidget {
 class _TodayChartState extends State<_TodayChart> {
   String _selected = 'env_temp';
 
-  List<String> get _availableParams {
-    return widget.reads
-        .map((r) => r.dsId ?? '')
-        .where((id) => id.isNotEmpty)
-        .toSet()
-        .toList();
-  }
+  List<String> get _availableParams => widget.reads
+      .map((r) => r.dsId ?? '')
+      .where((id) => id.isNotEmpty)
+      .toSet()
+      .toList();
 
   @override
   void initState() {
@@ -265,307 +185,398 @@ class _TodayChartState extends State<_TodayChart> {
     }
   }
 
+  Color _colorFor(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+        return const Color(0xFFFF8A65);
+      case 'env_hum':
+        return const Color(0xFF42A5F5);
+      case 'soil_nitro':
+        return const Color(0xFF66BB6A);
+      case 'soil_phos':
+        return const Color(0xFFAB47BC);
+      case 'soil_pot':
+        return const Color(0xFFFF7043);
+      case 'soil_ph':
+        return const Color(0xFF26C6DA);
+      case 'soil_temp':
+        return const Color(0xFF8BC34A);
+      case 'soil_hum':
+        return const Color(0xFF29B6F6);
+      default:
+        return AppColors.primaryLight;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.reads.isEmpty) {
-      return const _EmptyStateCard(
-        height: 195,
-        message: 'Belum ada data sensor',
-        iconPath: 'assets/icons/grafik_filled_icon.svg',
-      );
-    }
-
+    final params = _availableParams;
     final filtered = widget.reads.where((r) => r.dsId == _selected).toList()
       ..sort(
         (a, b) =>
             (a.readDate ?? DateTime(0)).compareTo(b.readDate ?? DateTime(0)),
       );
 
-    if (filtered.isEmpty) {
-      return Container(
-        height: 195,
-        padding: EdgeInsets.all(context.rw(0.041)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                'assets/icons/grafik_filled_icon.svg',
-                width: 28,
-                height: 28,
-                colorFilter: ColorFilter.mode(
-                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                  BlendMode.srcIn,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Belum ada data untuk sensor ini',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 12,
-                  color: Color(0xFF1D1D1D),
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     final spots = filtered
         .asMap()
         .entries
         .where((e) => e.value.numericValue > 0)
-        .map((e) {
-          return FlSpot(e.key.toDouble(), e.value.numericValue);
-        })
+        .map((e) => FlSpot(e.key.toDouble(), e.value.numericValue))
         .toList();
-
-    if (spots.isEmpty) {
-      return Container(
-        height: 195,
-        padding: EdgeInsets.all(context.rw(0.041)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                'assets/icons/grafik_filled_icon.svg',
-                width: 28,
-                height: 28,
-                colorFilter: ColorFilter.mode(
-                  const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                  BlendMode.srcIn,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Data sensor tidak valid',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 12,
-                  color: Color(0xFF1D1D1D),
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
 
     final color = _colorFor(_selected);
 
     return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: 1,
-            getDrawingHorizontalLine: (_) =>
-                FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 24,
-                interval: (spots.length / 4).ceilToDouble().clamp(
-                  1,
-                  double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Selector parameter ──────────────────────────
+          if (params.length > 1)
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                context.rw(0.041),
+                context.rw(0.041),
+                context.rw(0.041),
+                0,
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: params.map((p) {
+                    final isSelected = p == _selected;
+                    final c = _colorFor(p);
+                    return GestureDetector(
+                      onTap: () => setState(() => _selected = p),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected ? c : c.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          SensorMeta.label(p),
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(11),
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : c,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-                getTitlesWidget: (v, _) {
-                  final idx = v.toInt();
-                  if (idx < 0 || idx >= filtered.length) {
-                    return const SizedBox.shrink();
-                  }
-                  final d = filtered[idx].readDate;
-                  return Text(
-                    d != null ? DateFormat('HH:mm').format(d) : '',
-                    style: TextStyle(
-                      fontSize: context.sp(9),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                      fontFamily: 'Plus Jakarta Sans',
+              ),
+            ),
+
+          // ── Chart ───────────────────────────────────────
+          SizedBox(
+            height: 200,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                context.rw(0.02),
+                context.rw(0.041),
+                context.rw(0.041),
+                context.rw(0.041),
+              ),
+              child: spots.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/grafik_outline_icon.svg',
+                            width: 28,
+                            height: 28,
+                            colorFilter: ColorFilter.mode(
+                              const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Belum ada data untuk sensor ini',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(12),
+                              fontWeight: FontWeight.w300,
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : LineChart(
+                      LineChartData(
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          getDrawingHorizontalLine: (_) => FlLine(
+                            color: const Color(0xFFE0E0E0),
+                            strokeWidth: 1,
+                          ),
+                        ),
+                        titlesData: FlTitlesData(
+                          leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 24,
+                              interval: (spots.length / 4).ceilToDouble().clamp(
+                                1,
+                                double.infinity,
+                              ),
+                              getTitlesWidget: (v, _) {
+                                final idx = v.toInt();
+                                if (idx < 0 || idx >= filtered.length) {
+                                  return const SizedBox.shrink();
+                                }
+                                final d = filtered[idx].readDate;
+                                return Text(
+                                  d != null
+                                      ? DateFormat('HH:mm').format(d)
+                                      : '',
+                                  style: TextStyle(
+                                    fontSize: context.sp(9),
+                                    color: const Color(
+                                      0xFF1D1D1D,
+                                    ).withValues(alpha: 0.5),
+                                    fontFamily: 'Plus Jakarta Sans',
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: spots,
+                            isCurved: true,
+                            color: color,
+                            barWidth: 2.5,
+                            dotData: const FlDotData(show: false),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              gradient: LinearGradient(
+                                colors: [
+                                  color.withValues(alpha: 0.3),
+                                  color.withValues(alpha: 0.03),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                        ],
+                        lineTouchData: LineTouchData(
+                          touchTooltipData: LineTouchTooltipData(
+                            getTooltipColor: (_) => Colors.white,
+                            tooltipBorder: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  );
-                },
-              ),
             ),
           ),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: color,
-              barWidth: 2.5,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    color.withValues(alpha: 0.3),
-                    color.withValues(alpha: 0.05),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ],
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => Colors.white,
-              tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
-
-  Color _colorFor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return const Color(0xFF4FC3F7);
-      case 'env_hum':
-        return const Color(0xFF81C784);
-      case 'soil_nitro':
-        return const Color(0xFFFFB74D);
-      case 'soil_phos':
-        return const Color(0xFFBA68C8);
-      case 'soil_pot':
-        return const Color(0xFFE57373);
-      case 'soil_ph':
-        return const Color(0xFF64B5F6);
-      default:
-        return AppColors.primaryLight;
-    }
-  }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DETAIL STATUS SENSOR — list dengan progress bar per sensor
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _SensorStatusList extends StatelessWidget {
   final List<SensorReadUpdate> reads;
   const _SensorStatusList({required this.reads});
 
+  Color _colorFor(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+        return const Color(0xFFFF8A65);
+      case 'env_hum':
+        return const Color(0xFF42A5F5);
+      case 'soil_nitro':
+        return const Color(0xFF66BB6A);
+      case 'soil_phos':
+        return const Color(0xFFAB47BC);
+      case 'soil_pot':
+        return const Color(0xFFFF7043);
+      case 'soil_ph':
+        return const Color(0xFF26C6DA);
+      case 'soil_temp':
+        return const Color(0xFF8BC34A);
+      case 'soil_hum':
+        return const Color(0xFF29B6F6);
+      default:
+        return AppColors.primaryLight;
+    }
+  }
+
+  IconData _iconFor(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+      case 'soil_temp':
+        return Icons.thermostat_rounded;
+      case 'env_hum':
+      case 'soil_hum':
+        return Icons.water_drop_rounded;
+      case 'soil_nitro':
+        return Icons.grass_rounded;
+      case 'soil_phos':
+        return Icons.science_rounded;
+      case 'soil_pot':
+        return Icons.diamond_rounded;
+      case 'soil_ph':
+        return Icons.speed_rounded;
+      default:
+        return Icons.sensors_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (reads.isEmpty) {
-      return const _EmptyStateCard(
-        height: 195,
-        message: 'Belum ada data sensor',
-      );
-    }
     return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
       child: ListView.separated(
         shrinkWrap: true,
-        itemCount: reads.length.clamp(0, 4),
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(context.rw(0.041)),
+        itemCount: reads.length,
         separatorBuilder: (_, __) => Divider(
-          height: 1,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+          height: 20,
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
         ),
         itemBuilder: (context, i) {
           final r = reads[i];
           final val = r.numericValue;
           final isOk = val > 0;
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: context.rh(0.01)),
-            child: Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: isOk
-                        ? AppColors.success
-                        : const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
+          final color = _colorFor(r.dsId);
+
+          return Row(
+            children: [
+              // Icon bulat berwarna
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(width: context.rw(0.03)),
-                Expanded(
-                  child: Text(
-                    SensorMeta.label(r.dsId),
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      color: const Color(0xFF1D1D1D),
+                child: Icon(_iconFor(r.dsId), size: 18, color: color),
+              ),
+              SizedBox(width: context.rw(0.03)),
+
+              // Label + nilai
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            SensorMeta.label(r.dsId),
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(13),
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF1D1D1D),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(13),
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    // Progress bar
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: isOk ? 1.0 : 0.0,
+                        minHeight: 5,
+                        backgroundColor: const Color(
+                          0xFF1D1D1D,
+                        ).withValues(alpha: 0.07),
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
+              ),
+
+              SizedBox(width: context.rw(0.025)),
+
+              // Badge status
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isOk
+                      ? AppColors.success.withValues(alpha: 0.1)
+                      : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isOk ? 'Aktif' : 'Offline',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
+                    fontSize: context.sp(10),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1D1D1D),
-                  ),
-                ),
-                SizedBox(width: context.rw(0.02)),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
                     color: isOk
-                        ? AppColors.success.withValues(alpha: 0.1)
-                        : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    isOk ? 'Aktif' : 'Offline',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(10),
-                      fontWeight: FontWeight.w500,
-                      color: isOk
-                          ? AppColors.success
-                          : const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                    ),
+                        ? AppColors.success
+                        : const Color(0xFF1D1D1D).withValues(alpha: 0.4),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOG SENSOR
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _LogList extends StatelessWidget {
   final List<LogModel> logs;
@@ -574,68 +585,76 @@ class _LogList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 97,
-      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
       child: ListView.separated(
         shrinkWrap: true,
-        itemCount: logs.length.clamp(0, 2),
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(context.rw(0.041)),
+        itemCount: logs.length.clamp(0, 20),
         separatorBuilder: (_, __) => Divider(
-          height: 1,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+          height: 12,
+          color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
         ),
         itemBuilder: (context, i) {
           final log = logs[i];
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.circle,
-                  size: 6,
-                  color: AppColors.primaryLight,
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.only(top: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(width: context.rw(0.025)),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              ),
+              SizedBox(width: context.rw(0.025)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      log.logRxPayload ?? '-',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(11),
+                        color: const Color(0xFF1D1D1D),
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (log.logRxDate != null) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        log.logRxPayload ?? '-',
+                        DateFormat(
+                          'dd MMM yyyy, HH:mm:ss',
+                        ).format(log.logRxDate!),
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(11),
-                          color: const Color(0xFF1D1D1D),
+                          fontSize: context.sp(9),
+                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.4),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (log.logRxDate != null)
-                        Text(
-                          DateFormat('dd MMM HH:mm:ss').format(log.logRxDate!),
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(9),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.5),
-                          ),
-                        ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHARED WIDGETS
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
   final String title;
@@ -680,7 +699,7 @@ class _EmptyStateCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              iconPath ?? 'assets/icons/device-filled-icon.svg',
+              iconPath ?? 'assets/icons/sensor-icon.svg',
               width: 28,
               height: 28,
               colorFilter: ColorFilter.mode(
@@ -688,7 +707,7 @@ class _EmptyStateCard extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            SizedBox(height: context.rh(0.005)),
+            SizedBox(height: context.rh(0.008)),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -696,8 +715,7 @@ class _EmptyStateCard extends StatelessWidget {
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(12),
                 fontWeight: FontWeight.w300,
-                color: const Color(0xFF1D1D1D),
-                height: 1.83,
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
               ),
             ),
           ],
