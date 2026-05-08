@@ -3,12 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../phase/presentation/screens/phase_list_screen.dart';
 
 class GrowthPhaseButton extends StatelessWidget {
-  final String plantId;
+  // siteId digunakan karena endpoint /fase/phases-by-hst/:siteId butuh siteId
+  final String siteId;
   final String plantName;
 
   const GrowthPhaseButton({
     super.key,
-    required this.plantId,
+    required this.siteId,
     required this.plantName,
   });
 
@@ -18,7 +19,7 @@ class GrowthPhaseButton extends StatelessWidget {
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
-              PhaseListScreen(plantId: plantId, plantName: plantName),
+              PhaseListScreen(plantId: siteId, plantName: plantName),
         ),
       ),
       child: Container(

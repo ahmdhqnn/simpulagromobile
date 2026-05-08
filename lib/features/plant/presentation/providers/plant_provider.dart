@@ -77,7 +77,8 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
       final plant = await _dataSource.createPlant(siteId, {
         'plant_name': plantName,
         'varietas_id': varietasId,
-        'plant_type': plantType.displayName,
+        'plant_type': plantType
+            .name, // "PADI", "JAGUNG", "KEDELAI" — uppercase sesuai API
         'plant_species': plantSpecies,
         'plant_date': plantDate.toIso8601String().split('T').first,
       });

@@ -1,9 +1,22 @@
 import '../entities/sensor.dart';
 
 abstract class SensorRepository {
-  Future<List<Sensor>> getSensors(String deviceId);
-  Future<Sensor> getSensorById(String id);
-  Future<Sensor> createSensor(String deviceId, Map<String, dynamic> data);
-  Future<Sensor> updateSensor(String id, Map<String, dynamic> data);
-  Future<void> deleteSensor(String id);
+  /// Get all sensors for a site
+  Future<List<Sensor>> getSensors(String siteId);
+
+  /// Get sensor by ID (requires siteId for scoped API)
+  Future<Sensor> getSensorById(String siteId, String sensId);
+
+  /// Create sensor for a site
+  Future<Sensor> createSensor(String siteId, Map<String, dynamic> data);
+
+  /// Update sensor
+  Future<Sensor> updateSensor(
+    String siteId,
+    String sensId,
+    Map<String, dynamic> data,
+  );
+
+  /// Delete sensor
+  Future<void> deleteSensor(String siteId, String sensId);
 }

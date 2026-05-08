@@ -9,43 +9,25 @@ class DeviceRemoteDataSource {
   DeviceRemoteDataSource(this._dio);
 
   /// Get all devices for a site
+  /// GET /api/sites/:siteId/devices
   Future<List<DeviceModel>> getDevices(String siteId) async {
-    // TODO: Replace with real API when backend is ready
-    // Uncomment when ready:
-    // final response = await _dio.get(ApiEndpoints.devices(siteId));
-    // final data = response.data['data'] as List;
-    // return data.map((json) => DeviceModel.fromJson(json)).toList();
+    final response = await _dio.get(ApiEndpoints.devices(siteId));
+    final data = response.data['data'] as List? ?? [];
+    return data
+        .map(
+          (json) => DeviceModel.fromJson(
+            _normalizeDevice(json as Map<String, dynamic>),
+          ),
+        )
+        .toList();
+  }
 
-    // MOCK DATA - Remove when backend is ready
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      DeviceModel(
-        devId: 'TELU0300',
-        siteId: siteId,
-        devName: 'Device Sensor 1',
-        devLocation: 'Area Sawah A',
-        devLon: 107.630332,
-        devLat: -6.973123,
-        devAlt: 28.0,
-        devNumberId: 'D001',
-        devIp: '192.168.1.100',
-        devPort: '8080',
-        devSts: 1,
-      ),
-      DeviceModel(
-        devId: 'TELU0301',
-        siteId: siteId,
-        devName: 'Device Sensor 2',
-        devLocation: 'Area Sawah B',
-        devLon: 107.631000,
-        devLat: -6.974000,
-        devAlt: 30.0,
-        devNumberId: 'D002',
-        devIp: '192.168.1.101',
-        devPort: '8080',
-        devSts: 1,
-      ),
-    ];
+  /// Normalize device JSON — API sometimes returns dev_sts as String
+  Map<String, dynamic> _normalizeDevice(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    final sts = normalized['dev_sts'];
+    if (sts is String) normalized['dev_sts'] = int.tryParse(sts);
+    return normalized;
   }
 
   /// Get device by ID

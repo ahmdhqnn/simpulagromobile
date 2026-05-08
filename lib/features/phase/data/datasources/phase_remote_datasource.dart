@@ -1,112 +1,169 @@
 import 'package:dio/dio.dart';
 import '../models/phase_model.dart';
 
+/// Remote datasource untuk Fase Pertumbuhan & GDD
+/// API: /fase/phases-list, /fase/phases-by-hst/:siteId, /fase/gdd-standards
 class PhaseRemoteDatasource {
-  // ignore: unused_field
   final Dio _dio;
 
   PhaseRemoteDatasource(this._dio);
 
-  /// Mock data for phases
-  Future<List<PhaseModel>> getPhasesByPlant(String plantId) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock phases for Padi Varietas IR64
-    return [
-      PhaseModel(
-        id: 'phase-1',
-        plantId: plantId,
-        plantName: 'Padi Varietas IR64',
-        phaseName: 'Perkecambahan',
-        description: 'Fase awal pertumbuhan benih hingga muncul tunas',
-        startHst: 0,
-        endHst: 10,
-        currentHst: 12,
-        requiredGdd: 150.0,
-        currentGdd: 165.0,
-        progress: 1.0,
-        status: 'completed',
-        startDate: DateTime.now().subtract(const Duration(days: 12)),
-        endDate: DateTime.now().subtract(const Duration(days: 2)),
-        createdAt: DateTime.now().subtract(const Duration(days: 12)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      PhaseModel(
-        id: 'phase-2',
-        plantId: plantId,
-        plantName: 'Padi Varietas IR64',
-        phaseName: 'Vegetatif',
-        description: 'Pertumbuhan batang, daun, dan sistem perakaran',
-        startHst: 11,
-        endHst: 55,
-        currentHst: 12,
-        requiredGdd: 650.0,
-        currentGdd: 25.0,
-        progress: 0.02,
-        status: 'active',
-        startDate: DateTime.now().subtract(const Duration(days: 2)),
-        endDate: null,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        updatedAt: DateTime.now(),
-      ),
-      PhaseModel(
-        id: 'phase-3',
-        plantId: plantId,
-        plantName: 'Padi Varietas IR64',
-        phaseName: 'Reproduktif',
-        description: 'Pembentukan malai dan pengisian bulir',
-        startHst: 56,
-        endHst: 85,
-        currentHst: 12,
-        requiredGdd: 450.0,
-        currentGdd: 0.0,
-        progress: 0.0,
-        status: 'upcoming',
-        startDate: DateTime.now().add(const Duration(days: 44)),
-        endDate: null,
-        createdAt: DateTime.now().subtract(const Duration(days: 12)),
-        updatedAt: DateTime.now(),
-      ),
-      PhaseModel(
-        id: 'phase-4',
-        plantId: plantId,
-        plantName: 'Padi Varietas IR64',
-        phaseName: 'Pematangan',
-        description: 'Pematangan bulir hingga siap panen',
-        startHst: 86,
-        endHst: 120,
-        currentHst: 12,
-        requiredGdd: 500.0,
-        currentGdd: 0.0,
-        progress: 0.0,
-        status: 'upcoming',
-        startDate: DateTime.now().add(const Duration(days: 74)),
-        endDate: null,
-        createdAt: DateTime.now().subtract(const Duration(days: 12)),
-        updatedAt: DateTime.now(),
-      ),
-    ];
+  /// GET /fase/phases-list
+  /// Mendapatkan semua fase pertumbuhan dari semua jenis tanaman
+  Future<List<PhaseModel>> getAllPhases() async {
+    final response = await _dio.get('/fase/phases-list');
+    final data = response.data['data'] as List? ?? [];
+    return data
+        .map((json) => PhaseModel.fromApiJson(json as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<PhaseModel> getPhaseById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    final phases = await getPhasesByPlant('plant-1');
-    return phases.firstWhere((p) => p.id == id);
+  /// GET /fase/phases-list/:cropType
+  /// Mendapatkan fase pertumbuhan berdasarkan jenis tanaman (PADI, JAGUNG, KEDELAI)
+  Future<List<PhaseModel>> getPhasesByCropType(String cropType) async {
+    final response = await _dio.get('/fase/phases-list/$cropType');
+    final data = response.data['data'] as List? ?? [];
+    return data
+        .map((json) => PhaseModel.fromApiJson(json as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<PhaseModel?> getCurrentPhase(String plantId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    final phases = await getPhasesByPlant(plantId);
+  /// GET /fase/phases-by-hst/:siteId
+  /// Mendapatkan fase pertumbuhan saat ini berdasarkan HST di site
+  Future<CurrentPhaseData?> getCurrentPhaseByHst(String siteId) async {
     try {
-      return phases.firstWhere((p) => p.status == 'active');
-    } catch (e) {
+      final response = await _dio.get('/fase/phases-by-hst/$siteId');
+      final data = response.data['data'];
+      if (data == null) return null;
+      return CurrentPhaseData.fromJson(data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      // 404 = tidak ada data tanam aktif — bukan error fatal
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// GET /fase/gdd-standards
+  /// Mendapatkan standar GDD untuk setiap jenis tanaman
+  Future<Map<String, GddStandardData>> getGddStandards() async {
+    final response = await _dio.get('/fase/gdd-standards');
+    final data = response.data['data'] as Map<String, dynamic>? ?? {};
+    return data.map(
+      (key, value) => MapEntry(
+        key,
+        GddStandardData.fromJson(value as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  /// Mendapatkan fase-fase untuk plant tertentu berdasarkan cropType
+  /// Menggabungkan data dari phases-list dan phases-by-hst
+  Future<List<PhaseModel>> getPhasesByPlant(String plantId) async {
+    // plantId di sini digunakan sebagai siteId untuk phases-by-hst
+    // karena API tidak memiliki endpoint per-plant, melainkan per-site
+    final currentPhaseData = await getCurrentPhaseByHst(plantId);
+
+    if (currentPhaseData == null) {
+      // Tidak ada tanaman aktif di site ini — kembalikan list kosong
+      // (bukan error, ini kondisi valid)
+      return [];
+    }
+
+    // Ambil semua fase untuk crop type yang aktif
+    final phases = await getPhasesByCropType(currentPhaseData.plantType);
+
+    if (phases.isEmpty) {
+      // Fallback: coba ambil semua fase tanpa filter crop type
+      final allPhases = await getAllPhases();
+      return allPhases.map((phase) {
+        return phase.enrichWithHst(
+          currentHst: currentPhaseData.hst,
+          currentPhaseId: currentPhaseData.currentPhase?.id,
+        );
+      }).toList();
+    }
+
+    // Enrich setiap fase dengan data HST saat ini
+    return phases.map((phase) {
+      return phase.enrichWithHst(
+        currentHst: currentPhaseData.hst,
+        currentPhaseId: currentPhaseData.currentPhase?.id,
+      );
+    }).toList();
+  }
+
+  /// Mendapatkan fase saat ini untuk plant/site
+  Future<PhaseModel?> getCurrentPhase(String siteId) async {
+    final currentData = await getCurrentPhaseByHst(siteId);
+    if (currentData == null || currentData.currentPhase == null) return null;
+
+    return currentData.currentPhase!.enrichWithHst(
+      currentHst: currentData.hst,
+      currentPhaseId: currentData.currentPhase?.id,
+    );
+  }
+
+  /// Mendapatkan fase berdasarkan ID
+  Future<PhaseModel?> getPhaseById(String phaseId) async {
+    try {
+      final allPhases = await getAllPhases();
+      return allPhases.where((p) => p.id == phaseId).firstOrNull;
+    } catch (_) {
       return null;
     }
   }
 
-  Future<List<PhaseModel>> getPhaseHistory(String plantId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    final phases = await getPhasesByPlant(plantId);
+  /// Mendapatkan riwayat fase yang sudah selesai
+  Future<List<PhaseModel>> getPhaseHistory(String siteId) async {
+    final phases = await getPhasesByPlant(siteId);
     return phases.where((p) => p.status == 'completed').toList();
+  }
+}
+
+/// Data fase saat ini dari API /fase/phases-by-hst/:siteId
+class CurrentPhaseData {
+  final String plantType;
+  final int hst;
+  final PhaseModel? currentPhase;
+
+  const CurrentPhaseData({
+    required this.plantType,
+    required this.hst,
+    this.currentPhase,
+  });
+
+  factory CurrentPhaseData.fromJson(Map<String, dynamic> json) {
+    return CurrentPhaseData(
+      plantType: (json['plant_type'] as String?) ?? '',
+      hst: (json['hst'] as int?) ?? 0,
+      currentPhase: json['current_phase'] != null
+          ? PhaseModel.fromApiJson(
+              json['current_phase'] as Map<String, dynamic>,
+            )
+          : null,
+    );
+  }
+}
+
+/// Standar GDD per jenis tanaman
+class GddStandardData {
+  final double baseTemp;
+  final double upperTemp;
+  final Map<String, double> phaseThresholds;
+
+  const GddStandardData({
+    required this.baseTemp,
+    required this.upperTemp,
+    required this.phaseThresholds,
+  });
+
+  factory GddStandardData.fromJson(Map<String, dynamic> json) {
+    final thresholds = (json['phase_thresholds'] as Map<String, dynamic>? ?? {})
+        .map((k, v) => MapEntry(k, (v as num).toDouble()));
+    return GddStandardData(
+      baseTemp: (json['base_temp'] as num?)?.toDouble() ?? 10.0,
+      upperTemp: (json['upper_temp'] as num?)?.toDouble() ?? 30.0,
+      phaseThresholds: thresholds,
+    );
   }
 }

@@ -367,7 +367,7 @@ class PlantDetailScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => PhaseListScreen(
-                    plantId: plant.plantId,
+                    plantId: plant.siteId ?? plant.plantId,
                     plantName: plant.displayName,
                   ),
                 ),
@@ -400,7 +400,7 @@ class PlantDetailScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => GddTrackingScreen(
-                    plantId: plant.plantId,
+                    plantId: plant.siteId ?? plant.plantId,
                     plantName: plant.displayName,
                   ),
                 ),
