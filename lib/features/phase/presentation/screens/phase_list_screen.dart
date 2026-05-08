@@ -8,6 +8,7 @@ import '../providers/phase_provider.dart';
 import 'phase_detail_screen.dart';
 
 class PhaseListScreen extends ConsumerWidget {
+  // plantId di sini sebenarnya adalah siteId — endpoint /fase/phases-by-hst/:siteId
   final String plantId;
   final String plantName;
 
@@ -72,12 +73,17 @@ class PhaseListScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.024)),
 
                         // Phase List
-                        ...phases.map(
-                          (phase) => Padding(
-                            padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                            child: _buildPhaseCard(context, phase),
+                        if (phases.isEmpty)
+                          _buildEmptyState(context, ref)
+                        else
+                          ...phases.map(
+                            (phase) => Padding(
+                              padding: EdgeInsets.only(
+                                bottom: context.rh(0.014),
+                              ),
+                              child: _buildPhaseCard(context, phase),
+                            ),
                           ),
-                        ),
 
                         SizedBox(height: context.rh(0.02)),
                       ],
@@ -473,6 +479,71 @@ class PhaseListScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        vertical: context.rh(0.06),
+        horizontal: context.rw(0.051),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.eco_outlined,
+            size: context.rw(0.164).clamp(48.0, 64.0),
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.25),
+          ),
+          SizedBox(height: context.rh(0.02)),
+          Text(
+            'Belum ada data fase',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(16),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1D1D1D),
+            ),
+          ),
+          SizedBox(height: context.rh(0.01)),
+          Text(
+            'Data fase pertumbuhan akan muncul setelah\ntanaman aktif terdaftar di site ini.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(13),
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.55),
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: context.rh(0.025)),
+          ElevatedButton.icon(
+            onPressed: () {
+              ref.invalidate(phaseListProvider(plantId));
+              ref.invalidate(phaseStatsProvider(plantId));
+            },
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text(
+              'Muat Ulang',
+              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

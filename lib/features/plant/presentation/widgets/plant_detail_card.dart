@@ -81,7 +81,8 @@ class PlantDetailCard extends StatelessWidget {
                         left: 0,
                         bottom: 0,
                         child: GrowthPhaseButton(
-                          plantId: plant.plantId,
+                          // Kirim siteId bukan plantId — endpoint /fase/phases-by-hst butuh siteId
+                          siteId: plant.siteId ?? '',
                           plantName:
                               plant.plantType?.displayName ??
                               plant.plantName ??

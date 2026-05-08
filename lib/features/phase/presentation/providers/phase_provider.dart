@@ -1,21 +1,26 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/core_providers.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/phase_remote_datasource.dart';
 import '../../data/repositories/phase_repository_impl.dart';
 import '../../domain/entities/phase.dart';
 import '../../domain/repositories/phase_repository.dart';
 
-// Datasource provider
+// ─── DataSource Provider ─────────────────────────────────
+/// Menggunakan dioClientProvider agar JWT token disertakan
 final phaseRemoteDatasourceProvider = Provider<PhaseRemoteDatasource>((ref) {
-  return PhaseRemoteDatasource(Dio());
+  final dioClient = ref.watch(dioClientProvider);
+  return PhaseRemoteDatasource(dioClient.dio);
 });
 
-// Repository provider
+// ─── Repository Provider ─────────────────────────────────
 final phaseRepositoryProvider = Provider<PhaseRepository>((ref) {
-  return PhaseRepositoryImpl(ref.read(phaseRemoteDatasourceProvider));
+  final datasource = ref.watch(phaseRemoteDatasourceProvider);
+  return PhaseRepositoryImpl(datasource);
 });
 
-// Phase list provider
+// ─── Phase List Provider (by plantId/siteId) ─────────────
+/// Mengambil semua fase untuk plant/site tertentu
 final phaseListProvider = FutureProvider.family<List<Phase>, String>((
   ref,
   plantId,
@@ -23,7 +28,15 @@ final phaseListProvider = FutureProvider.family<List<Phase>, String>((
   return ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId);
 });
 
-// Current phase provider
+// ─── Phase List for Selected Site ────────────────────────
+/// Shortcut provider yang otomatis menggunakan selectedSiteProvider
+final phasesForSelectedSiteProvider = FutureProvider<List<Phase>>((ref) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) return [];
+  return ref.read(phaseRepositoryProvider).getPhasesByPlant(siteId);
+});
+
+// ─── Current Phase Provider ───────────────────────────────
 final currentPhaseProvider = FutureProvider.family<Phase?, String>((
   ref,
   plantId,
@@ -31,15 +44,16 @@ final currentPhaseProvider = FutureProvider.family<Phase?, String>((
   return ref.read(phaseRepositoryProvider).getCurrentPhase(plantId);
 });
 
-// Phase detail provider
+// ─── Phase Detail Provider ────────────────────────────────
 final phaseDetailProvider = FutureProvider.family<Phase, String>((
   ref,
   phaseId,
 ) async {
-  return ref.read(phaseRepositoryProvider).getPhaseById(phaseId);
+  final phase = await ref.read(phaseRepositoryProvider).getPhaseById(phaseId);
+  return phase;
 });
 
-// Phase history provider
+// ─── Phase History Provider ───────────────────────────────
 final phaseHistoryProvider = FutureProvider.family<List<Phase>, String>((
   ref,
   plantId,
@@ -47,7 +61,7 @@ final phaseHistoryProvider = FutureProvider.family<List<Phase>, String>((
   return ref.read(phaseRepositoryProvider).getPhaseHistory(plantId);
 });
 
-// Phase statistics provider
+// ─── Phase Statistics Provider ───────────────────────────
 final phaseStatsProvider = FutureProvider.family<Map<String, dynamic>, String>((
   ref,
   plantId,
