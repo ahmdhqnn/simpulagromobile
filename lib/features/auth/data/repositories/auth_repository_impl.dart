@@ -36,7 +36,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    await _storage.clearAll();
+    // Hapus sesi tapi pertahankan onboarding status
+    await _storage.clearSession();
   }
 
   @override

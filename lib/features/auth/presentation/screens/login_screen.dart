@@ -9,7 +9,9 @@ import '../widgets/auth_pill_input.dart';
 import '../widgets/auth_pill_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final bool sessionExpiredMessage;
+
+  const LoginScreen({super.key, this.sessionExpiredMessage = false});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -20,6 +22,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final passwordController = TextEditingController();
   String? _usernameError;
   String? _passwordError;
+
+  @override
+  void initState() {
+    super.initState();
+    // Tampilkan snackbar session expired setelah frame pertama
+    if (widget.sessionExpiredMessage) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sesi Anda telah berakhir. Silakan login kembali.',
+                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      });
+    }
+  }
 
   Future<void> login() async {
     setState(() {

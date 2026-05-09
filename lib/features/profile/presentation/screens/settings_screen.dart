@@ -181,18 +181,22 @@ class SettingsScreen extends ConsumerWidget {
               title: const Text('Bantuan & Dukungan'),
               trailing: const Icon(Icons.chevron_right),
               contentPadding: EdgeInsets.zero,
-              onTap: () {
-                // TODO: Navigate to help screen
-              },
+              onTap: () => _showInfoDialog(
+                context,
+                'Bantuan & Dukungan',
+                'Untuk bantuan teknis, hubungi tim support melalui email atau WhatsApp yang tertera di aplikasi.',
+              ),
             ),
             const Divider(),
             ListTile(
               title: const Text('Kebijakan Privasi'),
               trailing: const Icon(Icons.chevron_right),
               contentPadding: EdgeInsets.zero,
-              onTap: () {
-                // TODO: Navigate to privacy policy
-              },
+              onTap: () => _showInfoDialog(
+                context,
+                'Kebijakan Privasi',
+                'Data Anda disimpan secara aman dan tidak dibagikan kepada pihak ketiga tanpa persetujuan Anda.',
+              ),
             ),
           ],
         ),
@@ -327,6 +331,29 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showInfoDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          title,
+          style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

@@ -146,14 +146,25 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       sitesAsync.when(
-                        data: (sites) => _SiteSelector(
-                          sites: sites,
-                          selectedSite: selectedSite,
-                          onSiteSelected: (site) {
-                            ref.read(selectedSiteProvider.notifier).state =
-                                site;
-                          },
-                        ),
+                        data: (sites) {
+                          // Auto-select site pertama jika belum ada yang dipilih
+                          if (selectedSite == null && sites.isNotEmpty) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              ref
+                                  .read(selectedSiteProvider.notifier)
+                                  .selectSite(sites.first);
+                            });
+                          }
+                          return _SiteSelector(
+                            sites: sites,
+                            selectedSite: selectedSite,
+                            onSiteSelected: (site) {
+                              ref
+                                  .read(selectedSiteProvider.notifier)
+                                  .selectSite(site);
+                            },
+                          );
+                        },
                         loading: () => _ShimmerCard(
                           height: context.rh(0.07).clamp(52.0, 72.0),
                         ),

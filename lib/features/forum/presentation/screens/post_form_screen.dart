@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/forum_provider.dart';
 
 class PostFormScreen extends ConsumerStatefulWidget {
@@ -18,6 +21,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   final _imageUrlController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isLoadingData = false;
+
   bool get _isEditMode => widget.postId != null;
 
   @override
@@ -36,8 +41,29 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   }
 
   Future<void> _loadPostData() async {
-    // TODO: Load post data for edit mode
-    // For now, we'll skip this as it requires additional provider
+    setState(() => _isLoadingData = true);
+    try {
+      final repository = ref.read(forumRepositoryProvider);
+      final post = await repository.getPostById(widget.postId!);
+      if (mounted) {
+        _contentController.text = post.postContent;
+        _imageUrlController.text = post.postImage ?? '';
+        setState(() => _isLoadingData = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingData = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Gagal memuat data postingan: $e',
+              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -47,6 +73,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
     try {
       final repository = ref.read(forumRepositoryProvider);
+      final siteId = ref.read(selectedSiteIdProvider);
 
       if (_isEditMode) {
         await repository.updatePost(
@@ -57,8 +84,11 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               : _imageUrlController.text.trim(),
         );
       } else {
+        if (siteId == null) {
+          throw Exception('Pilih site terlebih dahulu');
+        }
         await repository.createPost(
-          siteId: 'SITE001',
+          siteId: siteId,
           content: _contentController.text.trim(),
           imageUrl: _imageUrlController.text.trim().isEmpty
               ? null
@@ -76,7 +106,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               _isEditMode
                   ? 'Postingan berhasil diupdate'
                   : 'Postingan berhasil dibuat',
+              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
             ),
+            backgroundColor: AppColors.success,
           ),
         );
         context.pop();
@@ -85,15 +117,16 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
+            backgroundColor: AppColors.error,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -107,14 +140,12 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontWeight: FontWeight.w600,
+            color: Color(0xFF1D1D1D),
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1D1D1D)),
-          onPressed: () => context.pop(),
-        ),
+        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
         actions: [
           if (_isLoading)
             const Center(
@@ -123,7 +154,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             )
@@ -136,127 +170,146 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
+                  color: AppColors.primary,
                 ),
               ),
             ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextFormField(
-                controller: _contentController,
-                maxLines: 8,
-                decoration: const InputDecoration(
-                  hintText: 'Apa yang ingin Anda bagikan?',
-                  hintStyle: TextStyle(
-                    color: Color(0xFF999999),
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                  border: InputBorder.none,
-                ),
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 14,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Konten tidak boleh kosong';
-                  }
-                  return null;
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: _isLoadingData
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: EdgeInsets.all(context.rw(0.051)),
                 children: [
-                  const Text(
-                    'URL Gambar (Opsional)',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                  // Content field
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _imageUrlController,
-                    decoration: const InputDecoration(
-                      hintText: 'https://example.com/image.jpg',
-                      hintStyle: TextStyle(
-                        color: Color(0xFF999999),
+                    child: TextFormField(
+                      controller: _contentController,
+                      maxLines: 8,
+                      decoration: const InputDecoration(
+                        hintText: 'Apa yang ingin Anda bagikan?',
+                        hintStyle: TextStyle(
+                          color: Color(0xFF999999),
+                          fontFamily: 'Plus Jakarta Sans',
+                        ),
+                        border: InputBorder.none,
+                      ),
+                      style: const TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
-                    style: const TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 12,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Konten tidak boleh kosong';
+                        }
+                        if (value.trim().length < 10) {
+                          return 'Konten minimal 10 karakter';
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Masukkan URL gambar yang valid',
-                    style: TextStyle(
-                      color: Color(0xFF999999),
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 10,
+
+                  SizedBox(height: context.rh(0.02)),
+
+                  // Image URL field
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'URL Gambar (Opsional)',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                            color: Color(0xFF1D1D1D),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _imageUrlController,
+                          decoration: InputDecoration(
+                            hintText: 'https://example.com/image.jpg',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF999999),
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          style: const TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 12,
+                          ),
+                          validator: (value) {
+                            if (value != null && value.trim().isNotEmpty) {
+                              final uri = Uri.tryParse(value.trim());
+                              if (uri == null ||
+                                  (!uri.scheme.startsWith('http'))) {
+                                return 'URL gambar tidak valid';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: context.rh(0.02)),
+
+                  // Info banner
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3CD),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Color(0xFF856404),
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Pastikan konten Anda sesuai dengan pedoman komunitas',
+                            style: TextStyle(
+                              color: Color(0xFF856404),
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3CD),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Color(0xFF856404), size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Pastikan konten Anda sesuai dengan pedoman komunitas',
-                      style: TextStyle(
-                        color: Color(0xFF856404),
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

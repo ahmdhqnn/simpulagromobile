@@ -86,7 +86,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  // TODO: Implement image picker
+                  // Image picker belum diimplementasi — perlu package image_picker
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Fitur upload foto akan segera hadir'),

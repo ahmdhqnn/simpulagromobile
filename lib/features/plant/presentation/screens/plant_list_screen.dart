@@ -6,7 +6,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../providers/plant_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
-import 'plant_detail_screen.dart';
 
 class PlantListScreen extends ConsumerWidget {
   const PlantListScreen({super.key});
@@ -232,12 +231,7 @@ class PlantListScreen extends ConsumerWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PlantDetailScreen(plantId: plant.plantId),
-            ),
-          );
+          context.push('/plant/${plant.plantId}');
         },
         borderRadius: BorderRadius.circular(18),
         child: Padding(

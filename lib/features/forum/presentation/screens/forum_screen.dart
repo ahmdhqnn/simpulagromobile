@@ -61,7 +61,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
                       .read(forumProvider.notifier)
                       .loadPosts(refresh: true);
                 },
-                child: forumState.posts.isEmpty && !forumState.isLoading
+                child: forumState.error != null && forumState.posts.isEmpty
+                    ? _buildErrorState(context)
+                    : forumState.posts.isEmpty && !forumState.isLoading
                     ? _buildEmptyState()
                     : ListView.builder(
                         controller: _scrollController,
@@ -174,12 +176,65 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
                 width: 28,
                 height: 28,
               ),
-              onPressed: () {
-                // TODO: Implement more menu
-              },
+              onPressed: () => context.push('/forum/my-posts'),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(context.rw(0.061)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: context.rw(0.164).clamp(48.0, 72.0),
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+            ),
+            SizedBox(height: context.rh(0.02)),
+            Text(
+              'Gagal memuat postingan',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(16),
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1D1D1D),
+              ),
+            ),
+            SizedBox(height: context.rh(0.01)),
+            Text(
+              ref.read(forumProvider).error ?? 'Terjadi kesalahan',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              ),
+            ),
+            SizedBox(height: context.rh(0.025)),
+            ElevatedButton.icon(
+              onPressed: () =>
+                  ref.read(forumProvider.notifier).loadPosts(refresh: true),
+              icon: const Icon(Icons.refresh),
+              label: const Text(
+                'Coba Lagi',
+                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1D503F),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,16 +284,19 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
+      builder: (sheetCtx) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit Postingan'),
+              title: const Text(
+                'Edit Postingan',
+                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 context.push('/forum/edit/$postId');
               },
             ),
@@ -246,10 +304,13 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text(
                 'Hapus Postingan',
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(
+                  color: Colors.red,
+                  fontFamily: 'Plus Jakarta Sans',
+                ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 _confirmDelete(context, postId);
               },
             ),
@@ -262,23 +323,46 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
   void _confirmDelete(BuildContext context, String postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hapus Postingan'),
-        content: const Text('Apakah Anda yakin ingin menghapus postingan ini?'),
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          'Hapus Postingan',
+          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus postingan ini?',
+          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text(
+              'Batal',
+              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogCtx);
               ref.read(forumProvider.notifier).deletePost(postId);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Postingan berhasil dihapus')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Postingan berhasil dihapus',
+                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                    ),
+                  ),
+                );
+              }
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(
+                color: Colors.red,
+                fontFamily: 'Plus Jakarta Sans',
+              ),
+            ),
           ),
         ],
       ),
@@ -288,13 +372,23 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
   void _showShareDialog(BuildContext context, String postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Bagikan Postingan'),
-        content: const Text('Fitur share akan segera tersedia'),
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          'Bagikan Postingan',
+          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
+        content: const Text(
+          'Fitur share akan segera tersedia',
+          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text(
+              'OK',
+              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            ),
           ),
         ],
       ),
