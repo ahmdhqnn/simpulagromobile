@@ -6,7 +6,7 @@ import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/entities/user_profile.dart';
 
-// Datasource provider
+// ─── DataSource ──────────────────────────────────────────
 final profileRemoteDatasourceProvider = Provider<ProfileRemoteDatasource>((
   ref,
 ) {
@@ -14,82 +14,82 @@ final profileRemoteDatasourceProvider = Provider<ProfileRemoteDatasource>((
   return ProfileRemoteDatasource(dioClient.dio);
 });
 
-// Repository provider
+// ─── Repository ──────────────────────────────────────────
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  return ProfileRepositoryImpl(ref.read(profileRemoteDatasourceProvider));
+  final datasource = ref.watch(profileRemoteDatasourceProvider);
+  return ProfileRepositoryImpl(datasource);
 });
 
-// User profile provider
+// ─── User Profile ─────────────────────────────────────────
 final userProfileProvider = FutureProvider<UserProfile>((ref) async {
-  return ref.read(profileRepositoryProvider).getUserProfile();
+  final repository = ref.watch(profileRepositoryProvider);
+  return repository.getUserProfile();
 });
 
-// User permissions provider
+// ─── User Permissions ────────────────────────────────────
 final userPermissionsProvider = FutureProvider<List<String>>((ref) async {
-  final datasource = ref.read(profileRemoteDatasourceProvider);
+  final datasource = ref.watch(profileRemoteDatasourceProvider);
   return datasource.getUserPermissions();
 });
 
-// Settings provider
-final settingsProvider =
-    StateNotifierProvider<SettingsNotifier, Map<String, dynamic>>((ref) {
-      return SettingsNotifier();
-    });
-
+// ─── Settings ────────────────────────────────────────────
+/// Settings disimpan di SharedPreferences (bukan SecureStorage)
+/// karena bukan data sensitif
 class SettingsNotifier extends StateNotifier<Map<String, dynamic>> {
-  SettingsNotifier()
-    : super({
-        'notifications': true,
-        'autoRefresh': true,
-        'refreshInterval': 30,
-        'language': 'id',
-        'theme': 'light',
-        'temperatureUnit': 'celsius',
-        'dateFormat': 'dd/MM/yyyy',
-      });
+  static const _defaults = {
+    'notifications': true,
+    'autoRefresh': true,
+    'refreshInterval': 30,
+    'language': 'id',
+    'theme': 'light',
+    'temperatureUnit': 'celsius',
+    'dateFormat': 'dd/MM/yyyy',
+  };
+
+  SettingsNotifier() : super(_defaults) {
+    _loadSettings();
+  }
 
   void updateSetting(String key, dynamic value) {
     state = {...state, key: value};
-    _saveSettings();
+    _persistSettings();
   }
 
-  Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    state.forEach((key, value) {
-      if (value is bool) {
-        prefs.setBool(key, value);
-      } else if (value is int) {
-        prefs.setInt(key, value);
-      } else if (value is String) {
-        prefs.setString(key, value);
-      }
-    });
+  Future<void> _loadSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final loaded = <String, dynamic>{};
+      _defaults.forEach((key, defaultValue) {
+        if (defaultValue is bool) {
+          loaded[key] = prefs.getBool(key) ?? defaultValue;
+        } else if (defaultValue is int) {
+          loaded[key] = prefs.getInt(key) ?? defaultValue;
+        } else if (defaultValue is String) {
+          loaded[key] = prefs.getString(key) ?? defaultValue;
+        }
+      });
+      if (mounted) state = loaded;
+    } catch (_) {
+      // Gagal load — gunakan defaults
+    }
   }
 
-  Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final newState = <String, dynamic>{};
-
-    state.forEach((key, defaultValue) {
-      if (defaultValue is bool) {
-        newState[key] = prefs.getBool(key) ?? defaultValue;
-      } else if (defaultValue is int) {
-        newState[key] = prefs.getInt(key) ?? defaultValue;
-      } else if (defaultValue is String) {
-        newState[key] = prefs.getString(key) ?? defaultValue;
-      }
-    });
-
-    state = newState;
+  Future<void> _persistSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      state.forEach((key, value) {
+        if (value is bool)
+          prefs.setBool(key, value);
+        else if (value is int)
+          prefs.setInt(key, value);
+        else if (value is String)
+          prefs.setString(key, value);
+      });
+    } catch (_) {}
   }
 }
 
-// Logout provider
-final logoutProvider = Provider<Future<void> Function()>((ref) {
-  return () async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_id');
-    await prefs.remove('user_email');
-  };
-});
+final settingsProvider =
+    StateNotifierProvider<SettingsNotifier, Map<String, dynamic>>(
+      (ref) => SettingsNotifier(),
+    );

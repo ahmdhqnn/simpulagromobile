@@ -19,9 +19,10 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(remoteDataSource, storage);
 });
 
-// ─── Auth State ─────────────────────────────────────────
+// ─── Auth Status ─────────────────────────────────────────
 enum AuthStatus { initial, authenticated, unauthenticated, loading }
 
+// ─── Auth State ──────────────────────────────────────────
 class AuthState {
   final AuthStatus status;
   final User? user;
@@ -51,14 +52,16 @@ class AuthState {
 
   bool hasPermission(String permission) => permissions.contains(permission);
   bool get isAdmin => user?.roleId == 'ROLE001';
+  bool get isAuthenticated => status == AuthStatus.authenticated;
 }
 
-// ─── Auth Notifier ──────────────────────────────────────
+// ─── Auth Notifier ───────────────────────────────────────
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 
   AuthNotifier(this._repository) : super(const AuthState());
 
+  /// Cek status auth dari storage lokal (dipanggil saat app start)
   Future<void> checkAuthStatus() async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
@@ -67,17 +70,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final user = await _repository.getCachedUser();
         if (user != null) {
           state = AuthState(status: AuthStatus.authenticated, user: user);
-          // Fetch permissions in background
+          // Load permissions di background — tidak block UI
           _loadPermissions();
           return;
         }
       }
       state = const AuthState(status: AuthStatus.unauthenticated);
-    } catch (e) {
+    } catch (_) {
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
   }
 
+  /// Login dengan username dan password
   Future<bool> login(String username, String password) async {
     state = state.copyWith(status: AuthStatus.loading, error: null);
     try {
@@ -86,21 +90,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _loadPermissions();
       return true;
     } catch (e) {
-      String errorMsg = 'Username atau Password salah';
-      if (e.toString().contains('SocketException') ||
-          e.toString().contains('connection')) {
+      final msg = e.toString();
+      String errorMsg;
+      if (msg.contains('SocketException') ||
+          msg.contains('connection') ||
+          msg.contains('timeout')) {
         errorMsg = 'Tidak dapat terhubung ke server';
+      } else if (msg.contains('401') || msg.contains('Unauthorized')) {
+        errorMsg = 'Username atau Password salah';
+      } else {
+        errorMsg = 'Username atau Password salah';
       }
       state = AuthState(status: AuthStatus.unauthenticated, error: errorMsg);
       return false;
     }
   }
 
+  /// Logout — hapus sesi dan reset state
   Future<void> logout() async {
     await _repository.logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  /// Dipanggil oleh DioClient saat menerima 401 — auto logout
+  Future<void> handleSessionExpired() async {
+    if (state.status != AuthStatus.authenticated) return;
+    await _repository.logout();
+    state = const AuthState(
+      status: AuthStatus.unauthenticated,
+      error: 'Sesi Anda telah berakhir. Silakan login kembali.',
+    );
+  }
+
+  /// Refresh profil user dari server
   Future<void> refreshProfile() async {
     try {
       final user = await _repository.getProfile();
@@ -116,13 +138,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-// ─── Provider ───────────────────────────────────────────
+// ─── Provider ────────────────────────────────────────────
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+  final notifier = AuthNotifier(repository);
+
+  // Wire DioClient.onUnauthorized → auto logout saat 401
+  final dioClient = ref.read(dioClientProvider);
+  dioClient.onUnauthorized = () {
+    // Gunakan Future.microtask agar tidak memanggil setState saat build
+    Future.microtask(() => notifier.handleSessionExpired());
+  };
+
+  return notifier;
 });
 
-// ─── Onboarding Provider ─────────────────────────────────────
+// ─── Onboarding Provider ─────────────────────────────────
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((
   ref,
 ) {
@@ -139,7 +170,7 @@ class OnboardingNotifier extends StateNotifier<bool> {
 
   Future<void> _checkOnboardingStatus() async {
     final completed = await _storage.isOnboardingCompleted();
-    state = completed;
+    if (mounted) state = completed;
   }
 
   Future<void> completeOnboarding() async {

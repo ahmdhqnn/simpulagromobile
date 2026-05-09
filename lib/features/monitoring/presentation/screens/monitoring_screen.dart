@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../site/presentation/providers/site_provider.dart';
+import '../providers/monitoring_provider.dart';
 import '../tabs/analytics_tab.dart';
 import '../tabs/history_tab.dart';
 import '../tabs/maps_tab.dart';
@@ -66,7 +68,17 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
                         height: 28,
                       ),
                       onPressed: () {
-                        // TODO: Implement more menu
+                        // Refresh semua data monitoring
+                        ref.invalidate(latestReadsProvider);
+                        ref.invalidate(todayReadsProvider);
+                        ref.invalidate(logsProvider);
+                        ref.invalidate(historyReadsProvider);
+                        ref.invalidate(devicesProvider);
+                        ref.invalidate(envHealthProvider);
+                        ref.invalidate(plantRecommendationProvider);
+                        ref.invalidate(dailyReadsProvider);
+                        // Juga refresh site list
+                        ref.invalidate(siteListProvider);
                       },
                     ),
                   ),

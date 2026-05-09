@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../domain/entities/plant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/utils/responsive.dart';
@@ -47,9 +48,7 @@ class PlantDetailCard extends StatelessWidget {
                     width: 28,
                     height: 28,
                   ),
-                  onPressed: () {
-                    // TODO: Implement more menu
-                  },
+                  onPressed: () => context.push('/plant/${plant.plantId}'),
                 ),
               ),
             ],
