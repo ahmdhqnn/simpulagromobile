@@ -53,7 +53,7 @@ class AlertWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Alerts',
+                        'Peringatan Sensor',
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(14),
@@ -62,7 +62,7 @@ class AlertWidget extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${alerts.length} active alert${alerts.length > 1 ? 's' : ''}',
+                        '${alerts.length} peringatan aktif',
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(11),
@@ -76,7 +76,7 @@ class AlertWidget extends StatelessWidget {
                   TextButton(
                     onPressed: onViewAll,
                     child: Text(
-                      'View All',
+                      'Lihat Semua',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -183,7 +183,7 @@ class _AlertItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        alert.severity.name.toUpperCase(),
+                        _getSeverityLabel(alert.severity),
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(9),
@@ -240,6 +240,17 @@ class _AlertItem extends StatelessWidget {
         return AppColors.info;
     }
   }
+
+  String _getSeverityLabel(AlertSeverity severity) {
+    switch (severity) {
+      case AlertSeverity.critical:
+        return 'KRITIS';
+      case AlertSeverity.warning:
+        return 'PERINGATAN';
+      case AlertSeverity.info:
+        return 'INFO';
+    }
+  }
 }
 
 /// Sensor alert model
@@ -263,42 +274,6 @@ class SensorAlert {
     this.currentValue,
     this.threshold,
   });
-
-  // Mock data generator for testing
-  static List<SensorAlert> mockAlerts() {
-    return [
-      SensorAlert(
-        id: '1',
-        sensorId: 'env_temp',
-        sensorName: 'Temperature',
-        message: 'Suhu terlalu tinggi (35°C), melebihi batas maksimal 32°C',
-        severity: AlertSeverity.critical,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        currentValue: 35,
-        threshold: 32,
-      ),
-      SensorAlert(
-        id: '2',
-        sensorId: 'soil_ph',
-        sensorName: 'pH Tanah',
-        message: 'pH tanah mendekati batas minimum (5.2)',
-        severity: AlertSeverity.warning,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-        currentValue: 5.2,
-        threshold: 5.0,
-      ),
-      SensorAlert(
-        id: '3',
-        sensorId: 'env_hum',
-        sensorName: 'Humidity',
-        message: 'Kelembaban udara optimal (75%)',
-        severity: AlertSeverity.info,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        currentValue: 75,
-        threshold: 70,
-      ),
-    ];
-  }
 }
 
 enum AlertSeverity { critical, warning, info }

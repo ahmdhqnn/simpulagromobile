@@ -21,20 +21,34 @@ class Sensor with _$Sensor {
   // Helper methods
   String get displayName => name;
 
-  String get statusText => isActive ? 'Active' : 'Inactive';
+  String get statusText => isActive ? 'Aktif' : 'Tidak Aktif';
 
   String get typeDisplay {
     switch (type.toLowerCase()) {
       case 'temperature':
-        return 'Temperature';
+      case 'env_temp':
+        return 'Suhu Udara';
       case 'humidity':
-        return 'Humidity';
+      case 'env_hum':
+        return 'Kelembaban Udara';
       case 'soil_moisture':
-        return 'Soil Moisture';
+      case 'soil_hum':
+        return 'Kelembaban Tanah';
       case 'ph':
-        return 'pH Level';
+      case 'soil_ph':
+        return 'pH Tanah';
+      case 'soil_nitro':
+        return 'Nitrogen Tanah';
+      case 'soil_phos':
+        return 'Fosfor Tanah';
+      case 'soil_pot':
+        return 'Kalium Tanah';
       case 'light':
-        return 'Light Intensity';
+        return 'Intensitas Cahaya';
+      case 'pressure':
+        return 'Tekanan';
+      case 'wind_speed':
+        return 'Kecepatan Angin';
       default:
         return type;
     }

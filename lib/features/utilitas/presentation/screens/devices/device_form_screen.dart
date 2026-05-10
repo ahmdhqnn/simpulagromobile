@@ -137,9 +137,12 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Device ID wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -152,9 +155,12 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                       icon: Icons.device_hub,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama device wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),

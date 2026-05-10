@@ -128,9 +128,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'User ID wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -143,9 +146,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                       icon: Icons.person,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),

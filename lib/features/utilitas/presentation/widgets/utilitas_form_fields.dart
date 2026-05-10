@@ -141,8 +141,9 @@ class UtilitasFormFields {
             validator: (v) {
               if (v != null && v.isNotEmpty) {
                 final lon = double.tryParse(v);
-                if (lon == null || lon < -180 || lon > 180)
+                if (lon == null || lon < -180 || lon > 180) {
                   return 'Tidak valid';
+                }
               }
               return null;
             },

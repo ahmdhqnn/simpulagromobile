@@ -123,9 +123,12 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Unit ID wajib diisi';
-                        if (v.length < 2) return 'Minimal 2 karakter';
+                        }
+                        if (v.length < 2) {
+                          return 'Minimal 2 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -138,9 +141,12 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                       icon: Icons.straighten,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama unit wajib diisi';
-                        if (v.length < 2) return 'Minimal 2 karakter';
+                        }
+                        if (v.length < 2) {
+                          return 'Minimal 2 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -153,8 +159,9 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                       icon: Icons.text_fields,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Simbol wajib diisi';
+                        }
                         return null;
                       },
                     ),

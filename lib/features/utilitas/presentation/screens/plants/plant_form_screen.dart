@@ -125,9 +125,12 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Plant ID wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -140,9 +143,12 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                       icon: Icons.grass,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama tanaman wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),

@@ -189,52 +189,6 @@ class ActivityItem {
     required this.color,
     required this.type,
   });
-
-  // Mock data generator
-  static List<ActivityItem> mockActivities() {
-    return [
-      ActivityItem(
-        title: 'Task Selesai',
-        description: 'Pemupukan NPK Tahap 1 telah diselesaikan',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-        icon: Icons.check_circle,
-        color: AppColors.success,
-        type: ActivityType.taskCompleted,
-      ),
-      ActivityItem(
-        title: 'Sensor Alert',
-        description: 'Suhu terlalu tinggi (35°C)',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        icon: Icons.warning,
-        color: AppColors.warning,
-        type: ActivityType.alert,
-      ),
-      ActivityItem(
-        title: 'Task Baru',
-        description: 'Penyemprotan Pestisida ditambahkan',
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-        icon: Icons.add_task,
-        color: AppColors.primary,
-        type: ActivityType.taskCreated,
-      ),
-      ActivityItem(
-        title: 'Data Sensor',
-        description: 'Pembacaan sensor berhasil diperbarui',
-        timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-        icon: Icons.sensors,
-        color: AppColors.info,
-        type: ActivityType.sensorUpdate,
-      ),
-      ActivityItem(
-        title: 'Tanaman Diupdate',
-        description: 'Data tanaman Padi IR64 diperbarui',
-        timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-        icon: Icons.grass,
-        color: AppColors.success,
-        type: ActivityType.plantUpdate,
-      ),
-    ];
-  }
 }
 
 enum ActivityType {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/providers/app_startup_provider.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/datasources/site_remote_datasource.dart';
 import '../../data/repositories/site_repository_impl.dart';
@@ -37,30 +38,33 @@ final siteDetailProvider = FutureProvider.family<Site, String>((
 });
 
 // ─── Selected Site (dengan persistensi) ──────────────────
-/// StateNotifier yang menyimpan site terpilih ke SecureStorage
-/// sehingga tidak hilang saat app restart
+/// StateNotifier yang menyimpan site terpilih ke SecureStorage.
+/// Nilai awal diambil dari AppStartupData (preloaded di main())
+/// sehingga tidak ada I/O di constructor.
 class SelectedSiteNotifier extends StateNotifier<Site?> {
   final SecureStorage _storage;
   final Ref _ref;
+  final String? _preloadedSiteId;
 
-  SelectedSiteNotifier(this._storage, this._ref) : super(null) {
-    _restoreSelectedSite();
+  SelectedSiteNotifier(this._storage, this._ref, this._preloadedSiteId)
+    : super(null) {
+    // Jika ada siteId yang tersimpan, restore setelah sites list tersedia
+    if (_preloadedSiteId != null) {
+      _restoreFromPreloadedId(_preloadedSiteId);
+    }
   }
 
-  /// Restore site terpilih dari storage saat app start
-  Future<void> _restoreSelectedSite() async {
-    final savedSiteId = await _storage.getSelectedSiteId();
-    if (savedSiteId == null || !mounted) return;
-
+  /// Cari site yang cocok dengan siteId preloaded
+  /// Tidak baca storage — hanya lookup dari list yang di-fetch
+  Future<void> _restoreFromPreloadedId(String siteId) async {
     try {
-      // Tunggu sites loaded, lalu cari site yang cocok
       final sites = await _ref.read(siteListProvider.future);
-      final site = sites.where((s) => s.siteId == savedSiteId).firstOrNull;
+      final site = sites.where((s) => s.siteId == siteId).firstOrNull;
       if (site != null && mounted) {
         state = site;
       }
     } catch (_) {
-      // Jika gagal load sites, biarkan null — akan dipilih manual
+      // Gagal load sites — biarkan null, user pilih manual
     }
   }
 
@@ -84,7 +88,9 @@ class SelectedSiteNotifier extends StateNotifier<Site?> {
 final selectedSiteProvider = StateNotifierProvider<SelectedSiteNotifier, Site?>(
   (ref) {
     final storage = ref.watch(secureStorageProvider);
-    return SelectedSiteNotifier(storage, ref);
+    // Ambil siteId dari data preloaded — tidak ada I/O
+    final startupData = ref.read(appStartupDataProvider);
+    return SelectedSiteNotifier(storage, ref, startupData.selectedSiteId);
   },
 );
 

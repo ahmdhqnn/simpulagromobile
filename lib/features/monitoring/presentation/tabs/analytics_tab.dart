@@ -557,12 +557,12 @@ class _PlantRecommendationCard extends StatelessWidget {
   }
 }
 
-class _PlantStatisticsCard extends StatelessWidget {
+class _PlantStatisticsCard extends ConsumerWidget {
   final dynamic plant;
   const _PlantStatisticsCard({required this.plant});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (plant == null) {
       return _EmptyCard(
         message: 'Belum ada tanaman aktif',
@@ -570,6 +570,46 @@ class _PlantStatisticsCard extends StatelessWidget {
       );
     }
 
+    // Ambil semua plants dari provider untuk statistik akurat
+    final plantsAsync = ref.watch(plantsProvider);
+
+    return plantsAsync.when(
+      loading: () => Container(
+        height: 74,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
+      error: (_, __) => _buildCard(
+        context,
+        total: 1,
+        active: plant.isActive ? 1 : 0,
+        harvested: plant.isHarvested ? 1 : 0,
+      ),
+      data: (plants) {
+        final total = plants.length;
+        final active = plants.where((p) => p.isActive).length;
+        final harvested = plants.where((p) => p.isHarvested).length;
+        return _buildCard(
+          context,
+          total: total,
+          active: active,
+          harvested: harvested,
+        );
+      },
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context, {
+    required int total,
+    required int active,
+    required int harvested,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -582,21 +622,21 @@ class _PlantStatisticsCard extends StatelessWidget {
           _StatItem(
             icon: 'assets/icons/tag-total-outline-icon.svg',
             label: 'Total',
-            value: '1',
+            value: '$total',
             color: const Color(0xFFECF6FE),
             spacing: 4,
           ),
           _StatItem(
             icon: 'assets/icons/plant-total-outline-icon.svg',
             label: 'Aktif',
-            value: '1',
+            value: '$active',
             color: const Color(0xFFEDF7EE),
             spacing: 2,
           ),
           _StatItem(
             icon: 'assets/icons/check-total-icon.svg',
             label: 'Dipanen',
-            value: '0',
+            value: '$harvested',
             color: const Color(0xFFE8EFE9),
             spacing: 3,
           ),
@@ -838,7 +878,7 @@ class _GrowthPhaseCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Planting',
+                    plant.statusText as String? ?? '-',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),

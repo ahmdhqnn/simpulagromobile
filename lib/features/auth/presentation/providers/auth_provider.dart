@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/providers/app_startup_provider.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -59,10 +61,32 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(const AuthState());
+  AuthNotifier(this._repository, {AppStartupData? startupData})
+    : super(const AuthState()) {
+    // Inisialisasi langsung dari data preloaded — tidak ada I/O
+    if (startupData != null) {
+      _initFromStartupData(startupData);
+    }
+  }
 
-  /// Cek status auth dari storage lokal (dipanggil saat app start)
+  /// Set state langsung dari data preloaded di main()
+
+  void _initFromStartupData(AppStartupData data) {
+    if (data.isLoggedIn && data.userData != null) {
+      try {
+        final user = UserModel.fromJsonString(data.userData!);
+        state = AuthState(status: AuthStatus.authenticated, user: user);
+        _loadPermissions();
+      } catch (_) {
+        state = const AuthState(status: AuthStatus.unauthenticated);
+      }
+    } else {
+      state = const AuthState(status: AuthStatus.unauthenticated);
+    }
+  }
+
   Future<void> checkAuthStatus() async {
+    if (state.status == AuthStatus.authenticated) return;
     state = state.copyWith(status: AuthStatus.loading);
     try {
       final isLoggedIn = await _repository.isLoggedIn();
@@ -70,7 +94,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final user = await _repository.getCachedUser();
         if (user != null) {
           state = AuthState(status: AuthStatus.authenticated, user: user);
-          // Load permissions di background — tidak block UI
           _loadPermissions();
           return;
         }
@@ -96,8 +119,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
           msg.contains('connection') ||
           msg.contains('timeout')) {
         errorMsg = 'Tidak dapat terhubung ke server';
-      } else if (msg.contains('401') || msg.contains('Unauthorized')) {
-        errorMsg = 'Username atau Password salah';
       } else {
         errorMsg = 'Username atau Password salah';
       }
@@ -126,14 +147,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> refreshProfile() async {
     try {
       final user = await _repository.getProfile();
-      state = state.copyWith(user: user);
+      if (mounted) state = state.copyWith(user: user);
     } catch (_) {}
   }
 
   Future<void> _loadPermissions() async {
     try {
       final perms = await _repository.getPermissions();
-      state = state.copyWith(permissions: perms);
+      if (mounted) state = state.copyWith(permissions: perms);
     } catch (_) {}
   }
 }
@@ -141,12 +162,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 // ─── Provider ────────────────────────────────────────────
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  final notifier = AuthNotifier(repository);
+  // Data sudah di-preload di main() — tidak ada I/O di sini
+  final startupData = ref.read(appStartupDataProvider);
+  final notifier = AuthNotifier(repository, startupData: startupData);
 
   // Wire DioClient.onUnauthorized → auto logout saat 401
   final dioClient = ref.read(dioClientProvider);
   dioClient.onUnauthorized = () {
-    // Gunakan Future.microtask agar tidak memanggil setState saat build
     Future.microtask(() => notifier.handleSessionExpired());
   };
 
@@ -158,20 +180,15 @@ final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((
   ref,
 ) {
   final storage = ref.watch(secureStorageProvider);
-  return OnboardingNotifier(storage);
+  final startupData = ref.read(appStartupDataProvider);
+  return OnboardingNotifier(storage, startupData.onboardingCompleted);
 });
 
 class OnboardingNotifier extends StateNotifier<bool> {
   final SecureStorage _storage;
 
-  OnboardingNotifier(this._storage) : super(false) {
-    _checkOnboardingStatus();
-  }
-
-  Future<void> _checkOnboardingStatus() async {
-    final completed = await _storage.isOnboardingCompleted();
-    if (mounted) state = completed;
-  }
+  /// initialValue dari data preloaded — tidak perlu baca storage lagi
+  OnboardingNotifier(this._storage, bool initialValue) : super(initialValue);
 
   Future<void> completeOnboarding() async {
     await _storage.setOnboardingCompleted(true);

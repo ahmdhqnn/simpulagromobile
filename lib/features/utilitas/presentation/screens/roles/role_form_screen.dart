@@ -122,9 +122,12 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Role ID wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -137,9 +140,12 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                       icon: Icons.admin_panel_settings,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama role wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
