@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/site_provider.dart';
 import '../../domain/entities/site.dart';
 
@@ -15,12 +16,10 @@ class SiteListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Pilih Lokasi'),
         actions: [
-          // TODO: Add create site button for admin
+          // Tombol tambah site — navigasi ke form
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              // Navigate to create site screen
-            },
+            onPressed: () => context.push('/site/create'),
           ),
         ],
       ),
@@ -42,7 +41,7 @@ class SiteListScreen extends ConsumerWidget {
                 return _SiteCard(
                   site: site,
                   onTap: () {
-                    ref.read(selectedSiteProvider.notifier).state = site;
+                    ref.read(selectedSiteProvider.notifier).selectSite(site);
                     Navigator.pop(context, site);
                   },
                 );

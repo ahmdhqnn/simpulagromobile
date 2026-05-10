@@ -144,7 +144,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           const SizedBox(width: 7),
           _StatItem(
             icon: 'assets/icons/pending-outline-icon.svg',
-            label: 'Pending',
+            label: 'Menunggu',
             value: '${stats.pending}',
             color: const Color(0xFFFFF6E9),
             iconColor: const Color(0xFFFFA929),

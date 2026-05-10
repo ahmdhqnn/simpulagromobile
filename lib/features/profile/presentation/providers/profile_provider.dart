@@ -78,12 +78,13 @@ class SettingsNotifier extends StateNotifier<Map<String, dynamic>> {
     try {
       final prefs = await SharedPreferences.getInstance();
       state.forEach((key, value) {
-        if (value is bool)
+        if (value is bool) {
           prefs.setBool(key, value);
-        else if (value is int)
+        } else if (value is int) {
           prefs.setInt(key, value);
-        else if (value is String)
+        } else if (value is String) {
           prefs.setString(key, value);
+        }
       });
     } catch (_) {}
   }

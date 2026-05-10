@@ -199,8 +199,9 @@ class GddWidget extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     getTitlesWidget: (value, meta) {
-                      if (value.toInt() >= dailyData.length)
+                      if (value.toInt() >= dailyData.length) {
                         return const Text('');
+                      }
                       final day = dailyData[value.toInt()].day ?? '';
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),

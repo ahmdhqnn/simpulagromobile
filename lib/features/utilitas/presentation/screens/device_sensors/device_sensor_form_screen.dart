@@ -155,8 +155,9 @@ class _DeviceSensorFormScreenState
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'DS ID wajib diisi';
+                        }
                         return null;
                       },
                     ),
@@ -169,8 +170,9 @@ class _DeviceSensorFormScreenState
                       icon: Icons.cable,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama wajib diisi';
+                        }
                         return null;
                       },
                     ),

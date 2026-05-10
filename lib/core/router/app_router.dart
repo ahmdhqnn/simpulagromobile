@@ -56,7 +56,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnboardingCompleted = ref.read(onboardingProvider);
 
       final isLoggedIn = authState.status == AuthStatus.authenticated;
-      final isInitial = authState.status == AuthStatus.initial;
       final isLoading = authState.status == AuthStatus.loading;
 
       final loc = state.matchedLocation;
@@ -64,23 +63,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLogin = loc == '/login';
       final isOnboarding = loc == '/onboarding';
 
-      // Saat initial/loading, tetap di splash
-      if (isInitial || (isLoading && isSplash)) return null;
+      // Splash screen menangani navigasinya sendiri — jangan redirect dari sini
+      if (isSplash) return null;
 
-      // Saat loading di login, jangan redirect
+      // Saat loading (misal saat proses login), jangan redirect
       if (isLoading && isLogin) return null;
 
       if (isLoggedIn) {
         // Sudah login — redirect dari auth screens ke home
-        if (isSplash || isLogin || isOnboarding) return '/';
+        if (isLogin || isOnboarding) return '/';
         return null;
       }
 
       // Belum login
-      if (!isOnboardingCompleted && !isOnboarding && !isSplash) {
+      if (!isOnboardingCompleted && !isOnboarding) {
         return '/onboarding';
       }
-      if (isLogin || isOnboarding || isSplash) return null;
+      if (isLogin || isOnboarding) return null;
 
       // Redirect ke login dengan pesan jika session expired
       final error = authState.error;

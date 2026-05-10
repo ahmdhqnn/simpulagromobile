@@ -97,7 +97,7 @@ class _RetryInterceptor extends Interceptor {
     if (shouldRetry && _retryCount < ApiConfig.maxRetries) {
       _retryCount++;
       debugPrint(
-        '🔄 Retrying request (${_retryCount}/${ApiConfig.maxRetries}): '
+        '🔄 Retrying request ($_retryCount/${ApiConfig.maxRetries}): '
         '${err.requestOptions.path}',
       );
 

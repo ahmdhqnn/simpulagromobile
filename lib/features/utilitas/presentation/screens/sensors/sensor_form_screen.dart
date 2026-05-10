@@ -135,9 +135,12 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Sensor ID wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
@@ -149,9 +152,12 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       icon: Icons.sensors,
                       required: true,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Nama sensor wajib diisi';
-                        if (v.length < 3) return 'Minimal 3 karakter';
+                        }
+                        if (v.length < 3) {
+                          return 'Minimal 3 karakter';
+                        }
                         return null;
                       },
                     ),
