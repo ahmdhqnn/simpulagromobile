@@ -37,7 +37,6 @@ class RealtimeTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Status Sensor Terkini (card berwarna dari dashboard) ──
             const _SectionTitle('Status Sensor Terkini'),
             SizedBox(height: context.rh(0.014)),
             latestAsync.when(
@@ -59,7 +58,6 @@ class RealtimeTab extends ConsumerWidget {
 
             SizedBox(height: context.rh(0.024)),
 
-            // ── Grafik Hari Ini ───────────────────────────────────────
             const _SectionTitle('Grafik Hari Ini'),
             SizedBox(height: context.rh(0.014)),
             todayAsync.when(
@@ -79,15 +77,14 @@ class RealtimeTab extends ConsumerWidget {
 
             SizedBox(height: context.rh(0.024)),
 
-            // ── Status Sensor (list detail) ───────────────────────────
             const _SectionTitle('Detail Status Sensor'),
             SizedBox(height: context.rh(0.014)),
             latestAsync.when(
-              loading: () => _shimmerCard(context, 195),
+              loading: () => _shimmerCard(context, 60),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) => reads.isEmpty
                   ? const _EmptyStateCard(
-                      height: 195,
+                      height: 60,
                       message: 'Belum ada data sensor',
                     )
                   : _SensorStatusList(
@@ -98,18 +95,17 @@ class RealtimeTab extends ConsumerWidget {
 
             SizedBox(height: context.rh(0.024)),
 
-            // ── Log Sensor ────────────────────────────────────────────
             const _SectionTitle('Log Sensor'),
             SizedBox(height: context.rh(0.014)),
             logsAsync.when(
-              loading: () => _shimmerCard(context, 120),
+              loading: () => _shimmerCard(context, 60),
               error: (e, _) => _ErrorCard(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(logsProvider),
               ),
               data: (logs) => logs.isEmpty
                   ? const _EmptyStateCard(
-                      height: 97,
+                      height: 60,
                       message: 'Belum ada log sensor',
                     )
                   : _LogList(logs: logs.take(20).toList()),
@@ -136,12 +132,6 @@ class RealtimeTab extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REALTIME SENSOR GRID — pakai SensorStatusCard dari dashboard
-// Persentase diambil dari envHealthProvider (API environmental-health)
-// Fallback: nilai > 0 → 80 (Optimal), nilai == 0 → 0 (Kritis)
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _RealtimeSensorGrid extends StatelessWidget {
   final List<SensorReadUpdate> reads;
   final EnvironmentalHealth? envHealth;
@@ -154,8 +144,6 @@ class _RealtimeSensorGrid extends StatelessWidget {
   }
 }
 
-/// Adapter agar SensorReadUpdate kompatibel dengan SensorStatusGrid
-/// Persentase diambil dari environmental health API jika tersedia
 class _SensorProxy {
   final SensorReadUpdate _r;
   final EnvironmentalHealth? _health;
@@ -166,19 +154,14 @@ class _SensorProxy {
   String get readUpdateValue => _r.readUpdateValue ?? '0';
 
   double get persentase {
-    // Cari persentase dari environmental health API
     if (_health != null && _health.sensors.isNotEmpty) {
       final match = _health.sensors.where((s) => s.dsId == _r.dsId).firstOrNull;
       if (match != null) return match.persentase;
     }
-    // Fallback: nilai > 0 → 80 (Optimal), nilai == 0 → 0 (Kritis)
+
     return _r.numericValue > 0 ? 80.0 : 0.0;
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GRAFIK HARI INI — dengan selector parameter sensor
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _TodayChart extends StatefulWidget {
   final List<SensorReadModel> reads;
@@ -248,6 +231,7 @@ class _TodayChartState extends State<_TodayChart> {
     final color = _colorFor(_selected);
 
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -255,124 +239,174 @@ class _TodayChartState extends State<_TodayChart> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Selector parameter ──────────────────────────
-          if (params.length > 1)
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                context.rw(0.041),
-                context.rw(0.041),
-                context.rw(0.041),
-                0,
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: params.map((p) {
-                    final isSelected = p == _selected;
-                    final c = _colorFor(p);
-                    return GestureDetector(
-                      onTap: () => setState(() => _selected = p),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected ? c : c.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          SensorMeta.label(p),
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(11),
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : c,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.show_chart,
+                  color: Color(0xFF2196F3),
+                  size: 20,
                 ),
               ),
-            ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Data Sensor Hari Ini',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(20),
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pemantauan harian sensor realtime',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
 
-          // ── Chart ───────────────────────────────────────
+          // ── Selector parameter ──────────────────────────
+          if (params.length > 1)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: params.map((p) {
+                  final isSelected = p == _selected;
+                  final c = _colorFor(p);
+                  return GestureDetector(
+                    onTap: () => setState(() => _selected = p),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? c : c.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        SensorMeta.label(p),
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(11),
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : c,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          const SizedBox(height: 12),
+
           SizedBox(
             height: 200,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                context.rw(0.02),
-                context.rw(0.041),
-                context.rw(0.041),
-                context.rw(0.041),
-              ),
-              child: spots.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/grafik_outline_icon.svg',
-                            width: 28,
-                            height: 28,
-                            colorFilter: ColorFilter.mode(
-                              const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Belum ada data untuk sensor ini',
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(12),
-                              fontWeight: FontWeight.w300,
-                              color: const Color(
-                                0xFF1D1D1D,
-                              ).withValues(alpha: 0.5),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : LineChart(
-                      LineChartData(
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine: (_) => FlLine(
-                            color: const Color(0xFFE0E0E0),
-                            strokeWidth: 1,
+            child: spots.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/grafik_outline_icon.svg',
+                          width: 28,
+                          height: 28,
+                          colorFilter: ColorFilter.mode(
+                            const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                            BlendMode.srcIn,
                           ),
                         ),
-                        titlesData: FlTitlesData(
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Belum ada data untuk sensor ini',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.5),
                           ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
+                        ),
+                      ],
+                    ),
+                  )
+                : LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (_) => FlLine(
+                          color: const Color(0xFFE0E0E0),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            getTitlesWidget: (value, meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontSize: context.sp(10),
+                                  color: const Color(
+                                    0xFF1D1D1D,
+                                  ).withValues(alpha: 0.6),
+                                ),
+                              );
+                            },
                           ),
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 24,
-                              interval: (spots.length / 4).ceilToDouble().clamp(
-                                1,
-                                double.infinity,
-                              ),
-                              getTitlesWidget: (v, _) {
-                                final idx = v.toInt();
-                                if (idx < 0 || idx >= filtered.length) {
-                                  return const SizedBox.shrink();
-                                }
-                                final d = filtered[idx].readDate;
-                                return Text(
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 32,
+                            interval: (spots.length / 4).ceilToDouble().clamp(
+                              1,
+                              double.infinity,
+                            ),
+                            getTitlesWidget: (v, _) {
+                              final idx = v.toInt();
+                              if (idx < 0 || idx >= filtered.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final d = filtered[idx].readDate;
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
                                   d != null
                                       ? DateFormat('HH:mm').format(d)
                                       : '',
@@ -383,43 +417,43 @@ class _TodayChartState extends State<_TodayChart> {
                                     ).withValues(alpha: 0.5),
                                     fontFamily: 'Plus Jakarta Sans',
                                   ),
-                                );
-                              },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: color,
+                          barWidth: 2.5,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                color.withValues(alpha: 0.3),
+                                color.withValues(alpha: 0.03),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
                             ),
                           ),
                         ),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: spots,
-                            isCurved: true,
-                            color: color,
-                            barWidth: 2.5,
-                            dotData: const FlDotData(show: false),
-                            belowBarData: BarAreaData(
-                              show: true,
-                              gradient: LinearGradient(
-                                colors: [
-                                  color.withValues(alpha: 0.3),
-                                  color.withValues(alpha: 0.03),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                            ),
-                          ),
-                        ],
-                        lineTouchData: LineTouchData(
-                          touchTooltipData: LineTouchTooltipData(
-                            getTooltipColor: (_) => Colors.white,
-                            tooltipBorder: const BorderSide(
-                              color: Color(0xFFE0E0E0),
-                            ),
+                      ],
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (_) => Colors.white,
+                          tooltipBorder: const BorderSide(
+                            color: Color(0xFFE0E0E0),
                           ),
                         ),
                       ),
                     ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -427,14 +461,17 @@ class _TodayChartState extends State<_TodayChart> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DETAIL STATUS SENSOR — list dengan progress bar per sensor
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _SensorStatusList extends StatelessWidget {
+class _SensorStatusList extends StatefulWidget {
   final List<SensorReadUpdate> reads;
   final EnvironmentalHealth? envHealth;
   const _SensorStatusList({required this.reads, this.envHealth});
+
+  @override
+  State<_SensorStatusList> createState() => _SensorStatusListState();
+}
+
+class _SensorStatusListState extends State<_SensorStatusList> {
+  bool _expanded = false;
 
   Color _colorFor(String dsId) {
     switch (dsId) {
@@ -482,210 +519,260 @@ class _SensorStatusList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reads = widget.reads;
+    final displayCount = _expanded
+        ? reads.length
+        : (reads.length > 3 ? 3 : reads.length);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.all(context.rw(0.041)),
-        itemCount: reads.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 20,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
-        ),
-        itemBuilder: (context, i) {
-          final r = reads[i];
-          final val = r.numericValue;
-          final isOk = val > 0;
-          final color = _colorFor(r.dsId);
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            itemCount: displayCount,
+            separatorBuilder: (_, __) => Divider(
+              height: 20,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
+            ),
+            itemBuilder: (context, i) {
+              final r = reads[i];
+              final val = r.numericValue;
+              final isOk = val > 0;
+              final color = _colorFor(r.dsId);
 
-          // Ambil persentase dari environmental health API jika tersedia
-          double persentase = isOk ? 80.0 : 0.0;
-          if (envHealth != null && envHealth!.sensors.isNotEmpty) {
-            final match = envHealth!.sensors
-                .where((s) => s.dsId == r.dsId)
-                .firstOrNull;
-            if (match != null) persentase = match.persentase;
-          }
+              double persentase = isOk ? 80.0 : 0.0;
+              if (widget.envHealth != null &&
+                  widget.envHealth!.sensors.isNotEmpty) {
+                final match = widget.envHealth!.sensors
+                    .where((s) => s.dsId == r.dsId)
+                    .firstOrNull;
+                if (match != null) persentase = match.persentase;
+              }
 
-          return Row(
-            children: [
-              // Icon bulat berwarna
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(_iconFor(r.dsId), size: 18, color: color),
-              ),
-              SizedBox(width: context.rw(0.03)),
-
-              // Label + nilai
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              return Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(_iconFor(r.dsId), size: 18, color: color),
+                  ),
+                  SizedBox(width: context.rw(0.03)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            SensorMeta.label(r.dsId),
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(13),
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1D1D1D),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                SensorMeta.label(r.dsId),
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontSize: context.sp(13),
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1D1D1D),
+                                ),
+                              ),
                             ),
-                          ),
+                            Text(
+                              '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(13),
+                                fontWeight: FontWeight.w700,
+                                color: color,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${r.readUpdateValue ?? '-'}${SensorMeta.unit(r.dsId)}',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(13),
-                            fontWeight: FontWeight.w700,
-                            color: color,
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: persentase / 100.0,
+                            minHeight: 5,
+                            backgroundColor: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.07),
+                            valueColor: AlwaysStoppedAnimation<Color>(color),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    // Progress bar
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: persentase / 100.0,
-                        minHeight: 5,
-                        backgroundColor: const Color(
-                          0xFF1D1D1D,
-                        ).withValues(alpha: 0.07),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                  SizedBox(width: context.rw(0.025)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isOk
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isOk ? 'Aktif' : 'Offline',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(10),
+                        fontWeight: FontWeight.w600,
+                        color: isOk
+                            ? AppColors.success
+                            : const Color(0xFF1D1D1D).withValues(alpha: 0.4),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              SizedBox(width: context.rw(0.025)),
-
-              // Badge status
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isOk
-                      ? AppColors.success.withValues(alpha: 0.1)
-                      : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                  ),
+                ],
+              );
+            },
+          ),
+          if (reads.length > 3)
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(bottom: 12),
+                alignment: Alignment.center,
                 child: Text(
-                  isOk ? 'Aktif' : 'Offline',
+                  _expanded
+                      ? 'Tampilkan Lebih Sedikit'
+                      : 'Tampilkan Semua (${reads.length})',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(10),
+                    fontSize: context.sp(12),
                     fontWeight: FontWeight.w600,
-                    color: isOk
-                        ? AppColors.success
-                        : const Color(0xFF1D1D1D).withValues(alpha: 0.4),
+                    color: AppColors.primary,
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+        ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOG SENSOR
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _LogList extends StatelessWidget {
+class _LogList extends StatefulWidget {
   final List<LogModel> logs;
   const _LogList({required this.logs});
 
   @override
+  State<_LogList> createState() => _LogListState();
+}
+
+class _LogListState extends State<_LogList> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final logs = widget.logs;
+    final displayCount = _expanded
+        ? logs.length
+        : (logs.length > 3 ? 3 : logs.length);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.all(context.rw(0.041)),
-        itemCount: logs.length.clamp(0, 20),
-        separatorBuilder: (_, __) => Divider(
-          height: 12,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
-        ),
-        itemBuilder: (context, i) {
-          final log = logs[i];
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: context.rw(0.025)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      log.logRxPayload ?? '-',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(11),
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.4,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            itemCount: displayCount,
+            separatorBuilder: (_, __) => Divider(
+              height: 12,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.07),
+            ),
+            itemBuilder: (context, i) {
+              final log = logs[i];
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.only(top: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
                     ),
-                    if (log.logRxDate != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        DateFormat(
-                          'dd MMM yyyy, HH:mm:ss',
-                        ).format(log.logRxDate!),
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(9),
-                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.4),
+                  ),
+                  SizedBox(width: context.rw(0.025)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          log.logRxPayload ?? '-',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(11),
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.4,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ],
+                        if (log.logRxDate != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            DateFormat(
+                              'dd MMM yyyy, HH:mm:ss',
+                            ).format(log.logRxDate!),
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(9),
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          if (logs.length > 3)
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(bottom: 12),
+                alignment: Alignment.center,
+                child: Text(
+                  _expanded ? 'Tutup Log' : 'Lihat Semua Log (${logs.length})',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+        ],
       ),
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED WIDGETS
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
   final String title;
