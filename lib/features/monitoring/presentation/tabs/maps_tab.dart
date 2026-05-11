@@ -20,10 +20,14 @@ class _MapsTabState extends ConsumerState<MapsTab> {
   Widget build(BuildContext context) {
     final devicesAsync = ref.watch(devicesProvider);
     final selectedSite = ref.watch(selectedSiteProvider);
+    final sensorCountAsync = ref.watch(monitoringSensorCountProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () async => ref.invalidate(devicesProvider),
+      onRefresh: () async {
+        ref.invalidate(devicesProvider);
+        ref.invalidate(monitoringSensorCountProvider);
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(
@@ -34,7 +38,16 @@ class _MapsTabState extends ConsumerState<MapsTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             devicesAsync.when(
-              data: (devices) => _StatsBar(devices: devices),
+              data: (devices) {
+                final sensorCount = sensorCountAsync.when(
+                  data: (c) => c,
+                  loading: () =>
+                      devices.fold<int>(0, (s, d) => s + d.sensors.length),
+                  error: (_, __) =>
+                      devices.fold<int>(0, (s, d) => s + d.sensors.length),
+                );
+                return _StatsBar(devices: devices, totalSensors: sensorCount);
+              },
               loading: () => _shimmerCard(context, 70),
               error: (_, __) => const SizedBox.shrink(),
             ),
@@ -133,7 +146,8 @@ class _SectionTitle extends StatelessWidget {
 
 class _StatsBar extends StatelessWidget {
   final List<DeviceModel> devices;
-  const _StatsBar({required this.devices});
+  final int totalSensors;
+  const _StatsBar({required this.devices, required this.totalSensors});
 
   @override
   Widget build(BuildContext context) {
@@ -175,11 +189,11 @@ class _StatsBar extends StatelessWidget {
       );
     }
 
-    final totalSensors = devices.fold<int>(
-      0,
-      (sum, d) => sum + d.sensors.length,
-    );
     final activeDevices = devices.where((d) => d.isActive).length;
+    // Gunakan totalSensors dari parameter (/sensors endpoint), fallback ke sum devices
+    final displaySensors = totalSensors > 0
+        ? totalSensors
+        : devices.fold<int>(0, (sum, d) => sum + d.sensors.length);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -200,7 +214,7 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: 'assets/icons/sensor-icon.svg',
             label: 'Sensor',
-            value: '$totalSensors',
+            value: '$displaySensors',
             color: const Color(0xFFECF6FE),
             spacing: 2,
           ),

@@ -1,7 +1,13 @@
-/// Models for monitoring feature
+/// Single source of truth for all monitoring feature models.
+///
+/// Semua model di sini adalah plain Dart class (tanpa Freezed/code-gen)
+/// agar tidak ada duplikasi dan mudah di-maintain.
 library;
 
-// ─── Device with coordinates ────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// DEVICE
+// ─────────────────────────────────────────────────────────────────────────────
+
 class DeviceModel {
   final String devId;
   final String? siteId;
@@ -26,26 +32,44 @@ class DeviceModel {
   });
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
-    final sensorList = (json['sensor'] as List? ?? [])
-        .map((s) => SensorModel.fromJson(s as Map<String, dynamic>))
+    // Backend bisa mengembalikan key 'sensor' atau 'sensors'
+    final rawSensors =
+        (json['sensor'] as List?) ?? (json['sensors'] as List?) ?? [];
+    final sensorList = rawSensors
+        .whereType<Map<String, dynamic>>()
+        .map(SensorModel.fromJson)
         .toList();
+
+    // dev_sts bisa berupa int atau String dari backend
+    final rawSts = json['dev_sts'];
+    final parsedSts = rawSts is int
+        ? rawSts
+        : rawSts is String
+        ? int.tryParse(rawSts)
+        : null;
+
     return DeviceModel(
-      devId: json['dev_id'] ?? '',
-      siteId: json['site_id'],
-      devName: json['dev_name'],
-      devLocation: json['dev_location'],
+      devId: json['dev_id']?.toString() ?? '',
+      siteId: json['site_id']?.toString(),
+      devName: json['dev_name']?.toString(),
+      devLocation: json['dev_location']?.toString(),
       devLon: (json['dev_lon'] as num?)?.toDouble(),
       devLat: (json['dev_lat'] as num?)?.toDouble(),
       devAlt: (json['dev_alt'] as num?)?.toDouble(),
-      devSts: json['dev_sts'] as int?,
+      devSts: parsedSts,
       sensors: sensorList,
     );
   }
 
   bool get isActive => devSts == 1;
+  bool get hasCoordinates => devLon != null && devLat != null;
+  String get displayName => devName ?? devId;
 }
 
-// ─── Sensor ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SENSOR (physical sensor hardware)
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SensorModel {
   final String sensId;
   final String? devId;
@@ -69,19 +93,26 @@ class SensorModel {
 
   factory SensorModel.fromJson(Map<String, dynamic> json) {
     return SensorModel(
-      sensId: json['sens_id'] ?? '',
-      devId: json['dev_id'],
-      sensName: json['sens_name'],
-      sensAddress: json['sens_address'],
-      sensLocation: json['sens_location'],
+      sensId: json['sens_id']?.toString() ?? '',
+      devId: json['dev_id']?.toString(),
+      sensName: json['sens_name']?.toString(),
+      sensAddress: json['sens_address']?.toString(),
+      sensLocation: json['sens_location']?.toString(),
       sensLat: (json['sens_lat'] as num?)?.toDouble(),
       sensLon: (json['sens_lon'] as num?)?.toDouble(),
       sensAlt: (json['sens_alt'] as num?)?.toDouble(),
     );
   }
+
+  bool get hasCoordinates => sensLat != null && sensLon != null;
+  String get displayName => sensName ?? sensId;
 }
 
-// ─── Sensor Read (latest) ────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SENSOR READ — latest/realtime value per ds_id
+// GET /api/sites/:siteId/reads/updates
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SensorReadUpdate {
   final String readUpdateId;
   final String dsId;
@@ -99,20 +130,25 @@ class SensorReadUpdate {
 
   factory SensorReadUpdate.fromJson(Map<String, dynamic> json) {
     return SensorReadUpdate(
-      readUpdateId: json['read_update_id'] ?? '',
-      dsId: json['ds_id'] ?? '',
-      devId: json['dev_id'] ?? '',
+      readUpdateId: json['read_update_id']?.toString() ?? '',
+      dsId: json['ds_id']?.toString() ?? '',
+      devId: json['dev_id']?.toString() ?? '',
       readUpdateDate: json['read_update_date'] != null
-          ? DateTime.tryParse(json['read_update_date'])
+          ? DateTime.tryParse(json['read_update_date'].toString())
           : null,
       readUpdateValue: json['read_update_value']?.toString(),
     );
   }
 
   double get numericValue => double.tryParse(readUpdateValue ?? '') ?? 0.0;
+  bool get hasValue => numericValue > 0;
 }
 
-// ─── Sensor Read (history) ───────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SENSOR READ — historical readings
+// GET /api/sites/:siteId/reads/today|seven-day|date-range|planting-date
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SensorReadModel {
   final String readId;
   final String? dsId;
@@ -131,22 +167,35 @@ class SensorReadModel {
   });
 
   factory SensorReadModel.fromJson(Map<String, dynamic> json) {
+    // read_sts bisa berupa int atau String
+    final rawSts = json['read_sts'];
+    final parsedSts = rawSts is int
+        ? rawSts
+        : rawSts is String
+        ? int.tryParse(rawSts)
+        : null;
+
     return SensorReadModel(
-      readId: json['read_id'] ?? '',
-      dsId: json['ds_id'],
-      devId: json['dev_id'],
+      readId: json['read_id']?.toString() ?? '',
+      dsId: json['ds_id']?.toString(),
+      devId: json['dev_id']?.toString(),
       readDate: json['read_date'] != null
-          ? DateTime.tryParse(json['read_date'])
+          ? DateTime.tryParse(json['read_date'].toString())
           : null,
       readValue: json['read_value']?.toString(),
-      readSts: json['read_sts'] as int?,
+      readSts: parsedSts,
     );
   }
 
   double get numericValue => double.tryParse(readValue ?? '') ?? 0.0;
+  bool get isValid => numericValue > 0;
 }
 
-// ─── Daily Sensor Recap ──────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SENSOR DAILY — aggregated daily stats (avg/min/max)
+// GET /api/sites/:siteId/reads/daily
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SensorDailyModel {
   final DateTime? day;
   final String devId;
@@ -166,9 +215,11 @@ class SensorDailyModel {
 
   factory SensorDailyModel.fromJson(Map<String, dynamic> json) {
     return SensorDailyModel(
-      day: json['day'] != null ? DateTime.tryParse(json['day']) : null,
-      devId: json['dev_id'] ?? '',
-      dsId: json['ds_id'] ?? '',
+      day: json['day'] != null
+          ? DateTime.tryParse(json['day'].toString())
+          : null,
+      devId: json['dev_id']?.toString() ?? '',
+      dsId: json['ds_id']?.toString() ?? '',
       avgVal: (json['avg_val'] as num?)?.toDouble(),
       minVal: (json['min_val'] as num?)?.toDouble(),
       maxVal: (json['max_val'] as num?)?.toDouble(),
@@ -176,7 +227,11 @@ class SensorDailyModel {
   }
 }
 
-// ─── Log MQTT ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// LOG — MQTT raw payload log
+// GET /api/sites/logs
+// ─────────────────────────────────────────────────────────────────────────────
+
 class LogModel {
   final String logRxId;
   final DateTime? logRxDate;
@@ -186,23 +241,32 @@ class LogModel {
 
   factory LogModel.fromJson(Map<String, dynamic> json) {
     return LogModel(
-      logRxId: json['log_rx_id'] ?? '',
+      logRxId: json['log_rx_id']?.toString() ?? '',
       logRxDate: json['log_rx_date'] != null
-          ? DateTime.tryParse(json['log_rx_date'])
+          ? DateTime.tryParse(json['log_rx_date'].toString())
           : null,
       logRxPayload: json['log_rx_payload']?.toString(),
     );
   }
 }
 
-// ─── Sensor metadata helpers ─────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SENSOR META — label, unit, color helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SensorMeta {
+  SensorMeta._();
+
   static String label(String dsId) {
     switch (dsId) {
       case 'env_temp':
         return 'Suhu Udara';
       case 'env_hum':
         return 'Kelembaban Udara';
+      case 'soil_temp':
+        return 'Suhu Tanah';
+      case 'soil_hum':
+        return 'Kelembaban Tanah';
       case 'soil_nitro':
         return 'Nitrogen Tanah';
       case 'soil_phos':
@@ -219,13 +283,13 @@ class SensorMeta {
   static String unit(String dsId) {
     switch (dsId) {
       case 'env_temp':
+      case 'soil_temp':
         return '°C';
       case 'env_hum':
+      case 'soil_hum':
         return '%';
       case 'soil_nitro':
-        return 'mg/kg';
       case 'soil_phos':
-        return 'mg/kg';
       case 'soil_pot':
         return 'mg/kg';
       case 'soil_ph':
@@ -235,9 +299,35 @@ class SensorMeta {
     }
   }
 
+  static String shortLabel(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+        return 'Suhu Udara';
+      case 'env_hum':
+        return 'Kel. Udara';
+      case 'soil_temp':
+        return 'Suhu Tanah';
+      case 'soil_hum':
+        return 'Kel. Tanah';
+      case 'soil_nitro':
+        return 'Nitrogen';
+      case 'soil_phos':
+        return 'Fosfor';
+      case 'soil_pot':
+        return 'Kalium';
+      case 'soil_ph':
+        return 'pH Tanah';
+      default:
+        return dsId;
+    }
+  }
+
+  /// Semua ds_id standar yang dikenal
   static const List<String> standardIds = [
     'env_temp',
     'env_hum',
+    'soil_temp',
+    'soil_hum',
     'soil_nitro',
     'soil_phos',
     'soil_pot',

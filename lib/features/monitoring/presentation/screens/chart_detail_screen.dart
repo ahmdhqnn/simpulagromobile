@@ -8,7 +8,7 @@ import '../providers/monitoring_provider.dart';
 import '../widgets/sensor_chart_widget.dart';
 import '../widgets/daily_aggregation_widget.dart';
 
-/// Detailed chart screen for a specific sensor
+
 class ChartDetailScreen extends ConsumerStatefulWidget {
   final String sensorId;
   final String sensorName;
@@ -267,17 +267,29 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                     child: GestureDetector(
                       onTap: () {
                         setState(() => _selectedDateRange = range);
-                        // Update filter di monitoring provider
+                        // Update filter di monitoring provider sesuai range
                         switch (range) {
                           case DateRange.today:
+                            final today = DateTime.now();
+                            ref.read(historyStartDateProvider.notifier).state =
+                                DateTime(today.year, today.month, today.day);
+                            ref.read(historyEndDateProvider.notifier).state =
+                                today;
                             ref.read(historyFilterProvider.notifier).state =
-                                HistoryFilter.sevenDay;
+                                HistoryFilter.dateRange;
                             break;
                           case DateRange.week:
                             ref.read(historyFilterProvider.notifier).state =
                                 HistoryFilter.sevenDay;
                             break;
                           case DateRange.month:
+                            ref
+                                .read(historyStartDateProvider.notifier)
+                                .state = DateTime.now().subtract(
+                              const Duration(days: 30),
+                            );
+                            ref.read(historyEndDateProvider.notifier).state =
+                                DateTime.now();
                             ref.read(historyFilterProvider.notifier).state =
                                 HistoryFilter.dateRange;
                             break;
@@ -286,6 +298,7 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                                 HistoryFilter.dateRange;
                             break;
                         }
+                        ref.invalidate(historyReadsProvider);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(

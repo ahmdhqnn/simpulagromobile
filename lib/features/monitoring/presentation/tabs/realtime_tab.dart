@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../dashboard/presentation/widgets/sensor_status_card.dart';
 import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
@@ -17,6 +18,7 @@ class RealtimeTab extends ConsumerWidget {
     final latestAsync = ref.watch(latestReadsProvider);
     final todayAsync = ref.watch(todayReadsProvider);
     final logsAsync = ref.watch(logsProvider);
+    final envHealthAsync = ref.watch(envHealthProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -24,6 +26,7 @@ class RealtimeTab extends ConsumerWidget {
         ref.invalidate(latestReadsProvider);
         ref.invalidate(todayReadsProvider);
         ref.invalidate(logsProvider);
+        ref.invalidate(envHealthProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -48,7 +51,10 @@ class RealtimeTab extends ConsumerWidget {
                       height: 195,
                       message: 'Belum ada data sensor',
                     )
-                  : _RealtimeSensorGrid(reads: reads),
+                  : _RealtimeSensorGrid(
+                      reads: reads,
+                      envHealth: envHealthAsync.valueOrNull,
+                    ),
             ),
 
             SizedBox(height: context.rh(0.024)),
@@ -84,7 +90,10 @@ class RealtimeTab extends ConsumerWidget {
                       height: 195,
                       message: 'Belum ada data sensor',
                     )
-                  : _SensorStatusList(reads: reads),
+                  : _SensorStatusList(
+                      reads: reads,
+                      envHealth: envHealthAsync.valueOrNull,
+                    ),
             ),
 
             SizedBox(height: context.rh(0.024)),
@@ -129,30 +138,42 @@ class RealtimeTab extends ConsumerWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REALTIME SENSOR GRID — pakai SensorStatusCard dari dashboard
-// SensorReadUpdate tidak punya persentase, jadi kita derive dari nilai:
-//   nilai > 0 → Optimal (100), nilai == 0 → Kritis (0)
+// Persentase diambil dari envHealthProvider (API environmental-health)
+// Fallback: nilai > 0 → 80 (Optimal), nilai == 0 → 0 (Kritis)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _RealtimeSensorGrid extends StatelessWidget {
   final List<SensorReadUpdate> reads;
-  const _RealtimeSensorGrid({required this.reads});
+  final EnvironmentalHealth? envHealth;
+  const _RealtimeSensorGrid({required this.reads, this.envHealth});
 
   @override
   Widget build(BuildContext context) {
-    final proxies = reads.map((r) => _SensorProxy(r)).toList();
+    final proxies = reads.map((r) => _SensorProxy(r, envHealth)).toList();
     return SensorStatusGrid(sensors: proxies, defaultCount: 6);
   }
 }
 
 /// Adapter agar SensorReadUpdate kompatibel dengan SensorStatusGrid
+/// Persentase diambil dari environmental health API jika tersedia
 class _SensorProxy {
   final SensorReadUpdate _r;
-  const _SensorProxy(this._r);
+  final EnvironmentalHealth? _health;
+
+  const _SensorProxy(this._r, this._health);
 
   String get dsId => _r.dsId;
   String get readUpdateValue => _r.readUpdateValue ?? '0';
-  // Nilai > 0 → Optimal, nilai == 0 → Kritis
-  double get persentase => _r.numericValue > 0 ? 100.0 : 0.0;
+
+  double get persentase {
+    // Cari persentase dari environmental health API
+    if (_health != null && _health.sensors.isNotEmpty) {
+      final match = _health.sensors.where((s) => s.dsId == _r.dsId).firstOrNull;
+      if (match != null) return match.persentase;
+    }
+    // Fallback: nilai > 0 → 80 (Optimal), nilai == 0 → 0 (Kritis)
+    return _r.numericValue > 0 ? 80.0 : 0.0;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -412,7 +433,8 @@ class _TodayChartState extends State<_TodayChart> {
 
 class _SensorStatusList extends StatelessWidget {
   final List<SensorReadUpdate> reads;
-  const _SensorStatusList({required this.reads});
+  final EnvironmentalHealth? envHealth;
+  const _SensorStatusList({required this.reads, this.envHealth});
 
   Color _colorFor(String dsId) {
     switch (dsId) {
@@ -480,6 +502,15 @@ class _SensorStatusList extends StatelessWidget {
           final isOk = val > 0;
           final color = _colorFor(r.dsId);
 
+          // Ambil persentase dari environmental health API jika tersedia
+          double persentase = isOk ? 80.0 : 0.0;
+          if (envHealth != null && envHealth!.sensors.isNotEmpty) {
+            final match = envHealth!.sensors
+                .where((s) => s.dsId == r.dsId)
+                .firstOrNull;
+            if (match != null) persentase = match.persentase;
+          }
+
           return Row(
             children: [
               // Icon bulat berwarna
@@ -528,7 +559,7 @@ class _SensorStatusList extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: isOk ? 1.0 : 0.0,
+                        value: persentase / 100.0,
                         minHeight: 5,
                         backgroundColor: const Color(
                           0xFF1D1D1D,
