@@ -36,7 +36,6 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Filter Row ────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -116,11 +115,8 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
 
             SizedBox(height: context.rh(0.024)),
 
-            _SectionTitle('Data Riwayat'),
-            SizedBox(height: context.rh(0.014)),
-
             historyAsync.when(
-              loading: () => _shimmerCard(context, 195),
+              loading: () => _shimmerCard(context, 60),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) {
                 final params = reads.map((r) => r.dsId ?? '').toSet().toList();
@@ -128,7 +124,7 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
                     selectedParam ?? (params.isNotEmpty ? params.first : null);
                 if (param == null) {
                   return _EmptyStateCard(
-                    height: 195,
+                    height: 60,
                     message: 'Pilih parameter sensor',
                   );
                 }
@@ -138,7 +134,14 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
                       a.readDate ?? DateTime(0),
                     ),
                   );
-                return _DataTable(reads: filtered.take(50).toList());
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionTitle('Data Riwayat'),
+                    SizedBox(height: context.rh(0.014)),
+                    _DataTable(reads: filtered.take(50).toList()),
+                  ],
+                );
               },
             ),
 
@@ -474,144 +477,239 @@ class _HistoryChart extends StatelessWidget {
     }
 
     return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: 1,
-            getDrawingHorizontalLine: (_) =>
-                FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 24,
-                interval: (spots.length / 4).ceilToDouble().clamp(
-                  1,
-                  double.infinity,
-                ),
-                getTitlesWidget: (v, _) {
-                  final idx = v.toInt();
-                  if (idx < 0 || idx >= reads.length) {
-                    return const SizedBox.shrink();
-                  }
-                  final d = reads[idx].readDate;
-                  return Text(
-                    d != null ? DateFormat('d/M').format(d) : '',
-                    style: TextStyle(
-                      fontSize: context.sp(9),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                      fontFamily: 'Plus Jakarta Sans',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Data Sensor History',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(20),
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: _color,
-              barWidth: 2.5,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    _color.withValues(alpha: 0.3),
-                    _color.withValues(alpha: 0.05),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Daily data is grouped by month',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
                   ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          SizedBox(
+            height: 195,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 1,
+                  getDrawingHorizontalLine: (_) =>
+                      FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
+                ),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(10),
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.6),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 32,
+                      interval: (spots.length / 4).ceilToDouble().clamp(
+                        1,
+                        double.infinity,
+                      ),
+                      getTitlesWidget: (v, _) {
+                        final idx = v.toInt();
+                        if (idx < 0 || idx >= reads.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final d = reads[idx].readDate;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            d != null ? DateFormat('d/M').format(d) : '',
+                            style: TextStyle(
+                              fontSize: context.sp(9),
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.5),
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: _color,
+                    barWidth: 2.5,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          _color.withValues(alpha: 0.3),
+                          _color.withValues(alpha: 0.05),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => Colors.white,
+                    tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
+                  ),
                 ),
               ),
             ),
-          ],
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => Colors.white,
-              tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
-            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _DataTable extends StatelessWidget {
+class _DataTable extends StatefulWidget {
   final List<SensorReadModel> reads;
   const _DataTable({required this.reads});
 
   @override
+  State<_DataTable> createState() => _DataTableState();
+}
+
+class _DataTableState extends State<_DataTable> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (reads.isEmpty) {
+    if (widget.reads.isEmpty) {
       return _EmptyStateCard(height: 195, message: 'Tidak ada data');
     }
 
+    final displayCount = _expanded
+        ? widget.reads.length
+        : (widget.reads.length > 5 ? 5 : widget.reads.length);
+
     return Container(
-      height: 195,
-      padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        itemCount: reads.length.clamp(0, 10),
-        separatorBuilder: (_, __) => Divider(
-          height: 1,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
-        ),
-        itemBuilder: (context, i) {
-          final r = reads[i];
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  r.readDate != null
-                      ? DateFormat('dd/MM HH:mm').format(r.readDate!)
-                      : '-',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(11),
-                    color: const Color(0xFF1D1D1D),
-                  ),
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            itemCount: displayCount,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.1),
+            ),
+            itemBuilder: (context, i) {
+              final r = widget.reads[i];
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      r.readDate != null
+                          ? DateFormat('dd/MM HH:mm').format(r.readDate!)
+                          : '-',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(11),
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                    Text(
+                      '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
+              );
+            },
+          ),
+          if (widget.reads.length > 5)
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(bottom: 12, top: context.rh(0.01)),
+                alignment: Alignment.center,
+                child: Text(
+                  _expanded
+                      ? 'Tampilkan Lebih Sedikit'
+                      : 'Tampilkan Semua (${widget.reads.length})',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(12),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1D1D1D),
+                    color: AppColors.primary,
                   ),
                 ),
-              ],
+              ),
             ),
-          );
-        },
+        ],
       ),
     );
   }

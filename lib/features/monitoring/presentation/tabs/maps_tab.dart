@@ -190,7 +190,7 @@ class _StatsBar extends StatelessWidget {
     }
 
     final activeDevices = devices.where((d) => d.isActive).length;
-    // Gunakan totalSensors dari parameter (/sensors endpoint), fallback ke sum devices
+
     final displaySensors = totalSensors > 0
         ? totalSensors
         : devices.fold<int>(0, (sum, d) => sum + d.sensors.length);
@@ -550,57 +550,72 @@ class _DeviceCardState extends State<_DeviceCard> {
             ),
           ),
 
-          if (_expanded && d.sensors.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.rw(0.051),
-                vertical: context.rh(0.012),
-              ),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
-              ),
-              child: Column(
-                children: d.sensors.map((s) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/sensor-icon.svg',
-                          width: 16,
-                          height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFF42A5F5),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        SizedBox(width: context.rw(0.025)),
-                        Expanded(
-                          child: Text(
-                            s.sensName ?? s.sensId,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(12),
-                              color: const Color(0xFF1D1D1D),
+          if (_expanded)
+            if (d.sensors.isNotEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.rw(0.051),
+                  vertical: context.rh(0.012),
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+                ),
+                child: Column(
+                  children: d.sensors.map((s) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: context.rh(0.008),
+                      ),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/sensor-icon.svg',
+                            width: 16,
+                            height: 16,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF42A5F5),
+                              BlendMode.srcIn,
                             ),
                           ),
-                        ),
-                        Text(
-                          s.sensAddress ?? '',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(11),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.5),
+                          SizedBox(width: context.rw(0.025)),
+                          Expanded(
+                            child: Text(
+                              s.sensName ?? s.sensId,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(12),
+                                color: const Color(0xFF1D1D1D),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                          Text(
+                            s.sensAddress ?? '',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(11),
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )
+            else
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: context.rh(0.015)),
+                child: Text(
+                  'Belum ada data sensor',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
+                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                  ),
+                ),
               ),
-            ),
         ],
       ),
     );

@@ -237,26 +237,51 @@ class _EnvironmentalHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Environmental Health',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(22),
-              fontWeight: FontWeight.w300,
-              color: const Color(0xFF1D1D1D),
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 1),
-          Text(
-            'Environmental Score',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(12),
-              fontWeight: FontWeight.w300,
-              color: const Color(0xFF1D1D1D),
-              height: 1.83,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDF7EE),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.eco,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Environmental Health',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(20),
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Environmental Score',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Center(
@@ -306,37 +331,6 @@ class _EnvironmentalHealthCard extends StatelessWidget {
               ],
             ),
           ),
-          if (health.sensors.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Divider(color: Color(0xFFE0E0E0)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: health.sensors.map((s) {
-                final color = _colorForSensor(s.dsId);
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${s.label}: ${s.readUpdateValue}${s.unit}',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(11),
-                      color: color,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
           const SizedBox(height: 10),
           Row(
             children: [
@@ -369,28 +363,28 @@ class _EnvironmentalHealthCard extends StatelessWidget {
     );
   }
 
-  Color _colorForSensor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return const Color(0xFFFF8A65);
-      case 'env_hum':
-        return const Color(0xFF42A5F5);
-      case 'soil_nitro':
-        return const Color(0xFF66BB6A);
-      case 'soil_phos':
-        return const Color(0xFFAB47BC);
-      case 'soil_pot':
-        return const Color(0xFFFF7043);
-      case 'soil_ph':
-        return const Color(0xFF26C6DA);
-      case 'soil_temp':
-        return const Color(0xFF8BC34A);
-      case 'soil_hum':
-        return const Color(0xFF29B6F6);
-      default:
-        return AppColors.primaryLight;
-    }
-  }
+  // Color _colorForSensor(String dsId) {
+  //   switch (dsId) {
+  //     case 'env_temp':
+  //       return const Color(0xFFFF8A65);
+  //     case 'env_hum':
+  //       return const Color(0xFF42A5F5);
+  //     case 'soil_nitro':
+  //       return const Color(0xFF66BB6A);
+  //     case 'soil_phos':
+  //       return const Color(0xFFAB47BC);
+  //     case 'soil_pot':
+  //       return const Color(0xFFFF7043);
+  //     case 'soil_ph':
+  //       return const Color(0xFF26C6DA);
+  //     case 'soil_temp':
+  //       return const Color(0xFF8BC34A);
+  //     case 'soil_hum':
+  //       return const Color(0xFF29B6F6);
+  //     default:
+  //       return AppColors.primaryLight;
+  //   }
+  // }
 }
 
 class _ActionRequiredCard extends StatelessWidget {
@@ -508,7 +502,7 @@ class _PlantRecommendationCard extends StatelessWidget {
     final sensorData = recData['sensor_data'] as Map<String, dynamic>?;
 
     return Container(
-      padding: EdgeInsets.all(context.rw(0.041)),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
@@ -639,7 +633,6 @@ class _PlantStatisticsCard extends ConsumerWidget {
       );
     }
 
-    // Ambil semua plants dari provider untuk statistik akurat
     final plantsAsync = ref.watch(plantsProvider);
 
     return plantsAsync.when(
@@ -821,28 +814,53 @@ class _GrowthPhaseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Fase Pertumbuhan Saat Ini',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(22),
-              fontWeight: FontWeight.w300,
-              color: const Color(0xFF1D1D1D),
-              height: 1,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.grass,
+                  color: Color(0xFF1976D2),
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Fase Pertumbuhan Saat Ini',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(20),
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      phase,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 1),
-          Text(
-            phase,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(12),
-              fontWeight: FontWeight.w300,
-              color: const Color(0xFF1D1D1D),
-              height: 1.83,
-            ),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1141,8 +1159,6 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
       );
     }
 
-    // Gunakan totalSensors dari parameter (dari /sensors endpoint)
-    // Fallback ke sum dari devices.sensors jika > 0
     final displaySensors = totalSensors > 0
         ? totalSensors
         : devices.fold<int>(0, (s, d) => s + d.sensors.length);
@@ -1272,27 +1288,54 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
   }
 }
 
-class _SensorByTypeCard extends StatefulWidget {
+class _SensorByTypeCard extends StatelessWidget {
   final List<DeviceModel> devices;
   const _SensorByTypeCard({required this.devices});
 
   @override
-  State<_SensorByTypeCard> createState() => _SensorByTypeCardState();
+  Widget build(BuildContext context) {
+    if (devices.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sensor Berdasarkan Jenis',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(22),
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF1D1D1D),
+            height: 1.0,
+          ),
+        ),
+        SizedBox(height: context.rh(0.015)),
+        Column(
+          children: devices
+              .map((d) => _ExpandableDeviceCard(device: d))
+              .toList(),
+        ),
+      ],
+    );
+  }
 }
 
-class _SensorByTypeCardState extends State<_SensorByTypeCard> {
+class _ExpandableDeviceCard extends StatefulWidget {
+  final DeviceModel device;
+  const _ExpandableDeviceCard({required this.device});
+
+  @override
+  State<_ExpandableDeviceCard> createState() => _ExpandableDeviceCardState();
+}
+
+class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
   bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.devices.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final firstDevice = widget.devices.first;
-    final isActive = firstDevice.isActive;
-
+    final d = widget.device;
     return Container(
+      margin: EdgeInsets.only(bottom: context.rh(0.012)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -1304,167 +1347,161 @@ class _SensorByTypeCardState extends State<_SensorByTypeCard> {
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    'Sensor Berdasarkan Jenis',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(22),
-                      fontWeight: FontWeight.w300,
-                      color: const Color(0xFF1D1D1D),
-                      height: 1,
+                  Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8EFE9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/icons/device-filled-icon.svg',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.contain,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF1B5E20),
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        padding: const EdgeInsets.only(
-                          top: 11,
-                          left: 10,
-                          right: 10,
-                          bottom: 9,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8EFE9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: SvgPicture.asset(
-                            'assets/icons/device-filled-icon.svg',
-                            width: 20,
-                            height: 20,
-                            fit: BoxFit.contain,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFF1B5E20),
-                              BlendMode.srcIn,
-                            ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          d.devName ?? d.devId,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              firstDevice.devName ?? firstDevice.devId,
-                              style: TextStyle(
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontSize: context.sp(22),
-                                fontWeight: FontWeight.w300,
-                                color: const Color(0xFF1D1D1D),
-                                height: 1,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              firstDevice.devLocation ?? '-',
-                              style: TextStyle(
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontSize: context.sp(12),
-                                fontWeight: FontWeight.w300,
-                                color: const Color(0xFF1D1D1D),
-                                height: 1.83,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? const Color(0xFFEDF7EE)
-                              : const Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          isActive ? 'Aktif' : 'Offline',
+                        const SizedBox(height: 1),
+                        Text(
+                          d.devLocation ?? '-',
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: context.sp(12),
-                            fontWeight: FontWeight.w500,
-                            color: isActive
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFF9E9E9E),
-                            height: 1.0,
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: d.isActive
+                          ? const Color(0xFFEDF7EE)
+                          : const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      d.isActive ? 'Aktif' : 'Offline',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w500,
+                        color: d.isActive
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFF9E9E9E),
+                        height: 1.0,
                       ),
-                      const SizedBox(width: 8),
-                      SvgPicture.asset(
-                        _expanded
-                            ? 'assets/icons/chevron-down-icon.svg'
-                            : 'assets/icons/chevron-right-icon.svg',
-                        width: 24,
-                        height: 24,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SvgPicture.asset(
+                    _expanded
+                        ? 'assets/icons/chevron-down-icon.svg'
+                        : 'assets/icons/chevron-right-icon.svg',
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.contain,
                   ),
                 ],
               ),
             ),
           ),
-          if (_expanded && firstDevice.sensors.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.rw(0.051),
-                vertical: context.rh(0.012),
-              ),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
-              ),
-              child: Column(
-                children: firstDevice.sensors.map((s) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/sensor-icon.svg',
-                          width: 16,
-                          height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFF42A5F5),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        SizedBox(width: context.rw(0.025)),
-                        Expanded(
-                          child: Text(
-                            s.sensName ?? s.sensId,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(12),
-                              color: const Color(0xFF1D1D1D),
+          if (_expanded)
+            if (d.sensors.isNotEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.rw(0.051),
+                  vertical: context.rh(0.012),
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+                ),
+                child: Column(
+                  children: d.sensors.map((s) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: context.rh(0.008),
+                      ),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/sensor-icon.svg',
+                            width: 16,
+                            height: 16,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF42A5F5),
+                              BlendMode.srcIn,
                             ),
                           ),
-                        ),
-                        Text(
-                          s.sensAddress ?? '',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(11),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.5),
+                          SizedBox(width: context.rw(0.025)),
+                          Expanded(
+                            child: Text(
+                              s.sensName ?? s.sensId,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(12),
+                                color: const Color(0xFF1D1D1D),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                          Text(
+                            s.sensAddress ?? '',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(11),
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )
+            else
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: context.rh(0.015)),
+                child: Text(
+                  'Belum ada data sensor',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
+                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                  ),
+                ),
               ),
-            ),
         ],
       ),
     );
@@ -1503,26 +1540,51 @@ class _DailySensorChartState extends State<_DailySensorChart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Analisis Sensor Harian',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(22),
-                fontWeight: FontWeight.w300,
-                color: const Color(0xFF1D1D1D),
-                height: 1,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              'Statistik Sensor Hari Ini  ${DateFormat('dd.MM.yy').format(DateTime.now())}',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(12),
-                fontWeight: FontWeight.w300,
-                color: const Color(0xFF1D1D1D),
-                height: 1.83,
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3E0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.show_chart,
+                    color: Color(0xFFFF9800),
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: context.rw(0.03)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Analisis Sensor Harian',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(20),
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF1D1D1D),
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Statistik Sensor Hari Ini',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w300,
+                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Container(
@@ -1597,6 +1659,54 @@ class _DailySensorChartState extends State<_DailySensorChart> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3E0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.show_chart,
+                  color: Color(0xFFFF9800),
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Analisis Sensor Harian',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(20),
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF1D1D1D),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Statistik Sensor Hari Ini',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -1663,8 +1773,23 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                         FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
                   ),
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(10),
+                              color: const Color(
+                                0xFF1D1D1D,
+                              ).withValues(alpha: 0.6),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),

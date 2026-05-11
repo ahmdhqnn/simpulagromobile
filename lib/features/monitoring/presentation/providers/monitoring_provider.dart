@@ -4,15 +4,16 @@ import '../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/monitoring_remote_datasource.dart';
 import '../../data/models/monitoring_models.dart';
+import '../../domain/repositories/monitoring_repository.dart';
+import '../../data/repositories/monitoring_repository_impl.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATASOURCE
+// REPOSITORY
 // ─────────────────────────────────────────────────────────────────────────────
 
-final monitoringDataSourceProvider = Provider<MonitoringRemoteDataSource>((
-  ref,
-) {
-  return MonitoringRemoteDataSource(ref.watch(dioClientProvider).dio);
+final monitoringRepositoryProvider = Provider<MonitoringRepository>((ref) {
+  final dataSource = MonitoringRemoteDataSource(ref.watch(dioClientProvider).dio);
+  return MonitoringRepositoryImpl(dataSource);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -26,7 +27,7 @@ final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.watch(monitoringDataSourceProvider).getLatestReads(siteId);
+  return ref.watch(monitoringRepositoryProvider).getLatestReads(siteId);
 });
 
 /// Bacaan sensor hari ini (untuk grafik realtime).
@@ -36,13 +37,13 @@ final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.watch(monitoringDataSourceProvider).getTodayReads(siteId);
+  return ref.watch(monitoringRepositoryProvider).getTodayReads(siteId);
 });
 
 /// Log payload MQTT terbaru.
 /// GET /api/sites/logs
 final logsProvider = FutureProvider.autoDispose<List<LogModel>>((ref) async {
-  return ref.watch(monitoringDataSourceProvider).getLogs();
+  return ref.watch(monitoringRepositoryProvider).getLogs();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,26 +72,41 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
 
-  final ds = ref.watch(monitoringDataSourceProvider);
+  final repo = ref.watch(monitoringRepositoryProvider);
   final filter = ref.watch(historyFilterProvider);
+
+  String fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   switch (filter) {
     case HistoryFilter.sevenDay:
-      return ds.getSevenDayReads(siteId);
+      final start = DateTime.now().subtract(const Duration(days: 7));
+      final end = DateTime.now();
+      return repo.getDateRangeReads(
+        siteId,
+        startDate: fmt(start),
+        endDate: fmt(end),
+      );
 
     case HistoryFilter.dateRange:
       final start = ref.watch(historyStartDateProvider);
       final end = ref.watch(historyEndDateProvider);
-      String fmt(DateTime d) =>
-          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-      return ds.getDateRangeReads(
+      return repo.getDateRangeReads(
         siteId,
         startDate: fmt(start),
         endDate: fmt(end),
       );
 
     case HistoryFilter.plantingDate:
-      return ds.getPlantingDateReads(siteId);
+      // Fallback robust menggunakan rentang 120 hari terakhir
+      // karena endpoint khusus '/reads/planting-date' kemungkinan tidak tersedia di backend
+      final start = DateTime.now().subtract(const Duration(days: 120));
+      final end = DateTime.now();
+      return repo.getDateRangeReads(
+        siteId,
+        startDate: fmt(start),
+        endDate: fmt(end),
+      );
   }
 });
 
@@ -105,7 +121,7 @@ final devicesProvider = FutureProvider.autoDispose<List<DeviceModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.watch(monitoringDataSourceProvider).getDevices(siteId);
+  return ref.watch(monitoringRepositoryProvider).getDevices(siteId);
 });
 
 /// Total sensor terdaftar di site (dari endpoint /sensors).
@@ -115,7 +131,7 @@ final monitoringSensorCountProvider = FutureProvider.autoDispose<int>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return 0;
-  return ref.watch(monitoringDataSourceProvider).getSensorCount(siteId);
+  return ref.watch(monitoringRepositoryProvider).getSensorCount(siteId);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -131,7 +147,7 @@ final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
   if (siteId == null) return EnvironmentalHealth.empty();
 
   final raw = await ref
-      .watch(monitoringDataSourceProvider)
+      .watch(monitoringRepositoryProvider)
       .getEnvironmentalHealth(siteId);
 
   if (raw.isEmpty) return EnvironmentalHealth.empty();
@@ -145,7 +161,7 @@ final plantRecommendationProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return {};
       return ref
-          .watch(monitoringDataSourceProvider)
+          .watch(monitoringRepositoryProvider)
           .getPlantRecommendation(siteId);
     });
 
@@ -156,5 +172,5 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.watch(monitoringDataSourceProvider).getDailyReads(siteId);
+  return ref.watch(monitoringRepositoryProvider).getDailyReads(siteId);
 });
