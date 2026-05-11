@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../plant/domain/entities/plant.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
 import '../../data/models/monitoring_models.dart';
@@ -59,8 +60,7 @@ class AnalyticsTab extends ConsumerWidget {
 
             envAsync.whenOrNull(
                   data: (health) {
-                    final total = health['total_sensors'] ?? 0;
-                    if (total == 0) {
+                    if (health.totalSensors == 0) {
                       return Column(
                         children: [
                           _ActionRequiredCard(),
@@ -131,7 +131,22 @@ class AnalyticsTab extends ConsumerWidget {
             devicesAsync.when(
               loading: () => _shimmer(context, 74),
               error: (_, __) => const SizedBox.shrink(),
-              data: (devices) => _DeviceSensorOverviewCards(devices: devices),
+              data: (devices) {
+                final sensorCountAsync = ref.watch(
+                  monitoringSensorCountProvider,
+                );
+                final sensorCount = sensorCountAsync.when(
+                  data: (c) => c,
+                  loading: () =>
+                      devices.fold<int>(0, (s, d) => s + d.sensors.length),
+                  error: (_, __) =>
+                      devices.fold<int>(0, (s, d) => s + d.sensors.length),
+                );
+                return _DeviceSensorOverviewCards(
+                  devices: devices,
+                  totalSensors: sensorCount,
+                );
+              },
             ),
 
             SizedBox(height: context.rh(0.015)),
@@ -186,13 +201,13 @@ class AnalyticsTab extends ConsumerWidget {
 }
 
 class _EnvironmentalHealthCard extends StatelessWidget {
-  final Map<String, dynamic> health;
+  final EnvironmentalHealth health;
   const _EnvironmentalHealthCard({required this.health});
 
   @override
   Widget build(BuildContext context) {
-    final overall = (health['overall_health'] as num?)?.toDouble() ?? 0;
-    final total = health['total_sensors'] ?? 0;
+    final overall = health.overallHealth;
+    final total = health.totalSensors;
 
     Color healthColor;
     String healthLabel;
@@ -291,6 +306,37 @@ class _EnvironmentalHealthCard extends StatelessWidget {
               ],
             ),
           ),
+          if (health.sensors.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFFE0E0E0)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: health.sensors.map((s) {
+                final color = _colorForSensor(s.dsId);
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${s.label}: ${s.readUpdateValue}${s.unit}',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(11),
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
@@ -298,8 +344,8 @@ class _EnvironmentalHealthCard extends StatelessWidget {
                 'assets/icons/warning-outline-icon.svg',
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.error,
+                colorFilter: ColorFilter.mode(
+                  total == 0 ? AppColors.error : AppColors.success,
                   BlendMode.srcIn,
                 ),
               ),
@@ -321,6 +367,29 @@ class _EnvironmentalHealthCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _colorForSensor(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+        return const Color(0xFFFF8A65);
+      case 'env_hum':
+        return const Color(0xFF42A5F5);
+      case 'soil_nitro':
+        return const Color(0xFF66BB6A);
+      case 'soil_phos':
+        return const Color(0xFFAB47BC);
+      case 'soil_pot':
+        return const Color(0xFFFF7043);
+      case 'soil_ph':
+        return const Color(0xFF26C6DA);
+      case 'soil_temp':
+        return const Color(0xFF8BC34A);
+      case 'soil_hum':
+        return const Color(0xFF29B6F6);
+      default:
+        return AppColors.primaryLight;
+    }
   }
 }
 
@@ -1026,7 +1095,11 @@ class _PlantDistributionCard extends StatelessWidget {
 
 class _DeviceSensorOverviewCards extends StatelessWidget {
   final List<DeviceModel> devices;
-  const _DeviceSensorOverviewCards({required this.devices});
+  final int totalSensors;
+  const _DeviceSensorOverviewCards({
+    required this.devices,
+    required this.totalSensors,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1068,7 +1141,11 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
       );
     }
 
-    final totalSensors = devices.fold<int>(0, (s, d) => s + d.sensors.length);
+    // Gunakan totalSensors dari parameter (dari /sensors endpoint)
+    // Fallback ke sum dari devices.sensors jika > 0
+    final displaySensors = totalSensors > 0
+        ? totalSensors
+        : devices.fold<int>(0, (s, d) => s + d.sensors.length);
 
     return Row(
       children: [
@@ -1163,7 +1240,7 @@ class _DeviceSensorOverviewCards extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$totalSensors',
+                        '$displaySensors',
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
