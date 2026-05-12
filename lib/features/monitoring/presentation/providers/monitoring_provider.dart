@@ -174,3 +174,28 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   if (siteId == null) return [];
   return ref.watch(monitoringRepositoryProvider).getDailyReads(siteId);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALARMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Alarm lengkap beserta kode alarm (join).
+/// GET /api/sites/alarms/data
+final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
+  ref,
+) async {
+  return ref.watch(monitoringRepositoryProvider).getAlarmData();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MONTHLY REKAP
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Rekap bulanan sensor (avg/min/max).
+/// GET /api/sites/:siteId/reads/mounth
+final monthlyReadsProvider =
+    FutureProvider.autoDispose<List<MonthlyRekapModel>>((ref) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) return [];
+  return ref.watch(monitoringRepositoryProvider).getMonthlyReads(siteId);
+});

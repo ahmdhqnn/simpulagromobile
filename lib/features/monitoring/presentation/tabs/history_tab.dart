@@ -94,7 +94,11 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
                 onRetry: () => ref.invalidate(historyReadsProvider),
               ),
               data: (reads) {
-                final params = reads.map((r) => r.dsId ?? '').toSet().toList();
+                final params = reads
+                    .map((r) => r.dsId ?? '')
+                    .where((s) => s.isNotEmpty)
+                    .toSet()
+                    .toList();
                 final param =
                     selectedParam ?? (params.isNotEmpty ? params.first : null);
                 if (param == null || reads.isEmpty) {
@@ -103,13 +107,75 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
                     message: 'Belum ada data riwayat',
                   );
                 }
-                final filtered = reads.where((r) => r.dsId == param).toList()
-                  ..sort(
-                    (a, b) => (a.readDate ?? DateTime(0)).compareTo(
-                      b.readDate ?? DateTime(0),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (params.length > 1)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: params.map((p) {
+                            final isSel = p == param;
+                            final c = SensorMeta.color(p);
+                            return GestureDetector(
+                              onTap: () =>
+                                  ref
+                                          .read(
+                                            selectedSensorParamProvider
+                                                .notifier,
+                                          )
+                                          .state =
+                                      p,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: const EdgeInsets.only(
+                                  right: 8,
+                                  bottom: 12,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSel ? c : c.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: isSel
+                                      ? [
+                                          BoxShadow(
+                                            color: c.withValues(alpha: 0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Text(
+                                  SensorMeta.shortLabel(p),
+                                  style: TextStyle(
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontSize: context.sp(11),
+                                    fontWeight: FontWeight.w600,
+                                    color: isSel ? Colors.white : c,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    Builder(
+                      builder: (ctx) {
+                        final filtered =
+                            reads.where((r) => r.dsId == param).toList()..sort(
+                              (a, b) => (a.readDate ?? DateTime(0)).compareTo(
+                                b.readDate ?? DateTime(0),
+                              ),
+                            );
+                        return _HistoryChart(reads: filtered, param: param);
+                      },
                     ),
-                  );
-                return _HistoryChart(reads: filtered, param: param);
+                  ],
+                );
               },
             ),
 
@@ -476,39 +542,70 @@ class _HistoryChart extends StatelessWidget {
       return _EmptyStateCard(height: 195, message: 'Data sensor tidak valid');
     }
 
+    final values = reads
+        .map((r) => r.numericValue)
+        .where((v) => v > 0)
+        .toList();
+    final minVal = values.isNotEmpty
+        ? values.reduce((a, b) => a < b ? a : b)
+        : 0.0;
+    final maxVal = values.isNotEmpty
+        ? values.reduce((a, b) => a > b ? a : b)
+        : 0.0;
+    final avgVal = values.isNotEmpty
+        ? values.reduce((a, b) => a + b) / values.length
+        : 0.0;
+    final unit = SensorMeta.unit(param);
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: _color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.show_chart_rounded, color: _color, size: 22),
+              ),
+              SizedBox(width: context.rw(0.03)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Data Sensor History',
+                      SensorMeta.label(param),
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(20),
-                        fontWeight: FontWeight.w400,
+                        fontSize: context.sp(16),
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF1D1D1D),
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
-                      'Daily data is grouped by month',
+                      '${reads.length} data · riwayat sensor',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                        fontSize: context.sp(11),
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -516,36 +613,61 @@ class _HistoryChart extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F7F5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _StatChip(
+                  label: 'Min',
+                  value: '${minVal.toStringAsFixed(1)}$unit',
+                  color: const Color(0xFF42A5F5),
+                ),
+                Container(width: 1, height: 28, color: const Color(0xFFE0E0E0)),
+                _StatChip(
+                  label: 'Rata-rata',
+                  value: '${avgVal.toStringAsFixed(1)}$unit',
+                  color: AppColors.primaryLight,
+                ),
+                Container(width: 1, height: 28, color: const Color(0xFFE0E0E0)),
+                _StatChip(
+                  label: 'Max',
+                  value: '${maxVal.toStringAsFixed(1)}$unit',
+                  color: const Color(0xFFFF7043),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           SizedBox(
-            height: 195,
+            height: 220,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 1,
                   getDrawingHorizontalLine: (_) =>
-                      FlLine(color: const Color(0xFFE0E0E0), strokeWidth: 1),
+                      FlLine(color: const Color(0xFFEEEEEE), strokeWidth: 1),
                 ),
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(10),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.6),
-                          ),
-                        );
-                      },
+                      reservedSize: 42,
+                      getTitlesWidget: (value, meta) => Text(
+                        value.toStringAsFixed(0),
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(9),
+                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                        ),
+                      ),
                     ),
                   ),
                   rightTitles: const AxisTitles(
@@ -557,8 +679,8 @@ class _HistoryChart extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 32,
-                      interval: (spots.length / 4).ceilToDouble().clamp(
+                      reservedSize: 30,
+                      interval: (spots.length / 5).ceilToDouble().clamp(
                         1,
                         double.infinity,
                       ),
@@ -569,7 +691,7 @@ class _HistoryChart extends StatelessWidget {
                         }
                         final d = reads[idx].readDate;
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             d != null ? DateFormat('d/M').format(d) : '',
                             style: TextStyle(
@@ -590,15 +712,24 @@ class _HistoryChart extends StatelessWidget {
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
+                    curveSmoothness: 0.35,
                     color: _color,
-                    barWidth: 2.5,
-                    dotData: const FlDotData(show: false),
+                    barWidth: 3,
+                    dotData: FlDotData(
+                      show: spots.length <= 20,
+                      getDotPainter: (s, p, b, i) => FlDotCirclePainter(
+                        radius: 3.5,
+                        color: _color,
+                        strokeWidth: 2,
+                        strokeColor: Colors.white,
+                      ),
+                    ),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          _color.withValues(alpha: 0.3),
-                          _color.withValues(alpha: 0.05),
+                          _color.withValues(alpha: 0.25),
+                          _color.withValues(alpha: 0.03),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -609,14 +740,94 @@ class _HistoryChart extends StatelessWidget {
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipColor: (_) => Colors.white,
-                    tooltipBorder: const BorderSide(color: Color(0xFFE0E0E0)),
+                    tooltipRoundedRadius: 10,
+                    tooltipPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    tooltipBorder: BorderSide(
+                      color: _color.withValues(alpha: 0.3),
+                    ),
+                    getTooltipItems: (spots) => spots
+                        .map(
+                          (s) => LineTooltipItem(
+                            '${s.y.toStringAsFixed(1)}$unit',
+                            TextStyle(
+                              color: _color,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ),
             ),
           ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: _color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                SensorMeta.label(param),
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(10),
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(13),
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(9),
+            color: AppColors.textTertiary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

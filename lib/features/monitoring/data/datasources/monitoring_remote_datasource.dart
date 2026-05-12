@@ -206,4 +206,36 @@ class MonitoringRemoteDataSource {
       return {};
     }
   }
+
+  // ── Alarms ──────────────────────────────────────────────────────────────────
+
+  /// GET /api/sites/alarms/data
+  /// Alarm lengkap beserta kode alarm (join).
+  Future<List<AlarmDataModel>> getAlarmData() async {
+    try {
+      final res = await _dio.get('/sites/alarms/data');
+      return _extractList(res.data)
+          .whereType<Map<String, dynamic>>()
+          .map(AlarmDataModel.fromJson)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // ── Monthly Rekap ────────────────────────────────────────────────────────────
+
+  /// GET /api/sites/:siteId/reads/mounth
+  /// Rekap bulanan sensor (avg/min/max) per ds_id.
+  Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId) async {
+    try {
+      final res = await _dio.get('/sites/$siteId/reads/mounth');
+      return _extractList(res.data)
+          .whereType<Map<String, dynamic>>()
+          .map(MonthlyRekapModel.fromJson)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
 }

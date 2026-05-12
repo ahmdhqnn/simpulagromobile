@@ -21,6 +21,8 @@ class AnalyticsTab extends ConsumerWidget {
     final dailyAsync = ref.watch(dailyReadsProvider);
     final devicesAsync = ref.watch(devicesProvider);
     final plant = ref.watch(currentPlantProvider);
+    final alarmAsync = ref.watch(alarmDataProvider);
+    final monthlyAsync = ref.watch(monthlyReadsProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -29,6 +31,8 @@ class AnalyticsTab extends ConsumerWidget {
         ref.invalidate(plantRecommendationProvider);
         ref.invalidate(dailyReadsProvider);
         ref.invalidate(devicesProvider);
+        ref.invalidate(alarmDataProvider);
+        ref.invalidate(monthlyReadsProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -177,6 +181,47 @@ class AnalyticsTab extends ConsumerWidget {
                 onRetry: () => ref.invalidate(dailyReadsProvider),
               ),
               data: (daily) => _DailySensorChart(data: daily),
+            ),
+
+            SizedBox(height: context.rh(0.025)),
+
+            Text(
+              'Rekap Bulanan Sensor',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(22),
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF1D1D1D),
+                height: 1.0,
+              ),
+            ),
+            SizedBox(height: context.rh(0.015)),
+            monthlyAsync.when(
+              loading: () => _shimmer(context, 260),
+              error: (e, _) => _ErrorCard(
+                message: e.toString(),
+                onRetry: () => ref.invalidate(monthlyReadsProvider),
+              ),
+              data: (monthly) => _MonthlyTrendCard(data: monthly),
+            ),
+
+            SizedBox(height: context.rh(0.025)),
+
+            Text(
+              'Ringkasan Alarm',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(22),
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF1D1D1D),
+                height: 1.0,
+              ),
+            ),
+            SizedBox(height: context.rh(0.015)),
+            alarmAsync.when(
+              loading: () => _shimmer(context, 120),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (alarms) => _AlarmSummaryCard(alarms: alarms),
             ),
 
             SizedBox(height: context.rh(0.04)),
@@ -1714,7 +1759,8 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                 final isSel = p == _selected;
                 return GestureDetector(
                   onTap: () => setState(() => _selected = p),
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
@@ -1722,14 +1768,14 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                     ),
                     decoration: BoxDecoration(
                       color: isSel
-                          ? const Color(0xFF4CAF50)
-                          : const Color(0xFFF5F5F5),
+                          ? SensorMeta.color(p)
+                          : SensorMeta.color(p).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: isSel
                           ? [
                               BoxShadow(
-                                color: const Color(
-                                  0xFF4CAF50,
+                                color: SensorMeta.color(
+                                  p,
                                 ).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
@@ -1738,12 +1784,12 @@ class _DailySensorChartState extends State<_DailySensorChart> {
                           : null,
                     ),
                     child: Text(
-                      SensorMeta.label(p),
+                      SensorMeta.shortLabel(p),
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(11),
                         fontWeight: FontWeight.w600,
-                        color: isSel ? Colors.white : const Color(0xFF757575),
+                        color: isSel ? Colors.white : SensorMeta.color(p),
                       ),
                     ),
                   ),
@@ -1761,7 +1807,7 @@ class _DailySensorChartState extends State<_DailySensorChart> {
             )
           else
             Container(
-              height: 200,
+              height: 250,
               padding: const EdgeInsets.only(top: 10, right: 10),
               child: LineChart(
                 LineChartData(
@@ -2011,6 +2057,572 @@ class _ErrorCard extends StatelessWidget {
             icon: const Icon(Icons.refresh, size: 16),
             label: const Text('Coba Lagi'),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlyTrendCard extends StatefulWidget {
+  final List<MonthlyRekapModel> data;
+  const _MonthlyTrendCard({required this.data});
+
+  @override
+  State<_MonthlyTrendCard> createState() => _MonthlyTrendCardState();
+}
+
+class _MonthlyTrendCardState extends State<_MonthlyTrendCard> {
+  String _selected = 'env_temp';
+
+  List<String> get _params => widget.data.map((d) => d.dsId).toSet().toList();
+
+  @override
+  void initState() {
+    super.initState();
+    final p = _params;
+    if (p.isNotEmpty && !p.contains(_selected)) _selected = p.first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.data.isEmpty) {
+      return Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.bar_chart_rounded,
+                size: 28,
+                color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Belum ada data rekap bulanan',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final filtered = widget.data.where((d) => d.dsId == _selected).toList();
+    final color = SensorMeta.color(_selected);
+    final unit = SensorMeta.unit(_selected);
+
+    final barGroups = filtered.asMap().entries.map((e) {
+      final avg = e.value.avgVal ?? 0;
+      return BarChartGroupData(
+        x: e.key,
+        barRods: [
+          BarChartRodData(
+            toY: avg,
+            color: color,
+            width: 14,
+            borderRadius: BorderRadius.circular(4),
+            backDrawRodData: BackgroundBarChartRodData(
+              show: true,
+              toY: (e.value.maxVal ?? avg) * 1.2,
+              color: color.withValues(alpha: 0.08),
+            ),
+          ),
+        ],
+      );
+    }).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
+              ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Rekap Bulanan',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(16),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                    Text(
+                      'Rata-rata per bulan',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(11),
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _params.map((p) {
+                final isSel = p == _selected;
+                final c = SensorMeta.color(p);
+                return GestureDetector(
+                  onTap: () => setState(() => _selected = p),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.only(right: 8, bottom: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSel ? c : c.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: isSel
+                          ? [
+                              BoxShadow(
+                                color: c.withValues(alpha: 0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      SensorMeta.shortLabel(p),
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(10),
+                        fontWeight: FontWeight.w600,
+                        color: isSel ? Colors.white : c,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          if (filtered.isEmpty)
+            Center(
+              child: Text(
+                'Tidak ada data untuk sensor ini',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (_) =>
+                        FlLine(color: const Color(0xFFEEEEEE), strokeWidth: 1),
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (v, _) => Text(
+                          v.toStringAsFixed(0),
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(9),
+                            color: const Color(
+                              0xFF1D1D1D,
+                            ).withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        getTitlesWidget: (v, _) {
+                          final idx = v.toInt();
+                          if (idx < 0 || idx >= filtered.length) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              filtered[idx].month.length >= 7
+                                  ? filtered[idx].month.substring(5, 7)
+                                  : filtered[idx].month,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(9),
+                                color: const Color(
+                                  0xFF1D1D1D,
+                                ).withValues(alpha: 0.5),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: barGroups,
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => Colors.white,
+                      tooltipRoundedRadius: 10,
+                      tooltipPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      tooltipBorder: BorderSide(
+                        color: color.withValues(alpha: 0.3),
+                      ),
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                          BarTooltipItem(
+                            '${rod.toY.toStringAsFixed(1)}$unit',
+                            TextStyle(
+                              color: color,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Rata-rata ${SensorMeta.label(_selected)}',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(10),
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AlarmSummaryCard extends StatelessWidget {
+  final List<AlarmDataModel> alarms;
+  const _AlarmSummaryCard({required this.alarms});
+
+  @override
+  Widget build(BuildContext context) {
+    if (alarms.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success,
+                size: 22,
+              ),
+            ),
+            SizedBox(width: context.rw(0.03)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tidak ada alarm aktif',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(14),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                    ),
+                  ),
+                  Text(
+                    'Semua sensor berjalan normal',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(11),
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final recent = alarms.where((a) => a.isRecent).length;
+    final total = alarms.length;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.notifications_rounded,
+                  color: Color(0xFFFF9800),
+                  size: 22,
+                ),
+              ),
+              SizedBox(width: context.rw(0.03)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ringkasan Alarm',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(16),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                    Text(
+                      '$total total alarm tercatat',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(11),
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$recent',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(22),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFFF9800),
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Alarm 24 Jam',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(10),
+                          color: const Color(0xFFFF9800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBE9E7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$total',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(22),
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.error,
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Total Alarm',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(10),
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (alarms.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            const Divider(color: Color(0xFFEEEEEE), height: 1),
+            const SizedBox(height: 10),
+            Text(
+              'Alarm Terbaru',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...alarms
+                .take(3)
+                .map(
+                  (a) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.only(top: 5, right: 10),
+                          decoration: BoxDecoration(
+                            color: a.isRecent
+                                ? const Color(0xFFFF9800)
+                                : AppColors.textTertiary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            a.alcodeNote ?? 'Alarm terdeteksi',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(11),
+                              color: const Color(0xFF1D1D1D),
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        if (a.almDate != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat('d/M HH:mm').format(a.almDate!),
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: context.sp(9),
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+          ],
         ],
       ),
     );
