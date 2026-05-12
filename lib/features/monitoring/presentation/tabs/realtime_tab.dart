@@ -19,6 +19,7 @@ class RealtimeTab extends ConsumerWidget {
     final todayAsync = ref.watch(todayReadsProvider);
     final logsAsync = ref.watch(logsProvider);
     final envHealthAsync = ref.watch(envHealthProvider);
+    final alarmAsync = ref.watch(alarmDataProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -27,6 +28,7 @@ class RealtimeTab extends ConsumerWidget {
         ref.invalidate(todayReadsProvider);
         ref.invalidate(logsProvider);
         ref.invalidate(envHealthProvider);
+        ref.invalidate(alarmDataProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -37,6 +39,20 @@ class RealtimeTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            alarmAsync.whenOrNull(
+                  data: (alarms) {
+                    final recent = alarms.where((a) => a.isRecent).toList();
+                    if (recent.isEmpty) return null;
+                    return Column(
+                      children: [
+                        _AlarmBanner(alarms: recent),
+                        SizedBox(height: context.rh(0.018)),
+                      ],
+                    );
+                  },
+                ) ??
+                const SizedBox.shrink(),
+
             const _SectionTitle('Status Sensor Terkini'),
             SizedBox(height: context.rh(0.014)),
             latestAsync.when(
@@ -229,12 +245,33 @@ class _TodayChartState extends State<_TodayChart> {
         .toList();
 
     final color = _colorFor(_selected);
+    final unit = SensorMeta.unit(_selected);
+    final values = filtered
+        .map((r) => r.numericValue)
+        .where((v) => v > 0)
+        .toList();
+    final minVal = values.isNotEmpty
+        ? values.reduce((a, b) => a < b ? a : b)
+        : 0.0;
+    final maxVal = values.isNotEmpty
+        ? values.reduce((a, b) => a > b ? a : b)
+        : 0.0;
+    final avgVal = values.isNotEmpty
+        ? values.reduce((a, b) => a + b) / values.length
+        : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +324,6 @@ class _TodayChartState extends State<_TodayChart> {
           ),
           const SizedBox(height: 8),
 
-          // ── Selector parameter ──────────────────────────
           if (params.length > 1)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -324,8 +360,39 @@ class _TodayChartState extends State<_TodayChart> {
             ),
           const SizedBox(height: 12),
 
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F7F5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _StatItem(
+                  label: 'Min',
+                  value: '${minVal.toStringAsFixed(1)}$unit',
+                  color: const Color(0xFF42A5F5),
+                ),
+                Container(width: 1, height: 28, color: const Color(0xFFE0E0E0)),
+                _StatItem(
+                  label: 'Rata-rata',
+                  value: '${avgVal.toStringAsFixed(1)}$unit',
+                  color: color,
+                ),
+                Container(width: 1, height: 28, color: const Color(0xFFE0E0E0)),
+                _StatItem(
+                  label: 'Max',
+                  value: '${maxVal.toStringAsFixed(1)}$unit',
+                  color: const Color(0xFFFF7043),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
           SizedBox(
-            height: 200,
+            height: 230,
             child: spots.isEmpty
                 ? Center(
                     child: Column(
@@ -447,16 +514,94 @@ class _TodayChartState extends State<_TodayChart> {
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
                           getTooltipColor: (_) => Colors.white,
-                          tooltipBorder: const BorderSide(
-                            color: Color(0xFFE0E0E0),
+                          tooltipRoundedRadius: 10,
+                          tooltipPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
+                          tooltipBorder: BorderSide(
+                            color: color.withValues(alpha: 0.3),
+                          ),
+                          getTooltipItems: (spots) => spots
+                              .map(
+                                (s) => LineTooltipItem(
+                                  '${s.y.toStringAsFixed(1)}$unit',
+                                  TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                     ),
                   ),
           ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                SensorMeta.label(_selected),
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(10),
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _StatItem({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(13),
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(9),
+            color: AppColors.textTertiary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -876,6 +1021,115 @@ class _ErrorCard extends StatelessWidget {
             icon: const Icon(Icons.refresh, size: 16),
             label: const Text('Coba Lagi'),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AlarmBanner extends StatelessWidget {
+  final List<AlarmDataModel> alarms;
+  const _AlarmBanner({required this.alarms});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFFFB74D).withValues(alpha: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.notifications_active_rounded,
+                  color: Color(0xFFFF9800),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${alarms.length} Alarm Aktif',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(13),
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFE65100),
+                      ),
+                    ),
+                    Text(
+                      'Terdeteksi dalam 24 jam terakhir',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(10),
+                        color: const Color(0xFFFF9800),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...alarms
+              .take(3)
+              .map(
+                (a) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 5,
+                        height: 5,
+                        margin: const EdgeInsets.only(top: 5, right: 8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF9800),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          a.alcodeNote ?? 'Alarm terdeteksi',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(11),
+                            color: const Color(0xFF5D4037),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          if (alarms.length > 3)
+            Text(
+              '+ ${alarms.length - 3} alarm lainnya',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(10),
+                color: const Color(0xFFFF9800),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
         ],
       ),
     );

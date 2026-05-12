@@ -69,4 +69,14 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId) {
     return remoteDataSource.getPlantRecommendation(siteId);
   }
+
+  @override
+  Future<List<AlarmDataModel>> getAlarmData() {
+    return remoteDataSource.getAlarmData();
+  }
+
+  @override
+  Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId) {
+    return remoteDataSource.getMonthlyReads(siteId);
+  }
 }

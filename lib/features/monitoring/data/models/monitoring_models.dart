@@ -1,12 +1,6 @@
-/// Single source of truth for all monitoring feature models.
-///
-/// Semua model di sini adalah plain Dart class (tanpa Freezed/code-gen)
-/// agar tidak ada duplikasi dan mudah di-maintain.
 library;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DEVICE
-// ─────────────────────────────────────────────────────────────────────────────
+import 'package:flutter/material.dart';
 
 class DeviceModel {
   final String devId;
@@ -299,6 +293,29 @@ class SensorMeta {
     }
   }
 
+  static Color color(String dsId) {
+    switch (dsId) {
+      case 'env_temp':
+        return const Color(0xFFFF8A65);
+      case 'env_hum':
+        return const Color(0xFF42A5F5);
+      case 'soil_nitro':
+        return const Color(0xFF66BB6A);
+      case 'soil_phos':
+        return const Color(0xFFAB47BC);
+      case 'soil_pot':
+        return const Color(0xFFFF7043);
+      case 'soil_ph':
+        return const Color(0xFF26C6DA);
+      case 'soil_temp':
+        return const Color(0xFF8BC34A);
+      case 'soil_hum':
+        return const Color(0xFF29B6F6);
+      default:
+        return const Color(0xFF4CAF50);
+    }
+  }
+
   static String shortLabel(String dsId) {
     switch (dsId) {
       case 'env_temp':
@@ -333,4 +350,76 @@ class SensorMeta {
     'soil_pot',
     'soil_ph',
   ];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALARM DATA — alarm lengkap dengan join kode alarm
+// GET /api/sites/alarms/data
+// ─────────────────────────────────────────────────────────────────────────────
+
+class AlarmDataModel {
+  final String almId;
+  final String? alcodeId;
+  final String? alcodeNote;
+  final String? readId;
+  final DateTime? almDate;
+
+  const AlarmDataModel({
+    required this.almId,
+    this.alcodeId,
+    this.alcodeNote,
+    this.readId,
+    this.almDate,
+  });
+
+  factory AlarmDataModel.fromJson(Map<String, dynamic> json) {
+    return AlarmDataModel(
+      almId: json['alm_id']?.toString() ?? '',
+      alcodeId: json['alcode_id']?.toString(),
+      alcodeNote: json['alcode_note']?.toString(),
+      readId: json['read_id']?.toString(),
+      almDate: json['alm_date'] != null
+          ? DateTime.tryParse(json['alm_date'].toString())
+          : null,
+    );
+  }
+
+  bool get isRecent {
+    if (almDate == null) return false;
+    return DateTime.now().difference(almDate!).inHours < 24;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MONTHLY REKAP — agregasi bulanan sensor
+// GET /api/sites/:siteId/reads/mounth
+// ─────────────────────────────────────────────────────────────────────────────
+
+class MonthlyRekapModel {
+  final String month;
+  final String devId;
+  final String dsId;
+  final double? avgVal;
+  final double? minVal;
+  final double? maxVal;
+
+  const MonthlyRekapModel({
+    required this.month,
+    required this.devId,
+    required this.dsId,
+    this.avgVal,
+    this.minVal,
+    this.maxVal,
+  });
+
+  factory MonthlyRekapModel.fromJson(Map<String, dynamic> json) {
+    return MonthlyRekapModel(
+      month: json['month']?.toString() ?? '',
+      devId: json['dev_id']?.toString() ?? '',
+      dsId: json['ds_id']?.toString() ?? '',
+      avgVal: (json['avg_val'] as num?)?.toDouble(),
+      minVal: (json['min_val'] as num?)?.toDouble(),
+      maxVal: (json['max_val'] as num?)?.toDouble(),
+    );
+  }
 }

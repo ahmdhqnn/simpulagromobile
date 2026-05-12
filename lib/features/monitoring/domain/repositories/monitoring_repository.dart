@@ -25,4 +25,10 @@ abstract class MonitoringRepository {
   // Analytics
   Future<Map<String, dynamic>> getEnvironmentalHealth(String siteId);
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId);
+
+  // Alarms
+  Future<List<AlarmDataModel>> getAlarmData();
+
+  // Monthly Rekap
+  Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId);
 }
