@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-
+/// Centralized color tokens for the SimpulAgro design system.
 class AppColors {
   // Primary - Rich greens for agriculture theme
   static const Color primary = Color(0xFF1B5E20);
@@ -37,6 +37,114 @@ class AppColors {
   static const Color phosphorus = Color(0xFFAB47BC);
   static const Color potassium = Color(0xFFFFA726);
   static const Color ph = Color(0xFF26C6DA);
+
+  // Soft accent backgrounds (commonly used for icon badges)
+  static const Color softGreen = Color(0xFFEDF7EE);
+  static const Color softBlue = Color(0xFFECF6FE);
+  static const Color softOrange = Color(0xFFFFF6E9);
+  static const Color softGreenAlt = Color(0xFFE8EFE9);
+}
+
+/// Standard corner radius tokens used across cards, badges, and buttons.
+class AppRadius {
+  AppRadius._();
+
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 18;
+  static const double xl = 20;
+  static const double pill = 100;
+}
+
+/// Centralized typography. The font family is set globally on [ThemeData],
+/// so these styles only need to set size/weight/color.
+class AppTextStyles {
+  AppTextStyles._();
+
+  static const String fontFamily = 'Plus Jakarta Sans';
+
+  /// Section/screen title (around 22sp).
+  static TextStyle sectionTitle(BuildContext context, [double size = 22]) =>
+      _scaled(
+        context,
+        size: size,
+        weight: FontWeight.w400,
+        color: AppColors.textPrimary,
+        height: 1.0,
+      );
+
+  /// Card title.
+  static TextStyle cardTitle(BuildContext context, [double size = 16]) =>
+      _scaled(
+        context,
+        size: size,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      );
+
+  /// Big metric / number display.
+  static TextStyle metric(
+    BuildContext context, {
+    double size = 22,
+    Color color = AppColors.textPrimary,
+    FontWeight weight = FontWeight.w500,
+  }) => _scaled(context, size: size, weight: weight, color: color, height: 1.0);
+
+  /// Body label/caption (around 12sp).
+  static TextStyle label(
+    BuildContext context, {
+    double size = 12,
+    Color color = AppColors.textPrimary,
+    FontWeight weight = FontWeight.w500,
+    double height = 1.83,
+  }) => _scaled(
+    context,
+    size: size,
+    weight: weight,
+    color: color,
+    height: height,
+  );
+
+  /// Body secondary (smaller).
+  static TextStyle caption(
+    BuildContext context, {
+    double size = 11,
+    Color color = AppColors.textSecondary,
+    FontWeight weight = FontWeight.w400,
+  }) => _scaled(context, size: size, weight: weight, color: color);
+
+  /// Hint / muted small text.
+  static TextStyle hint(
+    BuildContext context, {
+    double size = 12,
+    FontWeight weight = FontWeight.w300,
+    double height = 1.83,
+  }) => _scaled(
+    context,
+    size: size,
+    weight: weight,
+    color: AppColors.textPrimary.withValues(alpha: 0.6),
+    height: height,
+  );
+
+  static TextStyle _scaled(
+    BuildContext context, {
+    required double size,
+    required FontWeight weight,
+    required Color color,
+    double? height,
+  }) {
+    final scaledSize =
+        size * (MediaQuery.sizeOf(context).width / 390).clamp(0.8, 1.3);
+    return TextStyle(
+      fontFamily: fontFamily,
+      fontSize: scaledSize,
+      fontWeight: weight,
+      color: color,
+      height: height,
+    );
+  }
 }
 
 class AppTheme {
@@ -53,14 +161,14 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      fontFamily: 'Plus Jakarta Sans',
+      fontFamily: AppTextStyles.fontFamily,
       appBarTheme: const AppBarTheme(
         elevation: 0,
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         titleTextStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
+          fontFamily: AppTextStyles.fontFamily,
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -68,7 +176,9 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
         color: AppColors.surface,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -78,10 +188,10 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -91,19 +201,19 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surfaceVariant,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
