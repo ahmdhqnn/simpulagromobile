@@ -1,0 +1,104 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/responsive.dart';
+import '../../../../../shared/widgets/info_state_widget.dart';
+import '../../../data/models/monitoring_models.dart';
+
+class HistoryDataTableWidget extends StatefulWidget {
+  final List<SensorReadModel> reads;
+  const HistoryDataTableWidget({super.key, required this.reads});
+
+  @override
+  State<HistoryDataTableWidget> createState() => _HistoryDataTableWidgetState();
+}
+
+class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.reads.isEmpty) {
+      return const InfoStateWidget.icon(
+        icon: Icons.table_chart_outlined,
+        message: 'Tidak ada data',
+        height: 80,
+      );
+    }
+
+    final displayCount = _expanded
+        ? widget.reads.length
+        : (widget.reads.length > 5 ? 5 : widget.reads.length);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            itemCount: displayCount,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: AppColors.textPrimary.withValues(alpha: 0.1),
+            ),
+            itemBuilder: (context, i) {
+              final r = widget.reads[i];
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: context.rh(0.008)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      r.readDate != null
+                          ? DateFormat('dd/MM HH:mm').format(r.readDate!)
+                          : '-',
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(11),
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          if (widget.reads.length > 5)
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(bottom: 12, top: context.rh(0.01)),
+                alignment: Alignment.center,
+                child: Text(
+                  _expanded
+                      ? 'Tampilkan Lebih Sedikit'
+                      : 'Tampilkan Semua (${widget.reads.length})',
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: context.sp(12),
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
