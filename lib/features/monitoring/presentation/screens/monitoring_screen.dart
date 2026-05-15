@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../tabs/analytics_tab.dart';
@@ -47,46 +48,33 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
                   Text(
                     'Monitoring',
                     style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(28),
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1D1D1D),
+                      color: AppColors.textPrimary,
                       height: 1.0,
                     ),
                   ),
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/more-icon.svg',
-                        width: 28,
-                        height: 28,
-                      ),
-                      onPressed: () {
-                        // Refresh semua data monitoring
-                        ref.invalidate(latestReadsProvider);
-                        ref.invalidate(todayReadsProvider);
-                        ref.invalidate(logsProvider);
-                        ref.invalidate(historyReadsProvider);
-                        ref.invalidate(devicesProvider);
-                        ref.invalidate(envHealthProvider);
-                        ref.invalidate(plantRecommendationProvider);
-                        ref.invalidate(dailyReadsProvider);
-                        // Juga refresh site list
-                        ref.invalidate(siteListProvider);
-                      },
-                    ),
+                  CircularIconActionWidget(
+                    onPressed: () {
+                      // Refresh semua data monitoring
+                      ref.invalidate(latestReadsProvider);
+                      ref.invalidate(todayReadsProvider);
+                      ref.invalidate(logsProvider);
+                      ref.invalidate(historyReadsProvider);
+                      ref.invalidate(devicesProvider);
+                      ref.invalidate(envHealthProvider);
+                      ref.invalidate(plantRecommendationProvider);
+                      ref.invalidate(dailyReadsProvider);
+                      // Juga refresh site list
+                      ref.invalidate(siteListProvider);
+                    },
+                    icon: Icons.more_horiz,
                   ),
                 ],
               ),
             ),
 
-            // Custom Pill-Style Tab Navigation
             Padding(
               padding: EdgeInsets.symmetric(horizontal: context.rw(0.054)),
               child: SizedBox(
@@ -136,7 +124,6 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
 
             SizedBox(height: context.rh(0.026)),
 
-            // Tab Content
             Expanded(child: _tabWidgets[_selectedTabIndex]),
           ],
         ),

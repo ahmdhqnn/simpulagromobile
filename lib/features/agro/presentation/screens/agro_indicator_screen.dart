@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/section_header_widget.dart';
 import '../providers/agro_provider.dart';
 import '../widgets/vdp_widget.dart';
 import '../widgets/gdd_widget.dart';
@@ -44,31 +45,35 @@ class AgroIndicatorScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _SectionTitle('Kesehatan Lingkungan'),
+                        const SectionHeaderWidget(
+                          title: 'Kesehatan Lingkungan',
+                        ),
                         SizedBox(height: context.rh(0.014)),
                         EnvironmentalHealthWidget(agroData: agroData),
 
                         SizedBox(height: context.rh(0.024)),
 
-                        _SectionTitle('Vapor Pressure Deficit'),
+                        const SectionHeaderWidget(
+                          title: 'Vapor Pressure Deficit',
+                        ),
                         SizedBox(height: context.rh(0.014)),
                         VdpWidget(vdpData: agroData.vdp),
 
                         SizedBox(height: context.rh(0.024)),
 
-                        _SectionTitle('Growing Degree Days'),
+                        const SectionHeaderWidget(title: 'Growing Degree Days'),
                         SizedBox(height: context.rh(0.014)),
                         GddWidget(gddData: agroData.gdd),
 
                         SizedBox(height: context.rh(0.024)),
 
-                        _SectionTitle('Evapotranspiration'),
+                        const SectionHeaderWidget(title: 'Evapotranspiration'),
                         SizedBox(height: context.rh(0.014)),
                         EtcWidget(etcData: agroData.etc),
 
                         SizedBox(height: context.rh(0.024)),
 
-                        _SectionTitle('Informasi'),
+                        const SectionHeaderWidget(title: 'Informasi'),
                         SizedBox(height: context.rh(0.014)),
                         _buildInfoCard(context),
 
@@ -94,37 +99,10 @@ class AgroIndicatorScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => ref.invalidate(agroDataProvider),
-            ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularIconActionWidget(
+            onPressed: () => ref.invalidate(agroDataProvider),
+            icon: Icons.refresh,
           ),
         ],
       ),
@@ -286,25 +264,6 @@ class AgroIndicatorScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(22),
-        fontWeight: FontWeight.w400,
-        color: const Color(0xFF1D1D1D),
-        height: 1.0,
-      ),
     );
   }
 }

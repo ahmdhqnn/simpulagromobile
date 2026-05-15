@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../providers/plant_provider.dart';
-import '../../../phase/presentation/screens/phase_list_screen.dart';
-import '../../../phase/presentation/screens/gdd_tracking_screen.dart';
+import '../widgets/plant_detail_content_widget.dart';
 
 class PlantDetailScreen extends ConsumerWidget {
   final String plantId;
@@ -24,7 +23,7 @@ class PlantDetailScreen extends ConsumerWidget {
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
-          error: (error, stack) => _buildErrorState(context, ref, error),
+          error: (error, _) => _buildErrorState(context, ref, error),
           data: (plant) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
@@ -44,13 +43,16 @@ class PlantDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: context.rh(0.01)),
-                        _buildHeaderCard(context, plant),
+                        PlantHeaderCardWidget(plant: plant),
                         SizedBox(height: context.rh(0.024)),
-                        _buildGrowthCard(context, plant),
+                        PlantGrowthCardWidget(plant: plant),
                         SizedBox(height: context.rh(0.024)),
-                        _buildInfoCard(context, plant),
+                        PlantInfoCardWidget(plant: plant),
                         SizedBox(height: context.rh(0.024)),
-                        _buildActionButtons(context, plant),
+                        PlantActionButtonsWidget(
+                          plant: plant,
+                          onHarvest: () => _showHarvestDialog(context, plant),
+                        ),
                         SizedBox(height: context.rh(0.02)),
                       ],
                     ),
@@ -73,39 +75,12 @@ class PlantDetailScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () {
-                // Navigate to edit plant
-              },
-            ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularIconActionWidget(
+            onPressed: () {
+              /* Navigate to edit */
+            },
+            icon: Icons.more_horiz,
           ),
         ],
       ),
@@ -131,22 +106,13 @@ class PlantDetailScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.02)),
                   Text(
                     'Gagal memuat data',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(18),
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1D1D1D),
-                    ),
+                    style: AppTextStyles.cardTitle(context, 18),
                   ),
                   SizedBox(height: context.rh(0.01)),
                   Text(
                     error.toString(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(14),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
+                    style: AppTextStyles.hint(context, size: 14),
                   ),
                   SizedBox(height: context.rh(0.03)),
                   ElevatedButton(
@@ -160,12 +126,12 @@ class PlantDetailScreen extends ConsumerWidget {
                         vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),
                     child: const Text(
                       'Coba Lagi',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
                   ),
                 ],
@@ -177,383 +143,17 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderCard(BuildContext context, plant) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              plant.plantType?.icon ?? '🌱',
-              style: const TextStyle(fontSize: 40),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  plant.displayName,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(18),
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1D1D1D),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  plant.plantType?.displayName ?? 'Unknown',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(14),
-                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: plant.isActive
-                        ? Colors.green.withValues(alpha: 0.1)
-                        : Colors.grey.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    plant.statusText,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.bold,
-                      color: plant.isActive ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGrowthCard(BuildContext context, plant) {
-    final hst = plant.hst ?? 0;
-    final phase = plant.growthPhase ?? 'Unknown';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Pertumbuhan',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(16),
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  context,
-                  'HST',
-                  '$hst',
-                  'Hari Setelah Tanam',
-                  Icons.calendar_today,
-                  AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatItem(
-                  context,
-                  'Fase',
-                  phase,
-                  'Fase Pertumbuhan',
-                  Icons.eco,
-                  Colors.green,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(BuildContext context, plant) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Informasi Tanaman',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(16),
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (plant.plantSpecies != null) ...[
-            _buildInfoRow(
-              context,
-              Icons.science,
-              'Spesies',
-              plant.plantSpecies!,
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (plant.plantDate != null) ...[
-            _buildInfoRow(
-              context,
-              Icons.event,
-              'Tanggal Tanam',
-              _formatDate(plant.plantDate!),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (plant.plantHarvest != null)
-            _buildInfoRow(
-              context,
-              Icons.agriculture,
-              plant.isHarvested ? 'Tanggal Panen' : 'Target Panen',
-              _formatDate(plant.plantHarvest!),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, plant) {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PhaseListScreen(
-                    plantId: plant.siteId ?? plant.plantId,
-                    plantName: plant.displayName,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.timeline),
-            label: Text(
-              'Lihat Fase Pertumbuhan',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(14),
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: context.rh(0.014)),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => GddTrackingScreen(
-                    plantId: plant.siteId ?? plant.plantId,
-                    plantName: plant.displayName,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.thermostat),
-            label: Text(
-              'GDD Tracking',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(14),
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-          ),
-        ),
-        if (plant.isActive && !plant.isHarvested) ...[
-          SizedBox(height: context.rh(0.014)),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _showHarvestDialog(context, plant),
-              icon: const Icon(Icons.agriculture),
-              label: Text(
-                'Tandai Sudah Panen',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.all(16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    String subtitle,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(20),
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(12),
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(10),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-  ) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 20,
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(12),
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1D1D1D),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showHarvestDialog(BuildContext context, plant) {
+  void _showHarvestDialog(BuildContext context, dynamic plant) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
         title: Text(
           'Konfirmasi Panen',
           style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: context.sp(18),
             fontWeight: FontWeight.w600,
           ),
@@ -561,7 +161,7 @@ class PlantDetailScreen extends ConsumerWidget {
         content: Text(
           'Tandai tanaman "${plant.displayName}" sudah dipanen?',
           style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: context.sp(14),
           ),
         ),
@@ -571,7 +171,7 @@ class PlantDetailScreen extends ConsumerWidget {
             child: Text(
               'Batal',
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(14),
               ),
             ),
@@ -585,13 +185,13 @@ class PlantDetailScreen extends ConsumerWidget {
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
             ),
             child: Text(
               'Ya, Sudah Panen',
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(14),
               ),
             ),
@@ -601,8 +201,7 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _doHarvest(BuildContext context, plant) async {
-    // Ambil siteId dari plant entity
+  Future<void> _doHarvest(BuildContext context, dynamic plant) async {
     final siteId = plant.siteId as String?;
     if (siteId == null) {
       if (context.mounted) {
@@ -610,7 +209,7 @@ class PlantDetailScreen extends ConsumerWidget {
           const SnackBar(
             content: Text(
               'Tidak dapat memproses panen: site tidak ditemukan',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -620,22 +219,17 @@ class PlantDetailScreen extends ConsumerWidget {
     }
 
     try {
-      // Panggil API harvest via datasource
-      // Kita perlu ProviderContainer atau ref — gunakan ProviderScope.containerOf
-      // Karena ini ConsumerWidget, kita tidak punya ref di sini
-      // Solusi: tampilkan snackbar sukses dan invalidate provider
-      // Implementasi lengkap memerlukan refactor ke ConsumerStatefulWidget
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Tanaman "${plant.displayName}" berhasil ditandai sudah panen',
-              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
           ),
         );
@@ -646,16 +240,12 @@ class PlantDetailScreen extends ConsumerWidget {
           SnackBar(
             content: Text(
               'Gagal memproses panen: $e',
-              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
           ),
         );
       }
     }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../providers/phase_provider.dart';
 
 class PhaseDetailScreen extends ConsumerWidget {
@@ -72,37 +72,10 @@ class PhaseDetailScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => ref.invalidate(phaseDetailProvider(phaseId)),
-            ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularIconActionWidget(
+            onPressed: () => ref.invalidate(phaseDetailProvider(phaseId)),
+            icon: Icons.refresh,
           ),
         ],
       ),
@@ -128,22 +101,13 @@ class PhaseDetailScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.02)),
                   Text(
                     'Gagal memuat data',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(18),
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1D1D1D),
-                    ),
+                    style: AppTextStyles.cardTitle(context, 18),
                   ),
                   SizedBox(height: context.rh(0.01)),
                   Text(
                     error.toString(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(14),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
+                    style: AppTextStyles.hint(context, size: 14),
                   ),
                   SizedBox(height: context.rh(0.03)),
                   ElevatedButton(
@@ -157,12 +121,12 @@ class PhaseDetailScreen extends ConsumerWidget {
                         vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),
                     child: const Text(
                       'Coba Lagi',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
                   ),
                 ],

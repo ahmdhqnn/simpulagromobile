@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 
-// ═══════════════════════════════════════════════════════════
-// UTILITAS SCAFFOLD
-// Header pattern: 2 tombol bulat putih (kiri: back, kanan: action)
-// TANPA title teks — persis seperti agro_indicator_screen
-// dan phase_list_screen
-// ═══════════════════════════════════════════════════════════
 class UtilitasScaffold extends StatelessWidget {
-  final String title; // dipakai sebagai section title di dalam body
+  final String title;
   final Widget body;
-  final Widget? action; // tombol kanan (add, more, dll)
+  final Widget? action;
   final bool showBack;
   final VoidCallback? onRefresh;
 
@@ -53,14 +47,7 @@ class UtilitasScaffold extends StatelessWidget {
         children: [
           // Kiri: back button atau spacer
           if (showBack)
-            _CircleButton(
-              onTap: () => context.pop(),
-              child: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-            )
+            CircularBackButtonWidget(onPressed: () => context.pop())
           else
             const SizedBox(width: 58),
 
@@ -68,13 +55,9 @@ class UtilitasScaffold extends StatelessWidget {
           if (action != null)
             action!
           else if (onRefresh != null)
-            _CircleButton(
-              onTap: onRefresh!,
-              child: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
+            CircularBackButtonWidget(
+              onPressed: onRefresh!,
+              svgIconPath: 'assets/icons/more-icon.svg',
             )
           else
             const SizedBox(width: 58),
@@ -84,13 +67,8 @@ class UtilitasScaffold extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// UTILITAS FORM SCAFFOLD
-// Header: kiri back button, kanan spacer — TANPA title teks
-// Persis seperti agro_indicator_screen._buildHeader
-// ═══════════════════════════════════════════════════════════
 class UtilitasFormScaffold extends StatelessWidget {
-  final String title; // tidak ditampilkan di header, bisa dipakai di body
+  final String title;
   final Widget body;
   final bool isLoading;
   final String? loadingMessage;
@@ -170,14 +148,7 @@ class UtilitasFormScaffold extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Kiri: back button
-          _CircleButton(
-            onTap: () => context.pop(),
-            child: SvgPicture.asset(
-              'assets/icons/chevron-left-icon.svg',
-              width: 28,
-              height: 28,
-            ),
-          ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
           // Kanan: spacer (simetris seperti agro/phase)
           const SizedBox(width: 58),
         ],
@@ -186,37 +157,6 @@ class UtilitasFormScaffold extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// CIRCLE BUTTON — 58×58 putih, radius 32
-// Identik dengan agro_indicator_screen & phase_list_screen
-// ═══════════════════════════════════════════════════════════
-class _CircleButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final Widget child;
-
-  const _CircleButton({required this.onTap, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// ADD BUTTON — 58×58 putih, plus-outline-icon primary
-// Mengikuti task_list_screen.dart
-// ═══════════════════════════════════════════════════════════
 class UtilitasAddButton extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -224,34 +164,13 @@ class UtilitasAddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Center(
-          child: SvgPicture.asset(
-            'assets/icons/plus-outline-icon.svg',
-            width: 24,
-            height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.primary,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-      ),
+    return CircularBackButtonWidget(
+      onPressed: onTap,
+      svgIconPath: 'assets/icons/plus-outline-icon.svg',
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// LOADING STATE
-// ═══════════════════════════════════════════════════════════
 class UtilitasLoadingState extends StatelessWidget {
   const UtilitasLoadingState({super.key});
 
@@ -263,9 +182,6 @@ class UtilitasLoadingState extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// ERROR STATE — mengikuti agro_indicator_screen._buildErrorState
-// ═══════════════════════════════════════════════════════════
 class UtilitasErrorState extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
@@ -340,9 +256,6 @@ class UtilitasErrorState extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// EMPTY STATE
-// ═══════════════════════════════════════════════════════════
 class UtilitasEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -396,10 +309,6 @@ class UtilitasEmptyState extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// SECTION TITLE — sp(22), w400, height 1.0
-// Identik dengan _SectionTitle di agro_indicator_screen
-// ═══════════════════════════════════════════════════════════
 class UtilitasSectionTitle extends StatelessWidget {
   final String title;
 
@@ -420,9 +329,6 @@ class UtilitasSectionTitle extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// SECTION CARD — white card, borderRadius: 20, padding: 12
-// ═══════════════════════════════════════════════════════════
 class UtilitasSectionCard extends StatelessWidget {
   final String? title;
   final String? subtitle;
@@ -480,10 +386,6 @@ class UtilitasSectionCard extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// SUBMIT BUTTON — mengikuti Signout button di profile_screen
-// height: 60, borderRadius: 100, white bg, text hitam
-// ═══════════════════════════════════════════════════════════
 class UtilitasSubmitButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;

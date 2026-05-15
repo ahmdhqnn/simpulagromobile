@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 
 class PlantEmptyState extends StatelessWidget {
   final VoidCallback onAddPlant;
@@ -22,20 +23,9 @@ class PlantEmptyState extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/more-icon.svg',
-                        width: 28,
-                        height: 28,
-                      ),
-                    ),
+                  CircularBackButtonWidget(
+                    onPressed: () {},
+                    svgIconPath: 'assets/icons/more-icon.svg',
                   ),
                 ],
               ),

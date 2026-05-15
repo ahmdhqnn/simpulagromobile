@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../providers/plant_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 
@@ -82,39 +82,12 @@ class PlantListScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/plus-outline-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () {
-                // Navigate to plant form
-              },
-            ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularBackButtonWidget(
+            onPressed: () {
+              // Navigate to plant form
+            },
+            svgIconPath: 'assets/icons/plus-outline-icon.svg',
           ),
         ],
       ),

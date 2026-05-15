@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class PlantInputForm extends ConsumerStatefulWidget {
   final String siteId;
@@ -53,20 +54,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/more-icon.svg',
-                        width: 28,
-                        height: 28,
-                      ),
-                    ),
+                  CircularBackButtonWidget(
+                    onPressed: () {},
+                    svgIconPath: 'assets/icons/more-icon.svg',
                   ),
                 ],
               ),
