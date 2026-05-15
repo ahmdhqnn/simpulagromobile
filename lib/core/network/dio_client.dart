@@ -1,17 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
-import '../storage/secure_storage.dart';
+import '../auth/token_manager.dart';
 
-/// Callback dipanggil saat token expired (401) — untuk trigger logout
-typedef OnUnauthorized = void Function();
+/// Callback dipanggil saat session benar-benar expired (refresh gagal)
+typedef OnSessionExpired = void Function();
 
 class DioClient {
   final Dio _dio;
-  final SecureStorage _storage;
-  OnUnauthorized? onUnauthorized;
+  final TokenManager _tokenManager;
+  OnSessionExpired? onSessionExpired;
 
-  DioClient(this._storage)
+  DioClient(this._tokenManager)
     : _dio = Dio(
         BaseOptions(
           baseUrl: ApiConfig.baseUrl,
@@ -25,18 +25,16 @@ class DioClient {
         ),
       ) {
     _dio.interceptors.addAll([
-      _AuthInterceptor(_storage, _handleUnauthorized),
+      _AuthInterceptor(_tokenManager, _handleSessionExpired),
       _RetryInterceptor(_dio),
-      // Log hanya di debug mode
       if (kDebugMode)
         LogInterceptor(
-          requestBody: false, // jangan log body — bisa berisi password
+          requestBody: false,
           responseBody: false,
           requestHeader: false,
           responseHeader: false,
           logPrint: (obj) {
             final msg = obj.toString();
-            // Filter hanya URL dan status code
             if (msg.contains('uri') ||
                 msg.contains('statusCode') ||
                 msg.contains('Error')) {
@@ -49,36 +47,100 @@ class DioClient {
 
   Dio get dio => _dio;
 
-  void _handleUnauthorized() {
-    onUnauthorized?.call();
+  void _handleSessionExpired() {
+    onSessionExpired?.call();
   }
 }
 
-/// Interceptor untuk inject JWT token ke setiap request
+/// Interceptor yang menangani:
+/// 1. Inject access token ke setiap request
+/// 2. Proactive refresh jika token hampir expired
+/// 3. Reactive refresh pada 401 response (silent retry)
 class _AuthInterceptor extends Interceptor {
-  final SecureStorage _storage;
-  final VoidCallback _onUnauthorized;
+  final TokenManager _tokenManager;
+  final VoidCallback _onSessionExpired;
 
-  _AuthInterceptor(this._storage, this._onUnauthorized);
+  _AuthInterceptor(this._tokenManager, this._onSessionExpired);
 
   @override
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _storage.getToken();
+    // Skip auth header for refresh endpoint to avoid loops
+    if (options.path.contains('refresh-token') ||
+        options.path.contains('login')) {
+      handler.next(options);
+      return;
+    }
+
+    // Proactive refresh: jika token hampir expired, refresh dulu
+    final isExpired = await _tokenManager.isAccessTokenExpired();
+    if (isExpired) {
+      final refreshed = await _tokenManager.refreshAccessToken();
+      if (!refreshed) {
+        debugPrint('🔒 Proactive refresh failed — proceeding with old token');
+      }
+    }
+
+    // Inject current access token
+    final token = await _tokenManager.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+
     handler.next(options);
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
-      debugPrint('🔒 Session expired — triggering logout');
-      _onUnauthorized();
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    // Only handle 401 for non-auth endpoints
+    if (err.response?.statusCode != 401) {
+      handler.next(err);
+      return;
     }
+
+    final requestPath = err.requestOptions.path;
+    if (requestPath.contains('refresh-token') ||
+        requestPath.contains('login')) {
+      handler.next(err);
+      return;
+    }
+
+    debugPrint('🔒 Got 401 on $requestPath — attempting silent refresh');
+
+    // Attempt silent refresh
+    final refreshed = await _tokenManager.refreshAccessToken();
+
+    if (refreshed) {
+      // Retry the original request with new token
+      try {
+        final token = await _tokenManager.getAccessToken();
+        final opts = err.requestOptions;
+        opts.headers['Authorization'] = 'Bearer $token';
+
+        final response = await Dio(
+          BaseOptions(
+            baseUrl: opts.baseUrl,
+            connectTimeout: ApiConfig.connectTimeout,
+            receiveTimeout: ApiConfig.receiveTimeout,
+          ),
+        ).fetch(opts);
+
+        handler.resolve(response);
+        return;
+      } catch (retryError) {
+        debugPrint('❌ Retry after refresh failed');
+        if (retryError is DioException) {
+          handler.next(retryError);
+          return;
+        }
+      }
+    }
+
+    // Refresh failed — session is truly expired
+    debugPrint('🔒 Session expired — triggering logout');
+    _onSessionExpired();
     handler.next(err);
   }
 }
@@ -120,6 +182,9 @@ class _RetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    // Don't retry if it was already handled by auth interceptor
+    if (err.response?.statusCode == 401) return false;
+
     switch (err.type) {
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
@@ -128,7 +193,6 @@ class _RetryInterceptor extends Interceptor {
         return true;
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode ?? 0;
-        // Retry untuk 5xx server errors, tapi bukan 4xx client errors
         return statusCode >= 500;
       default:
         return false;

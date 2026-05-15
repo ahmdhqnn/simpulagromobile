@@ -20,9 +20,7 @@ class AppStartupData {
 }
 
 /// Provider yang menyimpan data startup — di-override dari main()
-/// dengan nilai yang sudah dibaca sebelum app dijalankan.
 final appStartupDataProvider = Provider<AppStartupData>((ref) {
-  // Default kosong — akan di-override di main()
   return const AppStartupData();
 });
 
@@ -33,7 +31,7 @@ Future<AppStartupData> preloadAppData() async {
 
   // Baca semua data secara paralel untuk efisiensi
   final results = await Future.wait([
-    storage.getToken(),
+    storage.getAccessToken(),
     storage.getUserData(),
     storage.getSelectedSiteId(),
     storage.isOnboardingCompleted(),

@@ -18,7 +18,8 @@ final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
   final storage = ref.watch(secureStorageProvider);
-  return AuthRepositoryImpl(remoteDataSource, storage);
+  final tokenManager = ref.watch(tokenManagerProvider);
+  return AuthRepositoryImpl(remoteDataSource, storage, tokenManager);
 });
 
 // ─── Auth Status ─────────────────────────────────────────
@@ -63,13 +64,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._repository, {AppStartupData? startupData})
     : super(const AuthState()) {
-    // Inisialisasi langsung dari data preloaded — tidak ada I/O
     if (startupData != null) {
       _initFromStartupData(startupData);
     }
   }
-
-  /// Set state langsung dari data preloaded di main()
 
   void _initFromStartupData(AppStartupData data) {
     if (data.isLoggedIn && data.userData != null) {
@@ -108,8 +106,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String username, String password) async {
     state = state.copyWith(status: AuthStatus.loading, error: null);
     try {
-      final result = await _repository.login(username, password);
-      state = AuthState(status: AuthStatus.authenticated, user: result.user);
+      final user = await _repository.login(username, password);
+      state = AuthState(status: AuthStatus.authenticated, user: user);
       _loadPermissions();
       return true;
     } catch (e) {
@@ -133,7 +131,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  /// Dipanggil oleh DioClient saat menerima 401 — auto logout
+  /// Dipanggil saat session benar-benar expired (refresh token juga gagal)
   Future<void> handleSessionExpired() async {
     if (state.status != AuthStatus.authenticated) return;
     await _repository.logout();
@@ -162,13 +160,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
 // ─── Provider ────────────────────────────────────────────
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  // Data sudah di-preload di main() — tidak ada I/O di sini
   final startupData = ref.read(appStartupDataProvider);
   final notifier = AuthNotifier(repository, startupData: startupData);
 
-  // Wire DioClient.onUnauthorized → auto logout saat 401
+  // Wire TokenManager.onSessionExpired → auto logout saat refresh gagal
+  final tokenManager = ref.read(tokenManagerProvider);
+  tokenManager.onSessionExpired = () {
+    Future.microtask(() => notifier.handleSessionExpired());
+  };
+
+  // Wire DioClient.onSessionExpired → auto logout saat 401 + refresh gagal
   final dioClient = ref.read(dioClientProvider);
-  dioClient.onUnauthorized = () {
+  dioClient.onSessionExpired = () {
     Future.microtask(() => notifier.handleSessionExpired());
   };
 
@@ -187,7 +190,6 @@ final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((
 class OnboardingNotifier extends StateNotifier<bool> {
   final SecureStorage _storage;
 
-  /// initialValue dari data preloaded — tidak perlu baca storage lagi
   OnboardingNotifier(this._storage, bool initialValue) : super(initialValue);
 
   Future<void> completeOnboarding() async {
