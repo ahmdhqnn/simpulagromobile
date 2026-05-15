@@ -40,15 +40,29 @@ class UserModel extends User {
   }
 }
 
+/// Response model for login endpoint.
+/// Backend returns: { access_token, refresh_token, expires_in, token_type, user }
 class LoginResponseModel {
-  final String token;
+  final String accessToken;
+  final String refreshToken;
+  final int expiresIn;
+  final String tokenType;
   final UserModel user;
 
-  const LoginResponseModel({required this.token, required this.user});
+  const LoginResponseModel({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.expiresIn,
+    required this.tokenType,
+    required this.user,
+  });
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
     return LoginResponseModel(
-      token: json['token'] ?? '',
+      accessToken: json['access_token'] ?? json['token'] ?? '',
+      refreshToken: json['refresh_token'] ?? '',
+      expiresIn: json['expires_in'] ?? 3600,
+      tokenType: json['token_type'] ?? 'Bearer',
       user: UserModel.fromJson(json['user'] ?? {}),
     );
   }
