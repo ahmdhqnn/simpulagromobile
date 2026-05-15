@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
+import '../widgets/task_detail_widgets.dart';
 
 class TaskDetailScreen extends ConsumerWidget {
   final String taskId;
@@ -27,55 +28,9 @@ class TaskDetailScreen extends ConsumerWidget {
           taskAsync.whenOrNull(
                 data: (task) => PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'edit':
-                        context.push('/task/$taskId/edit');
-                        break;
-                      case 'delete':
-                        _showDeleteDialog(context, ref, task);
-                        break;
-                      case 'complete':
-                        _completeTask(context, ref, task);
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    if (task.taskStatus != TaskStatus.completed)
-                      const PopupMenuItem(
-                        value: 'complete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle, size: 20),
-                            SizedBox(width: 12),
-                            Text('Tandai Selesai'),
-                          ],
-                        ),
-                      ),
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 20),
-                          SizedBox(width: 12),
-                          Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 20, color: AppColors.error),
-                          SizedBox(width: 12),
-                          Text(
-                            'Hapus',
-                            style: TextStyle(color: AppColors.error),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  onSelected: (value) =>
+                      _onMenuAction(context, ref, task, value),
+                  itemBuilder: (_) => _buildMenuItems(task),
                 ),
               ) ??
               const SizedBox.shrink(),
@@ -85,37 +40,80 @@ class TaskDetailScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (error, stack) => _buildErrorState(context, error.toString()),
-        data: (task) => _buildContent(context, task),
+        error: (error, _) => _buildErrorState(context, error.toString()),
+        data: (task) => _buildContent(context, ref, task),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, Task task) {
+  List<PopupMenuEntry<String>> _buildMenuItems(Task task) {
+    return [
+      if (task.taskStatus != TaskStatus.completed)
+        const PopupMenuItem(
+          value: 'complete',
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, size: 20),
+              SizedBox(width: 12),
+              Text('Tandai Selesai'),
+            ],
+          ),
+        ),
+      const PopupMenuItem(
+        value: 'edit',
+        child: Row(
+          children: [
+            Icon(Icons.edit, size: 20),
+            SizedBox(width: 12),
+            Text('Edit'),
+          ],
+        ),
+      ),
+      const PopupMenuItem(
+        value: 'delete',
+        child: Row(
+          children: [
+            Icon(Icons.delete, size: 20, color: AppColors.error),
+            SizedBox(width: 12),
+            Text('Hapus', style: TextStyle(color: AppColors.error)),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  void _onMenuAction(
+    BuildContext context,
+    WidgetRef ref,
+    Task task,
+    String value,
+  ) {
+    switch (value) {
+      case 'edit':
+        context.push('/task/$taskId/edit');
+      case 'delete':
+        _showDeleteDialog(context, ref, task);
+      case 'complete':
+        _completeTask(context, ref, task);
+    }
+  }
+
+  Widget _buildContent(BuildContext context, WidgetRef ref, Task task) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(context.rw(0.041)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status Card
           _buildStatusCard(context, task),
           SizedBox(height: context.rh(0.02)),
-
-          // Task Info Card
           _buildInfoCard(context, task),
           SizedBox(height: context.rh(0.02)),
-
-          // Details Card
           _buildDetailsCard(context, task),
-          SizedBox(height: context.rh(0.02)),
-
-          // Notes Card
           if (task.notes != null) ...[
-            _buildNotesCard(context, task),
             SizedBox(height: context.rh(0.02)),
+            _buildNotesCard(context, task),
           ],
-
-          // Timeline Card
+          SizedBox(height: context.rh(0.02)),
           _buildTimelineCard(context, task),
         ],
       ),
@@ -123,14 +121,14 @@ class TaskDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildStatusCard(BuildContext context, Task task) {
-    final statusColor = _getStatusColor(task.taskStatus);
-    final priorityColor = _getPriorityColor(task.taskPriority);
+    final statusColor = _statusColor(task.taskStatus);
+    final priorityColor = _priorityColor(task.taskPriority);
 
     return Container(
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: task.isOverdue
               ? AppColors.error.withValues(alpha: 0.3)
@@ -142,29 +140,23 @@ class TaskDetailScreen extends ConsumerWidget {
         children: [
           Text(
             task.taskName,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(18),
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTextStyles.cardTitle(
+              context,
+              18,
+            ).copyWith(fontWeight: FontWeight.w700),
           ),
           if (task.taskDescription != null) ...[
             SizedBox(height: context.rh(0.01)),
             Text(
               task.taskDescription!,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.caption(context, size: 13),
             ),
           ],
           SizedBox(height: context.rh(0.02)),
           Row(
             children: [
               Expanded(
-                child: _StatusBadge(
+                child: TaskStatusBadgeWidget(
                   label: 'Status',
                   value: task.taskStatus.label,
                   color: statusColor,
@@ -172,7 +164,7 @@ class TaskDetailScreen extends ConsumerWidget {
               ),
               SizedBox(width: context.rw(0.03)),
               Expanded(
-                child: _StatusBadge(
+                child: TaskStatusBadgeWidget(
                   label: 'Prioritas',
                   value: task.taskPriority.label,
                   color: priorityColor,
@@ -182,59 +174,17 @@ class TaskDetailScreen extends ConsumerWidget {
           ),
           if (task.isOverdue) ...[
             SizedBox(height: context.rh(0.015)),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning, color: AppColors.error, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Task ini sudah melewati batas waktu!',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.error,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _WarningBanner(
+              icon: Icons.warning,
+              message: 'Task ini sudah melewati batas waktu!',
+              color: AppColors.error,
             ),
           ] else if (task.isDueSoon) ...[
             SizedBox(height: context.rh(0.015)),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.access_time,
-                    color: AppColors.warning,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Task ini akan jatuh tempo dalam 24 jam',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.warning,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _WarningBanner(
+              icon: Icons.access_time,
+              message: 'Task ini akan jatuh tempo dalam 24 jam',
+              color: AppColors.warning,
             ),
           ],
         ],
@@ -247,40 +197,32 @@ class TaskDetailScreen extends ConsumerWidget {
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Informasi Task',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Informasi Task', style: AppTextStyles.cardTitle(context, 14)),
           SizedBox(height: context.rh(0.015)),
-          _InfoRow(
+          TaskInfoRowWidget(
             icon: Icons.category_outlined,
             label: 'Jenis Task',
             value: task.taskType.label,
           ),
           if (task.siteName != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.location_on_outlined,
               label: 'Site',
               value: task.siteName!,
             ),
           if (task.plantName != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.grass_outlined,
               label: 'Tanaman',
               value: task.plantName!,
             ),
           if (task.assignedToName != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.person_outline,
               label: 'Ditugaskan ke',
               value: task.assignedToName!,
@@ -295,23 +237,15 @@ class TaskDetailScreen extends ConsumerWidget {
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Detail Waktu',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Detail Waktu', style: AppTextStyles.cardTitle(context, 14)),
           SizedBox(height: context.rh(0.015)),
           if (task.taskDueDate != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.calendar_today_outlined,
               label: 'Batas Waktu',
               value: DateFormat(
@@ -324,7 +258,7 @@ class TaskDetailScreen extends ConsumerWidget {
                   : null,
             ),
           if (task.taskCompletedDate != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.check_circle_outline,
               label: 'Selesai Pada',
               value: DateFormat(
@@ -333,13 +267,13 @@ class TaskDetailScreen extends ConsumerWidget {
               valueColor: AppColors.success,
             ),
           if (task.createdAt != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.add_circle_outline,
               label: 'Dibuat Pada',
               value: DateFormat('dd MMMM yyyy, HH:mm').format(task.createdAt!),
             ),
           if (task.updatedAt != null)
-            _InfoRow(
+            TaskInfoRowWidget(
               icon: Icons.update_outlined,
               label: 'Terakhir Diupdate',
               value: DateFormat('dd MMMM yyyy, HH:mm').format(task.updatedAt!),
@@ -354,7 +288,7 @@ class TaskDetailScreen extends ConsumerWidget {
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,26 +301,11 @@ class TaskDetailScreen extends ConsumerWidget {
                 color: AppColors.primary,
               ),
               const SizedBox(width: 8),
-              Text(
-                'Catatan',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
+              Text('Catatan', style: AppTextStyles.cardTitle(context, 14)),
             ],
           ),
           SizedBox(height: context.rh(0.01)),
-          Text(
-            task.notes!,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(task.notes!, style: AppTextStyles.caption(context, size: 13)),
         ],
       ),
     );
@@ -397,36 +316,28 @@ class TaskDetailScreen extends ConsumerWidget {
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Timeline',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Timeline', style: AppTextStyles.cardTitle(context, 14)),
           SizedBox(height: context.rh(0.015)),
           if (task.createdAt != null)
-            _TimelineItem(
+            TaskTimelineItemWidget(
               icon: Icons.add_circle,
               title: 'Task Dibuat',
               date: task.createdAt!,
               isFirst: true,
             ),
           if (task.taskStatus == TaskStatus.inProgress)
-            _TimelineItem(
+            TaskTimelineItemWidget(
               icon: Icons.play_circle,
               title: 'Task Sedang Dikerjakan',
               date: task.updatedAt ?? DateTime.now(),
             ),
           if (task.taskCompletedDate != null)
-            _TimelineItem(
+            TaskTimelineItemWidget(
               icon: Icons.check_circle,
               title: 'Task Selesai',
               date: task.taskCompletedDate!,
@@ -434,7 +345,7 @@ class TaskDetailScreen extends ConsumerWidget {
             ),
           if (task.taskDueDate != null &&
               task.taskStatus != TaskStatus.completed)
-            _TimelineItem(
+            TaskTimelineItemWidget(
               icon: Icons.flag,
               title: 'Batas Waktu',
               date: task.taskDueDate!,
@@ -455,24 +366,12 @@ class TaskDetailScreen extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 64, color: AppColors.error),
             SizedBox(height: context.rh(0.02)),
-            Text(
-              'Terjadi kesalahan',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(16),
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            Text('Terjadi kesalahan', style: AppTextStyles.cardTitle(context)),
             SizedBox(height: context.rh(0.01)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.caption(context, size: 13),
             ),
             SizedBox(height: context.rh(0.03)),
             ElevatedButton.icon(
@@ -574,8 +473,8 @@ class TaskDetailScreen extends ConsumerWidget {
     );
   }
 
-  Color _getStatusColor(TaskStatus status) {
-    switch (status) {
+  Color _statusColor(TaskStatus s) {
+    switch (s) {
       case TaskStatus.pending:
         return AppColors.warning;
       case TaskStatus.inProgress:
@@ -587,8 +486,8 @@ class TaskDetailScreen extends ConsumerWidget {
     }
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
-    switch (priority) {
+  Color _priorityColor(TaskPriority p) {
+    switch (p) {
       case TaskPriority.low:
         return AppColors.success;
       case TaskPriority.medium:
@@ -601,14 +500,13 @@ class TaskDetailScreen extends ConsumerWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final String label;
-  final String value;
+class _WarningBanner extends StatelessWidget {
+  final IconData icon;
+  final String message;
   final Color color;
-
-  const _StatusBadge({
-    required this.label,
-    required this.value,
+  const _WarningBanner({
+    required this.icon,
+    required this.message,
     required this.color,
   });
 
@@ -618,152 +516,25 @@ class _StatusBadge extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(11),
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: context.rh(0.012)),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.primary),
-          SizedBox(width: context.rw(0.03)),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(11),
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
-                    fontWeight: FontWeight.w500,
-                    color: valueColor ?? AppColors.textPrimary,
-                  ),
-                ),
-              ],
+            child: Text(
+              message,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _TimelineItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final DateTime date;
-  final Color? color;
-  final bool isFirst;
-  final bool isLast;
-
-  const _TimelineItem({
-    required this.icon,
-    required this.title,
-    required this.date,
-    this.color,
-    this.isFirst = false,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final itemColor = color ?? AppColors.primary;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            if (!isFirst)
-              Container(width: 2, height: 12, color: AppColors.divider),
-            Icon(icon, size: 20, color: itemColor),
-            if (!isLast)
-              Container(width: 2, height: 12, color: AppColors.divider),
-          ],
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: context.rh(0.015)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  DateFormat('dd MMMM yyyy, HH:mm').format(date),
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(11),
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/forum_provider.dart';
 import '../widgets/post_card.dart';
@@ -112,33 +114,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
         ),
       ),
 
-      floatingActionButton: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              context.push('/forum/create');
-            },
-            borderRadius: BorderRadius.circular(32),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/plus-outline-icon.svg',
-                width: 28,
-                height: 28,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF1D1D1D),
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
+      floatingActionButton: CircularBackButtonWidget(
+        onPressed: () => context.push('/forum/create'),
+        svgIconPath: 'assets/icons/plus-outline-icon.svg',
       ),
     );
   }
@@ -156,28 +134,16 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
           Text(
             'Forum',
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(28),
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
+              color: AppColors.textPrimary,
               height: 1.0,
             ),
           ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.push('/forum/my-posts'),
-            ),
+          CircularBackButtonWidget(
+            onPressed: () => context.push('/forum/my-posts'),
+            svgIconPath: 'assets/icons/more-icon.svg',
           ),
         ],
       ),

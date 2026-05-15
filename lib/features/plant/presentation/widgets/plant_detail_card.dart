@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/plant.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import 'agro_indicator_button.dart';
 import 'growth_phase_button.dart';
 
@@ -12,7 +12,6 @@ class PlantDetailCard extends StatelessWidget {
 
   const PlantDetailCard({super.key, required this.plant});
 
-  /// Gambar tanaman berdasarkan jenis crop
   String get _plantImage {
     switch (plant.plantType) {
       case CropType.JAGUNG:
@@ -48,21 +47,9 @@ class PlantDetailCard extends StatelessWidget {
                   height: 1.0,
                 ),
               ),
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                child: IconButton(
-                  icon: SvgPicture.asset(
-                    'assets/icons/more-icon.svg',
-                    width: 28,
-                    height: 28,
-                  ),
-                  onPressed: () => context.push('/plant/${plant.plantId}'),
-                ),
+              CircularBackButtonWidget(
+                onPressed: () => context.push('/plant/${plant.plantId}'),
+                svgIconPath: 'assets/icons/more-icon.svg',
               ),
             ],
           ),

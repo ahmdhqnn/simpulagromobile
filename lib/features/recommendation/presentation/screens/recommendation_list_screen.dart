@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/recommendation.dart';
 import '../providers/recommendation_provider.dart';
@@ -77,47 +77,24 @@ class RecommendationListScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
           Text(
             'Rekomendasi',
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(20),
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
+              color: AppColors.textPrimary,
             ),
           ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.refresh, size: 24),
-              onPressed: () {
-                ref.invalidate(recommendationListProvider);
-                if (siteId != null) {
-                  ref.invalidate(recommendationsBySiteProvider(siteId));
-                }
-              },
-            ),
+          CircularIconActionWidget(
+            onPressed: () {
+              ref.invalidate(recommendationListProvider);
+              if (siteId != null) {
+                ref.invalidate(recommendationsBySiteProvider(siteId));
+              }
+            },
+            icon: Icons.refresh,
           ),
         ],
       ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../widgets/utilitas_menu_card.dart';
 import '../providers/permission_guard_provider.dart';
 
@@ -83,24 +83,7 @@ class UtilitasMenuScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/chevron-left-icon.svg',
-                          width: 28,
-                          height: 28,
-                        ),
-                      ),
-                    ),
-                  ),
+                  CircularBackButtonWidget(onPressed: () => context.pop()),
                   // Spacer kanan (simetris)
                   const SizedBox(width: 58),
                 ],
@@ -151,24 +134,7 @@ class _ForbiddenScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/chevron-left-icon.svg',
-                          width: 28,
-                          height: 28,
-                        ),
-                      ),
-                    ),
-                  ),
+                  CircularBackButtonWidget(onPressed: () => context.pop()),
                   const SizedBox(width: 58),
                 ],
               ),

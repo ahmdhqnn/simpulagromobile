@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 
 class DashboardHeaderWidget extends StatelessWidget {
   final String userName;
@@ -24,27 +24,9 @@ class DashboardHeaderWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: onProfileTap,
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/icons/user-outline-icon.svg',
-                  width: 28,
-                  height: 28,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.textPrimary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
+          CircularBackButtonWidget(
+            onPressed: onProfileTap,
+            svgIconPath: 'assets/icons/user-outline-icon.svg',
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -75,24 +57,9 @@ class DashboardHeaderWidget extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/message-outline-icon.svg',
-                width: 28,
-                height: 28,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textPrimary,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
+          CircularBackButtonWidget(
+            onPressed: () {},
+            svgIconPath: 'assets/icons/message-outline-icon.svg',
           ),
         ],
       ),

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../providers/phase_provider.dart';
 import 'phase_detail_screen.dart';
 
 class PhaseListScreen extends ConsumerWidget {
-  // plantId di sini sebenarnya adalah siteId — endpoint /fase/phases-by-hst/:siteId
   final String plantId;
   final String plantName;
 
@@ -72,7 +71,6 @@ class PhaseListScreen extends ConsumerWidget {
 
                         SizedBox(height: context.rh(0.024)),
 
-                        // Phase List
                         if (phases.isEmpty)
                           _buildEmptyState(context, ref)
                         else
@@ -107,40 +105,13 @@ class PhaseListScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-left-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-              onPressed: () {
-                ref.invalidate(phaseListProvider(plantId));
-                ref.invalidate(phaseStatsProvider(plantId));
-              },
-            ),
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularIconActionWidget(
+            onPressed: () {
+              ref.invalidate(phaseListProvider(plantId));
+              ref.invalidate(phaseStatsProvider(plantId));
+            },
+            icon: Icons.refresh,
           ),
         ],
       ),
