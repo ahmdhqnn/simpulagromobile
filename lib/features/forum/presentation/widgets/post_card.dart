@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/post.dart';
 
-/// Post Card Widget
-/// Reusable widget untuk menampilkan post
 class PostCard extends StatelessWidget {
   final Post post;
   final VoidCallback? onLike;
@@ -31,33 +31,24 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header (User Info) - Outside white card
             _buildHeader(context),
-
-            const SizedBox(height: 5),
-
-            // White Card Container
+            const SizedBox(height: 6),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Content
                   _buildContent(context),
-
-                  const SizedBox(height: 5),
-
-                  // Stats (Likes, Comments, Shares)
+                  const SizedBox(height: 10),
                   _buildStats(context),
-
-                  const SizedBox(height: 7),
-
-                  // Actions (Like, Comment, Share buttons)
+                  const SizedBox(height: 10),
+                  const Divider(height: 1, color: AppColors.divider),
+                  const SizedBox(height: 10),
                   _buildActions(context),
                 ],
               ),
@@ -73,25 +64,24 @@ class PostCard extends StatelessWidget {
       children: [
         // Avatar
         Container(
-          width: 35,
-          height: 35,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            color: AppColors.softGreen,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
-          child: Center(
-            child: SvgPicture.asset(
-              'assets/icons/user-outline-icon.svg',
-              width: 20,
-              height: 20,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFF1D1D1D),
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
+          child: post.user.userAvatar != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  child: Image.network(
+                    post.user.userAvatar!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildAvatarFallback(context),
+                  ),
+                )
+              : _buildAvatarFallback(context),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
 
         // User Info
         Expanded(
@@ -100,28 +90,46 @@ class PostCard extends StatelessWidget {
             children: [
               Text(
                 post.user.userName,
-                style: const TextStyle(
-                  color: Color(0xFF1D1D1D),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w500,
-                  height: 1.83,
+                style: AppTextStyles.label(
+                  context,
+                  size: 12,
+                  weight: FontWeight.w600,
                 ),
               ),
               Text(
-                '${post.site?.siteName ?? 'Unknown Site'} - ${post.timeAgo}',
-                style: const TextStyle(
-                  color: Color(0xFF1D1D1D),
-                  fontSize: 9,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w300,
-                  height: 2.44,
-                ),
+                '${post.site?.siteName ?? ''} • ${post.timeAgo}',
+                style: AppTextStyles.hint(context, size: 10),
               ),
             ],
           ),
         ),
+
+        // More button
+        if (onMorePressed != null)
+          InkWell(
+            onTap: onMorePressed,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: const Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(
+                Icons.more_horiz,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
       ],
+    );
+  }
+
+  Widget _buildAvatarFallback(BuildContext context) {
+    return Center(
+      child: SvgPicture.asset(
+        'assets/icons/user-outline-icon.svg',
+        width: 18,
+        height: 18,
+        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+      ),
     );
   }
 
@@ -129,33 +137,57 @@ class PostCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Text Content
+        // Title
+        if (post.postTitle.trim().isNotEmpty) ...[
+          Text(
+            post.postTitle,
+            style: AppTextStyles.label(
+              context,
+              size: 13,
+              weight: FontWeight.w600,
+              height: 1.4,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+        ],
+
+        // Content text
         Text(
           post.postContent,
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
-            fontSize: 10,
-            fontFamily: 'Plus Jakarta Sans',
-            fontWeight: FontWeight.w400,
-            height: 1.40,
+          style: AppTextStyles.label(
+            context,
+            size: 12,
+            weight: FontWeight.w400,
+            height: 1.5,
           ),
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
         ),
 
-        // Image (if exists)
+        // Image
         if (post.hasImage) ...[
           const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Image.network(
               post.postImage!,
               width: double.infinity,
-              height: 131,
+              height: context.rh(0.18),
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 width: double.infinity,
-                height: 131,
-                color: const Color(0xFFF0F0F0),
-                child: const Icon(Icons.broken_image, size: 40),
+                height: context.rh(0.18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: const Icon(
+                  Icons.broken_image_outlined,
+                  size: 36,
+                  color: AppColors.textTertiary,
+                ),
               ),
             ),
           ),
@@ -168,22 +200,18 @@ class PostCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Reaction indicators (colored circles)
+        // Like count
         Row(
           children: [
-            _buildReactionCircle(const Color(0xFFA75B5B)),
-            _buildReactionCircle(const Color(0xFF32A527)),
-            _buildReactionCircle(const Color(0xFFFF8181)),
-            const SizedBox(width: 2),
+            Icon(
+              post.isLiked ? Icons.favorite : Icons.favorite_border,
+              size: 14,
+              color: post.isLiked ? AppColors.error : AppColors.textTertiary,
+            ),
+            const SizedBox(width: 4),
             Text(
-              '${post.likeCount}',
-              style: const TextStyle(
-                color: Color(0xFF1D1D1D),
-                fontSize: 9,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w300,
-                height: 1.56,
-              ),
+              '${post.likeCount} suka',
+              style: AppTextStyles.caption(context, size: 10),
             ),
           ],
         ),
@@ -192,37 +220,13 @@ class PostCard extends StatelessWidget {
         Row(
           children: [
             Text(
-              '${post.commentCount} Comment',
-              style: const TextStyle(
-                color: Color(0xFF1D1D1D),
-                fontSize: 9,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w300,
-                height: 1.56,
-              ),
+              '${post.commentCount} komentar',
+              style: AppTextStyles.caption(context, size: 10),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 2),
-              child: Text(
-                '|',
-                style: TextStyle(
-                  color: Color(0xFF1D1D1D),
-                  fontSize: 9,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w300,
-                  height: 1.56,
-                ),
-              ),
-            ),
+            const SizedBox(width: 8),
             Text(
-              '${post.shareCount} Share',
-              style: const TextStyle(
-                color: Color(0xFF1D1D1D),
-                fontSize: 9,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w300,
-                height: 1.56,
-              ),
+              '${post.shareCount} bagikan',
+              style: AppTextStyles.caption(context, size: 10),
             ),
           ],
         ),
@@ -230,82 +234,63 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildReactionCircle(Color color) {
-    return Container(
-      width: 16,
-      height: 16,
-      margin: const EdgeInsets.only(left: -4),
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1),
-      ),
-    );
-  }
-
   Widget _buildActions(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildActionButton(
-          icon: post.isLiked
-              ? 'assets/icons/like-filled-icon.svg'
-              : 'assets/icons/like-outline-icon.svg',
-          label: 'Like',
+          context,
+          icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+          label: 'Suka',
+          color: post.isLiked ? AppColors.error : AppColors.textSecondary,
           onTap: onLike,
-          isActive: post.isLiked,
         ),
-        const SizedBox(width: 30),
         _buildActionButton(
-          icon: 'assets/icons/comment-outline-icon.svg',
-          label: 'Comment',
+          context,
+          icon: Icons.chat_bubble_outline,
+          label: 'Komentar',
+          color: AppColors.textSecondary,
           onTap: onComment,
         ),
-        const SizedBox(width: 30),
         _buildActionButton(
-          icon: 'assets/icons/reshare-outline-icon.svg',
-          label: 'Share',
+          context,
+          icon: Icons.share_outlined,
+          label: 'Bagikan',
+          color: AppColors.textSecondary,
           onTap: onShare,
         ),
       ],
     );
   }
 
-  Widget _buildActionButton({
-    required String icon,
+  Widget _buildActionButton(
+    BuildContext context, {
+    required IconData icon,
     required String label,
+    required Color color,
     VoidCallback? onTap,
-    bool isActive = false,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            icon,
-            width: 18,
-            height: 18,
-            colorFilter: ColorFilter.mode(
-              isActive ? const Color(0xFF32A527) : const Color(0xFF1D1D1D),
-              BlendMode.srcIn,
+      borderRadius: BorderRadius.circular(AppRadius.xs),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTextStyles.caption(
+                context,
+                size: 11,
+                color: color,
+                weight: FontWeight.w500,
+              ),
             ),
-          ),
-          const SizedBox(width: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive
-                  ? const Color(0xFF32A527)
-                  : const Color(0xFF1D1D1D),
-              fontSize: 10,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w500,
-              height: 1.40,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

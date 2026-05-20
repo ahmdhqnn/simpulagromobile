@@ -2,13 +2,87 @@ import 'package:dio/dio.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import '../models/reaction_model.dart';
+import '../models/user_comment_model.dart';
+import '../models/json_parser.dart';
 
 /// Remote Data Source
-/// Bertanggung jawab untuk komunikasi dengan API
+/// Bertanggung jawab untuk komunikasi dengan API.
+/// Robust terhadap variasi format response (type casting safe).
 class ForumRemoteDataSource {
   final Dio _dio;
 
   ForumRemoteDataSource(this._dio);
+
+  // ═══════════════════════════════════════════════════════════
+  // HELPER: Response data extraction
+  // ═══════════════════════════════════════════════════════════
+
+  /// Mengekstrak data dari response.data, handle kasus:
+  /// - response.data = {"data": ...}
+  /// - response.data = {"result": ...}
+  /// - response.data langsung berisi data
+  dynamic _extractResponseData(dynamic responseData) {
+    if (responseData is Map) {
+      final map = JsonParser.parseMap(responseData);
+      if (map.containsKey('data')) return map['data'];
+      if (map.containsKey('result')) return map['result'];
+      return map;
+    }
+    return responseData;
+  }
+
+  /// Mengekstrak List dari data yang bisa berupa:
+  /// - List langsung: [...]
+  /// - Map dengan key 'posts', 'rows', 'comments', 'reactions', 'items', 'data', 'results'
+  /// - Map yang memiliki value berupa List
+  List _extractList(dynamic data) {
+    if (data is List) return data;
+    if (data is Map) {
+      final map = JsonParser.parseMap(data);
+      const possibleKeys = [
+        'posts',
+        'rows',
+        'comments',
+        'reactions',
+        'items',
+        'data',
+        'results',
+        'list',
+      ];
+      for (final key in possibleKeys) {
+        if (map[key] is List) return map[key] as List;
+      }
+      // Fallback: cari value pertama yang berupa List
+      for (final value in map.values) {
+        if (value is List) return value;
+      }
+    }
+    return [];
+  }
+
+  /// Extract object Map dari data, handle nested object seperti `{"post": {...}}`.
+  Map<String, dynamic>? _extractObject(
+    dynamic data, {
+    List<String> nestedKeys = const ['post', 'comment', 'reaction'],
+    List<String> requiredFieldsAny = const [],
+  }) {
+    if (data is! Map) return null;
+    final map = JsonParser.parseMap(data);
+
+    // Jika map berisi salah satu required field, return langsung
+    for (final field in requiredFieldsAny) {
+      if (map.containsKey(field)) return map;
+    }
+
+    // Coba nested keys
+    for (final key in nestedKeys) {
+      if (map[key] is Map) {
+        return JsonParser.parseMap(map[key]);
+      }
+    }
+
+    return map;
+  }
 
   // ═══════════════════════════════════════════════════════════
   // POSTS
@@ -29,8 +103,11 @@ class ForumRemoteDataSource {
         },
       );
 
-      final data = response.data['data'] as List;
-      return data.map((json) => PostModel.fromJson(json)).toList();
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => PostModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -39,13 +116,22 @@ class ForumRemoteDataSource {
   Future<PostModel> getPostById(String postId) async {
     try {
       final response = await _dio.get('/forum/posts/$postId');
-      return PostModel.fromJson(response.data['data']);
+      final data = _extractResponseData(response.data);
+      final obj = _extractObject(
+        data,
+        requiredFieldsAny: ['forum_id', 'post_id', 'id'],
+      );
+      if (obj == null) {
+        throw Exception('Format response tidak valid');
+      }
+      return PostModel.fromJson(obj);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   Future<PostModel> createPost({
+    required String title,
     required String siteId,
     required String content,
     String? imageUrl,
@@ -55,11 +141,20 @@ class ForumRemoteDataSource {
         '/forum/posts',
         data: {
           'site_id': siteId,
-          'post_content': content,
-          if (imageUrl != null) 'post_image': imageUrl,
+          'forum_title': title,
+          'forum_content': content,
+          if (imageUrl != null) 'forum_image_url': imageUrl,
         },
       );
-      return PostModel.fromJson(response.data['data']);
+      final data = _extractResponseData(response.data);
+      final obj = _extractObject(
+        data,
+        requiredFieldsAny: ['forum_id', 'post_id', 'id'],
+      );
+      if (obj == null) {
+        throw Exception('Format response tidak valid');
+      }
+      return PostModel.fromJson(obj);
     } catch (e) {
       throw _handleError(e);
     }
@@ -67,6 +162,7 @@ class ForumRemoteDataSource {
 
   Future<PostModel> updatePost({
     required String postId,
+    String? title,
     String? content,
     String? imageUrl,
   }) async {
@@ -74,11 +170,20 @@ class ForumRemoteDataSource {
       final response = await _dio.put(
         '/forum/posts/$postId',
         data: {
-          if (content != null) 'post_content': content,
-          if (imageUrl != null) 'post_image': imageUrl,
+          if (title != null) 'forum_title': title,
+          if (content != null) 'forum_content': content,
+          if (imageUrl != null) 'forum_image_url': imageUrl,
         },
       );
-      return PostModel.fromJson(response.data['data']);
+      final data = _extractResponseData(response.data);
+      final obj = _extractObject(
+        data,
+        requiredFieldsAny: ['forum_id', 'post_id', 'id'],
+      );
+      if (obj == null) {
+        throw Exception('Format response tidak valid');
+      }
+      return PostModel.fromJson(obj);
     } catch (e) {
       throw _handleError(e);
     }
@@ -99,8 +204,48 @@ class ForumRemoteDataSource {
         queryParameters: {'page': page, 'limit': limit},
       );
 
-      final data = response.data['data'] as List;
-      return data.map((json) => PostModel.fromJson(json)).toList();
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => PostModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<PostModel>> getLikedPosts({int page = 1, int limit = 20}) async {
+    try {
+      final response = await _dio.get(
+        '/forum/liked-posts',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => PostModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<UserCommentModel>> getMyComments({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/forum/my-comments',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => UserCommentModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -113,19 +258,28 @@ class ForumRemoteDataSource {
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
     try {
       final response = await _dio.post('/forum/posts/$postId/like');
-      final data = response.data['data'];
+      final data = _extractResponseData(response.data);
+      final map = JsonParser.parseMap(data);
       return (
-        isLiked: (data['is_liked'] ?? false) as bool,
-        likeCount: (data['like_count'] ?? 0) as int,
+        isLiked: JsonParser.parseBool(map['is_liked']),
+        likeCount: JsonParser.parseInt(
+          map['like_count'] ?? map['forum_like_count'],
+        ),
       );
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<void> sharePost(String postId) async {
+  Future<int> sharePost(String postId) async {
     try {
-      await _dio.post('/forum/posts/$postId/share');
+      final response = await _dio.post('/forum/posts/$postId/share');
+      final data = _extractResponseData(response.data);
+      if (data is num) return data.toInt();
+      final map = JsonParser.parseMap(data);
+      return JsonParser.parseInt(
+        map['share_count'] ?? map['forum_share_count'],
+      );
     } catch (e) {
       throw _handleError(e);
     }
@@ -146,8 +300,11 @@ class ForumRemoteDataSource {
         queryParameters: {'page': page, 'limit': limit},
       );
 
-      final data = response.data['data'] as List;
-      return data.map((json) => CommentModel.fromJson(json)).toList();
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => CommentModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -162,7 +319,15 @@ class ForumRemoteDataSource {
         '/forum/posts/$postId/comments',
         data: {'comment_content': content},
       );
-      return CommentModel.fromJson(response.data['data']);
+      final data = _extractResponseData(response.data);
+      final obj = _extractObject(
+        data,
+        requiredFieldsAny: ['comment_id', 'id'],
+      );
+      if (obj == null) {
+        throw Exception('Format response tidak valid');
+      }
+      return CommentModel.fromJson(obj);
     } catch (e) {
       throw _handleError(e);
     }
@@ -186,8 +351,11 @@ class ForumRemoteDataSource {
   Future<List<ReactionModel>> getReactions(String postId) async {
     try {
       final response = await _dio.get('/forum/posts/$postId/reactions');
-      final data = response.data['data'] as List;
-      return data.map((json) => ReactionModel.fromJson(json)).toList();
+      final rawData = _extractResponseData(response.data);
+      final list = _extractList(rawData);
+      return list
+          .map((json) => ReactionModel.fromJson(JsonParser.parseMap(json)))
+          .toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -206,8 +374,15 @@ class ForumRemoteDataSource {
           return Exception('Koneksi timeout. Periksa koneksi internet Anda.');
         case DioExceptionType.badResponse:
           final statusCode = error.response?.statusCode;
-          final message =
-              error.response?.data['message'] ?? 'Terjadi kesalahan';
+          String message = 'Terjadi kesalahan';
+          final responseData = error.response?.data;
+          if (responseData is Map) {
+            final map = JsonParser.parseMap(responseData);
+            message = JsonParser.parseString(
+              map['message'] ?? map['error'] ?? map['detail'],
+              defaultValue: message,
+            );
+          }
           if (statusCode == 404) {
             return Exception('Data tidak ditemukan');
           } else if (statusCode == 403) {
@@ -216,10 +391,18 @@ class ForumRemoteDataSource {
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
             );
+          } else if (statusCode == 422 || statusCode == 400) {
+            return Exception(
+              message.isEmpty ? 'Data yang dikirim tidak valid' : message,
+            );
+          } else if (statusCode != null && statusCode >= 500) {
+            return Exception('Server sedang bermasalah. Coba beberapa saat lagi.');
           }
           return Exception(message);
         case DioExceptionType.cancel:
           return Exception('Request dibatalkan');
+        case DioExceptionType.connectionError:
+          return Exception('Tidak dapat terhubung ke server');
         case DioExceptionType.unknown:
           if (error.message?.contains('SocketException') ?? false) {
             return Exception('Tidak dapat terhubung ke server');
@@ -229,6 +412,7 @@ class ForumRemoteDataSource {
           return Exception('Terjadi kesalahan tidak terduga');
       }
     }
+    if (error is Exception) return error;
     return Exception('Terjadi kesalahan: $error');
   }
 }

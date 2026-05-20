@@ -1,23 +1,29 @@
 import '../../domain/entities/reaction.dart';
+import 'json_parser.dart';
 
 /// Data Model: Reaction
-/// Extends Entity dan menambahkan serialization logic
+/// Extends Entity dan menambahkan serialization logic.
+/// API Response: { user_id, user_name, user_avatar }
+/// Robust terhadap variasi response API (type casting safe).
 class ReactionModel extends Reaction {
   const ReactionModel({
     required super.userId,
     required super.userName,
     super.userAvatar,
-    required super.reactedAt,
   });
 
   factory ReactionModel.fromJson(Map<String, dynamic> json) {
     return ReactionModel(
-      userId: json['user_id'] ?? '',
-      userName: json['user_name'] ?? 'Unknown User',
-      userAvatar: json['user_avatar'],
-      reactedAt: json['reacted_at'] != null
-          ? DateTime.parse(json['reacted_at'])
-          : DateTime.now(),
+      userId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_id', 'id']),
+      ),
+      userName: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_name', 'username', 'name']),
+        defaultValue: 'Unknown User',
+      ),
+      userAvatar: JsonParser.parseStringOrNull(
+        JsonParser.tryKeys(json, ['user_avatar', 'avatar', 'avatar_url']),
+      ),
     );
   }
 
@@ -26,7 +32,6 @@ class ReactionModel extends Reaction {
       'user_id': userId,
       'user_name': userName,
       'user_avatar': userAvatar,
-      'reacted_at': reactedAt.toIso8601String(),
     };
   }
 }

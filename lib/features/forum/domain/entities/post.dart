@@ -1,7 +1,6 @@
-/// Domain Entity: Post
-/// Pure Dart class, no dependencies
 class Post {
   final String postId;
+  final String postTitle;
   final String userId;
   final String? siteId;
   final String postContent;
@@ -17,6 +16,7 @@ class Post {
 
   const Post({
     required this.postId,
+    required this.postTitle,
     required this.userId,
     this.siteId,
     required this.postContent,
@@ -32,8 +32,7 @@ class Post {
   });
 
   bool get hasImage => postImage != null && postImage!.isNotEmpty;
-  bool get isOwnPost =>
-      false; // Will be determined by comparing with current user
+  bool get isOwnPost => false;
 
   String get timeAgo {
     final now = DateTime.now();

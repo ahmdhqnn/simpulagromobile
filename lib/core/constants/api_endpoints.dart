@@ -179,6 +179,8 @@ class ApiEndpoints {
   static String forumDeleteComment(String postId, String commentId) =>
       '/forum/posts/$postId/comments/$commentId';
   static const String forumMyPosts = '/forum/my-posts';
+  static const String forumLikedPosts = '/forum/liked-posts';
+  static const String forumMyComments = '/forum/my-comments';
 
   // ═══════════════════════════════════════════════════════════
   // LOG ENDPOINTS

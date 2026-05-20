@@ -20,8 +20,11 @@ import '../../features/site/presentation/screens/site_form_screen.dart';
 import '../../features/plant/presentation/screens/plant_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart';
 import '../../features/forum/presentation/screens/forum_screen.dart';
+import '../../features/forum/presentation/screens/liked_posts_screen.dart';
 import '../../features/forum/presentation/screens/my_posts_screen.dart';
+import '../../features/forum/presentation/screens/my_comments_screen.dart';
 import '../../features/forum/presentation/screens/post_form_screen.dart';
+import '../../features/forum/presentation/screens/post_detail_screen.dart';
 import '../../features/utilitas/presentation/screens/utilitas_menu_screen.dart';
 import '../../features/utilitas/presentation/screens/sensors/sensor_list_screen.dart';
 import '../../features/utilitas/presentation/screens/sensors/sensor_form_screen.dart';
@@ -184,6 +187,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Forum
       GoRoute(path: '/forum', builder: (_, __) => const ForumScreen()),
       GoRoute(
+        path: '/forum/post/:id',
+        builder: (_, state) =>
+            PostDetailScreen(postId: state.pathParameters['id']!),
+      ),
+      GoRoute(
         path: '/forum/create',
         builder: (_, __) => const PostFormScreen(),
       ),
@@ -195,6 +203,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forum/my-posts',
         builder: (_, __) => const MyPostsScreen(),
+      ),
+      GoRoute(
+        path: '/forum/liked-posts',
+        builder: (_, __) => const LikedPostsScreen(),
+      ),
+      GoRoute(
+        path: '/forum/my-comments',
+        builder: (_, __) => const MyCommentsScreen(),
       ),
 
       // Utilitas

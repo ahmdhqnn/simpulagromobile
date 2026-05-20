@@ -4,6 +4,7 @@ import '../../data/datasources/forum_remote_datasource.dart';
 import '../../data/repositories/forum_repository_impl.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/entities/comment.dart';
+import '../../domain/entities/user_comment.dart';
 import '../../domain/repositories/forum_repository.dart';
 
 // ═══════════════════════════════════════════════════════════
@@ -65,7 +66,12 @@ class ForumNotifier extends StateNotifier<ForumState> {
     if (state.isLoading) return;
 
     if (refresh) {
-      state = const ForumState(isLoading: true);
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+        currentPage: 1,
+        hasMore: true,
+      );
     } else {
       if (!state.hasMore) return;
       state = state.copyWith(isLoading: true, error: null);
@@ -80,7 +86,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
           posts: newPosts,
           isLoading: false,
           hasMore: newPosts.length >= 20,
-          currentPage: 1,
+          currentPage: 2, // Next page to fetch
         );
       } else {
         state = ForumState(
@@ -98,6 +104,11 @@ class ForumNotifier extends StateNotifier<ForumState> {
     }
   }
 
+  Future<void> refreshPosts() async {
+    state = state.copyWith(isLoading: false, currentPage: 1, hasMore: true);
+    await loadPosts(refresh: true);
+  }
+
   Future<void> toggleLike(String postId) async {
     try {
       final result = await _repository.toggleLike(postId);
@@ -107,6 +118,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
         if (post.postId == postId) {
           return Post(
             postId: post.postId,
+            postTitle: post.postTitle,
             userId: post.userId,
             siteId: post.siteId,
             postContent: post.postContent,
@@ -134,7 +146,6 @@ class ForumNotifier extends StateNotifier<ForumState> {
     try {
       await _repository.deletePost(postId);
 
-      // Remove post from state
       final updatedPosts = state.posts
           .where((p) => p.postId != postId)
           .toList();
@@ -142,6 +153,64 @@ class ForumNotifier extends StateNotifier<ForumState> {
     } catch (e) {
       state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
     }
+  }
+
+  Future<void> sharePost(String postId) async {
+    try {
+      final shareCount = await _repository.sharePost(postId);
+      final updatedPosts = state.posts.map((post) {
+        if (post.postId == postId) {
+          return Post(
+            postId: post.postId,
+            postTitle: post.postTitle,
+            userId: post.userId,
+            siteId: post.siteId,
+            postContent: post.postContent,
+            postImage: post.postImage,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            shareCount: shareCount,
+            isLiked: post.isLiked,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            user: post.user,
+            site: post.site,
+          );
+        }
+        return post;
+      }).toList();
+
+      state = state.copyWith(posts: updatedPosts);
+    } catch (e) {
+      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  void updateCommentCount(String postId, int delta) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.postId == postId) {
+        final newCount = (post.commentCount + delta).clamp(0, 999999);
+        return Post(
+          postId: post.postId,
+          postTitle: post.postTitle,
+          userId: post.userId,
+          siteId: post.siteId,
+          postContent: post.postContent,
+          postImage: post.postImage,
+          likeCount: post.likeCount,
+          commentCount: newCount,
+          shareCount: post.shareCount,
+          isLiked: post.isLiked,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          user: post.user,
+          site: post.site,
+        );
+      }
+      return post;
+    }).toList();
+
+    state = state.copyWith(posts: updatedPosts);
   }
 
   void clearError() {
@@ -158,7 +227,7 @@ final forumProvider = StateNotifierProvider<ForumNotifier, ForumState>((ref) {
 // POST DETAIL PROVIDER
 // ═══════════════════════════════════════════════════════════
 
-final postDetailProvider = FutureProvider.family<Post, String>((
+final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   ref,
   postId,
 ) async {
@@ -197,8 +266,9 @@ class CommentsState {
 class CommentsNotifier extends StateNotifier<CommentsState> {
   final ForumRepository _repository;
   final String _postId;
+  final Ref _ref;
 
-  CommentsNotifier(this._repository, this._postId)
+  CommentsNotifier(this._repository, this._postId, this._ref)
     : super(const CommentsState());
 
   Future<void> loadComments() async {
@@ -221,8 +291,12 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
         content: content,
       );
       state = state.copyWith(comments: [newComment, ...state.comments]);
+      // Sync comment count ke forum list & post detail
+      _ref.read(forumProvider.notifier).updateCommentCount(_postId, 1);
+      _ref.invalidate(postDetailProvider(_postId));
     } catch (e) {
       state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
+      rethrow;
     }
   }
 
@@ -233,26 +307,40 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
           .where((c) => c.commentId != commentId)
           .toList();
       state = state.copyWith(comments: updatedComments);
+      // Sync comment count ke forum list & post detail
+      _ref.read(forumProvider.notifier).updateCommentCount(_postId, -1);
+      _ref.invalidate(postDetailProvider(_postId));
+
+      _ref.invalidate(myCommentsProvider);
     } catch (e) {
       state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
     }
   }
 }
 
-final commentsProvider =
-    StateNotifierProvider.family<CommentsNotifier, CommentsState, String>((
-      ref,
-      postId,
-    ) {
+final commentsProvider = StateNotifierProvider.autoDispose
+    .family<CommentsNotifier, CommentsState, String>((ref, postId) {
       final repository = ref.watch(forumRepositoryProvider);
-      return CommentsNotifier(repository, postId);
+      return CommentsNotifier(repository, postId, ref);
     });
 
 // ═══════════════════════════════════════════════════════════
 // MY POSTS PROVIDER
 // ═══════════════════════════════════════════════════════════
 
-final myPostsProvider = FutureProvider<List<Post>>((ref) async {
+final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
   return await repository.getMyPosts();
+});
+
+final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
+  final repository = ref.watch(forumRepositoryProvider);
+  return await repository.getLikedPosts();
+});
+
+final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
+  ref,
+) async {
+  final repository = ref.watch(forumRepositoryProvider);
+  return await repository.getMyComments();
 });

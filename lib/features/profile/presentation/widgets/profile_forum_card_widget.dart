@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
@@ -83,21 +84,21 @@ class _ProfileForumCardWidgetState extends State<ProfileForumCardWidget> {
                     iconPath: 'assets/icons/comment-outline-icon.svg',
                     title: 'Postingan Saya',
                     subtitle: 'Lihat dan kelola postingan',
-                    onTap: () {},
+                    onTap: () => context.push('/forum/my-posts'),
                   ),
                   const SizedBox(height: 12),
                   _ForumItem(
                     iconPath: 'assets/icons/like-outline-icon.svg',
                     title: 'Postingan Disukai',
                     subtitle: 'Postingan yang Anda sukai',
-                    onTap: () {},
+                    onTap: () => context.push('/forum/liked-posts'),
                   ),
                   const SizedBox(height: 12),
                   _ForumItem(
                     iconPath: 'assets/icons/message-outline-icon.svg',
                     title: 'Komentar Saya',
                     subtitle: 'Lihat semua komentar',
-                    onTap: () {},
+                    onTap: () => context.push('/forum/my-comments'),
                   ),
                 ],
               ),
