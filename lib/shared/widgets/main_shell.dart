@@ -6,6 +6,7 @@ import 'package:simpulagromobile/features/monitoring/presentation/screens/monito
 import 'package:simpulagromobile/features/plant/presentation/screens/plant_screen.dart';
 import 'package:simpulagromobile/features/task/presentation/screens/task_list_screen.dart';
 import 'package:simpulagromobile/features/forum/presentation/screens/forum_screen.dart';
+import 'package:simpulagromobile/features/forum/presentation/providers/forum_provider.dart';
 import 'package:simpulagromobile/features/site/presentation/providers/site_provider.dart';
 import 'package:simpulagromobile/shared/widgets/custom_bottom_navigation.dart';
 
@@ -34,7 +35,6 @@ class _MainShellState extends ConsumerState<MainShell>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Auto-select site pertama saat shell pertama kali dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _autoSelectSite();
     });
@@ -54,7 +54,6 @@ class _MainShellState extends ConsumerState<MainShell>
       final now = DateTime.now();
       final lastResumed = _lastResumedAt;
 
-      // Auto-reload jika app sudah di background lebih dari 5 menit
       if (lastResumed == null || now.difference(lastResumed).inMinutes >= 5) {
         _refreshCurrentTabData();
       }
@@ -64,7 +63,6 @@ class _MainShellState extends ConsumerState<MainShell>
     }
   }
 
-  /// Auto-select site pertama jika belum ada yang dipilih
   Future<void> _autoSelectSite() async {
     final selectedSite = ref.read(selectedSiteProvider);
     if (selectedSite != null) return; // sudah ada
@@ -74,26 +72,28 @@ class _MainShellState extends ConsumerState<MainShell>
       if (sites.isNotEmpty && mounted) {
         await ref.read(selectedSiteProvider.notifier).selectSite(sites.first);
       }
-    } catch (_) {
-      // Gagal load sites — biarkan user pilih manual
-    }
+    } catch (_) {}
   }
 
-  /// Refresh data tab yang sedang aktif
   void _refreshCurrentTabData() {
     if (!mounted) return;
 
     switch (_currentIndex) {
-      case 0: // Dashboard
+      case 0:
         ref.invalidate(environmentalHealthProvider);
         ref.invalidate(deviceSummaryProvider);
         ref.invalidate(sensorSummaryProvider);
         ref.invalidate(plantSummaryProvider);
         ref.invalidate(latestSensorReadsProvider);
         break;
-      case 1: // Monitoring — provider sudah autoDispose
+      case 1:
         break;
-      case 2: // Plant — provider sudah autoDispose
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        ref.read(forumProvider.notifier).loadPosts(refresh: true);
         break;
       default:
         break;
@@ -102,7 +102,6 @@ class _MainShellState extends ConsumerState<MainShell>
 
   @override
   Widget build(BuildContext context) {
-    // Listen ke sites dan auto-select jika belum ada
     ref.listen(siteListProvider, (_, next) {
       next.whenData((sites) {
         ref.read(selectedSiteProvider.notifier).autoSelectFirstSite(sites);

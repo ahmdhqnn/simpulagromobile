@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../../shared/widgets/loading_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/forum_provider.dart';
 import '../widgets/post_card.dart';
@@ -22,11 +22,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
   @override
   void initState() {
     super.initState();
-
     Future.microtask(
       () => ref.read(forumProvider.notifier).loadPosts(refresh: true),
     );
-
     _scrollController.addListener(_onScroll);
   }
 
@@ -50,107 +48,192 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     final currentUser = authState.user;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context, currentUser?.userName ?? 'User'),
-
+            _buildHeader(context),
             Expanded(
               child: RefreshIndicator(
+                color: AppColors.primary,
                 onRefresh: () async {
                   await ref
                       .read(forumProvider.notifier)
                       .loadPosts(refresh: true);
                 },
-                child: forumState.error != null && forumState.posts.isEmpty
-                    ? _buildErrorState(context)
-                    : forumState.posts.isEmpty && !forumState.isLoading
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(20),
-                        itemCount:
-                            forumState.posts.length +
-                            (forumState.isLoading ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == forumState.posts.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-
-                          final post = forumState.posts[index];
-                          final isOwnPost = post.userId == currentUser?.userId;
-
-                          return PostCard(
-                            post: post,
-                            onLike: () {
-                              ref
-                                  .read(forumProvider.notifier)
-                                  .toggleLike(post.postId);
-                            },
-                            onComment: () {
-                              context.push('/forum/post/${post.postId}');
-                            },
-                            onShare: () {
-                              _showShareDialog(context, post.postId);
-                            },
-                            onTap: () {
-                              context.push('/forum/post/${post.postId}');
-                            },
-                            onMorePressed: isOwnPost
-                                ? () => _showPostOptions(context, post.postId)
-                                : null,
-                          );
-                        },
-                      ),
+                child: _buildBody(context, forumState, currentUser?.userId),
               ),
             ),
           ],
         ),
       ),
-
-      floatingActionButton: CircularBackButtonWidget(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/forum/create'),
-        svgIconPath: 'assets/icons/plus-outline-icon.svg',
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, String userName) {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: context.rw(0.051),
         vertical: context.rh(0.015),
       ),
-      color: const Color(0xFFF0F0F0),
+      color: AppColors.background,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Forum',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(28),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-              height: 1.0,
-            ),
+            style: AppTextStyles.sectionTitle(context, 28),
           ),
-          CircularBackButtonWidget(
-            onPressed: () => context.push('/forum/my-posts'),
-            svgIconPath: 'assets/icons/more-icon.svg',
+          PopupMenuButton<String>(
+            icon: const Icon(
+              Icons.more_vert,
+              color: AppColors.textPrimary,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            onSelected: (value) {
+              switch (value) {
+                case 'my-posts':
+                  context.push('/forum/my-posts');
+                  break;
+                case 'liked-posts':
+                  context.push('/forum/liked-posts');
+                  break;
+                case 'my-comments':
+                  context.push('/forum/my-comments');
+                  break;
+              }
+            },
+            itemBuilder: (_) => [
+              _buildPopupItem(
+                icon: Icons.article_outlined,
+                label: 'Postingan Saya',
+                value: 'my-posts',
+              ),
+              _buildPopupItem(
+                icon: Icons.favorite_border,
+                label: 'Disukai',
+                value: 'liked-posts',
+              ),
+              _buildPopupItem(
+                icon: Icons.chat_bubble_outline,
+                label: 'Komentar Saya',
+                value: 'my-comments',
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState(BuildContext context) {
+  PopupMenuItem<String> _buildPopupItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    ForumState forumState,
+    String? currentUserId,
+  ) {
+    // Error state with no data
+    if (forumState.error != null && forumState.posts.isEmpty) {
+      return _buildErrorState(context, forumState.error!);
+    }
+
+    // Empty state
+    if (forumState.posts.isEmpty && !forumState.isLoading) {
+      return EmptyStateWidget(
+        icon: Icons.forum_outlined,
+        title: 'Belum ada postingan',
+        message: 'Jadilah yang pertama membuat postingan di forum komunitas',
+        action: ElevatedButton.icon(
+          onPressed: () => context.push('/forum/create'),
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text(
+            'Buat Postingan',
+            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Initial loading
+    if (forumState.posts.isEmpty && forumState.isLoading) {
+      return const LoadingWidget(message: 'Memuat postingan...');
+    }
+
+    // Posts list
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.all(context.rw(0.051)),
+      itemCount: forumState.posts.length + (forumState.isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == forumState.posts.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
+
+        final post = forumState.posts[index];
+        final isOwnPost = post.userId == currentUserId;
+
+        return PostCard(
+          post: post,
+          onLike: () {
+            ref.read(forumProvider.notifier).toggleLike(post.postId);
+          },
+          onComment: () {
+            context.push('/forum/post/${post.postId}');
+          },
+          onShare: () => _showShareDialog(context, post.postId),
+          onTap: () {
+            context.push('/forum/post/${post.postId}');
+          },
+          onMorePressed: isOwnPost
+              ? () => _showPostOptions(context, post.postId)
+              : null,
+        );
+      },
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String error) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.061)),
@@ -158,88 +241,40 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
-              size: context.rw(0.164).clamp(48.0, 72.0),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+              Icons.wifi_off_rounded,
+              size: 56,
+              color: AppColors.textPrimary.withValues(alpha: 0.25),
             ),
-            SizedBox(height: context.rh(0.02)),
+            const SizedBox(height: 16),
             Text(
               'Gagal memuat postingan',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(16),
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1D1D1D),
-              ),
+              style: AppTextStyles.cardTitle(context, 16),
             ),
-            SizedBox(height: context.rh(0.01)),
+            const SizedBox(height: 8),
             Text(
-              ref.read(forumProvider).error ?? 'Terjadi kesalahan',
+              error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
+              style: AppTextStyles.caption(context),
             ),
-            SizedBox(height: context.rh(0.025)),
+            const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () =>
                   ref.read(forumProvider.notifier).loadPosts(refresh: true),
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh, size: 18),
               label: const Text(
                 'Coba Lagi',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1D503F),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            'assets/icons/forum-outline-icon.svg',
-            width: 80,
-            height: 80,
-            colorFilter: const ColorFilter.mode(
-              Color(0xFFCCCCCC),
-              BlendMode.srcIn,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Belum ada postingan',
-            style: TextStyle(
-              color: Color(0xFF999999),
-              fontSize: 16,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Jadilah yang pertama membuat postingan',
-            style: TextStyle(
-              color: Color(0xFF999999),
-              fontSize: 12,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -248,39 +283,64 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xl),
+        ),
       ),
-      builder: (sheetCtx) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text(
-                'Edit Postingan',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-              ),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                context.push('/forum/edit/$postId');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
-                'Hapus Postingan',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontFamily: 'Plus Jakarta Sans',
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                _confirmDelete(context, postId);
-              },
-            ),
-          ],
+              ListTile(
+                leading: const Icon(
+                  Icons.edit_outlined,
+                  color: AppColors.textPrimary,
+                ),
+                title: Text(
+                  'Edit Postingan',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 14,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  context.push('/forum/edit/$postId');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline,
+                  color: AppColors.error,
+                ),
+                title: Text(
+                  'Hapus Postingan',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 14,
+                    weight: FontWeight.w500,
+                    color: AppColors.error,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _confirmDelete(context, postId);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -290,21 +350,30 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          'Hapus Postingan',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        content: const Text(
+        title: Text(
+          'Hapus Postingan',
+          style: AppTextStyles.cardTitle(context, 16),
+        ),
+        content: Text(
           'Apakah Anda yakin ingin menghapus postingan ini?',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+          style: AppTextStyles.label(
+            context,
+            size: 13,
+            weight: FontWeight.w400,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text(
+            child: Text(
               'Batal',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           TextButton(
@@ -313,20 +382,22 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
               ref.read(forumProvider.notifier).deletePost(postId);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text(
                       'Postingan berhasil dihapus',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
+                    backgroundColor: AppColors.success,
                   ),
                 );
               }
             },
-            child: const Text(
+            child: Text(
               'Hapus',
               style: TextStyle(
-                color: Colors.red,
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -339,21 +410,55 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          'Bagikan Postingan',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        content: const Text(
-          'Fitur share akan segera tersedia',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        title: Text(
+          'Bagikan Postingan',
+          style: AppTextStyles.cardTitle(context, 16),
+        ),
+        content: Text(
+          'Bagikan postingan ini ke teman atau komunitas Anda.',
+          style: AppTextStyles.label(
+            context,
+            size: 13,
+            weight: FontWeight.w400,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text(
-              'OK',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            child: Text(
+              'Batal',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              await ref.read(forumProvider.notifier).sharePost(postId);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Postingan berhasil dibagikan',
+                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+                    ),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            child: Text(
+              'Bagikan',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

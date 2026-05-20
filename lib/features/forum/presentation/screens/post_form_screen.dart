@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/loading_widget.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/forum_provider.dart';
 
@@ -17,6 +18,7 @@ class PostFormScreen extends ConsumerStatefulWidget {
 
 class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
@@ -35,6 +37,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _contentController.dispose();
     _imageUrlController.dispose();
     super.dispose();
@@ -46,6 +49,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       final repository = ref.read(forumRepositoryProvider);
       final post = await repository.getPostById(widget.postId!);
       if (mounted) {
+        _titleController.text = post.postTitle;
         _contentController.text = post.postContent;
         _imageUrlController.text = post.postImage ?? '';
         setState(() => _isLoadingData = false);
@@ -56,8 +60,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gagal memuat data postingan: $e',
-              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              'Gagal memuat data: ${e.toString().replaceAll('Exception: ', '')}',
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -69,25 +73,42 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Validasi site terlebih dahulu untuk mode create
+    if (!_isEditMode) {
+      final siteId = ref.read(selectedSiteIdProvider);
+      if (siteId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Pilih site terlebih dahulu di halaman utama sebelum membuat postingan',
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final repository = ref.read(forumRepositoryProvider);
-      final siteId = ref.read(selectedSiteIdProvider);
 
       if (_isEditMode) {
         await repository.updatePost(
           postId: widget.postId!,
+          title: _titleController.text.trim(),
           content: _contentController.text.trim(),
           imageUrl: _imageUrlController.text.trim().isEmpty
               ? null
               : _imageUrlController.text.trim(),
         );
       } else {
-        if (siteId == null) {
-          throw Exception('Pilih site terlebih dahulu');
-        }
+        final siteId = ref.read(selectedSiteIdProvider)!;
         await repository.createPost(
+          title: _titleController.text.trim(),
           siteId: siteId,
           content: _contentController.text.trim(),
           imageUrl: _imageUrlController.text.trim().isEmpty
@@ -96,7 +117,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         );
       }
 
-      ref.invalidate(forumProvider);
+      // Refresh forum list agar postingan baru muncul
+      await ref.read(forumProvider.notifier).refreshPosts();
       ref.invalidate(myPostsProvider);
 
       if (mounted) {
@@ -106,7 +128,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               _isEditMode
                   ? 'Postingan berhasil diupdate'
                   : 'Postingan berhasil dibuat',
-              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.success,
           ),
@@ -119,7 +141,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           SnackBar(
             content: Text(
               e.toString().replaceAll('Exception: ', ''),
-              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -133,19 +155,18 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
           _isEditMode ? 'Edit Postingan' : 'Buat Postingan',
-          style: const TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1D1D1D),
-          ),
+          style: AppTextStyles.cardTitle(context, 16),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           if (_isLoading)
             const Center(
@@ -162,50 +183,83 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               ),
             )
           else
-            TextButton(
-              onPressed: _submit,
-              child: Text(
-                _isEditMode ? 'Update' : 'Posting',
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: AppColors.primary,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton(
+                onPressed: _submit,
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                ),
+                child: Text(
+                  _isEditMode ? 'Update' : 'Posting',
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontWeight: FontWeight.w600,
+                    fontSize: context.sp(13),
+                  ),
                 ),
               ),
             ),
         ],
       ),
       body: _isLoadingData
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const LoadingWidget(message: 'Memuat data postingan...')
           : Form(
               key: _formKey,
               child: ListView(
                 padding: EdgeInsets.all(context.rw(0.051)),
                 children: [
-                  // Content field
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                  // Title field
+                  _buildInputCard(
+                    child: TextFormField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        hintText: 'Judul postingan',
+                        hintStyle: AppTextStyles.hint(context, size: 14),
+                        border: InputBorder.none,
+                      ),
+                      style: AppTextStyles.label(
+                        context,
+                        size: 14,
+                        weight: FontWeight.w600,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Judul tidak boleh kosong';
+                        }
+                        if (value.trim().length < 3) {
+                          return 'Judul minimal 3 karakter';
+                        }
+                        return null;
+                      },
                     ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Content field
+                  _buildInputCard(
                     child: TextFormField(
                       controller: _contentController,
                       maxLines: 8,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Apa yang ingin Anda bagikan?',
-                        hintStyle: TextStyle(
-                          color: Color(0xFF999999),
-                          fontFamily: 'Plus Jakarta Sans',
-                        ),
+                        hintStyle: AppTextStyles.hint(context, size: 13),
                         border: InputBorder.none,
                       ),
-                      style: const TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 14,
+                      style: AppTextStyles.label(
+                        context,
+                        size: 13,
+                        weight: FontWeight.w400,
+                        height: 1.6,
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -219,48 +273,67 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                     ),
                   ),
 
-                  SizedBox(height: context.rh(0.02)),
+                  const SizedBox(height: 16),
 
                   // Image URL field
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
+                  _buildInputCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'URL Gambar (Opsional)',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: Color(0xFF1D1D1D),
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.image_outlined,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'URL Gambar (Opsional)',
+                              style: AppTextStyles.label(
+                                context,
+                                size: 13,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         TextFormField(
                           controller: _imageUrlController,
                           decoration: InputDecoration(
                             hintText: 'https://example.com/image.jpg',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF999999),
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 12,
-                            ),
+                            hintStyle: AppTextStyles.hint(context, size: 12),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                              borderSide: const BorderSide(
+                                color: AppColors.divider,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                              borderSide: const BorderSide(
+                                color: AppColors.divider,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                              ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
-                              vertical: 8,
+                              vertical: 10,
                             ),
                           ),
-                          style: const TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 12,
+                          style: AppTextStyles.label(
+                            context,
+                            size: 12,
+                            weight: FontWeight.w400,
                           ),
                           validator: (value) {
                             if (value != null && value.trim().isNotEmpty) {
@@ -277,30 +350,30 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                     ),
                   ),
 
-                  SizedBox(height: context.rh(0.02)),
+                  const SizedBox(height: 16),
 
                   // Info banner
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF3CD),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.softOrange,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.info_outline,
-                          color: Color(0xFF856404),
-                          size: 20,
+                          color: AppColors.warning,
+                          size: 18,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Pastikan konten Anda sesuai dengan pedoman komunitas',
-                            style: TextStyle(
-                              color: Color(0xFF856404),
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 11,
+                            style: AppTextStyles.caption(
+                              context,
+                              size: 11,
+                              color: const Color(0xFF856404),
                             ),
                           ),
                         ),
@@ -310,6 +383,17 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildInputCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: child,
     );
   }
 }

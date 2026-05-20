@@ -1,18 +1,18 @@
-class Comment {
+class UserComment {
   final String commentId;
-  final String postId;
-  final String userId;
+  final String forumId;
+  final String postTitle;
   final String commentContent;
   final DateTime createdAt;
-  final CommentUser user;
+  final DateTime? updatedAt;
 
-  const Comment({
+  const UserComment({
     required this.commentId,
-    required this.postId,
-    required this.userId,
+    required this.forumId,
+    required this.postTitle,
     required this.commentContent,
     required this.createdAt,
-    required this.user,
+    this.updatedAt,
   });
 
   String get timeAgo {
@@ -29,16 +29,4 @@ class Comment {
       return 'Baru saja';
     }
   }
-}
-
-class CommentUser {
-  final String userId;
-  final String userName;
-  final String? userAvatar;
-
-  const CommentUser({
-    required this.userId,
-    required this.userName,
-    this.userAvatar,
-  });
 }

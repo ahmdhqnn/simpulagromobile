@@ -1,10 +1,13 @@
 import '../../domain/entities/post.dart';
+import 'json_parser.dart';
 
 /// Data Model: Post
-/// Extends Entity dan menambahkan serialization logic
+/// Extends Entity dan menambahkan serialization logic.
+/// Robust terhadap variasi response API (type casting safe).
 class PostModel extends Post {
   const PostModel({
     required super.postId,
+    required super.postTitle,
     required super.userId,
     super.siteId,
     required super.postContent,
@@ -20,40 +23,64 @@ class PostModel extends Post {
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
+    final userJson = JsonParser.parseMap(json['user']);
+    final siteJson = JsonParser.parseMapOrNull(json['site']);
+
     return PostModel(
-      postId: json['post_id'] ?? '',
-      userId: json['user_id'] ?? '',
-      siteId: json['site_id'],
-      postContent: json['post_content'] ?? '',
-      postImage: json['post_image'],
-      likeCount: json['like_count'] ?? 0,
-      commentCount: json['comment_count'] ?? 0,
-      shareCount: json['share_count'] ?? 0,
-      isLiked: json['is_liked'] ?? false,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
-          : null,
-      user: PostUserModel.fromJson(json['user'] ?? {}),
-      site: json['site'] != null ? PostSiteModel.fromJson(json['site']) : null,
+      postId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['forum_id', 'post_id', 'id']),
+      ),
+      postTitle: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['forum_title', 'post_title', 'title']),
+      ),
+      userId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['forum_user_id', 'user_id']) ??
+            userJson['user_id'],
+      ),
+      siteId: JsonParser.parseStringOrNull(
+        JsonParser.tryKeys(json, ['forum_site_id', 'site_id']),
+      ),
+      postContent: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['forum_content', 'post_content', 'content']),
+      ),
+      postImage: JsonParser.parseStringOrNull(
+        JsonParser.tryKeys(json, ['forum_image_url', 'post_image', 'image_url']),
+      ),
+      likeCount: JsonParser.parseInt(
+        JsonParser.tryKeys(json, ['forum_like_count', 'like_count']),
+      ),
+      commentCount: JsonParser.parseInt(
+        JsonParser.tryKeys(json, ['comment_count', 'forum_comment_count']),
+      ),
+      shareCount: JsonParser.parseInt(
+        JsonParser.tryKeys(json, ['forum_share_count', 'share_count']),
+      ),
+      isLiked: JsonParser.parseBool(json['is_liked']),
+      createdAt: JsonParser.parseDateTime(
+        JsonParser.tryKeys(json, ['forum_created', 'created_at', 'createdAt']),
+      ),
+      updatedAt: JsonParser.parseDateTimeOrNull(
+        JsonParser.tryKeys(json, ['forum_update', 'updated_at', 'updatedAt']),
+      ),
+      user: PostUserModel.fromJson(userJson),
+      site: siteJson != null ? PostSiteModel.fromJson(siteJson) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'post_id': postId,
-      'user_id': userId,
-      'site_id': siteId,
-      'post_content': postContent,
-      'post_image': postImage,
-      'like_count': likeCount,
+      'forum_id': postId,
+      'forum_title': postTitle,
+      'forum_user_id': userId,
+      'forum_site_id': siteId,
+      'forum_content': postContent,
+      'forum_image_url': postImage,
+      'forum_like_count': likeCount,
       'comment_count': commentCount,
-      'share_count': shareCount,
+      'forum_share_count': shareCount,
       'is_liked': isLiked,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
+      'forum_created': createdAt.toIso8601String(),
+      'forum_update': updatedAt?.toIso8601String(),
     };
   }
 }
@@ -67,9 +94,16 @@ class PostUserModel extends PostUser {
 
   factory PostUserModel.fromJson(Map<String, dynamic> json) {
     return PostUserModel(
-      userId: json['user_id'] ?? '',
-      userName: json['user_name'] ?? 'Unknown User',
-      userAvatar: json['user_avatar'],
+      userId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_id', 'forum_user_id', 'id']),
+      ),
+      userName: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_name', 'username', 'name']),
+        defaultValue: 'Unknown User',
+      ),
+      userAvatar: JsonParser.parseStringOrNull(
+        JsonParser.tryKeys(json, ['user_avatar', 'avatar', 'avatar_url']),
+      ),
     );
   }
 
@@ -87,8 +121,13 @@ class PostSiteModel extends PostSite {
 
   factory PostSiteModel.fromJson(Map<String, dynamic> json) {
     return PostSiteModel(
-      siteId: json['site_id'] ?? '',
-      siteName: json['site_name'] ?? 'Unknown Site',
+      siteId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['site_id', 'id']),
+      ),
+      siteName: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['site_name', 'name']),
+        defaultValue: 'Unknown Site',
+      ),
     );
   }
 

@@ -1,6 +1,7 @@
 import '../../domain/entities/post.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/reaction.dart';
+import '../../domain/entities/user_comment.dart';
 import '../../domain/repositories/forum_repository.dart';
 import '../datasources/forum_remote_datasource.dart';
 
@@ -40,12 +41,14 @@ class ForumRepositoryImpl implements ForumRepository {
 
   @override
   Future<Post> createPost({
+    required String title,
     required String siteId,
     required String content,
     String? imageUrl,
   }) async {
     try {
       return await _remoteDataSource.createPost(
+        title: title,
         siteId: siteId,
         content: content,
         imageUrl: imageUrl,
@@ -58,12 +61,14 @@ class ForumRepositoryImpl implements ForumRepository {
   @override
   Future<Post> updatePost({
     required String postId,
+    String? title,
     String? content,
     String? imageUrl,
   }) async {
     try {
       return await _remoteDataSource.updatePost(
         postId: postId,
+        title: title,
         content: content,
         imageUrl: imageUrl,
       );
@@ -91,6 +96,27 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
+  Future<List<Post>> getLikedPosts({int page = 1, int limit = 20}) async {
+    try {
+      return await _remoteDataSource.getLikedPosts(page: page, limit: limit);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<UserComment>> getMyComments({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      return await _remoteDataSource.getMyComments(page: page, limit: limit);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
     try {
       return await _remoteDataSource.toggleLike(postId);
@@ -100,9 +126,9 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
-  Future<void> sharePost(String postId) async {
+  Future<int> sharePost(String postId) async {
     try {
-      await _remoteDataSource.sharePost(postId);
+      return await _remoteDataSource.sharePost(postId);
     } catch (e) {
       rethrow;
     }

@@ -1,7 +1,9 @@
 import '../../domain/entities/comment.dart';
+import 'json_parser.dart';
 
 /// Data Model: Comment
-/// Extends Entity dan menambahkan serialization logic
+/// Extends Entity dan menambahkan serialization logic.
+/// Robust terhadap variasi response API (type casting safe).
 class CommentModel extends Comment {
   const CommentModel({
     required super.commentId,
@@ -13,25 +15,36 @@ class CommentModel extends Comment {
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
+    final userJson = JsonParser.parseMap(json['user']);
+
     return CommentModel(
-      commentId: json['comment_id'] ?? '',
-      postId: json['post_id'] ?? '',
-      userId: json['user_id'] ?? '',
-      commentContent: json['comment_content'] ?? '',
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
-      user: CommentUserModel.fromJson(json['user'] ?? {}),
+      commentId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['comment_id', 'id']),
+      ),
+      postId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['forum_id', 'post_id']),
+      ),
+      userId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_id', 'comment_user_id']) ??
+            userJson['user_id'],
+      ),
+      commentContent: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['comment_content', 'content']),
+      ),
+      createdAt: JsonParser.parseDateTime(
+        JsonParser.tryKeys(json, ['comment_created', 'created_at', 'createdAt']),
+      ),
+      user: CommentUserModel.fromJson(userJson),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'comment_id': commentId,
-      'post_id': postId,
+      'forum_id': postId,
       'user_id': userId,
       'comment_content': commentContent,
-      'created_at': createdAt.toIso8601String(),
+      'comment_created': createdAt.toIso8601String(),
     };
   }
 }
@@ -45,9 +58,16 @@ class CommentUserModel extends CommentUser {
 
   factory CommentUserModel.fromJson(Map<String, dynamic> json) {
     return CommentUserModel(
-      userId: json['user_id'] ?? '',
-      userName: json['user_name'] ?? 'Unknown User',
-      userAvatar: json['user_avatar'],
+      userId: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_id', 'id']),
+      ),
+      userName: JsonParser.parseString(
+        JsonParser.tryKeys(json, ['user_name', 'username', 'name']),
+        defaultValue: 'Unknown User',
+      ),
+      userAvatar: JsonParser.parseStringOrNull(
+        JsonParser.tryKeys(json, ['user_avatar', 'avatar', 'avatar_url']),
+      ),
     );
   }
 
