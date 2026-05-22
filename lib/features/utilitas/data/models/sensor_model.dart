@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/sensor.dart';
+import '../../../../core/utils/safe_double_converter.dart';
 
 part 'sensor_model.freezed.dart';
 part 'sensor_model.g.dart';
@@ -16,9 +17,9 @@ class SensorModel with _$SensorModel {
     @JsonKey(name: 'sens_name') String? sensName,
     @JsonKey(name: 'sens_address') String? sensAddress,
     @JsonKey(name: 'sens_location') String? sensLocation,
-    @JsonKey(name: 'sens_lat') double? sensLat,
-    @JsonKey(name: 'sens_lon') double? sensLon,
-    @JsonKey(name: 'sens_alt') double? sensAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lat') double? sensLat,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lon') double? sensLon,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_alt') double? sensAlt,
     @JsonKey(name: 'sens_sts') int? sensSts,
     @JsonKey(name: 'sens_created') DateTime? sensCreated,
     @JsonKey(name: 'sens_update') DateTime? sensUpdate,

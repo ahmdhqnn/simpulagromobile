@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/device.dart';
+import '../../../../core/utils/safe_double_converter.dart';
 
 part 'device_model.freezed.dart';
 part 'device_model.g.dart';
@@ -17,9 +18,9 @@ class DeviceModel with _$DeviceModel {
     @JsonKey(name: 'dev_name') String? devName,
     @JsonKey(name: 'dev_token') String? devToken,
     @JsonKey(name: 'dev_location') String? devLocation,
-    @JsonKey(name: 'dev_lon') double? devLon,
-    @JsonKey(name: 'dev_lat') double? devLat,
-    @JsonKey(name: 'dev_alt') double? devAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lon') double? devLon,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lat') double? devLat,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_alt') double? devAlt,
     @JsonKey(name: 'dev_number_id') String? devNumberId,
     @JsonKey(name: 'dev_ip') String? devIp,
     @JsonKey(name: 'dev_port') String? devPort,

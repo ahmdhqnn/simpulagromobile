@@ -1,17 +1,19 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
   /// Login and persist dual tokens + user data
-  Future<User> login(String username, String password);
+  Future<Either<Failure, User>> login(String username, String password);
 
   /// Logout — invalidate tokens on server and clear local storage
-  Future<void> logout();
+  Future<Either<Failure, void>> logout();
 
   /// Get user profile from server
-  Future<User> getProfile();
+  Future<Either<Failure, User>> getProfile();
 
   /// Get user permissions from server
-  Future<List<String>> getPermissions();
+  Future<Either<Failure, List<String>>> getPermissions();
 
   /// Check if user has a valid session (tokens exist)
   Future<bool> isLoggedIn();

@@ -1,42 +1,71 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../datasources/plant_remote_datasource.dart';
 import '../models/plant_model.dart';
 
-/// Implementation of PlantRepository
-/// Converts between domain entities and data models
 class PlantRepositoryImpl implements PlantRepository {
   final PlantRemoteDatasource remoteDatasource;
 
   PlantRepositoryImpl(this.remoteDatasource);
 
+  Failure _handleDioError(DioException e) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      return const NetworkFailure('Connection timeout');
+    }
+    if (e.type == DioExceptionType.connectionError) {
+      return const NetworkFailure('No internet connection');
+    }
+    final statusCode = e.response?.statusCode;
+    String message = 'Unknown error';
+    if (e.response?.data is Map) {
+      message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
+    } else {
+      message = e.message ?? 'Unknown error';
+    }
+
+    switch (statusCode) {
+      case 401: return AuthFailure(message);
+      case 403: return PermissionFailure(message);
+      case 404: return NotFoundFailure(message);
+      case 409: return ValidationFailure(message);
+      default: return ServerFailure(message, statusCode: statusCode);
+    }
+  }
+
   @override
-  Future<List<Plant>> getPlantsBySite(String siteId) async {
+  Future<Either<Failure, List<Plant>>> getPlantsBySite(String siteId) async {
     try {
       final models = await remoteDatasource.getPlantsBySite(siteId);
-      return models.map((model) => model.toEntity()).toList();
+      return Right(models.map((model) => model.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Plant> getPlantById(String siteId, String plantId) async {
+  Future<Either<Failure, Plant>> getPlantById(String siteId, String plantId) async {
     try {
       final model = await remoteDatasource.getPlantById(siteId, plantId);
-      return model.toEntity();
+      return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Plant> createPlant(String siteId, Plant plant) async {
+  Future<Either<Failure, Plant>> createPlant(String siteId, Plant plant) async {
     try {
       final model = PlantModel.fromEntity(plant);
       final data = model.toJson();
 
-      // Remove null values and fields that shouldn't be sent on create
       data.removeWhere(
         (key, value) =>
             value == null ||
@@ -46,19 +75,20 @@ class PlantRepositoryImpl implements PlantRepository {
       );
 
       final createdModel = await remoteDatasource.createPlant(siteId, data);
-      return createdModel.toEntity();
+      return Right(createdModel.toEntity());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Plant> updatePlant(String siteId, String plantId, Plant plant) async {
+  Future<Either<Failure, Plant>> updatePlant(String siteId, String plantId, Plant plant) async {
     try {
       final model = PlantModel.fromEntity(plant);
       final data = model.toJson();
 
-      // Remove null values and fields that shouldn't be sent on update
       data.removeWhere(
         (key, value) =>
             value == null ||
@@ -73,31 +103,38 @@ class PlantRepositoryImpl implements PlantRepository {
         plantId,
         data,
       );
-      return updatedModel.toEntity();
+      return Right(updatedModel.toEntity());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Plant> harvestPlant(String siteId, String plantId) async {
+  Future<Either<Failure, Plant>> harvestPlant(String siteId, String plantId) async {
     try {
       final harvestedModel = await remoteDatasource.harvestPlant(
         siteId,
         plantId,
       );
-      return harvestedModel.toEntity();
+      return Right(harvestedModel.toEntity());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<void> deletePlant(String siteId, String plantId) async {
+  Future<Either<Failure, void>> deletePlant(String siteId, String plantId) async {
     try {
       await remoteDatasource.deletePlant(siteId, plantId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 }

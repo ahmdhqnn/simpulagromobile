@@ -78,39 +78,44 @@ class ForumNotifier extends StateNotifier<ForumState> {
       state = state.copyWith(isLoading: true, error: null);
     }
 
-    try {
-      final page = refresh ? 1 : state.currentPage;
-      final newPosts = await _repository.getPosts(page: page, limit: 20);
+    final page = refresh ? 1 : state.currentPage;
+    final result = await _repository.getPosts(page: page, limit: 20);
 
-      if (refresh) {
-        state = ForumState(
-          posts: newPosts,
-          isLoading: false,
-          hasMore: newPosts.length >= 20,
-          currentPage: 2, // Next page to fetch
-        );
-      } else {
-        state = ForumState(
-          posts: [...state.posts, ...newPosts],
-          isLoading: false,
-          hasMore: newPosts.length >= 20,
-          currentPage: page + 1,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        state = state.copyWith(
-          isLoading: false,
-          error: e.toString().replaceAll('Exception: ', ''),
-        );
-        // Auto retry after 5 seconds if error persists
-        Future.delayed(const Duration(seconds: 5), () {
-          if (mounted && state.error != null && !state.isLoading) {
-            loadPosts(refresh: refresh);
+    result.fold(
+      (failure) {
+        if (mounted) {
+          state = state.copyWith(
+            isLoading: false,
+            error: failure.message,
+          );
+          // Auto retry after 5 seconds if error persists
+          Future.delayed(const Duration(seconds: 5), () {
+            if (mounted && state.error != null && !state.isLoading) {
+              loadPosts(refresh: refresh);
+            }
+          });
+        }
+      },
+      (newPosts) {
+        if (mounted) {
+          if (refresh) {
+            state = ForumState(
+              posts: newPosts,
+              isLoading: false,
+              hasMore: newPosts.length >= 20,
+              currentPage: 2, // Next page to fetch
+            );
+          } else {
+            state = ForumState(
+              posts: [...state.posts, ...newPosts],
+              isLoading: false,
+              hasMore: newPosts.length >= 20,
+              currentPage: page + 1,
+            );
           }
-        });
-      }
-    }
+        }
+      },
+    );
   }
 
   Future<void> refreshPosts() async {
@@ -119,80 +124,86 @@ class ForumNotifier extends StateNotifier<ForumState> {
   }
 
   Future<void> toggleLike(String postId) async {
-    try {
-      final result = await _repository.toggleLike(postId);
+    final result = await _repository.toggleLike(postId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(error: failure.message);
+      },
+      (data) {
+        final updatedPosts = state.posts.map((post) {
+          if (post.postId == postId) {
+            return Post(
+              postId: post.postId,
+              postTitle: post.postTitle,
+              userId: post.userId,
+              siteId: post.siteId,
+              postContent: post.postContent,
+              postImage: post.postImage,
+              likeCount: data.likeCount,
+              commentCount: post.commentCount,
+              shareCount: post.shareCount,
+              isLiked: data.isLiked,
+              createdAt: post.createdAt,
+              updatedAt: post.updatedAt,
+              user: post.user,
+              site: post.site,
+            );
+          }
+          return post;
+        }).toList();
 
-      // Update post in state
-      final updatedPosts = state.posts.map((post) {
-        if (post.postId == postId) {
-          return Post(
-            postId: post.postId,
-            postTitle: post.postTitle,
-            userId: post.userId,
-            siteId: post.siteId,
-            postContent: post.postContent,
-            postImage: post.postImage,
-            likeCount: result.likeCount,
-            commentCount: post.commentCount,
-            shareCount: post.shareCount,
-            isLiked: result.isLiked,
-            createdAt: post.createdAt,
-            updatedAt: post.updatedAt,
-            user: post.user,
-            site: post.site,
-          );
-        }
-        return post;
-      }).toList();
-
-      state = state.copyWith(posts: updatedPosts);
-    } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
-    }
+        state = state.copyWith(posts: updatedPosts);
+      },
+    );
   }
 
   Future<void> deletePost(String postId) async {
-    try {
-      await _repository.deletePost(postId);
-
-      final updatedPosts = state.posts
-          .where((p) => p.postId != postId)
-          .toList();
-      state = state.copyWith(posts: updatedPosts);
-    } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
-    }
+    final result = await _repository.deletePost(postId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(error: failure.message);
+      },
+      (_) {
+        final updatedPosts = state.posts
+            .where((p) => p.postId != postId)
+            .toList();
+        state = state.copyWith(posts: updatedPosts);
+      },
+    );
   }
 
   Future<void> sharePost(String postId) async {
-    try {
-      final shareCount = await _repository.sharePost(postId);
-      final updatedPosts = state.posts.map((post) {
-        if (post.postId == postId) {
-          return Post(
-            postId: post.postId,
-            postTitle: post.postTitle,
-            userId: post.userId,
-            siteId: post.siteId,
-            postContent: post.postContent,
-            postImage: post.postImage,
-            likeCount: post.likeCount,
-            commentCount: post.commentCount,
-            shareCount: shareCount,
-            isLiked: post.isLiked,
-            createdAt: post.createdAt,
-            updatedAt: post.updatedAt,
-            user: post.user,
-            site: post.site,
-          );
-        }
-        return post;
-      }).toList();
+    final result = await _repository.sharePost(postId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(error: failure.message);
+      },
+      (shareCount) {
+        final updatedPosts = state.posts.map((post) {
+          if (post.postId == postId) {
+            return Post(
+              postId: post.postId,
+              postTitle: post.postTitle,
+              userId: post.userId,
+              siteId: post.siteId,
+              postContent: post.postContent,
+              postImage: post.postImage,
+              likeCount: post.likeCount,
+              commentCount: post.commentCount,
+              shareCount: shareCount,
+              isLiked: post.isLiked,
+              createdAt: post.createdAt,
+              updatedAt: post.updatedAt,
+              user: post.user,
+              site: post.site,
+            );
+          }
+          return post;
+        }).toList();
 
-      state = state.copyWith(posts: updatedPosts);
-    } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
-    }
+        state = state.copyWith(posts: updatedPosts);
+      },
+    );
   }
 
   void updateCommentCount(String postId, int delta) {
@@ -241,7 +252,13 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   postId,
 ) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await ref.retryOnError(() => repository.getPostById(postId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getPostById(postId);
+    return result.fold(
+      (failure) => throw failure,
+      (post) => post,
+    );
+  });
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -282,56 +299,66 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
 
   Future<void> loadComments() async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final comments = await _repository.getComments(postId: _postId);
-      state = CommentsState(comments: comments, isLoading: false);
-    } catch (e) {
-      if (mounted) {
-        state = state.copyWith(
-          isLoading: false,
-          error: e.toString().replaceAll('Exception: ', ''),
-        );
-        // Auto retry after 5 seconds if error persists
-        Future.delayed(const Duration(seconds: 5), () {
-          if (mounted && state.error != null && !state.isLoading) {
-            loadComments();
-          }
-        });
-      }
-    }
+    final result = await _repository.getComments(postId: _postId);
+    result.fold(
+      (failure) {
+        if (mounted) {
+          state = state.copyWith(
+            isLoading: false,
+            error: failure.message,
+          );
+          // Auto retry after 5 seconds if error persists
+          Future.delayed(const Duration(seconds: 5), () {
+            if (mounted && state.error != null && !state.isLoading) {
+              loadComments();
+            }
+          });
+        }
+      },
+      (comments) {
+        if (mounted) {
+          state = CommentsState(comments: comments, isLoading: false);
+        }
+      },
+    );
   }
 
   Future<void> addComment(String content) async {
-    try {
-      final newComment = await _repository.createComment(
-        postId: _postId,
-        content: content,
-      );
-      state = state.copyWith(comments: [newComment, ...state.comments]);
-      // Sync comment count ke forum list & post detail
-      _ref.read(forumProvider.notifier).updateCommentCount(_postId, 1);
-      _ref.invalidate(postDetailProvider(_postId));
-    } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
-      rethrow;
-    }
+    final result = await _repository.createComment(
+      postId: _postId,
+      content: content,
+    );
+    result.fold(
+      (failure) {
+        state = state.copyWith(error: failure.message);
+      },
+      (newComment) {
+        state = state.copyWith(comments: [newComment, ...state.comments]);
+        // Sync comment count ke forum list & post detail
+        _ref.read(forumProvider.notifier).updateCommentCount(_postId, 1);
+        _ref.invalidate(postDetailProvider(_postId));
+      },
+    );
   }
 
   Future<void> deleteComment(String commentId) async {
-    try {
-      await _repository.deleteComment(postId: _postId, commentId: commentId);
-      final updatedComments = state.comments
-          .where((c) => c.commentId != commentId)
-          .toList();
-      state = state.copyWith(comments: updatedComments);
-      // Sync comment count ke forum list & post detail
-      _ref.read(forumProvider.notifier).updateCommentCount(_postId, -1);
-      _ref.invalidate(postDetailProvider(_postId));
+    final result = await _repository.deleteComment(postId: _postId, commentId: commentId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(error: failure.message);
+      },
+      (_) {
+        final updatedComments = state.comments
+            .where((c) => c.commentId != commentId)
+            .toList();
+        state = state.copyWith(comments: updatedComments);
+        // Sync comment count ke forum list & post detail
+        _ref.read(forumProvider.notifier).updateCommentCount(_postId, -1);
+        _ref.invalidate(postDetailProvider(_postId));
 
-      _ref.invalidate(myCommentsProvider);
-    } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
-    }
+        _ref.invalidate(myCommentsProvider);
+      },
+    );
   }
 }
 
@@ -347,17 +374,35 @@ final commentsProvider = StateNotifierProvider.autoDispose
 
 final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await ref.retryOnError(() => repository.getMyPosts());
+  return await ref.retryOnError(() async {
+    final result = await repository.getMyPosts();
+    return result.fold(
+      (failure) => throw failure,
+      (posts) => posts,
+    );
+  });
 });
 
 final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await ref.retryOnError(() => repository.getLikedPosts());
+  return await ref.retryOnError(() async {
+    final result = await repository.getLikedPosts();
+    return result.fold(
+      (failure) => throw failure,
+      (posts) => posts,
+    );
+  });
 });
 
 final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
   ref,
 ) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await ref.retryOnError(() => repository.getMyComments());
+  return await ref.retryOnError(() async {
+    final result = await repository.getMyComments();
+    return result.fold(
+      (failure) => throw failure,
+      (comments) => comments,
+    );
+  });
 });

@@ -25,7 +25,7 @@ final plantRepositoryProvider = Provider<PlantRepository>((ref) {
 // ═══════════════════════════════════════════════════════════
 // PLANT LIST PROVIDER (by selected site)
 // ═══════════════════════════════════════════════════════════
-final utilitasPlantListProvider = FutureProvider<List<Plant>>((ref) async {
+final utilitasPlantListProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   final repository = ref.watch(plantRepositoryProvider);
   final selectedSite = ref.watch(selectedSiteProvider);
 
@@ -33,13 +33,14 @@ final utilitasPlantListProvider = FutureProvider<List<Plant>>((ref) async {
     throw Exception('Tidak ada site yang dipilih');
   }
 
-  return repository.getPlantsBySite(selectedSite.siteId);
+  final result = await repository.getPlantsBySite(selectedSite.siteId);
+  return result.fold((f) => throw f, (data) => data);
 });
 
 // ═══════════════════════════════════════════════════════════
 // PLANT DETAIL PROVIDER (by ID)
 // ═══════════════════════════════════════════════════════════
-final utilitasPlantDetailProvider = FutureProvider.family<Plant, String>((
+final utilitasPlantDetailProvider = FutureProvider.autoDispose.family<Plant, String>((
   ref,
   plantId,
 ) async {
@@ -50,7 +51,8 @@ final utilitasPlantDetailProvider = FutureProvider.family<Plant, String>((
     throw Exception('Tidak ada site yang dipilih');
   }
 
-  return repository.getPlantById(selectedSite.siteId, plantId);
+  final result = await repository.getPlantById(selectedSite.siteId, plantId);
+  return result.fold((f) => throw f, (data) => data);
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -86,108 +88,112 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
   Future<bool> createPlant(Plant plant) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    try {
-      final selectedSite = _ref.read(selectedSiteProvider);
-      if (selectedSite == null) {
-        throw Exception('Tidak ada site yang dipilih');
-      }
-
-      final savedPlant = await _repository.createPlant(
-        selectedSite.siteId,
-        plant,
-      );
-
-      state = PlantFormState(savedPlant: savedPlant);
-
-      // Invalidate list to refresh
-      _ref.invalidate(utilitasPlantListProvider);
-
-      return true;
-    } catch (e) {
-      state = PlantFormState(error: e.toString());
+    final selectedSite = _ref.read(selectedSiteProvider);
+    if (selectedSite == null) {
+      state = const PlantFormState(error: 'Tidak ada site yang dipilih');
       return false;
     }
+
+    final result = await _repository.createPlant(
+      selectedSite.siteId,
+      plant,
+    );
+
+    return result.fold(
+      (failure) {
+        state = PlantFormState(error: failure.message);
+        return false;
+      },
+      (savedPlant) {
+        state = PlantFormState(savedPlant: savedPlant);
+        _ref.invalidate(utilitasPlantListProvider);
+        return true;
+      },
+    );
   }
 
   /// Update existing plant
   Future<bool> updatePlant(String plantId, Plant plant) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    try {
-      final selectedSite = _ref.read(selectedSiteProvider);
-      if (selectedSite == null) {
-        throw Exception('Tidak ada site yang dipilih');
-      }
-
-      final savedPlant = await _repository.updatePlant(
-        selectedSite.siteId,
-        plantId,
-        plant,
-      );
-
-      state = PlantFormState(savedPlant: savedPlant);
-
-      // Invalidate list and detail to refresh
-      _ref.invalidate(utilitasPlantListProvider);
-      _ref.invalidate(utilitasPlantDetailProvider(plantId));
-
-      return true;
-    } catch (e) {
-      state = PlantFormState(error: e.toString());
+    final selectedSite = _ref.read(selectedSiteProvider);
+    if (selectedSite == null) {
+      state = const PlantFormState(error: 'Tidak ada site yang dipilih');
       return false;
     }
+
+    final result = await _repository.updatePlant(
+      selectedSite.siteId,
+      plantId,
+      plant,
+    );
+
+    return result.fold(
+      (failure) {
+        state = PlantFormState(error: failure.message);
+        return false;
+      },
+      (savedPlant) {
+        state = PlantFormState(savedPlant: savedPlant);
+        _ref.invalidate(utilitasPlantListProvider);
+        _ref.invalidate(utilitasPlantDetailProvider(plantId));
+        return true;
+      },
+    );
   }
 
   /// Harvest plant (special operation)
   Future<bool> harvestPlant(String plantId) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    try {
-      final selectedSite = _ref.read(selectedSiteProvider);
-      if (selectedSite == null) {
-        throw Exception('Tidak ada site yang dipilih');
-      }
-
-      final harvestedPlant = await _repository.harvestPlant(
-        selectedSite.siteId,
-        plantId,
-      );
-
-      state = PlantFormState(savedPlant: harvestedPlant);
-
-      // Invalidate list and detail to refresh
-      _ref.invalidate(utilitasPlantListProvider);
-      _ref.invalidate(utilitasPlantDetailProvider(plantId));
-
-      return true;
-    } catch (e) {
-      state = PlantFormState(error: e.toString());
+    final selectedSite = _ref.read(selectedSiteProvider);
+    if (selectedSite == null) {
+      state = const PlantFormState(error: 'Tidak ada site yang dipilih');
       return false;
     }
+
+    final result = await _repository.harvestPlant(
+      selectedSite.siteId,
+      plantId,
+    );
+
+    return result.fold(
+      (failure) {
+        state = PlantFormState(error: failure.message);
+        return false;
+      },
+      (harvestedPlant) {
+        state = PlantFormState(savedPlant: harvestedPlant);
+        _ref.invalidate(utilitasPlantListProvider);
+        _ref.invalidate(utilitasPlantDetailProvider(plantId));
+        return true;
+      },
+    );
   }
 
   /// Delete plant
   Future<bool> deletePlant(String plantId) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    try {
-      final selectedSite = _ref.read(selectedSiteProvider);
-      if (selectedSite == null) {
-        throw Exception('Tidak ada site yang dipilih');
-      }
-
-      await _repository.deletePlant(selectedSite.siteId, plantId);
-
-      state = const PlantFormState();
-
-      // Invalidate list to refresh
-      _ref.invalidate(utilitasPlantListProvider);
-
-      return true;
-    } catch (e) {
-      state = PlantFormState(error: e.toString());
+    final selectedSite = _ref.read(selectedSiteProvider);
+    if (selectedSite == null) {
+      state = const PlantFormState(error: 'Tidak ada site yang dipilih');
       return false;
     }
+
+    final result = await _repository.deletePlant(selectedSite.siteId, plantId);
+
+    return result.fold(
+      (failure) {
+        state = PlantFormState(error: failure.message);
+        return false;
+      },
+      (_) {
+        state = const PlantFormState();
+        _ref.invalidate(utilitasPlantListProvider);
+        return true;
+      },
+    );
   }
 
   /// Reset form state
@@ -200,7 +206,7 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
 // PLANT FORM PROVIDER
 // ═══════════════════════════════════════════════════════════
 final plantFormProvider =
-    StateNotifierProvider<PlantFormNotifier, PlantFormState>((ref) {
+    StateNotifierProvider.autoDispose<PlantFormNotifier, PlantFormState>((ref) {
       final repository = ref.watch(plantRepositoryProvider);
       return PlantFormNotifier(repository, ref);
     });

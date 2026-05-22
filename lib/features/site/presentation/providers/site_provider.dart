@@ -21,21 +21,27 @@ final siteRepositoryProvider = Provider<SiteRepository>((ref) {
 });
 
 // ─── Site List ───────────────────────────────────────────
-final siteListProvider = FutureProvider<List<Site>>((ref) async {
+final siteListProvider = FutureProvider.autoDispose<List<Site>>((ref) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await ref.retryOnError(() => repository.getSites());
+  return await ref.retryOnError(() async {
+    final result = await repository.getSites();
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // Alias untuk backward compatibility
 final sitesProvider = siteListProvider;
 
 // ─── Site Detail ─────────────────────────────────────────
-final siteDetailProvider = FutureProvider.family<Site, String>((
+final siteDetailProvider = FutureProvider.autoDispose.family<Site, String>((
   ref,
   siteId,
 ) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await ref.retryOnError(() => repository.getSiteById(siteId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getSiteById(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Selected Site (dengan persistensi) ──────────────────
@@ -142,29 +148,35 @@ class SiteFormNotifier extends StateNotifier<SiteFormState> {
 
   Future<bool> createSite(Site site) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final savedSite = await _repository.createSite(site);
-      state = SiteFormState(savedSite: savedSite);
-      _ref.invalidate(siteListProvider);
-      return true;
-    } catch (e) {
-      state = SiteFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.createSite(site);
+    return result.fold(
+      (failure) {
+        state = SiteFormState(error: failure.message);
+        return false;
+      },
+      (savedSite) {
+        state = SiteFormState(savedSite: savedSite);
+        _ref.invalidate(siteListProvider);
+        return true;
+      },
+    );
   }
 
   Future<bool> updateSite(String siteId, Site site) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final savedSite = await _repository.updateSite(siteId, site);
-      state = SiteFormState(savedSite: savedSite);
-      _ref.invalidate(siteListProvider);
-      _ref.invalidate(siteDetailProvider(siteId));
-      return true;
-    } catch (e) {
-      state = SiteFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.updateSite(siteId, site);
+    return result.fold(
+      (failure) {
+        state = SiteFormState(error: failure.message);
+        return false;
+      },
+      (savedSite) {
+        state = SiteFormState(savedSite: savedSite);
+        _ref.invalidate(siteListProvider);
+        _ref.invalidate(siteDetailProvider(siteId));
+        return true;
+      },
+    );
   }
 
   void reset() {
@@ -172,7 +184,7 @@ class SiteFormNotifier extends StateNotifier<SiteFormState> {
   }
 }
 
-final siteFormProvider = StateNotifierProvider<SiteFormNotifier, SiteFormState>(
+final siteFormProvider = StateNotifierProvider.autoDispose<SiteFormNotifier, SiteFormState>(
   (ref) {
     final repository = ref.watch(siteRepositoryProvider);
     return SiteFormNotifier(repository, ref);

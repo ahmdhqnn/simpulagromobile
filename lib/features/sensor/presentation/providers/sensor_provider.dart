@@ -21,34 +21,43 @@ final sensorRepositoryProvider = Provider<SensorRepository>((ref) {
 
 // ─── Sensor List Provider (by siteId) ────────────────────
 /// Mengambil semua sensor untuk site yang dipilih
-final sensorListProvider = FutureProvider.family<List<Sensor>, String>((
+final sensorListProvider = FutureProvider.autoDispose.family<List<Sensor>, String>((
   ref,
   siteId,
 ) async {
   final repository = ref.watch(sensorRepositoryProvider);
-  return await ref.retryOnError(() => repository.getSensors(siteId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getSensors(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Sensor List for Selected Site ───────────────────────
 /// Shortcut provider yang otomatis menggunakan selectedSiteProvider
-final sensorsForSelectedSiteProvider = FutureProvider<List<Sensor>>((
+final sensorsForSelectedSiteProvider = FutureProvider.autoDispose<List<Sensor>>((
   ref,
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   final repository = ref.watch(sensorRepositoryProvider);
-  return await ref.retryOnError(() => repository.getSensors(siteId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getSensors(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Sensor Detail Provider ───────────────────────────────
 /// Mengambil detail sensor berdasarkan siteId dan sensId
 final sensorDetailProvider =
-    FutureProvider.family<Sensor, ({String siteId, String sensId})>((
+    FutureProvider.autoDispose.family<Sensor, ({String siteId, String sensId})>((
       ref,
       params,
     ) async {
       final repository = ref.watch(sensorRepositoryProvider);
-      return await ref.retryOnError(() => repository.getSensorById(params.siteId, params.sensId));
+      return await ref.retryOnError(() async {
+        final result = await repository.getSensorById(params.siteId, params.sensId);
+        return result.fold((f) => throw f, (data) => data);
+      });
     });
 
 // ─── Sensor Form State ────────────────────────────────────
@@ -82,16 +91,19 @@ class SensorFormNotifier extends StateNotifier<SensorFormState> {
 
   Future<bool> createSensor(String siteId, Map<String, dynamic> data) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final sensor = await _repository.createSensor(siteId, data);
-      state = SensorFormState(savedSensor: sensor);
-      _ref.invalidate(sensorListProvider(siteId));
-      _ref.invalidate(sensorsForSelectedSiteProvider);
-      return true;
-    } catch (e) {
-      state = SensorFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.createSensor(siteId, data);
+    return result.fold(
+      (failure) {
+        state = SensorFormState(error: failure.message);
+        return false;
+      },
+      (sensor) {
+        state = SensorFormState(savedSensor: sensor);
+        _ref.invalidate(sensorListProvider(siteId));
+        _ref.invalidate(sensorsForSelectedSiteProvider);
+        return true;
+      },
+    );
   }
 
   Future<bool> updateSensor(
@@ -100,31 +112,37 @@ class SensorFormNotifier extends StateNotifier<SensorFormState> {
     Map<String, dynamic> data,
   ) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final sensor = await _repository.updateSensor(siteId, sensId, data);
-      state = SensorFormState(savedSensor: sensor);
-      _ref.invalidate(sensorListProvider(siteId));
-      _ref.invalidate(sensorsForSelectedSiteProvider);
-      _ref.invalidate(sensorDetailProvider((siteId: siteId, sensId: sensId)));
-      return true;
-    } catch (e) {
-      state = SensorFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.updateSensor(siteId, sensId, data);
+    return result.fold(
+      (failure) {
+        state = SensorFormState(error: failure.message);
+        return false;
+      },
+      (sensor) {
+        state = SensorFormState(savedSensor: sensor);
+        _ref.invalidate(sensorListProvider(siteId));
+        _ref.invalidate(sensorsForSelectedSiteProvider);
+        _ref.invalidate(sensorDetailProvider((siteId: siteId, sensId: sensId)));
+        return true;
+      },
+    );
   }
 
   Future<bool> deleteSensor(String siteId, String sensId) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _repository.deleteSensor(siteId, sensId);
-      state = const SensorFormState();
-      _ref.invalidate(sensorListProvider(siteId));
-      _ref.invalidate(sensorsForSelectedSiteProvider);
-      return true;
-    } catch (e) {
-      state = SensorFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.deleteSensor(siteId, sensId);
+    return result.fold(
+      (failure) {
+        state = SensorFormState(error: failure.message);
+        return false;
+      },
+      (_) {
+        state = const SensorFormState();
+        _ref.invalidate(sensorListProvider(siteId));
+        _ref.invalidate(sensorsForSelectedSiteProvider);
+        return true;
+      },
+    );
   }
 
   void reset() {
@@ -134,7 +152,7 @@ class SensorFormNotifier extends StateNotifier<SensorFormState> {
 
 // ─── Sensor Form Provider ─────────────────────────────────
 final sensorFormProvider =
-    StateNotifierProvider<SensorFormNotifier, SensorFormState>((ref) {
+    StateNotifierProvider.autoDispose<SensorFormNotifier, SensorFormState>((ref) {
       final repository = ref.watch(sensorRepositoryProvider);
       return SensorFormNotifier(repository, ref);
     });

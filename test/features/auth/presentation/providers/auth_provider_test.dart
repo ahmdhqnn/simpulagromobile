@@ -4,6 +4,8 @@ import 'package:simpulagromobile/core/providers/app_startup_provider.dart';
 import 'package:simpulagromobile/features/auth/data/models/user_model.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:dartz/dartz.dart';
+import 'package:simpulagromobile/core/error/failures.dart';
 import 'package:simpulagromobile/features/auth/presentation/providers/auth_provider.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -31,7 +33,7 @@ void main() {
         // Stub permissions call that happens during init
         when(
           () => mockRepository.getPermissions(),
-        ).thenAnswer((_) async => ['read:site']);
+        ).thenAnswer((_) async => const Right(['read:site']));
 
         final notifier = AuthNotifier(mockRepository, startupData: startupData);
 
@@ -70,10 +72,10 @@ void main() {
         );
         when(
           () => mockRepository.login('john', 'pass123'),
-        ).thenAnswer((_) async => user);
+        ).thenAnswer((_) async => const Right(user));
         when(
           () => mockRepository.getPermissions(),
-        ).thenAnswer((_) async => ['read:site']);
+        ).thenAnswer((_) async => const Right(['read:site']));
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'pass123');
@@ -87,7 +89,7 @@ void main() {
       test('returns false and sets error on failure', () async {
         when(
           () => mockRepository.login('john', 'wrong'),
-        ).thenThrow(Exception('Invalid credentials'));
+        ).thenAnswer((_) async => const Left(AuthFailure('Username atau Password salah')));
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'wrong');
@@ -101,7 +103,7 @@ void main() {
       test('sets connection error message on network failure', () async {
         when(
           () => mockRepository.login('john', 'pass'),
-        ).thenThrow(Exception('SocketException: connection refused'));
+        ).thenAnswer((_) async => const Left(ServerFailure('Tidak Ada Koneksi Internet')));
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'pass');
@@ -119,9 +121,9 @@ void main() {
         const user = User(userId: 'USR_001', userName: 'John');
         when(
           () => mockRepository.login('john', 'pass'),
-        ).thenAnswer((_) async => user);
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => []);
-        when(() => mockRepository.logout()).thenAnswer((_) async {});
+        ).thenAnswer((_) async => const Right(user));
+        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
+        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');
@@ -141,9 +143,9 @@ void main() {
         const user = User(userId: 'USR_001', userName: 'John');
         when(
           () => mockRepository.login('john', 'pass'),
-        ).thenAnswer((_) async => user);
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => []);
-        when(() => mockRepository.logout()).thenAnswer((_) async {});
+        ).thenAnswer((_) async => const Right(user));
+        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
+        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');
@@ -156,7 +158,7 @@ void main() {
       });
 
       test('does nothing if already unauthenticated', () async {
-        when(() => mockRepository.logout()).thenAnswer((_) async {});
+        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
 
@@ -175,7 +177,7 @@ void main() {
         ).thenAnswer((_) async => user);
         when(
           () => mockRepository.getPermissions(),
-        ).thenAnswer((_) async => ['read:site']);
+        ).thenAnswer((_) async => const Right(['read:site']));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.checkAuthStatus();
@@ -209,8 +211,8 @@ void main() {
         const user = User(userId: 'USR_001', userName: 'John');
         when(
           () => mockRepository.login('john', 'pass'),
-        ).thenAnswer((_) async => user);
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => []);
+        ).thenAnswer((_) async => const Right(user));
+        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');

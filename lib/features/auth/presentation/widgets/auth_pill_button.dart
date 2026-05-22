@@ -70,7 +70,7 @@ class _AuthPillButtonState extends State<AuthPillButton>
 
         height: 60,
 
-        width: widget.loading ? 97 : double.infinity,
+        width: widget.loading ? 97 : MediaQuery.of(context).size.width,
 
         decoration: BoxDecoration(
           color: Colors.white,

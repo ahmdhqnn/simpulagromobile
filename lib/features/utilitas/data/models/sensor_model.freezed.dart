@@ -31,10 +31,13 @@ mixin _$SensorModel {
   String? get sensAddress => throw _privateConstructorUsedError;
   @JsonKey(name: 'sens_location')
   String? get sensLocation => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lat')
   double? get sensLat => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lon')
   double? get sensLon => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_alt')
   double? get sensAlt => throw _privateConstructorUsedError;
   @JsonKey(name: 'sens_sts')
@@ -67,9 +70,9 @@ abstract class $SensorModelCopyWith<$Res> {
     @JsonKey(name: 'sens_name') String? sensName,
     @JsonKey(name: 'sens_address') String? sensAddress,
     @JsonKey(name: 'sens_location') String? sensLocation,
-    @JsonKey(name: 'sens_lat') double? sensLat,
-    @JsonKey(name: 'sens_lon') double? sensLon,
-    @JsonKey(name: 'sens_alt') double? sensAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lat') double? sensLat,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lon') double? sensLon,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_alt') double? sensAlt,
     @JsonKey(name: 'sens_sts') int? sensSts,
     @JsonKey(name: 'sens_created') DateTime? sensCreated,
     @JsonKey(name: 'sens_update') DateTime? sensUpdate,
@@ -170,9 +173,9 @@ abstract class _$$SensorModelImplCopyWith<$Res>
     @JsonKey(name: 'sens_name') String? sensName,
     @JsonKey(name: 'sens_address') String? sensAddress,
     @JsonKey(name: 'sens_location') String? sensLocation,
-    @JsonKey(name: 'sens_lat') double? sensLat,
-    @JsonKey(name: 'sens_lon') double? sensLon,
-    @JsonKey(name: 'sens_alt') double? sensAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lat') double? sensLat,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lon') double? sensLon,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_alt') double? sensAlt,
     @JsonKey(name: 'sens_sts') int? sensSts,
     @JsonKey(name: 'sens_created') DateTime? sensCreated,
     @JsonKey(name: 'sens_update') DateTime? sensUpdate,
@@ -265,9 +268,9 @@ class _$SensorModelImpl extends _SensorModel {
     @JsonKey(name: 'sens_name') this.sensName,
     @JsonKey(name: 'sens_address') this.sensAddress,
     @JsonKey(name: 'sens_location') this.sensLocation,
-    @JsonKey(name: 'sens_lat') this.sensLat,
-    @JsonKey(name: 'sens_lon') this.sensLon,
-    @JsonKey(name: 'sens_alt') this.sensAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lat') this.sensLat,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lon') this.sensLon,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_alt') this.sensAlt,
     @JsonKey(name: 'sens_sts') this.sensSts,
     @JsonKey(name: 'sens_created') this.sensCreated,
     @JsonKey(name: 'sens_update') this.sensUpdate,
@@ -292,12 +295,15 @@ class _$SensorModelImpl extends _SensorModel {
   @JsonKey(name: 'sens_location')
   final String? sensLocation;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lat')
   final double? sensLat;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lon')
   final double? sensLon;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_alt')
   final double? sensAlt;
   @override
@@ -376,9 +382,9 @@ abstract class _SensorModel extends SensorModel {
     @JsonKey(name: 'sens_name') final String? sensName,
     @JsonKey(name: 'sens_address') final String? sensAddress,
     @JsonKey(name: 'sens_location') final String? sensLocation,
-    @JsonKey(name: 'sens_lat') final double? sensLat,
-    @JsonKey(name: 'sens_lon') final double? sensLon,
-    @JsonKey(name: 'sens_alt') final double? sensAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lat') final double? sensLat,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_lon') final double? sensLon,
+    @SafeDoubleConverter() @JsonKey(name: 'sens_alt') final double? sensAlt,
     @JsonKey(name: 'sens_sts') final int? sensSts,
     @JsonKey(name: 'sens_created') final DateTime? sensCreated,
     @JsonKey(name: 'sens_update') final DateTime? sensUpdate,
@@ -404,12 +410,15 @@ abstract class _SensorModel extends SensorModel {
   @JsonKey(name: 'sens_location')
   String? get sensLocation;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lat')
   double? get sensLat;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_lon')
   double? get sensLon;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'sens_alt')
   double? get sensAlt;
   @override

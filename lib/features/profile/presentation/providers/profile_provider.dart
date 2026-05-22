@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -21,15 +22,18 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 });
 
 // ─── User Profile ─────────────────────────────────────────
-final userProfileProvider = FutureProvider<UserProfile>((ref) async {
+final userProfileProvider = FutureProvider.autoDispose<UserProfile>((ref) async {
   final repository = ref.watch(profileRepositoryProvider);
-  return repository.getUserProfile();
+  return await ref.retryOnError(() async {
+    final result = await repository.getUserProfile();
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── User Permissions ────────────────────────────────────
-final userPermissionsProvider = FutureProvider<List<String>>((ref) async {
+final userPermissionsProvider = FutureProvider.autoDispose<List<String>>((ref) async {
   final datasource = ref.watch(profileRemoteDatasourceProvider);
-  return datasource.getUserPermissions();
+  return await ref.retryOnError(() => datasource.getUserPermissions());
 });
 
 // ─── Settings ────────────────────────────────────────────

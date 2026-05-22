@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/device_sensor.dart';
+import '../../../../core/utils/safe_double_converter.dart';
 
 part 'device_sensor_model.freezed.dart';
 part 'device_sensor_model.g.dart';
@@ -15,13 +16,13 @@ class DeviceSensorModel with _$DeviceSensorModel {
     @JsonKey(name: 'dev_id') required String devId,
     @JsonKey(name: 'unit_id') String? unitId,
     @JsonKey(name: 'sens_id') String? sensId,
-    @JsonKey(name: 'dc_normal_value') double? dcNormalValue,
-    @JsonKey(name: 'ds_min_norm_value') double? dsMinNormValue,
-    @JsonKey(name: 'ds_max_norm_value') double? dsMaxNormValue,
-    @JsonKey(name: 'ds_min_value') double? dsMinValue,
-    @JsonKey(name: 'ds_max_value') double? dsMaxValue,
-    @JsonKey(name: 'ds_min_val_warn') double? dsMinValWarn,
-    @JsonKey(name: 'ds_max_val_warn') double? dsMaxValWarn,
+    @SafeDoubleConverter() @JsonKey(name: 'dc_normal_value') double? dcNormalValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_norm_value') double? dsMinNormValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_norm_value') double? dsMaxNormValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_value') double? dsMinValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_value') double? dsMaxValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_val_warn') double? dsMinValWarn,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_val_warn') double? dsMaxValWarn,
     @JsonKey(name: 'ds_name') String? dsName,
     @JsonKey(name: 'ds_address') String? dsAddress,
     @JsonKey(name: 'ds_seq') int? dsSeq,
