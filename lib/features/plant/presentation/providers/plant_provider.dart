@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/plant_remote_datasource.dart';
 import '../../data/models/plant_model.dart';
@@ -15,7 +16,7 @@ final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   final ds = ref.watch(plantRemoteDataSourceProvider);
-  final models = await ds.getPlants(siteId);
+  final models = await ref.retryOnError(() => ds.getPlants(siteId));
   return models.map((m) => m.toEntity()).toList();
 });
 
@@ -32,7 +33,7 @@ final varietasProvider = FutureProvider.autoDispose<List<VarietasModel>>((
   ref,
 ) async {
   final ds = ref.watch(plantRemoteDataSourceProvider);
-  return ds.getVarietas();
+  return ref.retryOnError(() => ds.getVarietas());
 });
 
 /// Create plant state
@@ -115,7 +116,7 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
   if (siteId == null) throw Exception('No site selected');
 
   final ds = ref.watch(plantRemoteDataSourceProvider);
-  final model = await ds.getPlantById(siteId, plantId);
+  final model = await ref.retryOnError(() => ds.getPlantById(siteId, plantId));
   return model.toEntity();
 });
 

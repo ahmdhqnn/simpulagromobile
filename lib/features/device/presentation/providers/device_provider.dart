@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/device_remote_datasource.dart';
 import '../../data/repositories/device_repository_impl.dart';
 import '../../domain/entities/device.dart';
@@ -29,7 +30,7 @@ final deviceListProvider = FutureProvider.family<List<Device>, String>((
   siteId,
 ) async {
   final repository = ref.watch(deviceRepositoryProvider);
-  return await repository.getDevices(siteId);
+  return await ref.retryOnError(() => repository.getDevices(siteId));
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -41,7 +42,7 @@ final deviceDetailProvider =
       params,
     ) async {
       final repository = ref.watch(deviceRepositoryProvider);
-      return await repository.getDeviceById(params.siteId, params.devId);
+      return await ref.retryOnError(() => repository.getDeviceById(params.siteId, params.devId));
     });
 
 // ═══════════════════════════════════════════════════════════
@@ -52,7 +53,7 @@ final deviceCoordinatesProvider = FutureProvider.family<List<Device>, String>((
   siteId,
 ) async {
   final repository = ref.watch(deviceRepositoryProvider);
-  return await repository.getDeviceCoordinates(siteId);
+  return await ref.retryOnError(() => repository.getDeviceCoordinates(siteId));
 });
 
 // ═══════════════════════════════════════════════════════════

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/providers/app_startup_provider.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/site_remote_datasource.dart';
 import '../../data/repositories/site_repository_impl.dart';
 import '../../domain/entities/site.dart';
@@ -22,7 +23,7 @@ final siteRepositoryProvider = Provider<SiteRepository>((ref) {
 // ─── Site List ───────────────────────────────────────────
 final siteListProvider = FutureProvider<List<Site>>((ref) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await repository.getSites();
+  return await ref.retryOnError(() => repository.getSites());
 });
 
 // Alias untuk backward compatibility
@@ -34,7 +35,7 @@ final siteDetailProvider = FutureProvider.family<Site, String>((
   siteId,
 ) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await repository.getSiteById(siteId);
+  return await ref.retryOnError(() => repository.getSiteById(siteId));
 });
 
 // ─── Selected Site (dengan persistensi) ──────────────────
@@ -43,30 +44,8 @@ final siteDetailProvider = FutureProvider.family<Site, String>((
 /// sehingga tidak ada I/O di constructor.
 class SelectedSiteNotifier extends StateNotifier<Site?> {
   final SecureStorage _storage;
-  final Ref _ref;
-  final String? _preloadedSiteId;
 
-  SelectedSiteNotifier(this._storage, this._ref, this._preloadedSiteId)
-    : super(null) {
-    // Jika ada siteId yang tersimpan, restore setelah sites list tersedia
-    if (_preloadedSiteId != null) {
-      _restoreFromPreloadedId(_preloadedSiteId);
-    }
-  }
-
-  /// Cari site yang cocok dengan siteId preloaded
-  /// Tidak baca storage — hanya lookup dari list yang di-fetch
-  Future<void> _restoreFromPreloadedId(String siteId) async {
-    try {
-      final sites = await _ref.read(siteListProvider.future);
-      final site = sites.where((s) => s.siteId == siteId).firstOrNull;
-      if (site != null && mounted) {
-        state = site;
-      }
-    } catch (_) {
-      // Gagal load sites — biarkan null, user pilih manual
-    }
-  }
+  SelectedSiteNotifier(this._storage) : super(null);
 
   /// Set site terpilih dan simpan ke storage
   Future<void> selectSite(Site? site) async {
@@ -83,6 +62,35 @@ class SelectedSiteNotifier extends StateNotifier<Site?> {
     if (state != null || sites.isEmpty) return;
     await selectSite(sites.first);
   }
+
+  /// Update selected site from the updated site list and preloaded ID
+  Future<void> updateFromSiteList(List<Site> sites, String? preloadedSiteId) async {
+    final current = state;
+    if (current != null) {
+      final matching = sites.where((s) => s.siteId == current.siteId).firstOrNull;
+      if (matching != null) {
+        await selectSite(matching);
+      } else {
+        // Current site is no longer in the list (deleted), try to fall back
+        final preloadedSite = preloadedSiteId != null ? sites.where((s) => s.siteId == preloadedSiteId).firstOrNull : null;
+        if (preloadedSite != null) {
+          await selectSite(preloadedSite);
+        } else if (sites.isNotEmpty) {
+          await selectSite(sites.first);
+        } else {
+          await selectSite(null);
+        }
+      }
+    } else {
+      // State is currently null
+      final preloadedSite = preloadedSiteId != null ? sites.where((s) => s.siteId == preloadedSiteId).firstOrNull : null;
+      if (preloadedSite != null) {
+        await selectSite(preloadedSite);
+      } else if (sites.isNotEmpty) {
+        await selectSite(sites.first);
+      }
+    }
+  }
 }
 
 final selectedSiteProvider = StateNotifierProvider<SelectedSiteNotifier, Site?>(
@@ -90,7 +98,17 @@ final selectedSiteProvider = StateNotifierProvider<SelectedSiteNotifier, Site?>(
     final storage = ref.watch(secureStorageProvider);
     // Ambil siteId dari data preloaded — tidak ada I/O
     final startupData = ref.read(appStartupDataProvider);
-    return SelectedSiteNotifier(storage, ref, startupData.selectedSiteId);
+    final notifier = SelectedSiteNotifier(storage);
+
+    ref.listen<AsyncValue<List<Site>>>(siteListProvider, (previous, next) {
+      next.whenOrNull(
+        data: (sites) {
+          notifier.updateFromSiteList(sites, startupData.selectedSiteId);
+        },
+      );
+    }, fireImmediately: true);
+
+    return notifier;
   },
 );
 

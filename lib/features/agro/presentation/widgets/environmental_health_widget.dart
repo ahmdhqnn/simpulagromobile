@@ -234,7 +234,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
               Icon(icon, size: 16, color: color),
               const SizedBox(height: 2),
               Text(
-                '${score.toStringAsFixed(0)}',
+                score.toStringAsFixed(0),
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(11),

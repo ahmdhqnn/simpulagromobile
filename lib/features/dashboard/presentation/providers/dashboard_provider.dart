@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/dashboard_remote_datasource.dart';
 import '../../data/models/dashboard_summary_model.dart';
@@ -17,7 +18,7 @@ final environmentalHealthProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return null;
       final ds = ref.watch(dashboardDataSourceProvider);
-      return ds.getEnvironmentalHealth(siteId);
+      return ref.retryOnError(() => ds.getEnvironmentalHealth(siteId));
     });
 
 // ─── Device Summary ───────────────────────────────────────────────────────────
@@ -27,7 +28,7 @@ final deviceSummaryProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return null;
       final ds = ref.watch(dashboardDataSourceProvider);
-      return ds.getDeviceSummary(siteId);
+      return ref.retryOnError(() => ds.getDeviceSummary(siteId));
     });
 
 // ─── Sensor Summary ───────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ final sensorSummaryProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return null;
       final ds = ref.watch(dashboardDataSourceProvider);
-      return ds.getSensorSummary(siteId);
+      return ref.retryOnError(() => ds.getSensorSummary(siteId));
     });
 
 // ─── Plant Summary ────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ final plantSummaryProvider = FutureProvider.autoDispose<DashboardPlantSummary?>(
     final siteId = ref.watch(selectedSiteIdProvider);
     if (siteId == null) return null;
     final ds = ref.watch(dashboardDataSourceProvider);
-    return ds.getPlantSummary(siteId);
+    return ref.retryOnError(() => ds.getPlantSummary(siteId));
   },
 );
 
@@ -58,7 +59,7 @@ final latestSensorReadsProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final ds = ref.watch(dashboardDataSourceProvider);
-      return ds.getLatestSensorReads(siteId);
+      return ref.retryOnError(() => ds.getLatestSensorReads(siteId));
     });
 
 // ─── Seven Day Reads ──────────────────────────────────────────────────────────
@@ -68,5 +69,5 @@ final sevenDayReadsProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final ds = ref.watch(dashboardDataSourceProvider);
-      return ds.getSevenDayReads(siteId);
+      return ref.retryOnError(() => ds.getSevenDayReads(siteId));
     });

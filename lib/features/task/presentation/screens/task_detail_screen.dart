@@ -19,17 +19,9 @@ class TaskDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
-  String? _siteId;
-
-  @override
-  void initState() {
-    super.initState();
-    _siteId = ref.read(selectedSiteIdProvider);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final siteId = _siteId;
+    final siteId = ref.watch(selectedSiteIdProvider);
     if (siteId == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -39,7 +31,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           foregroundColor: Colors.white,
           elevation: 0,
         ),
-        body: _buildErrorState(context, 'Pilih site terlebih dahulu'),
+        body: _buildErrorState(context, 'Pilih site terlebih dahulu', null),
       );
     }
 
@@ -85,7 +77,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           error: (error, _) => ListView(
             children: [
               SizedBox(height: context.rh(0.1)),
-              _buildErrorState(context, error.toString()),
+              _buildErrorState(context, error.toString(), siteId),
             ],
           ),
           data: (task) => _buildContent(context, siteId, task),
@@ -351,8 +343,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
-  Widget _buildErrorState(BuildContext context, String error) {
-    final siteId = _siteId;
+  Widget _buildErrorState(BuildContext context, String error, String? siteId) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.051)),
