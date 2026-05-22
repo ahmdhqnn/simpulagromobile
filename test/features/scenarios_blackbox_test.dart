@@ -13,7 +13,6 @@ import 'package:simpulagromobile/features/auth/presentation/screens/login_screen
 import 'package:simpulagromobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simpulagromobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
-import 'package:simpulagromobile/features/auth/data/models/user_model.dart';
 import 'package:simpulagromobile/shared/widgets/info_state_widget.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/widgets/sensor_status_card.dart';
 import 'package:simpulagromobile/features/agro/presentation/widgets/environmental_health_widget.dart';
@@ -25,8 +24,7 @@ import 'package:simpulagromobile/features/forum/presentation/providers/forum_pro
 import 'package:simpulagromobile/features/forum/domain/repositories/forum_repository.dart';
 import 'package:simpulagromobile/features/forum/domain/entities/post.dart';
 import 'package:simpulagromobile/features/site/presentation/providers/site_provider.dart';
-import 'package:simpulagromobile/features/site/domain/entities/site.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
+
 import 'package:simpulagromobile/core/error/failures.dart';
 
 // Mock Repository definitions
@@ -68,7 +66,7 @@ void main() {
   group('Scenario 1: Auth Credential Failure AlertDialog warning', () {
     testWidgets('Displays AlertDialog upon invalid login credentials', (WidgetTester tester) async {
       when(() => mockAuthRepository.login('invalid_user', 'wrong_pass'))
-          .thenThrow(Exception('Unauthorized (401)'));
+          .thenAnswer((_) async => const dz.Left(AuthFailure('Username atau Password salah')));
 
       final container = ProviderContainer(
         overrides: [
@@ -126,9 +124,9 @@ void main() {
       );
 
       when(() => mockAuthRepository.login('admin', 'password123'))
-          .thenAnswer((_) async => mockUser);
+          .thenAnswer((_) async => const dz.Right(mockUser));
       when(() => mockAuthRepository.getPermissions())
-          .thenAnswer((_) async => ['read:site', 'write:site']);
+          .thenAnswer((_) async => const dz.Right(['read:site', 'write:site']));
 
       final container = ProviderContainer(
         overrides: [
@@ -353,9 +351,9 @@ void main() {
       ));
 
       when(() => mockForumRepository.getPosts(page: 1, limit: 20))
-          .thenAnswer((_) async => page1Posts);
+          .thenAnswer((_) async => dz.Right(page1Posts));
       when(() => mockForumRepository.getPosts(page: 2, limit: 20))
-          .thenAnswer((_) async => page2Posts);
+          .thenAnswer((_) async => dz.Right(page2Posts));
 
       final container = ProviderContainer(
         overrides: [
@@ -384,7 +382,7 @@ void main() {
     test('Maps socket timeout / offline exceptions to "Tidak Ada Koneksi Internet"', () async {
       // Offline/Timeout simulation throwing SocketException equivalent error
       when(() => mockAuthRepository.login('admin', 'timeout'))
-          .thenThrow(Exception('SocketException: connection timeout'));
+          .thenAnswer((_) async => const dz.Left(ServerFailure('Tidak Ada Koneksi Internet')));
 
       final container = ProviderContainer(
         overrides: [
@@ -407,10 +405,10 @@ void main() {
       );
 
       when(() => mockAuthRepository.login('admin', 'password123'))
-          .thenAnswer((_) async => mockUser);
+          .thenAnswer((_) async => const dz.Right(mockUser));
       when(() => mockAuthRepository.getPermissions())
-          .thenAnswer((_) async => ['read:site']);
-      when(() => mockAuthRepository.logout()).thenAnswer((_) async {});
+          .thenAnswer((_) async => const dz.Right(['read:site']));
+      when(() => mockAuthRepository.logout()).thenAnswer((_) async => const dz.Right(null));
 
       final container = ProviderContainer(
         overrides: [

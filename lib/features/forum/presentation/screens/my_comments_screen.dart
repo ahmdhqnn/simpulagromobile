@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
-import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/user_comment.dart';
 import '../providers/forum_provider.dart';
 
@@ -59,7 +59,11 @@ class MyCommentsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const LoadingWidget(message: 'Memuat komentar...'),
+        loading: () => ListView.builder(
+          padding: EdgeInsets.all(context.rw(0.051)),
+          itemCount: 4,
+          itemBuilder: (_, __) => const PostCardSkeleton(hasImage: false),
+        ),
         error: (error, _) => _buildErrorState(context, ref, error),
       ),
     );

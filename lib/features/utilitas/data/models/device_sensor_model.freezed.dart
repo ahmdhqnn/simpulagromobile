@@ -29,18 +29,25 @@ mixin _$DeviceSensorModel {
   String? get unitId => throw _privateConstructorUsedError;
   @JsonKey(name: 'sens_id')
   String? get sensId => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'dc_normal_value')
   double? get dcNormalValue => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_norm_value')
   double? get dsMinNormValue => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_norm_value')
   double? get dsMaxNormValue => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_value')
   double? get dsMinValue => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_value')
   double? get dsMaxValue => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_val_warn')
   double? get dsMinValWarn => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_val_warn')
   double? get dsMaxValWarn => throw _privateConstructorUsedError;
   @JsonKey(name: 'ds_name')
@@ -78,13 +85,23 @@ abstract class $DeviceSensorModelCopyWith<$Res> {
     @JsonKey(name: 'dev_id') String devId,
     @JsonKey(name: 'unit_id') String? unitId,
     @JsonKey(name: 'sens_id') String? sensId,
-    @JsonKey(name: 'dc_normal_value') double? dcNormalValue,
-    @JsonKey(name: 'ds_min_norm_value') double? dsMinNormValue,
-    @JsonKey(name: 'ds_max_norm_value') double? dsMaxNormValue,
-    @JsonKey(name: 'ds_min_value') double? dsMinValue,
-    @JsonKey(name: 'ds_max_value') double? dsMaxValue,
-    @JsonKey(name: 'ds_min_val_warn') double? dsMinValWarn,
-    @JsonKey(name: 'ds_max_val_warn') double? dsMaxValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'dc_normal_value')
+    double? dcNormalValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_norm_value')
+    double? dsMinNormValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_norm_value')
+    double? dsMaxNormValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_value') double? dsMinValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_value') double? dsMaxValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_val_warn')
+    double? dsMinValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_val_warn')
+    double? dsMaxValWarn,
     @JsonKey(name: 'ds_name') String? dsName,
     @JsonKey(name: 'ds_address') String? dsAddress,
     @JsonKey(name: 'ds_seq') int? dsSeq,
@@ -217,13 +234,23 @@ abstract class _$$DeviceSensorModelImplCopyWith<$Res>
     @JsonKey(name: 'dev_id') String devId,
     @JsonKey(name: 'unit_id') String? unitId,
     @JsonKey(name: 'sens_id') String? sensId,
-    @JsonKey(name: 'dc_normal_value') double? dcNormalValue,
-    @JsonKey(name: 'ds_min_norm_value') double? dsMinNormValue,
-    @JsonKey(name: 'ds_max_norm_value') double? dsMaxNormValue,
-    @JsonKey(name: 'ds_min_value') double? dsMinValue,
-    @JsonKey(name: 'ds_max_value') double? dsMaxValue,
-    @JsonKey(name: 'ds_min_val_warn') double? dsMinValWarn,
-    @JsonKey(name: 'ds_max_val_warn') double? dsMaxValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'dc_normal_value')
+    double? dcNormalValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_norm_value')
+    double? dsMinNormValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_norm_value')
+    double? dsMaxNormValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_value') double? dsMinValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_value') double? dsMaxValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_val_warn')
+    double? dsMinValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_val_warn')
+    double? dsMaxValWarn,
     @JsonKey(name: 'ds_name') String? dsName,
     @JsonKey(name: 'ds_address') String? dsAddress,
     @JsonKey(name: 'ds_seq') int? dsSeq,
@@ -348,13 +375,17 @@ class _$DeviceSensorModelImpl extends _DeviceSensorModel {
     @JsonKey(name: 'dev_id') required this.devId,
     @JsonKey(name: 'unit_id') this.unitId,
     @JsonKey(name: 'sens_id') this.sensId,
-    @JsonKey(name: 'dc_normal_value') this.dcNormalValue,
-    @JsonKey(name: 'ds_min_norm_value') this.dsMinNormValue,
-    @JsonKey(name: 'ds_max_norm_value') this.dsMaxNormValue,
-    @JsonKey(name: 'ds_min_value') this.dsMinValue,
-    @JsonKey(name: 'ds_max_value') this.dsMaxValue,
-    @JsonKey(name: 'ds_min_val_warn') this.dsMinValWarn,
-    @JsonKey(name: 'ds_max_val_warn') this.dsMaxValWarn,
+    @SafeDoubleConverter() @JsonKey(name: 'dc_normal_value') this.dcNormalValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_norm_value')
+    this.dsMinNormValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_norm_value')
+    this.dsMaxNormValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_value') this.dsMinValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_value') this.dsMaxValue,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_min_val_warn') this.dsMinValWarn,
+    @SafeDoubleConverter() @JsonKey(name: 'ds_max_val_warn') this.dsMaxValWarn,
     @JsonKey(name: 'ds_name') this.dsName,
     @JsonKey(name: 'ds_address') this.dsAddress,
     @JsonKey(name: 'ds_seq') this.dsSeq,
@@ -379,24 +410,31 @@ class _$DeviceSensorModelImpl extends _DeviceSensorModel {
   @JsonKey(name: 'sens_id')
   final String? sensId;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dc_normal_value')
   final double? dcNormalValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_norm_value')
   final double? dsMinNormValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_norm_value')
   final double? dsMaxNormValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_value')
   final double? dsMinValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_value')
   final double? dsMaxValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_val_warn')
   final double? dsMinValWarn;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_val_warn')
   final double? dsMaxValWarn;
   @override
@@ -503,13 +541,27 @@ abstract class _DeviceSensorModel extends DeviceSensorModel {
     @JsonKey(name: 'dev_id') required final String devId,
     @JsonKey(name: 'unit_id') final String? unitId,
     @JsonKey(name: 'sens_id') final String? sensId,
-    @JsonKey(name: 'dc_normal_value') final double? dcNormalValue,
-    @JsonKey(name: 'ds_min_norm_value') final double? dsMinNormValue,
-    @JsonKey(name: 'ds_max_norm_value') final double? dsMaxNormValue,
-    @JsonKey(name: 'ds_min_value') final double? dsMinValue,
-    @JsonKey(name: 'ds_max_value') final double? dsMaxValue,
-    @JsonKey(name: 'ds_min_val_warn') final double? dsMinValWarn,
-    @JsonKey(name: 'ds_max_val_warn') final double? dsMaxValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'dc_normal_value')
+    final double? dcNormalValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_norm_value')
+    final double? dsMinNormValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_norm_value')
+    final double? dsMaxNormValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_value')
+    final double? dsMinValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_value')
+    final double? dsMaxValue,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_min_val_warn')
+    final double? dsMinValWarn,
+    @SafeDoubleConverter()
+    @JsonKey(name: 'ds_max_val_warn')
+    final double? dsMaxValWarn,
     @JsonKey(name: 'ds_name') final String? dsName,
     @JsonKey(name: 'ds_address') final String? dsAddress,
     @JsonKey(name: 'ds_seq') final int? dsSeq,
@@ -535,24 +587,31 @@ abstract class _DeviceSensorModel extends DeviceSensorModel {
   @JsonKey(name: 'sens_id')
   String? get sensId;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dc_normal_value')
   double? get dcNormalValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_norm_value')
   double? get dsMinNormValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_norm_value')
   double? get dsMaxNormValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_value')
   double? get dsMinValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_value')
   double? get dsMaxValue;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_min_val_warn')
   double? get dsMinValWarn;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'ds_max_val_warn')
   double? get dsMaxValWarn;
   @override

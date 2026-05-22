@@ -47,20 +47,38 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     setState(() => _isLoadingData = true);
     try {
       final repository = ref.read(forumRepositoryProvider);
-      final post = await repository.getPostById(widget.postId!);
-      if (mounted) {
-        _titleController.text = post.postTitle;
-        _contentController.text = post.postContent;
-        _imageUrlController.text = post.postImage ?? '';
-        setState(() => _isLoadingData = false);
-      }
+      final result = await repository.getPostById(widget.postId!);
+      result.fold(
+        (failure) {
+          if (mounted) {
+            setState(() => _isLoadingData = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Gagal memuat data: ${failure.message}',
+                  style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+                ),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        },
+        (post) {
+          if (mounted) {
+            _titleController.text = post.postTitle;
+            _contentController.text = post.postContent;
+            _imageUrlController.text = post.postImage ?? '';
+            setState(() => _isLoadingData = false);
+          }
+        },
+      );
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingData = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gagal memuat data: ${e.toString().replaceAll('Exception: ', '')}',
+              'Terjadi kesalahan: ${e.toString().replaceAll('Exception: ', '')}',
               style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,

@@ -4,15 +4,29 @@ import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/agro_remote_datasource.dart';
 import '../../data/models/agro_model.dart';
+import '../../data/repositories/agro_repository_impl.dart';
+import '../../domain/repositories/agro_repository.dart';
 
 final agroRemoteDataSourceProvider = Provider<AgroRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   return AgroRemoteDataSource(dioClient.dio);
 });
 
+final agroRepositoryProvider = Provider<AgroRepository>((ref) {
+  final dataSource = ref.watch(agroRemoteDataSourceProvider);
+  return AgroRepositoryImpl(dataSource);
+});
+
 final agroDataProvider = FutureProvider.autoDispose<AgroModel>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return const AgroModel();
-  final ds = ref.watch(agroRemoteDataSourceProvider);
-  return ref.retryOnError(() => ds.getAgroData(siteId));
+  
+  final repository = ref.watch(agroRepositoryProvider);
+  return ref.retryOnError(() async {
+    final result = await repository.getAgroData(siteId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (data) => data,
+    );
+  });
 });

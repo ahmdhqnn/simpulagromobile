@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/post.dart';
@@ -127,8 +127,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     if (commentsState.isLoading)
                       const SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: LoadingWidget(message: 'Memuat komentar...'),
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              PostCardSkeleton(hasImage: false),
+                              PostCardSkeleton(hasImage: false),
+                            ],
+                          ),
                         ),
                       )
                     else if (commentsState.comments.isEmpty)
@@ -162,7 +167,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             _buildCommentInput(context),
           ],
         ),
-        loading: () => const LoadingWidget(message: 'Memuat postingan...'),
+        loading: () => const DetailScreenSkeleton(infoRowCount: 3, hasDescription: true, headerHeight: 0),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

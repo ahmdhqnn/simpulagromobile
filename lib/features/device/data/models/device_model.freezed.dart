@@ -33,10 +33,13 @@ mixin _$DeviceModel {
   String? get devToken => throw _privateConstructorUsedError;
   @JsonKey(name: 'dev_location')
   String? get devLocation => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lon')
   double? get devLon => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lat')
   double? get devLat => throw _privateConstructorUsedError;
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_alt')
   double? get devAlt => throw _privateConstructorUsedError;
   @JsonKey(name: 'dev_number_id')
@@ -78,9 +81,9 @@ abstract class $DeviceModelCopyWith<$Res> {
     @JsonKey(name: 'dev_name') String? devName,
     @JsonKey(name: 'dev_token') String? devToken,
     @JsonKey(name: 'dev_location') String? devLocation,
-    @JsonKey(name: 'dev_lon') double? devLon,
-    @JsonKey(name: 'dev_lat') double? devLat,
-    @JsonKey(name: 'dev_alt') double? devAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lon') double? devLon,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lat') double? devLat,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_alt') double? devAlt,
     @JsonKey(name: 'dev_number_id') String? devNumberId,
     @JsonKey(name: 'dev_ip') String? devIp,
     @JsonKey(name: 'dev_port') String? devPort,
@@ -211,9 +214,9 @@ abstract class _$$DeviceModelImplCopyWith<$Res>
     @JsonKey(name: 'dev_name') String? devName,
     @JsonKey(name: 'dev_token') String? devToken,
     @JsonKey(name: 'dev_location') String? devLocation,
-    @JsonKey(name: 'dev_lon') double? devLon,
-    @JsonKey(name: 'dev_lat') double? devLat,
-    @JsonKey(name: 'dev_alt') double? devAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lon') double? devLon,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lat') double? devLat,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_alt') double? devAlt,
     @JsonKey(name: 'dev_number_id') String? devNumberId,
     @JsonKey(name: 'dev_ip') String? devIp,
     @JsonKey(name: 'dev_port') String? devPort,
@@ -336,9 +339,9 @@ class _$DeviceModelImpl extends _DeviceModel {
     @JsonKey(name: 'dev_name') this.devName,
     @JsonKey(name: 'dev_token') this.devToken,
     @JsonKey(name: 'dev_location') this.devLocation,
-    @JsonKey(name: 'dev_lon') this.devLon,
-    @JsonKey(name: 'dev_lat') this.devLat,
-    @JsonKey(name: 'dev_alt') this.devAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lon') this.devLon,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lat') this.devLat,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_alt') this.devAlt,
     @JsonKey(name: 'dev_number_id') this.devNumberId,
     @JsonKey(name: 'dev_ip') this.devIp,
     @JsonKey(name: 'dev_port') this.devPort,
@@ -370,12 +373,15 @@ class _$DeviceModelImpl extends _DeviceModel {
   @JsonKey(name: 'dev_location')
   final String? devLocation;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lon')
   final double? devLon;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lat')
   final double? devLat;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_alt')
   final double? devAlt;
   @override
@@ -477,9 +483,9 @@ abstract class _DeviceModel extends DeviceModel {
     @JsonKey(name: 'dev_name') final String? devName,
     @JsonKey(name: 'dev_token') final String? devToken,
     @JsonKey(name: 'dev_location') final String? devLocation,
-    @JsonKey(name: 'dev_lon') final double? devLon,
-    @JsonKey(name: 'dev_lat') final double? devLat,
-    @JsonKey(name: 'dev_alt') final double? devAlt,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lon') final double? devLon,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_lat') final double? devLat,
+    @SafeDoubleConverter() @JsonKey(name: 'dev_alt') final double? devAlt,
     @JsonKey(name: 'dev_number_id') final String? devNumberId,
     @JsonKey(name: 'dev_ip') final String? devIp,
     @JsonKey(name: 'dev_port') final String? devPort,
@@ -512,12 +518,15 @@ abstract class _DeviceModel extends DeviceModel {
   @JsonKey(name: 'dev_location')
   String? get devLocation;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lon')
   double? get devLon;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_lat')
   double? get devLat;
   @override
+  @SafeDoubleConverter()
   @JsonKey(name: 'dev_alt')
   double? get devAlt;
   @override

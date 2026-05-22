@@ -22,53 +22,69 @@ final phaseRepositoryProvider = Provider<PhaseRepository>((ref) {
 
 // ─── Phase List Provider (by plantId/siteId) ─────────────
 /// Mengambil semua fase untuk plant/site tertentu
-final phaseListProvider = FutureProvider.family<List<Phase>, String>((
+final phaseListProvider = FutureProvider.autoDispose.family<List<Phase>, String>((
   ref,
   plantId,
 ) async {
-  return ref.retryOnError(() => ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Phase List for Selected Site ────────────────────────
 /// Shortcut provider yang otomatis menggunakan selectedSiteProvider
-final phasesForSelectedSiteProvider = FutureProvider<List<Phase>>((ref) async {
+final phasesForSelectedSiteProvider = FutureProvider.autoDispose<List<Phase>>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(phaseRepositoryProvider).getPhasesByPlant(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Current Phase Provider ───────────────────────────────
-final currentPhaseProvider = FutureProvider.family<Phase?, String>((
+final currentPhaseProvider = FutureProvider.autoDispose.family<Phase?, String>((
   ref,
   plantId,
 ) async {
-  return ref.retryOnError(() => ref.read(phaseRepositoryProvider).getCurrentPhase(plantId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getCurrentPhase(plantId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Phase Detail Provider ────────────────────────────────
-final phaseDetailProvider = FutureProvider.family<Phase, String>((
+final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
   ref,
   phaseId,
 ) async {
-  return ref.retryOnError(() => ref.read(phaseRepositoryProvider).getPhaseById(phaseId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getPhaseById(phaseId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Phase History Provider ───────────────────────────────
-final phaseHistoryProvider = FutureProvider.family<List<Phase>, String>((
+final phaseHistoryProvider = FutureProvider.autoDispose.family<List<Phase>, String>((
   ref,
   plantId,
 ) async {
-  return ref.retryOnError(() => ref.read(phaseRepositoryProvider).getPhaseHistory(plantId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getPhaseHistory(plantId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─── Phase Statistics Provider ───────────────────────────
-final phaseStatsProvider = FutureProvider.family<Map<String, dynamic>, String>((
+final phaseStatsProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((
   ref,
   plantId,
 ) async {
-  final phases = await ref.retryOnError(() => ref
-      .read(phaseRepositoryProvider)
-      .getPhasesByPlant(plantId));
+  final phases = await ref.retryOnError(() async {
+    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 
   final completed = phases.where((p) => p.isCompleted).length;
   final active = phases.where((p) => p.isActive).length;

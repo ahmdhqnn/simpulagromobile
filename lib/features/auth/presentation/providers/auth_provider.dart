@@ -105,24 +105,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Login dengan username dan password
   Future<bool> login(String username, String password) async {
     state = state.copyWith(status: AuthStatus.loading, error: null);
-    try {
-      final user = await _repository.login(username, password);
-      state = AuthState(status: AuthStatus.authenticated, user: user);
-      _loadPermissions();
-      return true;
-    } catch (e) {
-      final msg = e.toString();
-      String errorMsg;
-      if (msg.contains('SocketException') ||
-          msg.contains('connection') ||
-          msg.contains('timeout')) {
-        errorMsg = 'Tidak Ada Koneksi Internet';
-      } else {
-        errorMsg = 'Username atau Password salah';
-      }
-      state = AuthState(status: AuthStatus.unauthenticated, error: errorMsg);
-      return false;
-    }
+    final result = await _repository.login(username, password);
+    return result.fold(
+      (failure) {
+        state = AuthState(status: AuthStatus.unauthenticated, error: failure.message);
+        return false;
+      },
+      (user) {
+        state = AuthState(status: AuthStatus.authenticated, user: user);
+        _loadPermissions();
+        return true;
+      },
+    );
   }
 
   /// Logout — hapus sesi dan reset state
@@ -143,17 +137,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Refresh profil user dari server
   Future<void> refreshProfile() async {
-    try {
-      final user = await _repository.getProfile();
-      if (mounted) state = state.copyWith(user: user);
-    } catch (_) {}
+    final result = await _repository.getProfile();
+    result.fold(
+      (_) {},
+      (user) {
+        if (mounted) state = state.copyWith(user: user);
+      },
+    );
   }
 
   Future<void> _loadPermissions() async {
-    try {
-      final perms = await _repository.getPermissions();
-      if (mounted) state = state.copyWith(permissions: perms);
-    } catch (_) {}
+    final result = await _repository.getPermissions();
+    result.fold(
+      (_) {},
+      (perms) {
+        if (mounted) state = state.copyWith(permissions: perms);
+      },
+    );
   }
 }
 

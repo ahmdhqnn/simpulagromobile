@@ -5,6 +5,7 @@ import 'package:simpulagromobile/core/storage/secure_storage.dart';
 import 'package:simpulagromobile/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:simpulagromobile/features/auth/data/models/user_model.dart';
 import 'package:simpulagromobile/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:simpulagromobile/core/error/failures.dart';
 
 class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
 
@@ -57,10 +58,15 @@ void main() {
         ).thenAnswer((_) async {});
         when(() => mockStorage.saveUserData(any())).thenAnswer((_) async {});
 
-        final user = await repository.login('john', 'pass123');
+        final result = await repository.login('john', 'pass123');
 
-        expect(user.userId, equals('USR_001'));
-        expect(user.userName, equals('John Doe'));
+        result.fold(
+          (failure) => fail('Should not fail'),
+          (user) {
+            expect(user.userId, equals('USR_001'));
+            expect(user.userName, equals('John Doe'));
+          },
+        );
 
         verify(
           () => mockTokenManager.saveTokens(
@@ -77,9 +83,10 @@ void main() {
           () => mockRemoteDataSource.login('john', 'wrong'),
         ).thenThrow(Exception('Invalid credentials'));
 
-        expect(
-          () => repository.login('john', 'wrong'),
-          throwsA(isA<Exception>()),
+        final result = await repository.login('john', 'wrong');
+        result.fold(
+          (failure) => expect(failure, isA<UnknownFailure>()),
+          (_) => fail('Should fail'),
         );
       });
     });
@@ -191,10 +198,15 @@ void main() {
         ).thenAnswer((_) async => userModel);
         when(() => mockStorage.saveUserData(any())).thenAnswer((_) async {});
 
-        final user = await repository.getProfile();
+        final result = await repository.getProfile();
 
-        expect(user.userId, equals('USR_001'));
-        expect(user.userName, equals('John Updated'));
+        result.fold(
+          (f) => fail('Should not fail'),
+          (user) {
+            expect(user.userId, equals('USR_001'));
+            expect(user.userName, equals('John Updated'));
+          },
+        );
         verify(() => mockStorage.saveUserData(any())).called(1);
       });
     });
@@ -205,9 +217,14 @@ void main() {
           () => mockRemoteDataSource.getPermissions(),
         ).thenAnswer((_) async => ['read:site', 'write:site']);
 
-        final perms = await repository.getPermissions();
+        final result = await repository.getPermissions();
 
-        expect(perms, equals(['read:site', 'write:site']));
+        result.fold(
+          (f) => fail('Should not fail'),
+          (perms) {
+            expect(perms, equals(['read:site', 'write:site']));
+          },
+        );
       });
     });
   });

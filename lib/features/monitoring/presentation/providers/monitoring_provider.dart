@@ -7,6 +7,8 @@ import '../../data/datasources/monitoring_remote_datasource.dart';
 import '../../data/models/monitoring_models.dart';
 import '../../domain/repositories/monitoring_repository.dart';
 import '../../data/repositories/monitoring_repository_impl.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REPOSITORY
@@ -28,7 +30,10 @@ final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getLatestReads(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getLatestReads(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 /// Bacaan sensor hari ini (untuk grafik realtime).
@@ -38,13 +43,19 @@ final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getTodayReads(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getTodayReads(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 /// Log payload MQTT terbaru.
 /// GET /api/sites/logs
 final logsProvider = FutureProvider.autoDispose<List<LogModel>>((ref) async {
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getLogs());
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getLogs();
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -79,35 +90,38 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
   String fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  return ref.retryOnError(() {
+  return ref.retryOnError(() async {
+    Either<Failure, List<SensorReadModel>> result;
     switch (filter) {
       case HistoryFilter.sevenDay:
         final start = DateTime.now().subtract(const Duration(days: 7));
         final end = DateTime.now();
-        return repo.getDateRangeReads(
+        result = await repo.getDateRangeReads(
           siteId,
           startDate: fmt(start),
           endDate: fmt(end),
         );
-
+        break;
       case HistoryFilter.dateRange:
         final start = ref.read(historyStartDateProvider);
         final end = ref.read(historyEndDateProvider);
-        return repo.getDateRangeReads(
+        result = await repo.getDateRangeReads(
           siteId,
           startDate: fmt(start),
           endDate: fmt(end),
         );
-
+        break;
       case HistoryFilter.plantingDate:
         final start = DateTime.now().subtract(const Duration(days: 120));
         final end = DateTime.now();
-        return repo.getDateRangeReads(
+        result = await repo.getDateRangeReads(
           siteId,
           startDate: fmt(start),
           endDate: fmt(end),
         );
+        break;
     }
+    return result.fold((f) => throw f, (data) => data);
   });
 });
 
@@ -122,7 +136,10 @@ final devicesProvider = FutureProvider.autoDispose<List<DeviceModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getDevices(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getDevices(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 /// Total sensor terdaftar di site (dari endpoint /sensors).
@@ -132,7 +149,10 @@ final monitoringSensorCountProvider = FutureProvider.autoDispose<int>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return 0;
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getSensorCount(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getSensorCount(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -147,9 +167,10 @@ final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return EnvironmentalHealth.empty();
 
-  final raw = await ref.retryOnError(() => ref
-      .read(monitoringRepositoryProvider)
-      .getEnvironmentalHealth(siteId));
+  final raw = await ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getEnvironmentalHealth(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 
   if (raw.isEmpty) return EnvironmentalHealth.empty();
   return EnvironmentalHealth.fromJson(raw);
@@ -161,9 +182,10 @@ final plantRecommendationProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return {};
-      return ref.retryOnError(() => ref
-          .read(monitoringRepositoryProvider)
-          .getPlantRecommendation(siteId));
+      return ref.retryOnError(() async {
+        final result = await ref.read(monitoringRepositoryProvider).getPlantRecommendation(siteId);
+        return result.fold((f) => throw f, (data) => data);
+      });
     });
 
 /// Agregasi harian sensor (avg/min/max).
@@ -173,7 +195,10 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getDailyReads(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getDailyReads(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -185,7 +210,10 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
   ref,
 ) async {
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getAlarmData());
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getAlarmData();
+    return result.fold((f) => throw f, (data) => data);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,5 +226,8 @@ final monthlyReadsProvider =
     FutureProvider.autoDispose<List<MonthlyRekapModel>>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  return ref.retryOnError(() => ref.read(monitoringRepositoryProvider).getMonthlyReads(siteId));
+  return ref.retryOnError(() async {
+    final result = await ref.read(monitoringRepositoryProvider).getMonthlyReads(siteId);
+    return result.fold((f) => throw f, (data) => data);
+  });
 });

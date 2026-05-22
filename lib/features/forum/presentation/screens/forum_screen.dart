@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
-import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/forum_provider.dart';
 import '../widgets/post_card.dart';
@@ -85,15 +85,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Forum',
-            style: AppTextStyles.sectionTitle(context, 28),
-          ),
+          Text('Forum', style: AppTextStyles.sectionTitle(context, 28)),
           PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_vert,
-              color: AppColors.textPrimary,
-            ),
+            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
@@ -192,7 +186,11 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
 
     // Initial loading
     if (forumState.posts.isEmpty && forumState.isLoading) {
-      return const LoadingWidget(message: 'Memuat postingan...');
+      return ListView.builder(
+        padding: EdgeInsets.all(context.rw(0.051)),
+        itemCount: 4,
+        itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
+      );
     }
 
     // Posts list
@@ -283,9 +281,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (sheetCtx) => SafeArea(
         child: Padding(

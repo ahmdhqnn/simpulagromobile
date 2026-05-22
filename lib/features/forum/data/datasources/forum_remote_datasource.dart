@@ -5,9 +5,6 @@ import '../models/reaction_model.dart';
 import '../models/user_comment_model.dart';
 import '../models/json_parser.dart';
 
-/// Remote Data Source
-/// Bertanggung jawab untuk komunikasi dengan API.
-/// Robust terhadap variasi format response (type casting safe).
 class ForumRemoteDataSource {
   final Dio _dio;
 
@@ -17,10 +14,6 @@ class ForumRemoteDataSource {
   // HELPER: Response data extraction
   // ═══════════════════════════════════════════════════════════
 
-  /// Mengekstrak data dari response.data, handle kasus:
-  /// - response.data = {"data": ...}
-  /// - response.data = {"result": ...}
-  /// - response.data langsung berisi data
   dynamic _extractResponseData(dynamic responseData) {
     if (responseData is Map) {
       final map = JsonParser.parseMap(responseData);
@@ -31,10 +24,6 @@ class ForumRemoteDataSource {
     return responseData;
   }
 
-  /// Mengekstrak List dari data yang bisa berupa:
-  /// - List langsung: [...]
-  /// - Map dengan key 'posts', 'rows', 'comments', 'reactions', 'items', 'data', 'results'
-  /// - Map yang memiliki value berupa List
   List _extractList(dynamic data) {
     if (data is List) return data;
     if (data is Map) {
@@ -52,7 +41,7 @@ class ForumRemoteDataSource {
       for (final key in possibleKeys) {
         if (map[key] is List) return map[key] as List;
       }
-      // Fallback: cari value pertama yang berupa List
+
       for (final value in map.values) {
         if (value is List) return value;
       }
@@ -60,7 +49,6 @@ class ForumRemoteDataSource {
     return [];
   }
 
-  /// Extract object Map dari data, handle nested object seperti `{"post": {...}}`.
   Map<String, dynamic>? _extractObject(
     dynamic data, {
     List<String> nestedKeys = const ['post', 'comment', 'reaction'],
@@ -69,7 +57,6 @@ class ForumRemoteDataSource {
     if (data is! Map) return null;
     final map = JsonParser.parseMap(data);
 
-    // Jika map berisi salah satu required field, return langsung
     for (final field in requiredFieldsAny) {
       if (map.containsKey(field)) return map;
     }
@@ -137,15 +124,17 @@ class ForumRemoteDataSource {
     String? imageUrl,
   }) async {
     try {
-      final response = await _dio.post(
-        '/forum/posts',
-        data: {
-          'site_id': siteId,
-          'forum_title': title,
-          'forum_content': content,
-          if (imageUrl != null) 'forum_image_url': imageUrl,
-        },
-      );
+      final formData = FormData.fromMap({
+        'site_id': siteId,
+        'forum_title': title,
+        'forum_content': content,
+      });
+
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        formData.fields.add(MapEntry('forum_image_url', imageUrl));
+      }
+
+      final response = await _dio.post('/forum/posts', data: formData);
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -167,14 +156,16 @@ class ForumRemoteDataSource {
     String? imageUrl,
   }) async {
     try {
-      final response = await _dio.put(
-        '/forum/posts/$postId',
-        data: {
-          if (title != null) 'forum_title': title,
-          if (content != null) 'forum_content': content,
-          if (imageUrl != null) 'forum_image_url': imageUrl,
-        },
-      );
+      final formData = FormData.fromMap({
+        if (title != null) 'forum_title': title,
+        if (content != null) 'forum_content': content,
+      });
+
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        formData.fields.add(MapEntry('forum_image_url', imageUrl));
+      }
+
+      final response = await _dio.put('/forum/posts/$postId', data: formData);
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -200,7 +191,7 @@ class ForumRemoteDataSource {
   Future<List<PostModel>> getMyPosts({int page = 1, int limit = 20}) async {
     try {
       final response = await _dio.get(
-        '/forum/my-posts',
+        '/forum/posts/my-posts',
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -217,7 +208,7 @@ class ForumRemoteDataSource {
   Future<List<PostModel>> getLikedPosts({int page = 1, int limit = 20}) async {
     try {
       final response = await _dio.get(
-        '/forum/liked-posts',
+        '/forum/posts/liked-posts',
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -317,13 +308,10 @@ class ForumRemoteDataSource {
     try {
       final response = await _dio.post(
         '/forum/posts/$postId/comments',
-        data: {'comment_content': content},
+        data: {'cf_content': content},
       );
       final data = _extractResponseData(response.data);
-      final obj = _extractObject(
-        data,
-        requiredFieldsAny: ['comment_id', 'id'],
-      );
+      final obj = _extractObject(data, requiredFieldsAny: ['comment_id', 'id']);
       if (obj == null) {
         throw Exception('Format response tidak valid');
       }
@@ -396,7 +384,9 @@ class ForumRemoteDataSource {
               message.isEmpty ? 'Data yang dikirim tidak valid' : message,
             );
           } else if (statusCode != null && statusCode >= 500) {
-            return Exception('Server sedang bermasalah. Coba beberapa saat lagi.');
+            return Exception(
+              'Server sedang bermasalah. Coba beberapa saat lagi.',
+            );
           }
           return Exception(message);
         case DioExceptionType.cancel:

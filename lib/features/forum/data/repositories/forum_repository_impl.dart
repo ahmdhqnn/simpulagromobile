@@ -1,3 +1,6 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/reaction.dart';
@@ -5,169 +8,227 @@ import '../../domain/entities/user_comment.dart';
 import '../../domain/repositories/forum_repository.dart';
 import '../datasources/forum_remote_datasource.dart';
 
-/// Repository Implementation
-/// Mengimplementasikan contract dari domain layer
-/// Bertanggung jawab untuk orchestration data dari berbagai sumber
 class ForumRepositoryImpl implements ForumRepository {
   final ForumRemoteDataSource _remoteDataSource;
 
   ForumRepositoryImpl(this._remoteDataSource);
 
+  Failure _handleDioError(DioException e) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      return const NetworkFailure('Connection timeout');
+    }
+    if (e.type == DioExceptionType.connectionError) {
+      return const NetworkFailure('No internet connection');
+    }
+    final statusCode = e.response?.statusCode;
+    String message = 'Unknown error';
+    if (e.response?.data is Map) {
+      message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
+    } else {
+      message = e.message ?? 'Unknown error';
+    }
+
+    switch (statusCode) {
+      case 401: return AuthFailure(message);
+      case 403: return PermissionFailure(message);
+      case 404: return NotFoundFailure(message);
+      case 409: return ValidationFailure(message);
+      default: return ServerFailure(message, statusCode: statusCode);
+    }
+  }
+
   @override
-  Future<List<Post>> getPosts({
+  Future<Either<Failure, List<Post>>> getPosts({
     int page = 1,
     int limit = 20,
     String? siteId,
   }) async {
     try {
-      return await _remoteDataSource.getPosts(
+      final posts = await _remoteDataSource.getPosts(
         page: page,
         limit: limit,
         siteId: siteId,
       );
+      return Right(posts);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Post> getPostById(String postId) async {
+  Future<Either<Failure, Post>> getPostById(String postId) async {
     try {
-      return await _remoteDataSource.getPostById(postId);
+      final post = await _remoteDataSource.getPostById(postId);
+      return Right(post);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Post> createPost({
+  Future<Either<Failure, Post>> createPost({
     required String title,
     required String siteId,
     required String content,
     String? imageUrl,
   }) async {
     try {
-      return await _remoteDataSource.createPost(
+      final post = await _remoteDataSource.createPost(
         title: title,
         siteId: siteId,
         content: content,
         imageUrl: imageUrl,
       );
+      return Right(post);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Post> updatePost({
+  Future<Either<Failure, Post>> updatePost({
     required String postId,
     String? title,
     String? content,
     String? imageUrl,
   }) async {
     try {
-      return await _remoteDataSource.updatePost(
+      final post = await _remoteDataSource.updatePost(
         postId: postId,
         title: title,
         content: content,
         imageUrl: imageUrl,
       );
+      return Right(post);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<void> deletePost(String postId) async {
+  Future<Either<Failure, void>> deletePost(String postId) async {
     try {
       await _remoteDataSource.deletePost(postId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<List<Post>> getMyPosts({int page = 1, int limit = 20}) async {
+  Future<Either<Failure, List<Post>>> getMyPosts({int page = 1, int limit = 20}) async {
     try {
-      return await _remoteDataSource.getMyPosts(page: page, limit: limit);
+      final posts = await _remoteDataSource.getMyPosts(page: page, limit: limit);
+      return Right(posts);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<List<Post>> getLikedPosts({int page = 1, int limit = 20}) async {
+  Future<Either<Failure, List<Post>>> getLikedPosts({int page = 1, int limit = 20}) async {
     try {
-      return await _remoteDataSource.getLikedPosts(page: page, limit: limit);
+      final posts = await _remoteDataSource.getLikedPosts(page: page, limit: limit);
+      return Right(posts);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<List<UserComment>> getMyComments({
+  Future<Either<Failure, List<UserComment>>> getMyComments({
     int page = 1,
     int limit = 20,
   }) async {
     try {
-      return await _remoteDataSource.getMyComments(page: page, limit: limit);
+      final comments = await _remoteDataSource.getMyComments(page: page, limit: limit);
+      return Right(comments);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
+  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleLike(String postId) async {
     try {
-      return await _remoteDataSource.toggleLike(postId);
+      final result = await _remoteDataSource.toggleLike(postId);
+      return Right(result);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<int> sharePost(String postId) async {
+  Future<Either<Failure, int>> sharePost(String postId) async {
     try {
-      return await _remoteDataSource.sharePost(postId);
+      final result = await _remoteDataSource.sharePost(postId);
+      return Right(result);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<List<Comment>> getComments({
+  Future<Either<Failure, List<Comment>>> getComments({
     required String postId,
     int page = 1,
     int limit = 50,
   }) async {
     try {
-      return await _remoteDataSource.getComments(
+      final comments = await _remoteDataSource.getComments(
         postId: postId,
         page: page,
         limit: limit,
       );
+      return Right(comments);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Comment> createComment({
+  Future<Either<Failure, Comment>> createComment({
     required String postId,
     required String content,
   }) async {
     try {
-      return await _remoteDataSource.createComment(
+      final comment = await _remoteDataSource.createComment(
         postId: postId,
         content: content,
       );
+      return Right(comment);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<void> deleteComment({
+  Future<Either<Failure, void>> deleteComment({
     required String postId,
     required String commentId,
   }) async {
@@ -176,17 +237,23 @@ class ForumRepositoryImpl implements ForumRepository {
         postId: postId,
         commentId: commentId,
       );
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<List<Reaction>> getReactions(String postId) async {
+  Future<Either<Failure, List<Reaction>>> getReactions(String postId) async {
     try {
-      return await _remoteDataSource.getReactions(postId);
+      final reactions = await _remoteDataSource.getReactions(postId);
+      return Right(reactions);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure(e.toString()));
     }
   }
 }

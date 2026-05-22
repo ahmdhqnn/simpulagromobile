@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/post.dart';
 import '../entities/comment.dart';
 import '../entities/reaction.dart';
@@ -5,44 +7,44 @@ import '../entities/user_comment.dart';
 
 abstract class ForumRepository {
   // ─── Posts ─────────────────────────────────────────
-  Future<List<Post>> getPosts({int page = 1, int limit = 20, String? siteId});
-  Future<Post> getPostById(String postId);
-  Future<Post> createPost({
+  Future<Either<Failure, List<Post>>> getPosts({int page = 1, int limit = 20, String? siteId});
+  Future<Either<Failure, Post>> getPostById(String postId);
+  Future<Either<Failure, Post>> createPost({
     required String title,
     required String siteId,
     required String content,
     String? imageUrl,
   });
-  Future<Post> updatePost({
+  Future<Either<Failure, Post>> updatePost({
     required String postId,
     String? title,
     String? content,
     String? imageUrl,
   });
-  Future<void> deletePost(String postId);
-  Future<List<Post>> getMyPosts({int page = 1, int limit = 20});
-  Future<List<Post>> getLikedPosts({int page = 1, int limit = 20});
-  Future<List<UserComment>> getMyComments({int page = 1, int limit = 20});
+  Future<Either<Failure, void>> deletePost(String postId);
+  Future<Either<Failure, List<Post>>> getMyPosts({int page = 1, int limit = 20});
+  Future<Either<Failure, List<Post>>> getLikedPosts({int page = 1, int limit = 20});
+  Future<Either<Failure, List<UserComment>>> getMyComments({int page = 1, int limit = 20});
 
   // ─── Interactions ──────────────────────────────────
-  Future<({bool isLiked, int likeCount})> toggleLike(String postId);
-  Future<int> sharePost(String postId);
+  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleLike(String postId);
+  Future<Either<Failure, int>> sharePost(String postId);
 
   // ─── Comments ──────────────────────────────────────
-  Future<List<Comment>> getComments({
+  Future<Either<Failure, List<Comment>>> getComments({
     required String postId,
     int page = 1,
     int limit = 50,
   });
-  Future<Comment> createComment({
+  Future<Either<Failure, Comment>> createComment({
     required String postId,
     required String content,
   });
-  Future<void> deleteComment({
+  Future<Either<Failure, void>> deleteComment({
     required String postId,
     required String commentId,
   });
 
   // ─── Reactions ─────────────────────────────────────
-  Future<List<Reaction>> getReactions(String postId);
+  Future<Either<Failure, List<Reaction>>> getReactions(String postId);
 }

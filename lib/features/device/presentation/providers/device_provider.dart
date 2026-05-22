@@ -25,35 +25,53 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 // ═══════════════════════════════════════════════════════════
 // DEVICE LIST PROVIDER (by Site ID)
 // ═══════════════════════════════════════════════════════════
-final deviceListProvider = FutureProvider.family<List<Device>, String>((
+final deviceListProvider = FutureProvider.autoDispose.family<List<Device>, String>((
   ref,
   siteId,
 ) async {
   final repository = ref.watch(deviceRepositoryProvider);
-  return await ref.retryOnError(() => repository.getDevices(siteId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getDevices(siteId);
+    return result.fold(
+      (failure) => throw failure,
+      (devices) => devices,
+    );
+  });
 });
 
 // ═══════════════════════════════════════════════════════════
 // DEVICE DETAIL PROVIDER (by Site ID & Device ID)
 // ═══════════════════════════════════════════════════════════
 final deviceDetailProvider =
-    FutureProvider.family<Device, ({String siteId, String devId})>((
+    FutureProvider.autoDispose.family<Device, ({String siteId, String devId})>((
       ref,
       params,
     ) async {
       final repository = ref.watch(deviceRepositoryProvider);
-      return await ref.retryOnError(() => repository.getDeviceById(params.siteId, params.devId));
+      return await ref.retryOnError(() async {
+        final result = await repository.getDeviceById(params.siteId, params.devId);
+        return result.fold(
+          (failure) => throw failure,
+          (device) => device,
+        );
+      });
     });
 
 // ═══════════════════════════════════════════════════════════
 // DEVICE COORDINATES PROVIDER
 // ═══════════════════════════════════════════════════════════
-final deviceCoordinatesProvider = FutureProvider.family<List<Device>, String>((
+final deviceCoordinatesProvider = FutureProvider.autoDispose.family<List<Device>, String>((
   ref,
   siteId,
 ) async {
   final repository = ref.watch(deviceRepositoryProvider);
-  return await ref.retryOnError(() => repository.getDeviceCoordinates(siteId));
+  return await ref.retryOnError(() async {
+    final result = await repository.getDeviceCoordinates(siteId);
+    return result.fold(
+      (failure) => throw failure,
+      (devices) => devices,
+    );
+  });
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -99,38 +117,47 @@ class DeviceFormNotifier extends StateNotifier<DeviceFormState> {
 
   Future<bool> createDevice(String siteId, Device device) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final savedDevice = await _repository.createDevice(siteId, device);
-      state = DeviceFormState(savedDevice: savedDevice);
-      return true;
-    } catch (e) {
-      state = DeviceFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.createDevice(siteId, device);
+    return result.fold(
+      (failure) {
+        state = DeviceFormState(error: failure.message);
+        return false;
+      },
+      (savedDevice) {
+        state = DeviceFormState(savedDevice: savedDevice);
+        return true;
+      },
+    );
   }
 
   Future<bool> updateDevice(String siteId, String devId, Device device) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final savedDevice = await _repository.updateDevice(siteId, devId, device);
-      state = DeviceFormState(savedDevice: savedDevice);
-      return true;
-    } catch (e) {
-      state = DeviceFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.updateDevice(siteId, devId, device);
+    return result.fold(
+      (failure) {
+        state = DeviceFormState(error: failure.message);
+        return false;
+      },
+      (savedDevice) {
+        state = DeviceFormState(savedDevice: savedDevice);
+        return true;
+      },
+    );
   }
 
   Future<bool> deleteDevice(String siteId, String devId) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _repository.deleteDevice(siteId, devId);
-      state = const DeviceFormState(isDeleted: true);
-      return true;
-    } catch (e) {
-      state = DeviceFormState(error: e.toString());
-      return false;
-    }
+    final result = await _repository.deleteDevice(siteId, devId);
+    return result.fold(
+      (failure) {
+        state = DeviceFormState(error: failure.message);
+        return false;
+      },
+      (_) {
+        state = const DeviceFormState(isDeleted: true);
+        return true;
+      },
+    );
   }
 
   void reset() {
@@ -139,7 +166,7 @@ class DeviceFormNotifier extends StateNotifier<DeviceFormState> {
 }
 
 final deviceFormProvider =
-    StateNotifierProvider<DeviceFormNotifier, DeviceFormState>((ref) {
+    StateNotifierProvider.autoDispose<DeviceFormNotifier, DeviceFormState>((ref) {
       final repository = ref.watch(deviceRepositoryProvider);
       return DeviceFormNotifier(repository);
     });

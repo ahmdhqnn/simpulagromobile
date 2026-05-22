@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/device.dart';
@@ -10,77 +11,78 @@ class DeviceRepositoryImpl implements DeviceRepository {
   DeviceRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<List<Device>> getDevices(String siteId) async {
+  Future<Either<Failure, List<Device>>> getDevices(String siteId) async {
     try {
       final models = await _remoteDataSource.getDevices(siteId);
-      return models.map((m) => m.toEntity()).toList();
+      return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to fetch devices: $e');
+      return Left(ServerFailure('Failed to fetch devices: $e'));
     }
   }
 
   @override
-  Future<Device> getDeviceById(String siteId, String devId) async {
+  Future<Either<Failure, Device>> getDeviceById(String siteId, String devId) async {
     try {
       final model = await _remoteDataSource.getDeviceById(siteId, devId);
-      return model.toEntity();
+      return Right(model.toEntity());
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to fetch device: $e');
+      return Left(ServerFailure('Failed to fetch device: $e'));
     }
   }
 
   @override
-  Future<List<Device>> getDeviceCoordinates(String siteId) async {
+  Future<Either<Failure, List<Device>>> getDeviceCoordinates(String siteId) async {
     try {
       final models = await _remoteDataSource.getDeviceCoordinates(siteId);
-      return models.map((m) => m.toEntity()).toList();
+      return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to fetch device coordinates: $e');
+      return Left(ServerFailure('Failed to fetch device coordinates: $e'));
     }
   }
 
   @override
-  Future<Device> createDevice(String siteId, Device device) async {
+  Future<Either<Failure, Device>> createDevice(String siteId, Device device) async {
     try {
       final model = await _remoteDataSource.createDevice(siteId, device);
-      return model.toEntity();
+      return Right(model.toEntity());
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to create device: $e');
+      return Left(ServerFailure('Failed to create device: $e'));
     }
   }
 
   @override
-  Future<Device> updateDevice(
+  Future<Either<Failure, Device>> updateDevice(
     String siteId,
     String devId,
     Device device,
   ) async {
     try {
       final model = await _remoteDataSource.updateDevice(siteId, devId, device);
-      return model.toEntity();
+      return Right(model.toEntity());
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to update device: $e');
+      return Left(ServerFailure('Failed to update device: $e'));
     }
   }
 
   @override
-  Future<void> deleteDevice(String siteId, String devId) async {
+  Future<Either<Failure, void>> deleteDevice(String siteId, String devId) async {
     try {
       await _remoteDataSource.deleteDevice(siteId, devId);
+      return const Right(null);
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return Left(_handleDioError(e));
     } catch (e) {
-      throw ServerFailure('Failed to delete device: $e');
+      return Left(ServerFailure('Failed to delete device: $e'));
     }
   }
 
@@ -95,7 +97,14 @@ class DeviceRepositoryImpl implements DeviceRepository {
     }
 
     final statusCode = e.response?.statusCode;
-    final message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
+    
+    // Safely extract message
+    String message = 'Unknown error';
+    if (e.response?.data is Map) {
+      message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
+    } else {
+      message = e.message ?? 'Unknown error';
+    }
 
     switch (statusCode) {
       case 401:

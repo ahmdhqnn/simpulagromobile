@@ -1,8 +1,10 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/site.dart';
 
 abstract class SiteRepository {
-  Future<List<Site>> getSites();
-  Future<Site> getSiteById(String siteId);
-  Future<Site> createSite(Site site);
-  Future<Site> updateSite(String siteId, Site site);
+  Future<Either<Failure, List<Site>>> getSites();
+  Future<Either<Failure, Site>> getSiteById(String siteId);
+  Future<Either<Failure, Site>> createSite(Site site);
+  Future<Either<Failure, Site>> updateSite(String siteId, Site site);
 }
