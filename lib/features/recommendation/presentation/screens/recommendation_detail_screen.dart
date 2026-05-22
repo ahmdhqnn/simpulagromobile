@@ -13,6 +13,7 @@ import '../widgets/recommendation_info_card_widget.dart';
 import '../widgets/recommendation_parameters_card_widget.dart';
 import '../widgets/recommendation_reason_card_widget.dart';
 import '../widgets/recommendation_title_card_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class RecommendationDetailScreen extends ConsumerWidget {
   final String recommendationId;
@@ -29,8 +30,18 @@ class RecommendationDetailScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: recommendationAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              RecommendationDetailHeaderWidget(
+                onBack: () => context.pop(),
+                onRefresh: () => ref.invalidate(
+                  recommendationDetailProvider(recommendationId),
+                ),
+              ),
+              const Expanded(
+                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: true, headerHeight: 120),
+              ),
+            ],
           ),
           error: (error, stack) => Column(
             children: [

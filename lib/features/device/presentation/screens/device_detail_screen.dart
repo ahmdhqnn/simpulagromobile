@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_provider.dart';
 import 'device_form_screen.dart';
 
@@ -154,7 +155,7 @@ class DeviceDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const DetailScreenSkeleton(infoRowCount: 5, hasDescription: false, headerHeight: 0),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
     );

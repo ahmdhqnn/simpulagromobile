@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/site_provider.dart';
 import '../../domain/entities/site.dart';
 
@@ -49,7 +50,7 @@ class SiteListScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => buildListSkeleton(count: 6),
         error: (error, stack) => _ErrorState(
           message: error.toString(),
           onRetry: () => ref.invalidate(siteListProvider),

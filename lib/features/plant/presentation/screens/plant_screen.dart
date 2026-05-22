@@ -8,6 +8,7 @@ import '../providers/plant_provider.dart';
 import '../widgets/plant_empty_state.dart';
 import '../widgets/plant_input_form.dart';
 import '../widgets/plant_detail_card.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class PlantScreen extends ConsumerStatefulWidget {
   const PlantScreen({super.key});
@@ -26,7 +27,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
     if (siteId == null) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
         ),
       );
     }
@@ -36,7 +37,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
       body: SafeArea(
         child: plantsAsync.when(
           loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+            child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
           ),
           error: (error, stack) => _buildErrorState(context, error.toString()),
           data: (plants) => _buildContent(context, plants, screenState, siteId),
@@ -85,7 +86,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
         return PlantDetailCard(plant: plants.first);
       case PlantScreenState.loading:
         return const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
         );
     }
   }
