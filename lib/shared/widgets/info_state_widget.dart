@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import 'app_card_widget.dart';
@@ -154,14 +155,15 @@ class LoadingCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      child: const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+    return Shimmer.fromColors(
+      baseColor: AppColors.surfaceVariant,
+      highlightColor: Colors.white.withValues(alpha: 0.5),
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(radius),
+        ),
       ),
     );
   }

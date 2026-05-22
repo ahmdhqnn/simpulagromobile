@@ -12,8 +12,8 @@ class TaskCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(task.taskStatus);
-    final priorityColor = _getPriorityColor(task.taskPriority);
+    final statusColor = _statusColor(task.taskStatus);
+    final priorityColor = _priorityColor(task.taskPriority);
 
     return Container(
       margin: EdgeInsets.only(bottom: context.rh(0.012)),
@@ -21,12 +21,6 @@ class TaskCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: task.isOverdue
-            ? Border.all(
-                color: AppColors.error.withValues(alpha: 0.3),
-                width: 2,
-              )
-            : null,
       ),
       child: InkWell(
         onTap: onTap,
@@ -62,7 +56,8 @@ class TaskCardWidget extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (task.taskDescription != null) ...[
+                      if (task.taskDescription != null &&
+                          task.taskDescription!.isNotEmpty) ...[
                         SizedBox(height: context.rh(0.005)),
                         Text(
                           task.taskDescription!,
@@ -85,7 +80,7 @@ class TaskCardWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Text(
-                    _getStatusLabel(task.taskStatus),
+                    task.taskStatus.label,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(11),
@@ -107,29 +102,22 @@ class TaskCardWidget extends StatelessWidget {
                   label: task.taskType.label,
                   color: AppColors.primary,
                 ),
-                if (task.taskPriority != TaskPriority.medium)
+                _MetaChip(
+                  icon: Icons.flag_outlined,
+                  label: task.taskPriority.label,
+                  color: priorityColor,
+                ),
+                if (task.completedAt != null)
                   _MetaChip(
-                    icon: Icons.flag_outlined,
-                    label: task.taskPriority.label,
-                    color: priorityColor,
-                  ),
-                if (task.taskDueDate != null)
+                    icon: Icons.check_circle_outline,
+                    label: DateFormat('dd MMM yyyy').format(task.completedAt!),
+                    color: AppColors.success,
+                  )
+                else if (task.createdAt != null)
                   _MetaChip(
-                    icon: task.isOverdue
-                        ? Icons.warning_outlined
-                        : Icons.calendar_today_outlined,
-                    label: DateFormat('dd MMM yyyy').format(task.taskDueDate!),
-                    color: task.isOverdue
-                        ? AppColors.error
-                        : task.isDueSoon
-                        ? AppColors.warning
-                        : AppColors.textPrimary.withValues(alpha: 0.6),
-                  ),
-                if (task.assignedToName != null)
-                  _MetaChip(
-                    icon: Icons.person_outline,
-                    label: task.assignedToName!,
-                    color: AppColors.info,
+                    icon: Icons.calendar_today_outlined,
+                    label: DateFormat('dd MMM yyyy').format(task.createdAt!),
+                    color: AppColors.textPrimary.withValues(alpha: 0.6),
                   ),
               ],
             ),
@@ -139,20 +127,20 @@ class TaskCardWidget extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(TaskStatus status) {
+  Color _statusColor(TaskStatus status) {
     switch (status) {
       case TaskStatus.pending:
         return AppColors.warning;
-      case TaskStatus.inProgress:
+      case TaskStatus.progress:
         return AppColors.info;
-      case TaskStatus.completed:
+      case TaskStatus.complite:
         return AppColors.success;
-      case TaskStatus.cancelled:
+      case TaskStatus.failed:
         return AppColors.error;
     }
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
+  Color _priorityColor(TaskPriority priority) {
     switch (priority) {
       case TaskPriority.low:
         return AppColors.success;
@@ -160,21 +148,6 @@ class TaskCardWidget extends StatelessWidget {
         return AppColors.warning;
       case TaskPriority.high:
         return AppColors.error;
-      case TaskPriority.urgent:
-        return const Color(0xFFD32F2F);
-    }
-  }
-
-  String _getStatusLabel(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return 'Menunggu';
-      case TaskStatus.inProgress:
-        return 'Dikerjakan';
-      case TaskStatus.completed:
-        return 'Selesai';
-      case TaskStatus.cancelled:
-        return 'Dibatalkan';
     }
   }
 }

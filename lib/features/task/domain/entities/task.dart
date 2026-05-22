@@ -1,149 +1,154 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// Task entity representing a farming task.
+///
+/// Mirrors the backend contract documented at `/sites/{siteId}/tasks`.
+/// Enum values map 1:1 with the API wire values (UPPERCASE).
+class Task {
+  final String taskId;
+  final String? siteId;
+  final String taskName;
+  final String? taskDescription;
+  final TaskType taskType;
+  final TaskStatus taskStatus;
+  final TaskPriority taskPriority;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? completedAt;
 
-part 'task.freezed.dart';
+  const Task({
+    required this.taskId,
+    this.siteId,
+    required this.taskName,
+    this.taskDescription,
+    required this.taskType,
+    required this.taskStatus,
+    required this.taskPriority,
+    this.createdAt,
+    this.updatedAt,
+    this.completedAt,
+  });
 
-/// Task entity representing a farming task
-@freezed
-class Task with _$Task {
-  const Task._();
-
-  const factory Task({
-    required String taskId,
+  Task copyWith({
+    String? taskId,
     String? siteId,
-    String? siteName,
-    String? plantId,
-    String? plantName,
-    required String taskName,
+    String? taskName,
     String? taskDescription,
-    required TaskType taskType,
-    required TaskStatus taskStatus,
-    required TaskPriority taskPriority,
-    DateTime? taskDueDate,
-    DateTime? taskCompletedDate,
-    String? assignedTo,
-    String? assignedToName,
-    String? createdBy,
+    TaskType? taskType,
+    TaskStatus? taskStatus,
+    TaskPriority? taskPriority,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? notes,
-  }) = _Task;
-
-  /// Check if task is overdue
-  bool get isOverdue {
-    if (taskStatus == TaskStatus.completed) return false;
-    if (taskDueDate == null) return false;
-    return DateTime.now().isAfter(taskDueDate!);
+    DateTime? completedAt,
+  }) {
+    return Task(
+      taskId: taskId ?? this.taskId,
+      siteId: siteId ?? this.siteId,
+      taskName: taskName ?? this.taskName,
+      taskDescription: taskDescription ?? this.taskDescription,
+      taskType: taskType ?? this.taskType,
+      taskStatus: taskStatus ?? this.taskStatus,
+      taskPriority: taskPriority ?? this.taskPriority,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      completedAt: completedAt ?? this.completedAt,
+    );
   }
 
-  /// Check if task is due soon (within 24 hours)
-  bool get isDueSoon {
-    if (taskStatus == TaskStatus.completed) return false;
-    if (taskDueDate == null) return false;
-    final now = DateTime.now();
-    final diff = taskDueDate!.difference(now);
-    return diff.inHours <= 24 && diff.inHours > 0;
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Task &&
+        other.taskId == taskId &&
+        other.siteId == siteId &&
+        other.taskName == taskName &&
+        other.taskDescription == taskDescription &&
+        other.taskType == taskType &&
+        other.taskStatus == taskStatus &&
+        other.taskPriority == taskPriority &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
+        other.completedAt == completedAt;
   }
 
-  /// Get status color
-  String get statusColor {
-    switch (taskStatus) {
-      case TaskStatus.pending:
-        return '#FFA726'; // Orange
-      case TaskStatus.inProgress:
-        return '#42A5F5'; // Blue
-      case TaskStatus.completed:
-        return '#66BB6A'; // Green
-      case TaskStatus.cancelled:
-        return '#EF5350'; // Red
-    }
-  }
-
-  /// Get priority color
-  String get priorityColor {
-    switch (taskPriority) {
-      case TaskPriority.low:
-        return '#66BB6A'; // Green
-      case TaskPriority.medium:
-        return '#FFA726'; // Orange
-      case TaskPriority.high:
-        return '#EF5350'; // Red
-      case TaskPriority.urgent:
-        return '#D32F2F'; // Dark Red
-    }
-  }
+  @override
+  int get hashCode => Object.hash(
+    taskId,
+    siteId,
+    taskName,
+    taskDescription,
+    taskType,
+    taskStatus,
+    taskPriority,
+    createdAt,
+    updatedAt,
+    completedAt,
+  );
 }
 
-/// Task type enum
+/// Task type — must match API enum (UPPERCASE on the wire).
 enum TaskType {
-  planting,
-  watering,
-  fertilizing,
-  pestControl,
-  harvesting,
-  monitoring,
-  maintenance,
-  other;
+  planting('PLANTING', 'Penanaman'),
+  fertilizing('FERTILIZING', 'Pemupukan'),
+  harvesting('HARVESTING', 'Panen'),
+  watering('WATERING', 'Penyiraman'),
+  pestControl('PESTCONTROL', 'Pengendalian Hama'),
+  monitoring('MONITORING', 'Monitoring'),
+  maintenance('MAINTENANCE', 'Perawatan'),
+  other('OTHER', 'Lainnya');
 
-  String get label {
-    switch (this) {
-      case TaskType.planting:
-        return 'Penanaman';
-      case TaskType.watering:
-        return 'Penyiraman';
-      case TaskType.fertilizing:
-        return 'Pemupukan';
-      case TaskType.pestControl:
-        return 'Pengendalian Hama';
-      case TaskType.harvesting:
-        return 'Panen';
-      case TaskType.monitoring:
-        return 'Monitoring';
-      case TaskType.maintenance:
-        return 'Perawatan';
-      case TaskType.other:
-        return 'Lainnya';
+  final String apiValue;
+  final String label;
+
+  const TaskType(this.apiValue, this.label);
+
+  static TaskType fromApi(String? value) {
+    if (value == null) return TaskType.other;
+    final upper = value.toUpperCase();
+    for (final type in TaskType.values) {
+      if (type.apiValue == upper) return type;
     }
+    return TaskType.other;
   }
 }
 
-/// Task status enum
+/// Task status — must match API enum (UPPERCASE on the wire).
+/// Note: backend spelling is intentional: "COMPLITE" and "PROGRESS".
 enum TaskStatus {
-  pending,
-  inProgress,
-  completed,
-  cancelled;
+  pending('PENDING', 'Menunggu'),
+  progress('PROGRESS', 'Dikerjakan'),
+  complite('COMPLITE', 'Selesai'),
+  failed('FAILED', 'Gagal');
 
-  String get label {
-    switch (this) {
-      case TaskStatus.pending:
-        return 'Menunggu';
-      case TaskStatus.inProgress:
-        return 'Sedang Dikerjakan';
-      case TaskStatus.completed:
-        return 'Selesai';
-      case TaskStatus.cancelled:
-        return 'Dibatalkan';
+  final String apiValue;
+  final String label;
+
+  const TaskStatus(this.apiValue, this.label);
+
+  static TaskStatus fromApi(String? value) {
+    if (value == null) return TaskStatus.pending;
+    final upper = value.toUpperCase();
+    for (final s in TaskStatus.values) {
+      if (s.apiValue == upper) return s;
     }
+    return TaskStatus.pending;
   }
 }
 
-/// Task priority enum
 enum TaskPriority {
-  low,
-  medium,
-  high,
-  urgent;
+  low('LOW', 'Rendah'),
+  medium('MEDIUM', 'Sedang'),
+  high('HIGH', 'Tinggi');
 
-  String get label {
-    switch (this) {
-      case TaskPriority.low:
-        return 'Rendah';
-      case TaskPriority.medium:
-        return 'Sedang';
-      case TaskPriority.high:
-        return 'Tinggi';
-      case TaskPriority.urgent:
-        return 'Mendesak';
+  final String apiValue;
+  final String label;
+
+  const TaskPriority(this.apiValue, this.label);
+
+  static TaskPriority fromApi(String? value) {
+    if (value == null) return TaskPriority.medium;
+    final upper = value.toUpperCase();
+    for (final p in TaskPriority.values) {
+      if (p.apiValue == upper) return p;
     }
+    return TaskPriority.medium;
   }
 }

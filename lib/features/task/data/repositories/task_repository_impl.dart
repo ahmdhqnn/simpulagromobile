@@ -6,17 +6,26 @@ import '../../domain/repositories/task_repository.dart';
 import '../datasources/task_remote_datasource.dart';
 import '../models/task_model.dart';
 
-/// Task repository implementation
 class TaskRepositoryImpl implements TaskRepository {
   final TaskRemoteDatasource remoteDatasource;
 
   TaskRepositoryImpl(this.remoteDatasource);
 
   @override
-  Future<Either<Failure, List<Task>>> getTasks() async {
+  Future<Either<Failure, List<Task>>> getTasks(
+    String siteId, {
+    TaskType? type,
+    TaskStatus? status,
+    TaskPriority? priority,
+  }) async {
     try {
-      final tasks = await remoteDatasource.getTasks();
-      return Right(tasks.map((model) => model.toEntity()).toList());
+      final tasks = await remoteDatasource.getTasks(
+        siteId,
+        taskType: type?.apiValue,
+        taskStatus: status?.apiValue,
+        taskPriority: priority?.apiValue,
+      );
+      return Right(tasks.map((m) => m.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -25,21 +34,12 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<Either<Failure, List<Task>>> getTasksBySite(String siteId) async {
+  Future<Either<Failure, Task>> getTaskById(
+    String siteId,
+    String taskId,
+  ) async {
     try {
-      final tasks = await remoteDatasource.getTasksBySite(siteId);
-      return Right(tasks.map((model) => model.toEntity()).toList());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Task>> getTaskById(String taskId) async {
-    try {
-      final task = await remoteDatasource.getTaskById(taskId);
+      final task = await remoteDatasource.getTaskById(siteId, taskId);
       return Right(task.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -49,10 +49,10 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<Either<Failure, Task>> createTask(Task task) async {
+  Future<Either<Failure, Task>> createTask(String siteId, Task task) async {
     try {
       final model = TaskModel.fromEntity(task);
-      final created = await remoteDatasource.createTask(model);
+      final created = await remoteDatasource.createTask(siteId, model);
       return Right(created.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -62,39 +62,16 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<Either<Failure, Task>> updateTask(Task task) async {
-    try {
-      final model = TaskModel.fromEntity(task);
-      final updated = await remoteDatasource.updateTask(model);
-      return Right(updated.toEntity());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> deleteTask(String taskId) async {
-    try {
-      await remoteDatasource.deleteTask(taskId);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Task>> updateTaskStatus(
+  Future<Either<Failure, Task>> updateTask(
+    String siteId,
     String taskId,
-    TaskStatus status,
+    Map<String, dynamic> changes,
   ) async {
     try {
-      final updated = await remoteDatasource.updateTaskStatus(
+      final updated = await remoteDatasource.updateTask(
+        siteId,
         taskId,
-        status.name,
+        changes,
       );
       return Right(updated.toEntity());
     } on ServerException catch (e) {
@@ -105,7 +82,28 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<Either<Failure, Task>> completeTask(String taskId) async {
-    return updateTaskStatus(taskId, TaskStatus.completed);
+  Future<Either<Failure, Task>> updateTaskStatus(
+    String siteId,
+    String taskId,
+    TaskStatus status,
+  ) {
+    return updateTask(siteId, taskId, {'task_sts': status.apiValue});
+  }
+
+  @override
+  Future<Either<Failure, Task>> completeTask(String siteId, String taskId) {
+    return updateTaskStatus(siteId, taskId, TaskStatus.complite);
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteTask(String siteId, String taskId) async {
+    try {
+      await remoteDatasource.deleteTask(siteId, taskId);
+      return const Right(unit);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
   }
 }
