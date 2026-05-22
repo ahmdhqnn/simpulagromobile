@@ -1,9 +1,6 @@
 import '../../domain/entities/comment.dart';
 import 'json_parser.dart';
 
-/// Data Model: Comment
-/// Extends Entity dan menambahkan serialization logic.
-/// Robust terhadap variasi response API (type casting safe).
 class CommentModel extends Comment {
   const CommentModel({
     required super.commentId,
@@ -29,10 +26,15 @@ class CommentModel extends Comment {
             userJson['user_id'],
       ),
       commentContent: JsonParser.parseString(
-        JsonParser.tryKeys(json, ['comment_content', 'content']),
+        JsonParser.tryKeys(json, ['cf_content', 'comment_content', 'content']),
       ),
       createdAt: JsonParser.parseDateTime(
-        JsonParser.tryKeys(json, ['comment_created', 'created_at', 'createdAt']),
+        JsonParser.tryKeys(json, [
+          'cf_created',
+          'comment_created',
+          'created_at',
+          'createdAt',
+        ]),
       ),
       user: CommentUserModel.fromJson(userJson),
     );

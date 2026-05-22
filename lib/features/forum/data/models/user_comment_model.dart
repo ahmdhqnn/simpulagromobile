@@ -1,10 +1,6 @@
 import '../../domain/entities/user_comment.dart';
 import 'json_parser.dart';
 
-/// Data Model: UserComment
-/// Untuk endpoint /forum/my-comments yang mengembalikan komentar user
-/// beserta info post tempat komentar tersebut berada.
-/// Robust terhadap variasi response API (type casting safe).
 class UserCommentModel extends UserComment {
   const UserCommentModel({
     required super.commentId,
@@ -35,13 +31,23 @@ class UserCommentModel extends UserComment {
         defaultValue: 'Tanpa Judul',
       ),
       commentContent: JsonParser.parseString(
-        JsonParser.tryKeys(json, ['comment_content', 'content']),
+        JsonParser.tryKeys(json, ['cf_content', 'comment_content', 'content']),
       ),
       createdAt: JsonParser.parseDateTime(
-        JsonParser.tryKeys(json, ['comment_created', 'created_at', 'createdAt']),
+        JsonParser.tryKeys(json, [
+          'cf_created',
+          'comment_created',
+          'created_at',
+          'createdAt',
+        ]),
       ),
       updatedAt: JsonParser.parseDateTimeOrNull(
-        JsonParser.tryKeys(json, ['comment_update', 'updated_at', 'updatedAt']),
+        JsonParser.tryKeys(json, [
+          'cf_updated',
+          'comment_update',
+          'updated_at',
+          'updatedAt',
+        ]),
       ),
     );
   }
