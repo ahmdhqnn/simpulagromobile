@@ -44,6 +44,7 @@ class DashboardScreen extends ConsumerWidget {
             ref.invalidate(plantSummaryProvider);
             ref.invalidate(latestSensorReadsProvider);
             ref.invalidate(sitesProvider);
+            ref.invalidate(taskListProvider);
             await Future.delayed(const Duration(milliseconds: 500));
           },
           child: SingleChildScrollView(
@@ -92,7 +93,6 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      // Environmental Health
                       const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
                       SizedBox(height: context.rh(0.014)),
                       healthAsync.when(
@@ -117,7 +117,6 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      // Sensor Status
                       const SectionHeaderWidget(title: 'Status Sensor'),
                       SizedBox(height: context.rh(0.014)),
                       healthAsync.when(
@@ -142,7 +141,6 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      // Summary Grid
                       const SectionHeaderWidget(title: 'Ringkasan'),
                       SizedBox(height: context.rh(0.014)),
                       GridView.count(
@@ -195,13 +193,15 @@ class DashboardScreen extends ConsumerWidget {
                             svgIcon: 'assets/icons/check-task-outline-icon.svg',
                             iconBgColor: AppColors.softOrange,
                             iconColor: AppColors.warning,
-                            onTap: () => context.push('/tasks'),
+                            onTap: () async {
+                              await context.push('/tasks');
+                              ref.invalidate(taskListProvider);
+                            },
                           ),
                         ],
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      // Task Overview
                       const SectionHeaderWidget(title: 'Ringkasan Task'),
                       SizedBox(height: context.rh(0.014)),
                       TaskOverviewWidget(

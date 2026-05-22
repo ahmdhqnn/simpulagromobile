@@ -4,18 +4,46 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_detail_widgets.dart';
 
-class TaskDetailScreen extends ConsumerWidget {
+class TaskDetailScreen extends ConsumerStatefulWidget {
   final String taskId;
 
   const TaskDetailScreen({super.key, required this.taskId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final taskAsync = ref.watch(taskDetailProvider(taskId));
+  ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
+}
+
+class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
+  String? _siteId;
+
+  @override
+  void initState() {
+    super.initState();
+    _siteId = ref.read(selectedSiteIdProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final siteId = _siteId;
+    if (siteId == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Detail Task'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: _buildErrorState(context, 'Pilih site terlebih dahulu'),
+      );
+    }
+
+    final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId)));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -25,30 +53,50 @@ class TaskDetailScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          taskAsync.whenOrNull(
-                data: (task) => PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) =>
-                      _onMenuAction(context, ref, task, value),
-                  itemBuilder: (_) => _buildMenuItems(task),
-                ),
-              ) ??
-              const SizedBox.shrink(),
+          taskAsync.maybeWhen(
+            data: (task) => PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) =>
+                  _onMenuAction(context, siteId, task, value),
+              itemBuilder: (_) => _buildMenuItems(task),
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
         ],
       ),
-      body: taskAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          ref.invalidate(taskDetailProvider((siteId, widget.taskId)));
+
+          try {
+            await ref.read(taskDetailProvider((siteId, widget.taskId)).future);
+          } catch (_) {}
+        },
+        child: taskAsync.when(
+          loading: () => ListView(
+            children: const [
+              SizedBox(height: 200),
+              Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            ],
+          ),
+          error: (error, _) => ListView(
+            children: [
+              SizedBox(height: context.rh(0.1)),
+              _buildErrorState(context, error.toString()),
+            ],
+          ),
+          data: (task) => _buildContent(context, siteId, task),
         ),
-        error: (error, _) => _buildErrorState(context, error.toString()),
-        data: (task) => _buildContent(context, ref, task),
       ),
     );
   }
 
   List<PopupMenuEntry<String>> _buildMenuItems(Task task) {
     return [
-      if (task.taskStatus != TaskStatus.completed)
+      if (task.taskStatus != TaskStatus.complite)
         const PopupMenuItem(
           value: 'complete',
           child: Row(
@@ -56,6 +104,17 @@ class TaskDetailScreen extends ConsumerWidget {
               Icon(Icons.check_circle, size: 20),
               SizedBox(width: 12),
               Text('Tandai Selesai'),
+            ],
+          ),
+        ),
+      if (task.taskStatus == TaskStatus.pending)
+        const PopupMenuItem(
+          value: 'start',
+          child: Row(
+            children: [
+              Icon(Icons.play_circle, size: 20),
+              SizedBox(width: 12),
+              Text('Mulai Kerjakan'),
             ],
           ),
         ),
@@ -82,24 +141,34 @@ class TaskDetailScreen extends ConsumerWidget {
     ];
   }
 
-  void _onMenuAction(
+  Future<void> _onMenuAction(
     BuildContext context,
-    WidgetRef ref,
+    String siteId,
     Task task,
     String value,
-  ) {
+  ) async {
     switch (value) {
       case 'edit':
-        context.push('/task/$taskId/edit');
+        final updated = await context.push<bool>('/task/${widget.taskId}/edit');
+        if (updated == true && context.mounted) {
+          await refreshTaskCache(ref, siteId: siteId, taskId: widget.taskId);
+        }
+        break;
       case 'delete':
-        _showDeleteDialog(context, ref, task);
+        _showDeleteDialog(context, siteId, task);
+        break;
       case 'complete':
-        _completeTask(context, ref, task);
+        _changeStatus(context, siteId, task, TaskStatus.complite);
+        break;
+      case 'start':
+        _changeStatus(context, siteId, task, TaskStatus.progress);
+        break;
     }
   }
 
-  Widget _buildContent(BuildContext context, WidgetRef ref, Task task) {
+  Widget _buildContent(BuildContext context, String siteId, Task task) {
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(context.rw(0.041)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,10 +178,6 @@ class TaskDetailScreen extends ConsumerWidget {
           _buildInfoCard(context, task),
           SizedBox(height: context.rh(0.02)),
           _buildDetailsCard(context, task),
-          if (task.notes != null) ...[
-            SizedBox(height: context.rh(0.02)),
-            _buildNotesCard(context, task),
-          ],
           SizedBox(height: context.rh(0.02)),
           _buildTimelineCard(context, task),
         ],
@@ -129,11 +194,7 @@ class TaskDetailScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: task.isOverdue
-              ? AppColors.error.withValues(alpha: 0.3)
-              : AppColors.divider,
-        ),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +206,8 @@ class TaskDetailScreen extends ConsumerWidget {
               18,
             ).copyWith(fontWeight: FontWeight.w700),
           ),
-          if (task.taskDescription != null) ...[
+          if (task.taskDescription != null &&
+              task.taskDescription!.isNotEmpty) ...[
             SizedBox(height: context.rh(0.01)),
             Text(
               task.taskDescription!,
@@ -172,21 +234,6 @@ class TaskDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          if (task.isOverdue) ...[
-            SizedBox(height: context.rh(0.015)),
-            _WarningBanner(
-              icon: Icons.warning,
-              message: 'Task ini sudah melewati batas waktu!',
-              color: AppColors.error,
-            ),
-          ] else if (task.isDueSoon) ...[
-            SizedBox(height: context.rh(0.015)),
-            _WarningBanner(
-              icon: Icons.access_time,
-              message: 'Task ini akan jatuh tempo dalam 24 jam',
-              color: AppColors.warning,
-            ),
-          ],
         ],
       ),
     );
@@ -209,23 +256,11 @@ class TaskDetailScreen extends ConsumerWidget {
             label: 'Jenis Task',
             value: task.taskType.label,
           ),
-          if (task.siteName != null)
+          if (task.siteId != null)
             TaskInfoRowWidget(
               icon: Icons.location_on_outlined,
               label: 'Site',
-              value: task.siteName!,
-            ),
-          if (task.plantName != null)
-            TaskInfoRowWidget(
-              icon: Icons.grass_outlined,
-              label: 'Tanaman',
-              value: task.plantName!,
-            ),
-          if (task.assignedToName != null)
-            TaskInfoRowWidget(
-              icon: Icons.person_outline,
-              label: 'Ditugaskan ke',
-              value: task.assignedToName!,
+              value: task.siteId!,
             ),
         ],
       ),
@@ -244,28 +279,6 @@ class TaskDetailScreen extends ConsumerWidget {
         children: [
           Text('Detail Waktu', style: AppTextStyles.cardTitle(context, 14)),
           SizedBox(height: context.rh(0.015)),
-          if (task.taskDueDate != null)
-            TaskInfoRowWidget(
-              icon: Icons.calendar_today_outlined,
-              label: 'Batas Waktu',
-              value: DateFormat(
-                'dd MMMM yyyy, HH:mm',
-              ).format(task.taskDueDate!),
-              valueColor: task.isOverdue
-                  ? AppColors.error
-                  : task.isDueSoon
-                  ? AppColors.warning
-                  : null,
-            ),
-          if (task.taskCompletedDate != null)
-            TaskInfoRowWidget(
-              icon: Icons.check_circle_outline,
-              label: 'Selesai Pada',
-              value: DateFormat(
-                'dd MMMM yyyy, HH:mm',
-              ).format(task.taskCompletedDate!),
-              valueColor: AppColors.success,
-            ),
           if (task.createdAt != null)
             TaskInfoRowWidget(
               icon: Icons.add_circle_outline,
@@ -278,34 +291,15 @@ class TaskDetailScreen extends ConsumerWidget {
               label: 'Terakhir Diupdate',
               value: DateFormat('dd MMMM yyyy, HH:mm').format(task.updatedAt!),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotesCard(BuildContext context, Task task) {
-    return Container(
-      padding: EdgeInsets.all(context.rw(0.041)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.note_outlined,
-                size: 20,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Text('Catatan', style: AppTextStyles.cardTitle(context, 14)),
-            ],
-          ),
-          SizedBox(height: context.rh(0.01)),
-          Text(task.notes!, style: AppTextStyles.caption(context, size: 13)),
+          if (task.completedAt != null)
+            TaskInfoRowWidget(
+              icon: Icons.check_circle_outline,
+              label: 'Selesai Pada',
+              value: DateFormat(
+                'dd MMMM yyyy, HH:mm',
+              ).format(task.completedAt!),
+              valueColor: AppColors.success,
+            ),
         ],
       ),
     );
@@ -330,26 +324,26 @@ class TaskDetailScreen extends ConsumerWidget {
               date: task.createdAt!,
               isFirst: true,
             ),
-          if (task.taskStatus == TaskStatus.inProgress)
+          if (task.taskStatus == TaskStatus.progress)
             TaskTimelineItemWidget(
               icon: Icons.play_circle,
               title: 'Task Sedang Dikerjakan',
               date: task.updatedAt ?? DateTime.now(),
             ),
-          if (task.taskCompletedDate != null)
+          if (task.taskStatus == TaskStatus.failed)
+            TaskTimelineItemWidget(
+              icon: Icons.cancel,
+              title: 'Task Gagal',
+              date: task.updatedAt ?? DateTime.now(),
+              color: AppColors.error,
+              isLast: true,
+            ),
+          if (task.completedAt != null)
             TaskTimelineItemWidget(
               icon: Icons.check_circle,
               title: 'Task Selesai',
-              date: task.taskCompletedDate!,
+              date: task.completedAt!,
               color: AppColors.success,
-            ),
-          if (task.taskDueDate != null &&
-              task.taskStatus != TaskStatus.completed)
-            TaskTimelineItemWidget(
-              icon: Icons.flag,
-              title: 'Batas Waktu',
-              date: task.taskDueDate!,
-              color: task.isOverdue ? AppColors.error : AppColors.warning,
               isLast: true,
             ),
         ],
@@ -358,6 +352,7 @@ class TaskDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildErrorState(BuildContext context, String error) {
+    final siteId = _siteId;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.051)),
@@ -374,14 +369,33 @@ class TaskDetailScreen extends ConsumerWidget {
               style: AppTextStyles.caption(context, size: 13),
             ),
             SizedBox(height: context.rh(0.03)),
-            ElevatedButton.icon(
-              onPressed: () => context.pop(),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Kembali'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Kembali'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.surface,
+                    foregroundColor: AppColors.textPrimary,
+                  ),
+                ),
+                if (siteId != null) ...[
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(
+                      taskDetailProvider((siteId, widget.taskId)),
+                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Coba Lagi'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -389,7 +403,7 @@ class TaskDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, Task task) {
+  void _showDeleteDialog(BuildContext context, String siteId, Task task) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -405,32 +419,34 @@ class TaskDetailScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
+              final messenger = ScaffoldMessenger.of(context);
               final repository = ref.read(taskRepositoryProvider);
-              final result = await repository.deleteTask(task.taskId);
+              final result = await repository.deleteTask(siteId, task.taskId);
+              if (!mounted) return;
               result.fold(
                 (failure) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Gagal menghapus task: ${failure.message}',
-                        ),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
-                  }
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal menghapus task: ${failure.message}'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
                 },
-                (_) {
-                  ref.invalidate(taskListProvider);
+                (_) async {
+                  await refreshTaskCache(
+                    ref,
+                    siteId: siteId,
+                    taskId: task.taskId,
+                  );
                   if (context.mounted) {
-                    context.pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Task berhasil dihapus'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
+                    context.pop(true);
                   }
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Task berhasil dihapus'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
                 },
               );
             },
@@ -444,31 +460,37 @@ class TaskDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _completeTask(BuildContext context, WidgetRef ref, Task task) async {
+  Future<void> _changeStatus(
+    BuildContext context,
+    String siteId,
+    Task task,
+    TaskStatus status,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
     final repository = ref.read(taskRepositoryProvider);
-    final result = await repository.completeTask(task.taskId);
+    final result = await repository.updateTaskStatus(
+      siteId,
+      task.taskId,
+      status,
+    );
+    if (!mounted) return;
     result.fold(
       (failure) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal menyelesaikan task: ${failure.message}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Gagal memperbarui status: ${failure.message}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
       },
-      (_) {
-        ref.invalidate(taskListProvider);
-        ref.invalidate(taskDetailProvider(task.taskId));
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Task berhasil diselesaikan'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-        }
+      (_) async {
+        await refreshTaskCache(ref, siteId: siteId, taskId: task.taskId);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Status diperbarui ke "${status.label}"'),
+            backgroundColor: AppColors.success,
+          ),
+        );
       },
     );
   }
@@ -477,11 +499,11 @@ class TaskDetailScreen extends ConsumerWidget {
     switch (s) {
       case TaskStatus.pending:
         return AppColors.warning;
-      case TaskStatus.inProgress:
+      case TaskStatus.progress:
         return AppColors.info;
-      case TaskStatus.completed:
+      case TaskStatus.complite:
         return AppColors.success;
-      case TaskStatus.cancelled:
+      case TaskStatus.failed:
         return AppColors.error;
     }
   }
@@ -494,47 +516,6 @@ class TaskDetailScreen extends ConsumerWidget {
         return AppColors.warning;
       case TaskPriority.high:
         return AppColors.error;
-      case TaskPriority.urgent:
-        return const Color(0xFFD32F2F);
     }
-  }
-}
-
-class _WarningBanner extends StatelessWidget {
-  final IconData icon;
-  final String message;
-  final Color color;
-  const _WarningBanner({
-    required this.icon,
-    required this.message,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppRadius.xs),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(12),
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

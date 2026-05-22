@@ -128,9 +128,16 @@ class ApiEndpoints {
       '/sites/$siteId/config/$id';
 
   // ═══════════════════════════════════════════════════════════
-  // TASK ENDPOINTS
+  // TASK ENDPOINTS  (site-scoped, see Swagger contract)
+  //   GET    /sites/{siteId}/tasks
+  //   POST   /sites/{siteId}/tasks
+  //   GET    /sites/{siteId}/tasks/{id}
+  //   PUT    /sites/{siteId}/tasks/{id}
+  //   DELETE /sites/{siteId}/tasks/{id}
   // ═══════════════════════════════════════════════════════════
-  static const String tasks = '/tasks';
+  static String tasksBySite(String siteId) => '/sites/$siteId/tasks';
+  static String taskBySiteAndId(String siteId, String taskId) =>
+      '/sites/$siteId/tasks/$taskId';
 
   // ═══════════════════════════════════════════════════════════
   // USER MANAGEMENT ENDPOINTS

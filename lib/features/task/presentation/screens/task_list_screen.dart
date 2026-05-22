@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
+import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_card_widget.dart';
 
@@ -28,7 +29,13 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.primary,
-          onRefresh: () async => ref.invalidate(taskListProvider),
+          onRefresh: () async {
+            ref.invalidate(taskListProvider);
+
+            await ref
+                .read(taskListProvider.future)
+                .catchError((Object _) => <Task>[]);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
@@ -66,7 +73,14 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                           .map(
                             (task) => TaskCardWidget(
                               task: task,
-                              onTap: () => context.push('/task/${task.taskId}'),
+                              onTap: () async {
+                                final result = await context.push<bool>(
+                                  '/task/${task.taskId}',
+                                );
+                                if (result == true) {
+                                  ref.invalidate(taskListProvider);
+                                }
+                              },
                             ),
                           )
                           .toList(),
@@ -97,7 +111,12 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         ),
         CircularBackButtonWidget(
-          onPressed: () => context.push('/task/create'),
+          onPressed: () async {
+            final result = await context.push<bool>('/task/create');
+            if (result == true) {
+              ref.invalidate(taskListProvider);
+            }
+          },
           svgIconPath: 'assets/icons/plus-outline-icon.svg',
         ),
       ],
@@ -135,21 +154,21 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
           const SizedBox(width: 7),
           _TaskStatItem(
-            icon: 'assets/icons/check-task-outline-icon.svg',
-            label: 'Selesai',
-            value: '${stats.completed}',
-            color: AppColors.softGreen,
-            iconColor: AppColors.success,
-            textColor: AppColors.success,
+            icon: 'assets/icons/total-task-outline-icon.svg',
+            label: 'Dikerjakan',
+            value: '${stats.progress}',
+            color: AppColors.softBlue,
+            iconColor: AppColors.info,
+            textColor: AppColors.info,
           ),
           const SizedBox(width: 7),
           _TaskStatItem(
-            icon: 'assets/icons/late-task-outline-icon.svg',
-            label: 'terlambat',
-            value: '${stats.overdue}',
-            color: const Color(0xFFFDEEEE),
-            iconColor: AppColors.error,
-            textColor: AppColors.error,
+            icon: 'assets/icons/check-task-outline-icon.svg',
+            label: 'Selesai',
+            value: '${stats.complite}',
+            color: AppColors.softGreen,
+            iconColor: AppColors.success,
+            textColor: AppColors.success,
           ),
         ],
       ),
@@ -160,35 +179,19 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: [
-          _FilterPill(
-            label: 'Semua',
-            isSelected: currentFilter == TaskFilter.all,
-            onTap: () =>
-                ref.read(taskFilterProvider.notifier).state = TaskFilter.all,
-          ),
-          const SizedBox(width: 2),
-          _FilterPill(
-            label: 'Menunggu',
-            isSelected: currentFilter == TaskFilter.pending,
-            onTap: () => ref.read(taskFilterProvider.notifier).state =
-                TaskFilter.pending,
-          ),
-          const SizedBox(width: 2),
-          _FilterPill(
-            label: 'Dikerjakan',
-            isSelected: currentFilter == TaskFilter.inProgress,
-            onTap: () => ref.read(taskFilterProvider.notifier).state =
-                TaskFilter.inProgress,
-          ),
-          const SizedBox(width: 2),
-          _FilterPill(
-            label: 'Selesai',
-            isSelected: currentFilter == TaskFilter.completed,
-            onTap: () => ref.read(taskFilterProvider.notifier).state =
-                TaskFilter.completed,
-          ),
-        ],
+        children: TaskFilter.values
+            .expand(
+              (filter) => [
+                _FilterPill(
+                  label: filter.label,
+                  isSelected: currentFilter == filter,
+                  onTap: () =>
+                      ref.read(taskFilterProvider.notifier).state = filter,
+                ),
+                const SizedBox(width: 2),
+              ],
+            )
+            .toList(),
       ),
     );
   }
@@ -199,14 +202,12 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         return 'Belum ada task';
       case TaskFilter.pending:
         return 'Tidak ada task yang menunggu';
-      case TaskFilter.inProgress:
+      case TaskFilter.progress:
         return 'Tidak ada task yang sedang dikerjakan';
-      case TaskFilter.completed:
+      case TaskFilter.complite:
         return 'Belum ada task yang selesai';
-      case TaskFilter.overdue:
-        return 'Tidak ada task yang terlambat';
-      case TaskFilter.dueSoon:
-        return 'Tidak ada task yang segera jatuh tempo';
+      case TaskFilter.failed:
+        return 'Tidak ada task yang gagal';
     }
   }
 }

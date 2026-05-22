@@ -1,33 +1,32 @@
 import 'package:dartz/dartz.dart' hide Task;
+import '../../domain/entities/task.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/task.dart';
 
-/// Task repository interface
 abstract class TaskRepository {
-  /// Get all tasks
-  Future<Either<Failure, List<Task>>> getTasks();
+  Future<Either<Failure, List<Task>>> getTasks(
+    String siteId, {
+    TaskType? type,
+    TaskStatus? status,
+    TaskPriority? priority,
+  });
 
-  /// Get tasks by site
-  Future<Either<Failure, List<Task>>> getTasksBySite(String siteId);
+  Future<Either<Failure, Task>> getTaskById(String siteId, String taskId);
 
-  /// Get task by ID
-  Future<Either<Failure, Task>> getTaskById(String taskId);
+  Future<Either<Failure, Task>> createTask(String siteId, Task task);
 
-  /// Create new task
-  Future<Either<Failure, Task>> createTask(Task task);
+  Future<Either<Failure, Task>> updateTask(
+    String siteId,
+    String taskId,
+    Map<String, dynamic> changes,
+  );
 
-  /// Update existing task
-  Future<Either<Failure, Task>> updateTask(Task task);
-
-  /// Delete task
-  Future<Either<Failure, void>> deleteTask(String taskId);
-
-  /// Update task status
   Future<Either<Failure, Task>> updateTaskStatus(
+    String siteId,
     String taskId,
     TaskStatus status,
   );
 
-  /// Complete task
-  Future<Either<Failure, Task>> completeTask(String taskId);
+  Future<Either<Failure, Task>> completeTask(String siteId, String taskId);
+
+  Future<Either<Failure, Unit>> deleteTask(String siteId, String taskId);
 }

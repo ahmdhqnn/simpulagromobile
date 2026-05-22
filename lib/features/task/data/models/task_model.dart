@@ -1,109 +1,96 @@
-// ignore_for_file: invalid_annotation_target
-
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/task.dart';
 
-part 'task_model.freezed.dart';
-part 'task_model.g.dart';
+/// Pure data-class model for the Task feature.
+///
+/// Maps directly to the JSON wire format used by `/sites/{siteId}/tasks`.
+/// No code generation — fully manual to keep the integration explicit.
+class TaskModel {
+  final String taskId;
+  final String? siteId;
+  final String taskName;
+  final String? taskDescription;
+  final String? taskType;
+  final String? taskStatus;
+  final String? taskPriority;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? completedAt;
 
-/// Task model for data layer
-@freezed
-class TaskModel with _$TaskModel {
-  const TaskModel._();
+  const TaskModel({
+    required this.taskId,
+    this.siteId,
+    required this.taskName,
+    this.taskDescription,
+    this.taskType,
+    this.taskStatus,
+    this.taskPriority,
+    this.createdAt,
+    this.updatedAt,
+    this.completedAt,
+  });
 
-  const factory TaskModel({
-    @JsonKey(name: 'task_id') required String taskId,
-    @JsonKey(name: 'user_id') String? userId,
-    @JsonKey(name: 'task_name') required String taskName,
-    @JsonKey(name: 'task_desc') String? taskDescription,
-    @JsonKey(name: 'task_created') DateTime? createdAt,
-    @JsonKey(name: 'task_update') DateTime? updatedAt,
-    // Extended fields (not in API but useful for frontend)
-    @JsonKey(name: 'site_id') String? siteId,
-    @JsonKey(name: 'site_name') String? siteName,
-    @JsonKey(name: 'plant_id') String? plantId,
-    @JsonKey(name: 'plant_name') String? plantName,
-    @JsonKey(name: 'task_type') String? taskType,
-    @JsonKey(name: 'task_status') String? taskStatus,
-    @JsonKey(name: 'task_priority') String? taskPriority,
-    @JsonKey(name: 'task_due_date') DateTime? taskDueDate,
-    @JsonKey(name: 'task_completed_date') DateTime? taskCompletedDate,
-    @JsonKey(name: 'assigned_to') String? assignedTo,
-    @JsonKey(name: 'assigned_to_name') String? assignedToName,
-    @JsonKey(name: 'created_by') String? createdBy,
-    @JsonKey(name: 'notes') String? notes,
-  }) = _TaskModel;
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      taskId: (json['task_id'] ?? '').toString(),
+      siteId: json['site_id']?.toString(),
+      taskName: (json['task_name'] ?? '').toString(),
+      taskDescription: json['task_desc']?.toString(),
+      taskType: json['task_type']?.toString(),
+      taskStatus: json['task_sts']?.toString(),
+      taskPriority: json['task_priority']?.toString(),
+      createdAt: _parseDate(json['task_created']),
+      updatedAt: _parseDate(json['task_update']),
+      completedAt: _parseDate(json['task_complited_date']),
+    );
+  }
 
-  factory TaskModel.fromJson(Map<String, dynamic> json) =>
-      _$TaskModelFromJson(json);
-
-  /// Convert model to entity
+  /// Convert to entity (parses enum strings into typed values).
   Task toEntity() {
     return Task(
       taskId: taskId,
       siteId: siteId,
-      siteName: siteName,
-      plantId: plantId,
-      plantName: plantName,
       taskName: taskName,
       taskDescription: taskDescription,
-      taskType: _parseTaskType(taskType ?? 'other'),
-      taskStatus: _parseTaskStatus(taskStatus ?? 'pending'),
-      taskPriority: _parseTaskPriority(taskPriority ?? 'medium'),
-      taskDueDate: taskDueDate,
-      taskCompletedDate: taskCompletedDate,
-      assignedTo: assignedTo ?? userId,
-      assignedToName: assignedToName,
-      createdBy: createdBy,
+      taskType: TaskType.fromApi(taskType),
+      taskStatus: TaskStatus.fromApi(taskStatus),
+      taskPriority: TaskPriority.fromApi(taskPriority),
       createdAt: createdAt,
       updatedAt: updatedAt,
-      notes: notes,
+      completedAt: completedAt,
     );
   }
 
-  /// Create model from entity
   factory TaskModel.fromEntity(Task task) {
     return TaskModel(
       taskId: task.taskId,
-      userId: task.assignedTo,
+      siteId: task.siteId,
       taskName: task.taskName,
       taskDescription: task.taskDescription,
+      taskType: task.taskType.apiValue,
+      taskStatus: task.taskStatus.apiValue,
+      taskPriority: task.taskPriority.apiValue,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
-      siteId: task.siteId,
-      siteName: task.siteName,
-      plantId: task.plantId,
-      plantName: task.plantName,
-      taskType: task.taskType.name,
-      taskStatus: task.taskStatus.name,
-      taskPriority: task.taskPriority.name,
-      taskDueDate: task.taskDueDate,
-      taskCompletedDate: task.taskCompletedDate,
-      assignedTo: task.assignedTo,
-      assignedToName: task.assignedToName,
-      createdBy: task.createdBy,
-      notes: task.notes,
+      completedAt: task.completedAt,
     );
   }
 
-  static TaskType _parseTaskType(String type) {
-    return TaskType.values.firstWhere(
-      (e) => e.name == type,
-      orElse: () => TaskType.other,
-    );
+  Map<String, dynamic> toCreateRequestBody() {
+    final body = <String, dynamic>{'task_name': taskName};
+    if (taskDescription != null && taskDescription!.isNotEmpty) {
+      body['task_desc'] = taskDescription;
+    }
+    if (taskType != null) body['task_type'] = taskType;
+    if (taskStatus != null) body['task_sts'] = taskStatus;
+    if (taskPriority != null) body['task_priority'] = taskPriority;
+    return body;
   }
 
-  static TaskStatus _parseTaskStatus(String status) {
-    return TaskStatus.values.firstWhere(
-      (e) => e.name == status,
-      orElse: () => TaskStatus.pending,
-    );
-  }
-
-  static TaskPriority _parseTaskPriority(String priority) {
-    return TaskPriority.values.firstWhere(
-      (e) => e.name == priority,
-      orElse: () => TaskPriority.medium,
-    );
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    final s = value.toString();
+    if (s.isEmpty) return null;
+    return DateTime.tryParse(s);
   }
 }
