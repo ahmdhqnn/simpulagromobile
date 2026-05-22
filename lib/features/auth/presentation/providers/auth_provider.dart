@@ -116,7 +116,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (msg.contains('SocketException') ||
           msg.contains('connection') ||
           msg.contains('timeout')) {
-        errorMsg = 'Tidak dapat terhubung ke server';
+        errorMsg = 'Tidak Ada Koneksi Internet';
       } else {
         errorMsg = 'Username atau Password salah';
       }

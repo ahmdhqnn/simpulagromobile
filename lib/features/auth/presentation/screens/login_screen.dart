@@ -26,7 +26,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Tampilkan snackbar session expired setelah frame pertama
     if (widget.sessionExpiredMessage) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -78,10 +77,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context.go('/');
     } else {
       final error = ref.read(authProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Username atau Password salah'),
-          backgroundColor: Colors.red,
+      showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.error_outline, color: Colors.red, size: 28),
+              SizedBox(width: 10),
+              Text(
+                'Gagal Login',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            error ?? 'Username atau Password salah',
+            style: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 14,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
