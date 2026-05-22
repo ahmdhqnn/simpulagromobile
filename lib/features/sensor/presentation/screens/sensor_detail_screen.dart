@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/sensor_provider.dart';
 import 'sensor_form_screen.dart';
 
@@ -206,9 +207,7 @@ class SensorDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const DetailScreenSkeleton(infoRowCount: 5, hasDescription: true, headerHeight: 0),
         error: (error, stack) => Center(
           child: Padding(
             padding: EdgeInsets.all(context.rw(0.061)),

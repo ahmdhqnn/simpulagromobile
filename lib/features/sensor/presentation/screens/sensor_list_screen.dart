@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/sensor_provider.dart';
 import 'sensor_detail_screen.dart';
@@ -175,9 +176,7 @@ class SensorListScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => buildListSkeleton(count: 6),
         error: (error, stack) =>
             _buildErrorState(context, ref, effectiveSiteId, error),
       ),

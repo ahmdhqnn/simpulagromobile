@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
@@ -66,14 +67,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           } catch (_) {}
         },
         child: taskAsync.when(
-          loading: () => ListView(
-            children: const [
-              SizedBox(height: 200),
-              Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            ],
-          ),
+          loading: () =>
+              const DetailScreenSkeleton(infoRowCount: 6, hasDescription: true),
           error: (error, _) => ListView(
             children: [
               SizedBox(height: context.rh(0.1)),

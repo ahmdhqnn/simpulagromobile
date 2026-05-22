@@ -15,6 +15,7 @@ import '../widgets/profile_account_info_widget.dart';
 import '../widgets/profile_avatar_widget.dart';
 import '../widgets/profile_forum_card_widget.dart';
 import '../widgets/profile_permissions_card_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -60,8 +61,14 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
           ),
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              SizedBox(height: context.rh(0.022)),
+              _buildHeader(context, ref),
+              const Expanded(
+                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: false, headerHeight: 150),
+              ),
+            ],
           ),
           error: (error, _) => Center(
             child: Column(

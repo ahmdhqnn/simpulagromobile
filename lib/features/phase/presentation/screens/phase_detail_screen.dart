@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/phase_provider.dart';
 
 class PhaseDetailScreen extends ConsumerWidget {
@@ -20,8 +21,13 @@ class PhaseDetailScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: phaseAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              _buildHeader(context, ref),
+              const Expanded(
+                child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: true, headerHeight: 120),
+              ),
+            ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
           data: (phase) => RefreshIndicator(

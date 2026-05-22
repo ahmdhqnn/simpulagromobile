@@ -30,6 +30,10 @@ class AppColors {
   static const Color textTertiary = Color(0xFF9E9E9E);
   static const Color divider = Color(0xFFE0E0E0);
 
+  // Shimmer
+  static const Color shimmerBase = Color(0xFFE0E0E0);
+  static const Color shimmerHighlight = Color(0xFFF5F5F5);
+
   // Sensor-specific colors
   static const Color temperature = Color(0xFFFF7043);
   static const Color humidity = Color(0xFF42A5F5);

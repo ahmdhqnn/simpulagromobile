@@ -5,8 +5,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import 'app_card_widget.dart';
 
-/// Compact empty/info state card used inside scrollable content.
-/// Renders a centered icon + message inside a rounded white card.
 class InfoStateWidget extends StatelessWidget {
   final String message;
   final IconData? icon;
@@ -25,7 +23,6 @@ class InfoStateWidget extends StatelessWidget {
     this.radius = AppRadius.xl,
   });
 
-  /// Asset-based variant.
   const InfoStateWidget.svg({
     super.key,
     required this.message,
@@ -35,7 +32,6 @@ class InfoStateWidget extends StatelessWidget {
     this.radius = AppRadius.xl,
   }) : icon = null;
 
-  /// Material icon variant.
   const InfoStateWidget.icon({
     super.key,
     required this.message,
@@ -92,7 +88,6 @@ class InfoStateWidget extends StatelessWidget {
   }
 }
 
-/// Compact error card with retry action.
 class ErrorStateCardWidget extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -142,7 +137,6 @@ class ErrorStateCardWidget extends StatelessWidget {
   }
 }
 
-/// Loading shimmer placeholder shown while async data is in flight.
 class LoadingCardWidget extends StatelessWidget {
   final double height;
   final double radius;
@@ -156,12 +150,12 @@ class LoadingCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.surfaceVariant,
-      highlightColor: Colors.white.withValues(alpha: 0.5),
+      baseColor: AppColors.shimmerBase,
+      highlightColor: AppColors.shimmerHighlight,
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(radius),
         ),
       ),

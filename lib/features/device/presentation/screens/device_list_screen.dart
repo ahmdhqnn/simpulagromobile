@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_provider.dart';
 import 'device_detail_screen.dart';
 import 'device_form_screen.dart';
@@ -140,7 +141,7 @@ class DeviceListScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => buildListSkeleton(count: 6),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

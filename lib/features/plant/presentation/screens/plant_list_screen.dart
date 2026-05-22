@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/plant_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 
@@ -26,8 +27,11 @@ class PlantListScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: plantsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              _buildHeader(context, ref),
+              Expanded(child: buildListSkeleton(count: 5, type: 'plant')),
+            ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
           data: (plants) {

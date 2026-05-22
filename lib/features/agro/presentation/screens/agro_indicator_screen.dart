@@ -10,6 +10,7 @@ import '../widgets/vdp_widget.dart';
 import '../widgets/gdd_widget.dart';
 import '../widgets/etc_widget.dart';
 import '../widgets/environmental_health_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class AgroIndicatorScreen extends ConsumerWidget {
   const AgroIndicatorScreen({super.key});
@@ -22,8 +23,13 @@ class AgroIndicatorScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: agroAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              _buildHeader(context, ref),
+              const Expanded(
+                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: true, headerHeight: 120),
+              ),
+            ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
           data: (agroData) => RefreshIndicator(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/recommendation.dart';
 import '../providers/recommendation_provider.dart';
@@ -56,9 +57,7 @@ class RecommendationListScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                loading: () => buildListSkeleton(count: 6, type: 'plant'),
                 error: (error, stack) => _buildErrorState(context, ref, error),
               ),
             ),

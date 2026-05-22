@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_card_widget.dart';
@@ -52,10 +53,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                 _buildFilterTabs(context, currentFilter),
                 SizedBox(height: context.rh(0.024)),
                 filteredTasksAsync.when(
-                  loading: () => const LoadingCardWidget(
-                    height: 195,
-                    radius: AppRadius.lg,
-                  ),
+                  loading: () => buildListSkeleton(count: 6, type: 'task'),
                   error: (error, _) => ErrorStateCardWidget(
                     message: error.toString(),
                     onRetry: () => ref.invalidate(taskListProvider),

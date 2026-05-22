@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/site_provider.dart';
 import 'site_form_screen.dart';
 
@@ -50,7 +51,7 @@ class SiteDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 160),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

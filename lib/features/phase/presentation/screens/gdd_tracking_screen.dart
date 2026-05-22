@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/phase_provider.dart';
 
 class GddTrackingScreen extends ConsumerWidget {
@@ -26,8 +27,13 @@ class GddTrackingScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: phasesAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Column(
+            children: [
+              _buildHeader(context, ref),
+              const Expanded(
+                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: false, headerHeight: 150),
+              ),
+            ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
           data: (phases) => RefreshIndicator(
