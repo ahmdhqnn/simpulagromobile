@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../data/models/agro_model.dart';
@@ -182,35 +183,38 @@ class EnvironmentalHealthWidget extends StatelessWidget {
             color: const Color(0xFF1D1D1D),
           ),
         ),
-        const SizedBox(height: 12),
-        _buildParameterBar(
-          context,
-          'VDP',
-          vdpScore,
-          Icons.water_drop,
-          AppColors.info,
-        ),
-        const SizedBox(height: 8),
-        _buildParameterBar(
-          context,
-          'GDD',
-          gddScore,
-          Icons.thermostat,
-          AppColors.warning,
-        ),
-        const SizedBox(height: 8),
-        _buildParameterBar(
-          context,
-          'ETC',
-          etcScore,
-          Icons.opacity,
-          AppColors.primary,
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildCircularParameter(
+              context,
+              'VDP',
+              vdpScore,
+              Icons.water_drop,
+              AppColors.info,
+            ),
+            _buildCircularParameter(
+              context,
+              'GDD',
+              gddScore,
+              Icons.thermostat,
+              AppColors.warning,
+            ),
+            _buildCircularParameter(
+              context,
+              'ETC',
+              etcScore,
+              Icons.opacity,
+              AppColors.primary,
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildParameterBar(
+  Widget _buildCircularParameter(
     BuildContext context,
     String label,
     double score,
@@ -218,41 +222,40 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     Color color,
   ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF1D1D1D),
+        CircularPercentIndicator(
+          radius: 35.0,
+          lineWidth: 6.0,
+          animation: true,
+          percent: (score / 100).clamp(0.0, 1.0),
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(height: 2),
+              Text(
+                '${score.toStringAsFixed(0)}',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(11),
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1D1D1D),
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              '${score.toStringAsFixed(0)}/100',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
+            ],
+          ),
+          circularStrokeCap: CircularStrokeCap.round,
+          progressColor: color,
+          backgroundColor: AppColors.divider,
         ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: score / 100,
-            minHeight: 8,
-            backgroundColor: AppColors.divider,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(12),
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF1D1D1D),
           ),
         ),
       ],
@@ -336,13 +339,10 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     final vdp = agroData?.vdp?.vdp;
     if (vdp == null) return 50;
 
-    // Optimal VDP: 0.4-1.2 kPa
     if (vdp >= 0.4 && vdp <= 1.2) return 100;
     if (vdp < 0.4) {
-      // Low VDP: score decreases as it gets lower
       return 100 - ((0.4 - vdp) / 0.4 * 50);
     } else {
-      // High VDP: score decreases as it gets higher
       return 100 - ((vdp - 1.2) / 0.8 * 50);
     }
   }
@@ -351,8 +351,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     final totalGdd = agroData?.gdd?.totalGDD;
     if (totalGdd == null) return 50;
 
-    // Assume optimal GDD range based on crop (this is simplified)
-    // For rice: 2000-2500 GDD
     if (totalGdd >= 2000 && totalGdd <= 2500) return 100;
     if (totalGdd < 2000) {
       return (totalGdd / 2000 * 100).clamp(0, 100);
@@ -368,7 +366,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     final waterNeeds = latestEtc.waterNeeds;
     if (waterNeeds == null) return 50;
 
-    // Optimal water needs: 3-6 L/m²
     if (waterNeeds >= 3 && waterNeeds <= 6) return 100;
     if (waterNeeds < 3) {
       return 100 - ((3 - waterNeeds) / 3 * 30);
@@ -412,7 +409,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
   List<String> _getRecommendations(HealthStatus status) {
     final recommendations = <String>[];
 
-    // VDP recommendations
     final vdp = agroData?.vdp?.vdp;
     if (vdp != null) {
       if (vdp < 0.4) {
@@ -422,7 +418,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
       }
     }
 
-    // ETC recommendations
     if (agroData?.etc.isNotEmpty ?? false) {
       final waterNeeds = agroData!.etc.first.waterNeeds;
       if (waterNeeds != null && waterNeeds > 6) {
@@ -430,7 +425,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
       }
     }
 
-    // General recommendations based on score
     if (status.label == 'Perlu Perhatian') {
       recommendations.add('Lakukan monitoring lebih intensif');
       recommendations.add('Konsultasikan dengan ahli agronomi');

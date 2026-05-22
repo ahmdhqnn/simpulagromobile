@@ -109,7 +109,7 @@ void main() {
         expect(result, isFalse);
         expect(
           notifier.state.error,
-          contains('Tidak dapat terhubung ke server'),
+          contains('Tidak Ada Koneksi Internet'),
         );
       });
     });
