@@ -68,13 +68,6 @@ class DashboardScreen extends ConsumerWidget {
                       // Site Selector
                       sitesAsync.when(
                         data: (sites) {
-                          if (selectedSite == null && sites.isNotEmpty) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              ref
-                                  .read(selectedSiteProvider.notifier)
-                                  .selectSite(sites.first);
-                            });
-                          }
                           return SiteSelectorWidget(
                             sites: sites,
                             selectedSite: selectedSite,

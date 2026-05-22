@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/sensor_remote_datasource.dart';
 import '../../data/repositories/sensor_repository_impl.dart';
@@ -25,7 +26,7 @@ final sensorListProvider = FutureProvider.family<List<Sensor>, String>((
   siteId,
 ) async {
   final repository = ref.watch(sensorRepositoryProvider);
-  return await repository.getSensors(siteId);
+  return await ref.retryOnError(() => repository.getSensors(siteId));
 });
 
 // ─── Sensor List for Selected Site ───────────────────────
@@ -36,7 +37,7 @@ final sensorsForSelectedSiteProvider = FutureProvider<List<Sensor>>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   final repository = ref.watch(sensorRepositoryProvider);
-  return await repository.getSensors(siteId);
+  return await ref.retryOnError(() => repository.getSensors(siteId));
 });
 
 // ─── Sensor Detail Provider ───────────────────────────────
@@ -47,7 +48,7 @@ final sensorDetailProvider =
       params,
     ) async {
       final repository = ref.watch(sensorRepositoryProvider);
-      return await repository.getSensorById(params.siteId, params.sensId);
+      return await ref.retryOnError(() => repository.getSensorById(params.siteId, params.sensId));
     });
 
 // ─── Sensor Form State ────────────────────────────────────

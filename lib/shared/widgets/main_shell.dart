@@ -34,10 +34,6 @@ class _MainShellState extends ConsumerState<MainShell>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _autoSelectSite();
-    });
   }
 
   @override
@@ -63,23 +59,12 @@ class _MainShellState extends ConsumerState<MainShell>
     }
   }
 
-  Future<void> _autoSelectSite() async {
-    final selectedSite = ref.read(selectedSiteProvider);
-    if (selectedSite != null) return; // sudah ada
-
-    try {
-      final sites = await ref.read(siteListProvider.future);
-      if (sites.isNotEmpty && mounted) {
-        await ref.read(selectedSiteProvider.notifier).selectSite(sites.first);
-      }
-    } catch (_) {}
-  }
-
   void _refreshCurrentTabData() {
     if (!mounted) return;
 
     switch (_currentIndex) {
       case 0:
+        ref.invalidate(siteListProvider);
         ref.invalidate(environmentalHealthProvider);
         ref.invalidate(deviceSummaryProvider);
         ref.invalidate(sensorSummaryProvider);
@@ -102,12 +87,6 @@ class _MainShellState extends ConsumerState<MainShell>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(siteListProvider, (_, next) {
-      next.whenData((sites) {
-        ref.read(selectedSiteProvider.notifier).autoSelectFirstSite(sites);
-      });
-    });
-
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: CustomBottomNavigationBar(

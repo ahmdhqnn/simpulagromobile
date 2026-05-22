@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/forum_remote_datasource.dart';
 import '../../data/repositories/forum_repository_impl.dart';
 import '../../domain/entities/post.dart';
@@ -97,10 +98,18 @@ class ForumNotifier extends StateNotifier<ForumState> {
         );
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
+      if (mounted) {
+        state = state.copyWith(
+          isLoading: false,
+          error: e.toString().replaceAll('Exception: ', ''),
+        );
+        // Auto retry after 5 seconds if error persists
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted && state.error != null && !state.isLoading) {
+            loadPosts(refresh: refresh);
+          }
+        });
+      }
     }
   }
 
@@ -232,7 +241,7 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   postId,
 ) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await repository.getPostById(postId);
+  return await ref.retryOnError(() => repository.getPostById(postId));
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -277,10 +286,18 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       final comments = await _repository.getComments(postId: _postId);
       state = CommentsState(comments: comments, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
+      if (mounted) {
+        state = state.copyWith(
+          isLoading: false,
+          error: e.toString().replaceAll('Exception: ', ''),
+        );
+        // Auto retry after 5 seconds if error persists
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted && state.error != null && !state.isLoading) {
+            loadComments();
+          }
+        });
+      }
     }
   }
 
@@ -330,17 +347,17 @@ final commentsProvider = StateNotifierProvider.autoDispose
 
 final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await repository.getMyPosts();
+  return await ref.retryOnError(() => repository.getMyPosts());
 });
 
 final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await repository.getLikedPosts();
+  return await ref.retryOnError(() => repository.getLikedPosts());
 });
 
 final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
   ref,
 ) async {
   final repository = ref.watch(forumRepositoryProvider);
-  return await repository.getMyComments();
+  return await ref.retryOnError(() => repository.getMyComments());
 });

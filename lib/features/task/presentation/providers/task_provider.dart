@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/task_remote_datasource.dart';
 import '../../data/repositories/task_repository_impl.dart';
@@ -28,11 +29,13 @@ final taskListProvider = FutureProvider<List<Task>>((ref) async {
     throw Exception('Pilih site terlebih dahulu');
   }
 
-  final result = await repository.getTasks(siteId);
-  return result.fold(
-    (failure) => throw Exception(failure.message),
-    (tasks) => tasks,
-  );
+  return await ref.retryOnError(() async {
+    final result = await repository.getTasks(siteId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (tasks) => tasks,
+    );
+  });
 });
 
 /// Tasks scoped to a specific siteId — for callers that already know the site.
@@ -41,11 +44,13 @@ final tasksBySiteProvider = FutureProvider.family<List<Task>, String>((
   siteId,
 ) async {
   final repository = ref.watch(taskRepositoryProvider);
-  final result = await repository.getTasks(siteId);
-  return result.fold(
-    (failure) => throw Exception(failure.message),
-    (tasks) => tasks,
-  );
+  return await ref.retryOnError(() async {
+    final result = await repository.getTasks(siteId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (tasks) => tasks,
+    );
+  });
 });
 
 // ─── Task Detail ────────────────────────────────────────────────────────────
@@ -58,11 +63,13 @@ final taskDetailProvider = FutureProvider.family<Task, (String, String)>((
   final repository = ref.watch(taskRepositoryProvider);
   final (siteId, taskId) = params;
 
-  final result = await repository.getTaskById(siteId, taskId);
-  return result.fold(
-    (failure) => throw Exception(failure.message),
-    (task) => task,
-  );
+  return await ref.retryOnError(() async {
+    final result = await repository.getTaskById(siteId, taskId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (task) => task,
+    );
+  });
 });
 
 /// Backward-compat helper: resolves siteId from the selected site.
@@ -77,11 +84,13 @@ final taskDetailByIdProvider = FutureProvider.family<Task, String>((
     throw Exception('Pilih site terlebih dahulu');
   }
 
-  final result = await repository.getTaskById(siteId, taskId);
-  return result.fold(
-    (failure) => throw Exception(failure.message),
-    (task) => task,
-  );
+  return await ref.retryOnError(() async {
+    final result = await repository.getTaskById(siteId, taskId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (task) => task,
+    );
+  });
 });
 
 // ─── Filter ─────────────────────────────────────────────────────────────────

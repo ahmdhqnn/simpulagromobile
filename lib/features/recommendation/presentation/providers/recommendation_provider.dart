@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/recommendation_remote_datasource.dart';
 import '../../data/repositories/recommendation_repository_impl.dart';
@@ -30,33 +31,39 @@ final recommendationListProvider = FutureProvider<List<Recommendation>>((
   if (siteId == null) return [];
 
   final repository = ref.watch(recommendationRepositoryProvider);
-  final result = await repository.getRecommendationsBySite(siteId);
-  return result.fold(
-    (failure) => throw Exception(failure.message),
-    (recommendations) => List<Recommendation>.from(recommendations),
-  );
+  return await ref.retryOnError(() async {
+    final result = await repository.getRecommendationsBySite(siteId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (recommendations) => List<Recommendation>.from(recommendations),
+    );
+  });
 });
 
 // ─── Recommendations by Site ─────────────────────────────
 final recommendationsBySiteProvider =
     FutureProvider.family<List<Recommendation>, String>((ref, siteId) async {
       final repository = ref.watch(recommendationRepositoryProvider);
-      final result = await repository.getRecommendationsBySite(siteId);
-      return result.fold(
-        (failure) => throw Exception(failure.message),
-        (recommendations) => List<Recommendation>.from(recommendations),
-      );
+      return await ref.retryOnError(() async {
+        final result = await repository.getRecommendationsBySite(siteId);
+        return result.fold(
+          (failure) => throw Exception(failure.message),
+          (recommendations) => List<Recommendation>.from(recommendations),
+        );
+      });
     });
 
 // ─── Recommendations by Plant ─────────────────────────────
 final recommendationsByPlantProvider =
     FutureProvider.family<List<Recommendation>, String>((ref, plantId) async {
       final repository = ref.watch(recommendationRepositoryProvider);
-      final result = await repository.getRecommendationsByPlant(plantId);
-      return result.fold(
-        (failure) => throw Exception(failure.message),
-        (recommendations) => List<Recommendation>.from(recommendations),
-      );
+      return await ref.retryOnError(() async {
+        final result = await repository.getRecommendationsByPlant(plantId);
+        return result.fold(
+          (failure) => throw Exception(failure.message),
+          (recommendations) => List<Recommendation>.from(recommendations),
+        );
+      });
     });
 
 // ─── Recommendations by Type ─────────────────────────────
@@ -66,11 +73,13 @@ final recommendationsByTypeProvider =
       type,
     ) async {
       final repository = ref.watch(recommendationRepositoryProvider);
-      final result = await repository.getRecommendationsByType(type);
-      return result.fold(
-        (failure) => throw Exception(failure.message),
-        (recommendations) => List<Recommendation>.from(recommendations),
-      );
+      return await ref.retryOnError(() async {
+        final result = await repository.getRecommendationsByType(type);
+        return result.fold(
+          (failure) => throw Exception(failure.message),
+          (recommendations) => List<Recommendation>.from(recommendations),
+        );
+      });
     });
 
 // ─── Recommendation Detail ────────────────────────────────
@@ -80,11 +89,13 @@ final recommendationDetailProvider =
       recommendationId,
     ) async {
       final repository = ref.watch(recommendationRepositoryProvider);
-      final result = await repository.getRecommendationById(recommendationId);
-      return result.fold(
-        (failure) => throw Exception(failure.message),
-        (recommendation) => recommendation,
-      );
+      return await ref.retryOnError(() async {
+        final result = await repository.getRecommendationById(recommendationId);
+        return result.fold(
+          (failure) => throw Exception(failure.message),
+          (recommendation) => recommendation,
+        );
+      });
     });
 
 // ─── Recommendation Filter ────────────────────────────────
