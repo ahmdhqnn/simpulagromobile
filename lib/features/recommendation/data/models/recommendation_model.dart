@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/recommendation.dart';
+import 'recommendation_bundle_model.dart';
 
 part 'recommendation_model.freezed.dart';
 part 'recommendation_model.g.dart';
@@ -22,7 +23,7 @@ class RecommendationModel with _$RecommendationModel {
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
     @JsonKey(name: 'site_name') String? siteName,
-    @JsonKey(name: 'parameters') Map<String, dynamic>? parameters,
+    @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'applied_at') DateTime? appliedAt,
@@ -47,7 +48,7 @@ class RecommendationModel with _$RecommendationModel {
       plantName: plantName,
       siteId: siteId,
       siteName: siteName,
-      parameters: parameters,
+      parameters: parameters?.toEntity(),
       actionItems: actionItems,
       createdAt: createdAt,
       appliedAt: appliedAt,
@@ -70,7 +71,7 @@ class RecommendationModel with _$RecommendationModel {
       plantName: recommendation.plantName,
       siteId: recommendation.siteId,
       siteName: recommendation.siteName,
-      parameters: recommendation.parameters,
+      parameters: recommendation.parameters != null ? RecommendationBundleModel.fromEntity(recommendation.parameters!) : null,
       actionItems: recommendation.actionItems,
       createdAt: recommendation.createdAt,
       appliedAt: recommendation.appliedAt,

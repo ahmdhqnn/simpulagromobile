@@ -1,17 +1,20 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/agro_model.dart';
+import '../entities/agro_entity.dart';
 
+/// Repository interface untuk fitur Agro
+/// Domain layer — tidak boleh import dari data layer
 abstract class AgroRepository {
-  /// Retrieve complete agro data (VDP, GDD, ETC)
-  Future<Either<Failure, AgroModel>> getAgroData(String siteId);
+  /// GET /sites/{siteId}/agro
+  /// Mengambil data agro lengkap (VDP, GDD, ETC)
+  Future<Either<Failure, AgroEntity>> getAgroData(String siteId);
 
-  /// Retrieve VDP data only
-  Future<Either<Failure, VdpModel>> getVdpData(String siteId);
+  /// Mengambil hanya data VDP
+  Future<Either<Failure, VdpEntity>> getVdpData(String siteId);
 
-  /// Retrieve GDD data only
-  Future<Either<Failure, GddModel>> getGddData(String siteId);
+  /// Mengambil hanya data GDD
+  Future<Either<Failure, GddEntity>> getGddData(String siteId);
 
-  /// Retrieve ETC data only
-  Future<Either<Failure, List<EtcDailyModel>>> getEtcData(String siteId);
+  /// Mengambil hanya data ETC
+  Future<Either<Failure, List<EtcDailyEntity>>> getEtcData(String siteId);
 }

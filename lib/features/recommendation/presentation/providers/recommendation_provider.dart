@@ -67,7 +67,7 @@ final recommendationListProvider = FutureProvider<List<Recommendation>>((
   return await ref.retryOnError(() async {
     final result = await useCase(siteId);
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (recommendations) => List<Recommendation>.from(recommendations),
     );
   });
@@ -80,7 +80,7 @@ final recommendationsBySiteProvider =
       return await ref.retryOnError(() async {
         final result = await useCase(siteId);
         return result.fold(
-          (failure) => throw Exception(failure.message),
+          (failure) => throw failure,
           (recommendations) => List<Recommendation>.from(recommendations),
         );
       });
@@ -93,7 +93,7 @@ final recommendationsByPlantProvider =
       return await ref.retryOnError(() async {
         final result = await useCase(plantId);
         return result.fold(
-          (failure) => throw Exception(failure.message),
+          (failure) => throw failure,
           (recommendations) => List<Recommendation>.from(recommendations),
         );
       });
@@ -109,7 +109,7 @@ final recommendationsByTypeProvider =
       return await ref.retryOnError(() async {
         final result = await useCase(type);
         return result.fold(
-          (failure) => throw Exception(failure.message),
+          (failure) => throw failure,
           (recommendations) => List<Recommendation>.from(recommendations),
         );
       });
@@ -125,7 +125,7 @@ final recommendationDetailProvider =
       return await ref.retryOnError(() async {
         final result = await useCase(recommendationId);
         return result.fold(
-          (failure) => throw Exception(failure.message),
+          (failure) => throw failure,
           (recommendation) => recommendation,
         );
       });

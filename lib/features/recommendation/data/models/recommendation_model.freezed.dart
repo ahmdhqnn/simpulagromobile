@@ -42,7 +42,8 @@ mixin _$RecommendationModel {
   @JsonKey(name: 'site_name')
   String? get siteName => throw _privateConstructorUsedError;
   @JsonKey(name: 'parameters')
-  Map<String, dynamic>? get parameters => throw _privateConstructorUsedError;
+  RecommendationBundleModel? get parameters =>
+      throw _privateConstructorUsedError;
   @JsonKey(name: 'action_items')
   List<String>? get actionItems => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
@@ -84,7 +85,7 @@ abstract class $RecommendationModelCopyWith<$Res> {
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
     @JsonKey(name: 'site_name') String? siteName,
-    @JsonKey(name: 'parameters') Map<String, dynamic>? parameters,
+    @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'applied_at') DateTime? appliedAt,
@@ -92,6 +93,8 @@ abstract class $RecommendationModelCopyWith<$Res> {
     @JsonKey(name: 'confidence_score') double? confidenceScore,
     @JsonKey(name: 'reason') String? reason,
   });
+
+  $RecommendationBundleModelCopyWith<$Res>? get parameters;
 }
 
 /// @nodoc
@@ -172,7 +175,7 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
             parameters: freezed == parameters
                 ? _value.parameters
                 : parameters // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>?,
+                      as RecommendationBundleModel?,
             actionItems: freezed == actionItems
                 ? _value.actionItems
                 : actionItems // ignore: cast_nullable_to_non_nullable
@@ -201,6 +204,22 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
           as $Val,
     );
   }
+
+  /// Create a copy of RecommendationModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RecommendationBundleModelCopyWith<$Res>? get parameters {
+    if (_value.parameters == null) {
+      return null;
+    }
+
+    return $RecommendationBundleModelCopyWith<$Res>(_value.parameters!, (
+      value,
+    ) {
+      return _then(_value.copyWith(parameters: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -223,7 +242,7 @@ abstract class _$$RecommendationModelImplCopyWith<$Res>
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
     @JsonKey(name: 'site_name') String? siteName,
-    @JsonKey(name: 'parameters') Map<String, dynamic>? parameters,
+    @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'applied_at') DateTime? appliedAt,
@@ -231,6 +250,9 @@ abstract class _$$RecommendationModelImplCopyWith<$Res>
     @JsonKey(name: 'confidence_score') double? confidenceScore,
     @JsonKey(name: 'reason') String? reason,
   });
+
+  @override
+  $RecommendationBundleModelCopyWith<$Res>? get parameters;
 }
 
 /// @nodoc
@@ -308,9 +330,9 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
             : siteName // ignore: cast_nullable_to_non_nullable
                   as String?,
         parameters: freezed == parameters
-            ? _value._parameters
+            ? _value.parameters
             : parameters // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>?,
+                  as RecommendationBundleModel?,
         actionItems: freezed == actionItems
             ? _value._actionItems
             : actionItems // ignore: cast_nullable_to_non_nullable
@@ -354,15 +376,14 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     @JsonKey(name: 'plant_name') this.plantName,
     @JsonKey(name: 'site_id') this.siteId,
     @JsonKey(name: 'site_name') this.siteName,
-    @JsonKey(name: 'parameters') final Map<String, dynamic>? parameters,
+    @JsonKey(name: 'parameters') this.parameters,
     @JsonKey(name: 'action_items') final List<String>? actionItems,
     @JsonKey(name: 'created_at') this.createdAt,
     @JsonKey(name: 'applied_at') this.appliedAt,
     @JsonKey(name: 'applied_by') this.appliedBy,
     @JsonKey(name: 'confidence_score') this.confidenceScore,
     @JsonKey(name: 'reason') this.reason,
-  }) : _parameters = parameters,
-       _actionItems = actionItems,
+  }) : _actionItems = actionItems,
        super._();
 
   factory _$RecommendationModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -398,17 +419,9 @@ class _$RecommendationModelImpl extends _RecommendationModel {
   @override
   @JsonKey(name: 'site_name')
   final String? siteName;
-  final Map<String, dynamic>? _parameters;
   @override
   @JsonKey(name: 'parameters')
-  Map<String, dynamic>? get parameters {
-    final value = _parameters;
-    if (value == null) return null;
-    if (_parameters is EqualUnmodifiableMapView) return _parameters;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
+  final RecommendationBundleModel? parameters;
   final List<String>? _actionItems;
   @override
   @JsonKey(name: 'action_items')
@@ -461,10 +474,8 @@ class _$RecommendationModelImpl extends _RecommendationModel {
             (identical(other.siteId, siteId) || other.siteId == siteId) &&
             (identical(other.siteName, siteName) ||
                 other.siteName == siteName) &&
-            const DeepCollectionEquality().equals(
-              other._parameters,
-              _parameters,
-            ) &&
+            (identical(other.parameters, parameters) ||
+                other.parameters == parameters) &&
             const DeepCollectionEquality().equals(
               other._actionItems,
               _actionItems,
@@ -494,7 +505,7 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     plantName,
     siteId,
     siteName,
-    const DeepCollectionEquality().hash(_parameters),
+    parameters,
     const DeepCollectionEquality().hash(_actionItems),
     createdAt,
     appliedAt,
@@ -532,7 +543,7 @@ abstract class _RecommendationModel extends RecommendationModel {
     @JsonKey(name: 'plant_name') final String? plantName,
     @JsonKey(name: 'site_id') final String? siteId,
     @JsonKey(name: 'site_name') final String? siteName,
-    @JsonKey(name: 'parameters') final Map<String, dynamic>? parameters,
+    @JsonKey(name: 'parameters') final RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') final List<String>? actionItems,
     @JsonKey(name: 'created_at') final DateTime? createdAt,
     @JsonKey(name: 'applied_at') final DateTime? appliedAt,
@@ -577,7 +588,7 @@ abstract class _RecommendationModel extends RecommendationModel {
   String? get siteName;
   @override
   @JsonKey(name: 'parameters')
-  Map<String, dynamic>? get parameters;
+  RecommendationBundleModel? get parameters;
   @override
   @JsonKey(name: 'action_items')
   List<String>? get actionItems;

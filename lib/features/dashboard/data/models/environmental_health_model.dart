@@ -1,35 +1,24 @@
-/// Model untuk response GET /api/sites/:siteId/agro/environmental-health
-///
-/// API Response structure:
-/// {
-///   "overall_health": 75.5,
-///   "total_sensors": 6,
-///   "sensors": [
-///     {
-///       "dev_id": "DEV001",
-///       "ds_id": "env_temp",
-///       "read_update_value": "28.5",
-///       "persentase": 85.0
-///     }
-///   ]
-/// }
+/// Model untuk response GET /sites/{siteId}/agro/environmental-health
+/// Data layer — hanya digunakan di dalam data layer
 library;
 
-class SensorHealth {
+import '../../domain/entities/dashboard_entity.dart';
+
+class SensorHealthModel {
   final String devId;
   final String dsId;
   final String readUpdateValue;
   final double persentase;
 
-  const SensorHealth({
+  const SensorHealthModel({
     required this.devId,
     required this.dsId,
     required this.readUpdateValue,
     required this.persentase,
   });
 
-  factory SensorHealth.fromJson(Map<String, dynamic> json) {
-    return SensorHealth(
+  factory SensorHealthModel.fromJson(Map<String, dynamic> json) {
+    return SensorHealthModel(
       devId: (json['dev_id'] ?? '').toString(),
       dsId: (json['ds_id'] ?? '').toString(),
       readUpdateValue: (json['read_update_value'] ?? '0').toString(),
@@ -37,67 +26,34 @@ class SensorHealth {
     );
   }
 
-  String get label {
-    switch (dsId) {
-      case 'env_temp':
-        return 'Suhu';
-      case 'env_hum':
-        return 'Kelembaban';
-      case 'soil_nitro':
-        return 'Nitrogen';
-      case 'soil_phos':
-        return 'Fosfor';
-      case 'soil_pot':
-        return 'Kalium';
-      case 'soil_ph':
-        return 'pH Tanah';
-      default:
-        return dsId;
-    }
-  }
-
-  String get unit {
-    switch (dsId) {
-      case 'env_temp':
-        return '°C';
-      case 'env_hum':
-        return '%';
-      case 'soil_nitro':
-        return 'mg/kg';
-      case 'soil_phos':
-        return 'mg/kg';
-      case 'soil_pot':
-        return 'mg/kg';
-      case 'soil_ph':
-        return '';
-      default:
-        return '';
-    }
-  }
+  SensorHealthEntity toEntity() => SensorHealthEntity(
+    devId: devId,
+    dsId: dsId,
+    readUpdateValue: readUpdateValue,
+    persentase: persentase,
+  );
 }
 
-class EnvironmentalHealth {
+class EnvironmentalHealthModel {
   final double overallHealth;
   final int totalSensors;
-  final List<SensorHealth> sensors;
+  final List<SensorHealthModel> sensors;
 
-  const EnvironmentalHealth({
+  const EnvironmentalHealthModel({
     required this.overallHealth,
     required this.totalSensors,
     required this.sensors,
   });
 
-  /// Empty state — digunakan saat site belum dipilih atau error
-  factory EnvironmentalHealth.empty() {
-    return const EnvironmentalHealth(
+  factory EnvironmentalHealthModel.empty() {
+    return const EnvironmentalHealthModel(
       overallHealth: 0,
       totalSensors: 0,
       sensors: [],
     );
   }
 
-  factory EnvironmentalHealth.fromJson(Map<String, dynamic> json) {
-    // API mengembalikan overall_health (snake_case)
+  factory EnvironmentalHealthModel.fromJson(Map<String, dynamic> json) {
     final health =
         (json['overall_health'] as num?)?.toDouble() ??
         (json['overallHealth'] as num?)?.toDouble() ??
@@ -109,13 +65,25 @@ class EnvironmentalHealth {
         0;
 
     final sensorList = (json['sensors'] as List? ?? [])
-        .map((s) => SensorHealth.fromJson(s as Map<String, dynamic>))
+        .map((s) => SensorHealthModel.fromJson(s as Map<String, dynamic>))
         .toList();
 
-    return EnvironmentalHealth(
+    return EnvironmentalHealthModel(
       overallHealth: health,
       totalSensors: total,
       sensors: sensorList,
     );
   }
+
+  EnvironmentalHealthEntity toEntity() => EnvironmentalHealthEntity(
+    overallHealth: overallHealth,
+    totalSensors: totalSensors,
+    sensors: sensors.map((s) => s.toEntity()).toList(),
+  );
 }
+
+// ─── Backward-compatibility alias ────────────────────────
+// Monitoring feature masih menggunakan nama 'EnvironmentalHealth'.
+// Alias ini memastikan monitoring tetap compile tanpa perubahan.
+// TODO: Migrate monitoring feature ke EnvironmentalHealthEntity pada Prioritas 2.
+typedef EnvironmentalHealth = EnvironmentalHealthModel;

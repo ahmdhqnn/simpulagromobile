@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/agro_model.dart';
+import '../entities/agro_entity.dart';
 import '../repositories/agro_repository.dart';
 
 class GetAgroDataUseCase {
@@ -8,7 +8,7 @@ class GetAgroDataUseCase {
 
   GetAgroDataUseCase(this.repository);
 
-  Future<Either<Failure, AgroModel>> call(String siteId) async {
+  Future<Either<Failure, AgroEntity>> call(String siteId) async {
     return await repository.getAgroData(siteId);
   }
 }

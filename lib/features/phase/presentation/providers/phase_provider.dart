@@ -9,6 +9,7 @@ import '../../domain/repositories/phase_repository.dart';
 import '../../domain/usecases/get_phases_usecase.dart';
 import '../../domain/usecases/get_current_phase_usecase.dart';
 import '../../domain/usecases/get_phase_history_usecase.dart';
+import '../../../agro/presentation/providers/agro_provider.dart';
 
 // ─── DataSource Provider ─────────────────────────────────
 /// Menggunakan dioClientProvider agar JWT token disertakan
@@ -23,7 +24,9 @@ final phaseRepositoryProvider = Provider<PhaseRepository>((ref) {
   return PhaseRepositoryImpl(datasource);
 });
 
-final getPhasesByPlantUseCaseProvider = Provider<GetPhasesByPlantUseCase>((ref) {
+final getPhasesByPlantUseCaseProvider = Provider<GetPhasesByPlantUseCase>((
+  ref,
+) {
   return GetPhasesByPlantUseCase(ref.watch(phaseRepositoryProvider));
 });
 
@@ -41,20 +44,20 @@ final getPhaseHistoryUseCaseProvider = Provider<GetPhaseHistoryUseCase>((ref) {
 
 // ─── Phase List Provider (by plantId/siteId) ─────────────
 /// Mengambil semua fase untuk plant/site tertentu
-final phaseListProvider = FutureProvider.autoDispose.family<List<Phase>, String>((
-  ref,
-  plantId,
-) async {
-  return ref.retryOnError(() async {
-    final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
-    final result = await useCase(plantId);
-    return result.fold((f) => throw f, (data) => data);
-  });
-});
+final phaseListProvider = FutureProvider.autoDispose
+    .family<List<Phase>, String>((ref, plantId) async {
+      return ref.retryOnError(() async {
+        final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
+        final result = await useCase(plantId);
+        return result.fold((f) => throw f, (data) => data);
+      });
+    });
 
 // ─── Phase List for Selected Site ────────────────────────
 /// Shortcut provider yang otomatis menggunakan selectedSiteProvider
-final phasesForSelectedSiteProvider = FutureProvider.autoDispose<List<Phase>>((ref) async {
+final phasesForSelectedSiteProvider = FutureProvider.autoDispose<List<Phase>>((
+  ref,
+) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   return ref.retryOnError(() async {
@@ -89,47 +92,47 @@ final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
 });
 
 // ─── Phase History Provider ───────────────────────────────
-final phaseHistoryProvider = FutureProvider.autoDispose.family<List<Phase>, String>((
-  ref,
-  plantId,
-) async {
-  return ref.retryOnError(() async {
-    final useCase = ref.watch(getPhaseHistoryUseCaseProvider);
-    final result = await useCase(plantId);
-    return result.fold((f) => throw f, (data) => data);
-  });
-});
+final phaseHistoryProvider = FutureProvider.autoDispose
+    .family<List<Phase>, String>((ref, plantId) async {
+      return ref.retryOnError(() async {
+        final useCase = ref.watch(getPhaseHistoryUseCaseProvider);
+        final result = await useCase(plantId);
+        return result.fold((f) => throw f, (data) => data);
+      });
+    });
 
 // ─── Phase Statistics Provider ───────────────────────────
-final phaseStatsProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((
-  ref,
-  plantId,
-) async {
-  final phases = await ref.retryOnError(() async {
-    final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
-    final result = await useCase(plantId);
-    return result.fold((f) => throw f, (data) => data);
-  });
+final phaseStatsProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, plantId) async {
+      final phases = await ref.retryOnError(() async {
+        final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
+        final result = await useCase(plantId);
+        return result.fold((f) => throw f, (data) => data);
+      });
 
-  final completed = phases.where((p) => p.isCompleted).length;
-  final active = phases.where((p) => p.isActive).length;
-  final upcoming = phases.where((p) => p.isUpcoming).length;
-  final total = phases.length;
+      final completed = phases.where((p) => p.isCompleted).length;
+      final active = phases.where((p) => p.isActive).length;
+      final upcoming = phases.where((p) => p.isUpcoming).length;
+      final total = phases.length;
 
-  final currentPhase = phases.where((p) => p.isActive).firstOrNull;
-  final totalGdd = phases.fold<double>(0, (sum, p) => sum + p.requiredGdd);
-  final completedGdd = phases
-      .where((p) => p.isCompleted)
-      .fold<double>(0, (sum, p) => sum + p.currentGdd);
+      final currentPhase = phases.where((p) => p.isActive).firstOrNull;
 
-  return {
-    'total': total,
-    'completed': completed,
-    'active': active,
-    'upcoming': upcoming,
-    'currentPhase': currentPhase,
-    'totalGdd': totalGdd,
-    'completedGdd': completedGdd,
-    'overallProgress': total > 0 ? completed / total : 0.0,
-  };
-});
+      // Ambil total GDD asli dari API melalui agroDataProvider
+      double totalGddReal = 0.0;
+      try {
+        final agroData = await ref.watch(agroDataProvider.future);
+        totalGddReal = agroData.gdd?.totalGDD ?? 0.0;
+      } catch (_) {
+        // Abaikan jika gagal ambil agroData, kembalikan 0.0
+      }
+
+      return {
+        'total': total,
+        'completed': completed,
+        'active': active,
+        'upcoming': upcoming,
+        'currentPhase': currentPhase,
+        'totalGdd': totalGddReal,
+        'overallProgress': total > 0 ? completed / total : 0.0,
+      };
+    });

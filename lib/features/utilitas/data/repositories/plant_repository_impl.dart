@@ -28,11 +28,16 @@ class PlantRepositoryImpl implements PlantRepository {
     }
 
     switch (statusCode) {
-      case 401: return AuthFailure(message);
-      case 403: return PermissionFailure(message);
-      case 404: return NotFoundFailure(message);
-      case 409: return ValidationFailure(message);
-      default: return ServerFailure(message, statusCode: statusCode);
+      case 401:
+        return AuthFailure(message);
+      case 403:
+        return PermissionFailure(message);
+      case 404:
+        return NotFoundFailure(message);
+      case 409:
+        return ValidationFailure(message);
+      default:
+        return ServerFailure(message, statusCode: statusCode);
     }
   }
 
@@ -49,7 +54,10 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
-  Future<Either<Failure, Plant>> getPlantById(String siteId, String plantId) async {
+  Future<Either<Failure, Plant>> getPlantById(
+    String siteId,
+    String plantId,
+  ) async {
     try {
       final model = await remoteDatasource.getPlantById(siteId, plantId);
       return Right(model.toEntity());
@@ -84,7 +92,11 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
-  Future<Either<Failure, Plant>> updatePlant(String siteId, String plantId, Plant plant) async {
+  Future<Either<Failure, Plant>> updatePlant(
+    String siteId,
+    String plantId,
+    Plant plant,
+  ) async {
     try {
       final model = PlantModel.fromEntity(plant);
       final data = model.toJson();
@@ -112,7 +124,10 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
-  Future<Either<Failure, Plant>> harvestPlant(String siteId, String plantId) async {
+  Future<Either<Failure, Plant>> harvestPlant(
+    String siteId,
+    String plantId,
+  ) async {
     try {
       final harvestedModel = await remoteDatasource.harvestPlant(
         siteId,
@@ -127,7 +142,10 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deletePlant(String siteId, String plantId) async {
+  Future<Either<Failure, void>> deletePlant(
+    String siteId,
+    String plantId,
+  ) async {
     try {
       await remoteDatasource.deletePlant(siteId, plantId);
       return const Right(null);

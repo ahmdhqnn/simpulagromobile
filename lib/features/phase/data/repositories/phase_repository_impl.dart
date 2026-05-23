@@ -18,6 +18,8 @@ class PhaseRepositoryImpl implements PhaseRepository {
       return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }
@@ -31,6 +33,8 @@ class PhaseRepositoryImpl implements PhaseRepository {
       return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }
@@ -43,6 +47,8 @@ class PhaseRepositoryImpl implements PhaseRepository {
       return Right(model?.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }
@@ -55,6 +61,8 @@ class PhaseRepositoryImpl implements PhaseRepository {
       return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }

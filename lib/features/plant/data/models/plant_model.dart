@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/plant.dart';
 import '../../domain/entities/varietas.dart';
@@ -26,15 +27,24 @@ class PlantModel with _$PlantModel {
   }) = _PlantModel;
 
   factory PlantModel.fromJson(Map<String, dynamic> json) {
-    // Tangani kemungkinan plant_sts berbentuk string atau int atau format lain
+    // Semantik plant_sts dari API:
+    //   1 = tanaman aktif (sedang tumbuh)
+    //   0 = tanaman sudah panen (harvest)
+    // plant_harvest TIDAK ada di response API — hanya plant_sts yang digunakan.
     dynamic sts = json['plant_sts'];
     int? parsedSts;
+
     if (sts is int) {
       parsedSts = sts;
     } else if (sts is String) {
-      if (sts.toLowerCase() == 'active' || sts.toLowerCase() == 'semai' || sts.toLowerCase() == 'aktif') {
+      if (sts.toLowerCase() == 'active' ||
+          sts.toLowerCase() == 'semai' ||
+          sts.toLowerCase() == 'aktif') {
         parsedSts = 1;
-      } else if (sts.toLowerCase() == 'inactive' || sts.toLowerCase() == 'tidak aktif') {
+      } else if (sts.toLowerCase() == 'inactive' ||
+          sts.toLowerCase() == 'tidak aktif' ||
+          sts.toLowerCase() == 'harvest' ||
+          sts.toLowerCase() == 'panen') {
         parsedSts = 0;
       } else {
         parsedSts = int.tryParse(sts);
@@ -42,14 +52,17 @@ class PlantModel with _$PlantModel {
     } else if (sts is bool) {
       parsedSts = sts ? 1 : 0;
     }
-    
-    // Fallback if status field is used instead of plant_sts
+
+    // Fallback ke field 'status' jika plant_sts tidak ada
     if (parsedSts == null && json.containsKey('status')) {
       dynamic statusAlt = json['status'];
       if (statusAlt is String) {
-        if (statusAlt.toLowerCase() == 'active' || statusAlt.toLowerCase() == 'semai' || statusAlt.toLowerCase() == 'aktif') {
+        if (statusAlt.toLowerCase() == 'active' ||
+            statusAlt.toLowerCase() == 'semai' ||
+            statusAlt.toLowerCase() == 'aktif') {
           parsedSts = 1;
-        } else if (statusAlt.toLowerCase() == 'inactive' || statusAlt.toLowerCase() == 'tidak aktif') {
+        } else if (statusAlt.toLowerCase() == 'inactive' ||
+            statusAlt.toLowerCase() == 'tidak aktif') {
           parsedSts = 0;
         }
       } else if (statusAlt is int) {
@@ -59,38 +72,47 @@ class PlantModel with _$PlantModel {
       }
     }
 
-    // Default to active (1) if no harvest date and no explicit inactive status, 
-    // to fix active plant not showing bug if backend returns missing status
-    if (parsedSts == null && json['plant_harvest'] == null) {
-      parsedSts = 1;
+    // Jika plant_sts benar-benar tidak ada di response, default ke 1 (aktif)
+    // PENTING: null ≠ 0. plant_sts = 0 berarti harvest, null berarti tidak diketahui → default aktif
+    parsedSts ??= 1;
+
+    // Parse dates safely (plant_harvest mungkin ada di beberapa response)
+    DateTime? parseDate(dynamic v) {
+      if (v == null) return null;
+      if (v is String) return DateTime.tryParse(v);
+      return null;
     }
-    
-    // Copy the json and override plant_sts
-    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    safeJson['plant_sts'] = parsedSts;
-    
-    return _$PlantModelFromJson(safeJson);
+
+    return PlantModel(
+      plantId: (json['plant_id'] as String?) ?? '',
+      siteId: json['site_id'] as String?,
+      varietasId: json['varietas_id'] as String?,
+      plantName: json['plant_name'] as String?,
+      plantType: json['plant_type'] as String?,
+      plantSpecies: json['plant_species'] as String?,
+      plantDate: parseDate(json['plant_date']),
+      plantHarvest: parseDate(json['plant_harvest']),
+      plantSts: parsedSts,
+    );
   }
 
   /// Convert Model to Entity
   Plant toEntity() {
     final validator = PlantTypeValidator();
-    
+
     // Validate plant type using the validator service
     CropType? cropType;
     if (plantType != null) {
       final result = validator.validatePlantType(plantType);
-      cropType = result.fold(
-        (failure) {
-          // Log warning if fallback is used
-          print('[PlantModel] Warning: Invalid plant type "$plantType". '
-              'Using default PADI. Error: ${failure.message}');
-          return CropType.PADI; // Fallback only at entity boundary
-        },
-        (type) => type,
-      );
+      cropType = result.fold((failure) {
+        debugPrint(
+          '[PlantModel] Warning: Invalid plant type "$plantType". '
+          'Using default PADI. Error: ${failure.message}',
+        );
+        return CropType.PADI;
+      }, (type) => type);
     }
-    
+
     return Plant(
       plantId: plantId,
       siteId: siteId,
@@ -123,25 +145,16 @@ class PlantModel with _$PlantModel {
     return validator.isValidType(plantType);
   }
 
-  /// Check if plant is currently active
-  bool get isActive {
-    return plantSts == 1 && plantHarvest == null;
-  }
+  /// Tanaman aktif: plant_sts = 1
+  bool get isActive => plantSts == 1;
 
-  /// Check if plant has been harvested
-  bool get isHarvested => plantHarvest != null;
+  /// Tanaman sudah panen: plant_sts = 0
+  bool get isHarvested => plantSts == 0;
 
   /// Get standardized plant status
   PlantStatusEnum get status {
-    if (plantHarvest != null) {
-      return PlantStatusEnum.harvested;
-    }
-    if (plantSts == 1) {
-      return PlantStatusEnum.active;
-    }
-    if (plantSts == 0) {
-      return PlantStatusEnum.inactive;
-    }
+    if (plantSts == 0) return PlantStatusEnum.harvested;
+    if (plantSts == 1) return PlantStatusEnum.active;
     return PlantStatusEnum.unknown;
   }
 }

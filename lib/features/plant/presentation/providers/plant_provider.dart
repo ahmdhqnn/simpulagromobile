@@ -54,7 +54,7 @@ final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   return ref.retryOnError(() async {
     final result = await useCase(siteId);
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (plants) => plants,
     );
   });
@@ -76,7 +76,7 @@ final varietasProvider = FutureProvider.autoDispose<List<Varietas>>((
   return ref.retryOnError(() async {
     final result = await useCase();
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (varietas) => varietas,
     );
   });
@@ -169,7 +169,7 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
   return ref.retryOnError(() async {
     final result = await useCase(siteId, plantId);
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (plant) => plant,
     );
   });

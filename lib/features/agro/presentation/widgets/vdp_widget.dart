@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
+import '../../domain/entities/agro_entity.dart';
 
 class VdpWidget extends StatelessWidget {
-  final VdpModel? vdpData;
+  final VdpEntity? vdpData;
 
   const VdpWidget({super.key, this.vdpData});
 
@@ -203,7 +203,7 @@ class VdpWidget extends StatelessWidget {
   Widget _buildVdpInfo(BuildContext context, double? vdp) {
     if (vdp == null) return const SizedBox.shrink();
 
-    String title = vdpData!.status ?? 'VDP Normal';
+    String title = vdpData!.status ?? '-';
     String description = vdpData!.description ?? '-';
     IconData icon = Icons.info_outline;
     Color color = AppColors.info;
@@ -274,10 +274,26 @@ class VdpWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildDetailItem(context, 'Temp', '${vdpData!.temperature?.toStringAsFixed(1) ?? '-'}°C'),
-          _buildDetailItem(context, 'RH', '${vdpData!.humidity?.toStringAsFixed(1) ?? '-'}%'),
-          _buildDetailItem(context, 'Es', '${vdpData!.es?.toStringAsFixed(2) ?? '-'} kPa'),
-          _buildDetailItem(context, 'Ea', '${vdpData!.ea?.toStringAsFixed(2) ?? '-'} kPa'),
+          _buildDetailItem(
+            context,
+            'Temp',
+            '${vdpData!.temperature?.toStringAsFixed(1) ?? '-'}°C',
+          ),
+          _buildDetailItem(
+            context,
+            'RH',
+            '${vdpData!.humidity?.toStringAsFixed(1) ?? '-'}%',
+          ),
+          _buildDetailItem(
+            context,
+            'Es',
+            '${vdpData!.es?.toStringAsFixed(2) ?? '-'} kPa',
+          ),
+          _buildDetailItem(
+            context,
+            'Ea',
+            '${vdpData!.ea?.toStringAsFixed(2) ?? '-'} kPa',
+          ),
         ],
       ),
     );

@@ -21,38 +21,41 @@ PhaseModel _$PhaseModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PhaseModel {
-  @JsonKey(name: 'id')
+  /// phase_id dari API
+  @JsonKey(name: 'phase_id')
   String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'plant_id')
-  String get plantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'plant_name')
-  String get plantName => throw _privateConstructorUsedError;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI (field 'chrop_type' di API)
+  @JsonKey(name: 'chrop_type')
+  String get cropType => throw _privateConstructorUsedError;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   @JsonKey(name: 'phase_name')
   String get phaseName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'description')
-  String get description => throw _privateConstructorUsedError;
-  @JsonKey(name: 'start_hst')
-  int get startHst => throw _privateConstructorUsedError;
-  @JsonKey(name: 'end_hst')
-  int get endHst => throw _privateConstructorUsedError;
-  @JsonKey(name: 'current_hst')
+
+  /// Urutan fase (1, 2, 3, ...)
+  @JsonKey(name: 'phase_order')
+  int get phaseOrder => throw _privateConstructorUsedError;
+
+  /// HST minimum fase ini dimulai
+  @JsonKey(name: 'phase_hst_min')
+  int get hstMin => throw _privateConstructorUsedError;
+
+  /// HST maksimum fase ini berakhir
+  @JsonKey(name: 'phase_hst_max')
+  int get hstMax => throw _privateConstructorUsedError;
+
+  /// HST saat ini — diisi via enrichWithHst(), default 0
+  @JsonKey(includeFromJson: false, includeToJson: false)
   int get currentHst => throw _privateConstructorUsedError;
-  @JsonKey(name: 'required_gdd')
-  double get requiredGdd => throw _privateConstructorUsedError;
-  @JsonKey(name: 'current_gdd')
-  double get currentGdd => throw _privateConstructorUsedError;
-  @JsonKey(name: 'progress')
-  double get progress => throw _privateConstructorUsedError;
-  @JsonKey(name: 'status')
+
+  /// Status fase: upcoming / active / completed — diisi via enrichWithHst()
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'start_date')
-  DateTime get startDate => throw _privateConstructorUsedError;
-  @JsonKey(name: 'end_date')
-  DateTime? get endDate => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+
+  /// Progress 0.0–1.0 — dihitung via enrichWithHst()
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  double get progress => throw _privateConstructorUsedError;
 
   /// Serializes this PhaseModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -72,22 +75,15 @@ abstract class $PhaseModelCopyWith<$Res> {
   ) = _$PhaseModelCopyWithImpl<$Res, PhaseModel>;
   @useResult
   $Res call({
-    @JsonKey(name: 'id') String id,
-    @JsonKey(name: 'plant_id') String plantId,
-    @JsonKey(name: 'plant_name') String plantName,
+    @JsonKey(name: 'phase_id') String id,
+    @JsonKey(name: 'chrop_type') String cropType,
     @JsonKey(name: 'phase_name') String phaseName,
-    @JsonKey(name: 'description') String description,
-    @JsonKey(name: 'start_hst') int startHst,
-    @JsonKey(name: 'end_hst') int endHst,
-    @JsonKey(name: 'current_hst') int currentHst,
-    @JsonKey(name: 'required_gdd') double requiredGdd,
-    @JsonKey(name: 'current_gdd') double currentGdd,
-    @JsonKey(name: 'progress') double progress,
-    @JsonKey(name: 'status') String status,
-    @JsonKey(name: 'start_date') DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
-    @JsonKey(name: 'created_at') DateTime createdAt,
-    @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'phase_order') int phaseOrder,
+    @JsonKey(name: 'phase_hst_min') int hstMin,
+    @JsonKey(name: 'phase_hst_max') int hstMax,
+    @JsonKey(includeFromJson: false, includeToJson: false) int currentHst,
+    @JsonKey(includeFromJson: false, includeToJson: false) String status,
+    @JsonKey(includeFromJson: false, includeToJson: false) double progress,
   });
 }
 
@@ -107,21 +103,14 @@ class _$PhaseModelCopyWithImpl<$Res, $Val extends PhaseModel>
   @override
   $Res call({
     Object? id = null,
-    Object? plantId = null,
-    Object? plantName = null,
+    Object? cropType = null,
     Object? phaseName = null,
-    Object? description = null,
-    Object? startHst = null,
-    Object? endHst = null,
+    Object? phaseOrder = null,
+    Object? hstMin = null,
+    Object? hstMax = null,
     Object? currentHst = null,
-    Object? requiredGdd = null,
-    Object? currentGdd = null,
-    Object? progress = null,
     Object? status = null,
-    Object? startDate = null,
-    Object? endDate = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? progress = null,
   }) {
     return _then(
       _value.copyWith(
@@ -129,66 +118,38 @@ class _$PhaseModelCopyWithImpl<$Res, $Val extends PhaseModel>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
-            plantId: null == plantId
-                ? _value.plantId
-                : plantId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            plantName: null == plantName
-                ? _value.plantName
-                : plantName // ignore: cast_nullable_to_non_nullable
+            cropType: null == cropType
+                ? _value.cropType
+                : cropType // ignore: cast_nullable_to_non_nullable
                       as String,
             phaseName: null == phaseName
                 ? _value.phaseName
                 : phaseName // ignore: cast_nullable_to_non_nullable
                       as String,
-            description: null == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                      as String,
-            startHst: null == startHst
-                ? _value.startHst
-                : startHst // ignore: cast_nullable_to_non_nullable
+            phaseOrder: null == phaseOrder
+                ? _value.phaseOrder
+                : phaseOrder // ignore: cast_nullable_to_non_nullable
                       as int,
-            endHst: null == endHst
-                ? _value.endHst
-                : endHst // ignore: cast_nullable_to_non_nullable
+            hstMin: null == hstMin
+                ? _value.hstMin
+                : hstMin // ignore: cast_nullable_to_non_nullable
+                      as int,
+            hstMax: null == hstMax
+                ? _value.hstMax
+                : hstMax // ignore: cast_nullable_to_non_nullable
                       as int,
             currentHst: null == currentHst
                 ? _value.currentHst
                 : currentHst // ignore: cast_nullable_to_non_nullable
                       as int,
-            requiredGdd: null == requiredGdd
-                ? _value.requiredGdd
-                : requiredGdd // ignore: cast_nullable_to_non_nullable
-                      as double,
-            currentGdd: null == currentGdd
-                ? _value.currentGdd
-                : currentGdd // ignore: cast_nullable_to_non_nullable
-                      as double,
-            progress: null == progress
-                ? _value.progress
-                : progress // ignore: cast_nullable_to_non_nullable
-                      as double,
             status: null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as String,
-            startDate: null == startDate
-                ? _value.startDate
-                : startDate // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            endDate: freezed == endDate
-                ? _value.endDate
-                : endDate // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            updatedAt: null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+            progress: null == progress
+                ? _value.progress
+                : progress // ignore: cast_nullable_to_non_nullable
+                      as double,
           )
           as $Val,
     );
@@ -205,22 +166,15 @@ abstract class _$$PhaseModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: 'id') String id,
-    @JsonKey(name: 'plant_id') String plantId,
-    @JsonKey(name: 'plant_name') String plantName,
+    @JsonKey(name: 'phase_id') String id,
+    @JsonKey(name: 'chrop_type') String cropType,
     @JsonKey(name: 'phase_name') String phaseName,
-    @JsonKey(name: 'description') String description,
-    @JsonKey(name: 'start_hst') int startHst,
-    @JsonKey(name: 'end_hst') int endHst,
-    @JsonKey(name: 'current_hst') int currentHst,
-    @JsonKey(name: 'required_gdd') double requiredGdd,
-    @JsonKey(name: 'current_gdd') double currentGdd,
-    @JsonKey(name: 'progress') double progress,
-    @JsonKey(name: 'status') String status,
-    @JsonKey(name: 'start_date') DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
-    @JsonKey(name: 'created_at') DateTime createdAt,
-    @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'phase_order') int phaseOrder,
+    @JsonKey(name: 'phase_hst_min') int hstMin,
+    @JsonKey(name: 'phase_hst_max') int hstMax,
+    @JsonKey(includeFromJson: false, includeToJson: false) int currentHst,
+    @JsonKey(includeFromJson: false, includeToJson: false) String status,
+    @JsonKey(includeFromJson: false, includeToJson: false) double progress,
   });
 }
 
@@ -239,21 +193,14 @@ class __$$PhaseModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? plantId = null,
-    Object? plantName = null,
+    Object? cropType = null,
     Object? phaseName = null,
-    Object? description = null,
-    Object? startHst = null,
-    Object? endHst = null,
+    Object? phaseOrder = null,
+    Object? hstMin = null,
+    Object? hstMax = null,
     Object? currentHst = null,
-    Object? requiredGdd = null,
-    Object? currentGdd = null,
-    Object? progress = null,
     Object? status = null,
-    Object? startDate = null,
-    Object? endDate = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? progress = null,
   }) {
     return _then(
       _$PhaseModelImpl(
@@ -261,66 +208,38 @@ class __$$PhaseModelImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
-        plantId: null == plantId
-            ? _value.plantId
-            : plantId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        plantName: null == plantName
-            ? _value.plantName
-            : plantName // ignore: cast_nullable_to_non_nullable
+        cropType: null == cropType
+            ? _value.cropType
+            : cropType // ignore: cast_nullable_to_non_nullable
                   as String,
         phaseName: null == phaseName
             ? _value.phaseName
             : phaseName // ignore: cast_nullable_to_non_nullable
                   as String,
-        description: null == description
-            ? _value.description
-            : description // ignore: cast_nullable_to_non_nullable
-                  as String,
-        startHst: null == startHst
-            ? _value.startHst
-            : startHst // ignore: cast_nullable_to_non_nullable
+        phaseOrder: null == phaseOrder
+            ? _value.phaseOrder
+            : phaseOrder // ignore: cast_nullable_to_non_nullable
                   as int,
-        endHst: null == endHst
-            ? _value.endHst
-            : endHst // ignore: cast_nullable_to_non_nullable
+        hstMin: null == hstMin
+            ? _value.hstMin
+            : hstMin // ignore: cast_nullable_to_non_nullable
+                  as int,
+        hstMax: null == hstMax
+            ? _value.hstMax
+            : hstMax // ignore: cast_nullable_to_non_nullable
                   as int,
         currentHst: null == currentHst
             ? _value.currentHst
             : currentHst // ignore: cast_nullable_to_non_nullable
                   as int,
-        requiredGdd: null == requiredGdd
-            ? _value.requiredGdd
-            : requiredGdd // ignore: cast_nullable_to_non_nullable
-                  as double,
-        currentGdd: null == currentGdd
-            ? _value.currentGdd
-            : currentGdd // ignore: cast_nullable_to_non_nullable
-                  as double,
-        progress: null == progress
-            ? _value.progress
-            : progress // ignore: cast_nullable_to_non_nullable
-                  as double,
         status: null == status
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as String,
-        startDate: null == startDate
-            ? _value.startDate
-            : startDate // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        endDate: freezed == endDate
-            ? _value.endDate
-            : endDate // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        updatedAt: null == updatedAt
-            ? _value.updatedAt
-            : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+        progress: null == progress
+            ? _value.progress
+            : progress // ignore: cast_nullable_to_non_nullable
+                  as double,
       ),
     );
   }
@@ -330,79 +249,69 @@ class __$$PhaseModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PhaseModelImpl extends _PhaseModel {
   const _$PhaseModelImpl({
-    @JsonKey(name: 'id') required this.id,
-    @JsonKey(name: 'plant_id') required this.plantId,
-    @JsonKey(name: 'plant_name') required this.plantName,
+    @JsonKey(name: 'phase_id') required this.id,
+    @JsonKey(name: 'chrop_type') required this.cropType,
     @JsonKey(name: 'phase_name') required this.phaseName,
-    @JsonKey(name: 'description') required this.description,
-    @JsonKey(name: 'start_hst') required this.startHst,
-    @JsonKey(name: 'end_hst') required this.endHst,
-    @JsonKey(name: 'current_hst') required this.currentHst,
-    @JsonKey(name: 'required_gdd') required this.requiredGdd,
-    @JsonKey(name: 'current_gdd') required this.currentGdd,
-    @JsonKey(name: 'progress') required this.progress,
-    @JsonKey(name: 'status') required this.status,
-    @JsonKey(name: 'start_date') required this.startDate,
-    @JsonKey(name: 'end_date') this.endDate,
-    @JsonKey(name: 'created_at') required this.createdAt,
-    @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: 'phase_order') required this.phaseOrder,
+    @JsonKey(name: 'phase_hst_min') required this.hstMin,
+    @JsonKey(name: 'phase_hst_max') required this.hstMax,
+    @JsonKey(includeFromJson: false, includeToJson: false) this.currentHst = 0,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    this.status = 'upcoming',
+    @JsonKey(includeFromJson: false, includeToJson: false) this.progress = 0.0,
   }) : super._();
 
   factory _$PhaseModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PhaseModelImplFromJson(json);
 
+  /// phase_id dari API
   @override
-  @JsonKey(name: 'id')
+  @JsonKey(name: 'phase_id')
   final String id;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI (field 'chrop_type' di API)
   @override
-  @JsonKey(name: 'plant_id')
-  final String plantId;
-  @override
-  @JsonKey(name: 'plant_name')
-  final String plantName;
+  @JsonKey(name: 'chrop_type')
+  final String cropType;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   @override
   @JsonKey(name: 'phase_name')
   final String phaseName;
+
+  /// Urutan fase (1, 2, 3, ...)
   @override
-  @JsonKey(name: 'description')
-  final String description;
+  @JsonKey(name: 'phase_order')
+  final int phaseOrder;
+
+  /// HST minimum fase ini dimulai
   @override
-  @JsonKey(name: 'start_hst')
-  final int startHst;
+  @JsonKey(name: 'phase_hst_min')
+  final int hstMin;
+
+  /// HST maksimum fase ini berakhir
   @override
-  @JsonKey(name: 'end_hst')
-  final int endHst;
+  @JsonKey(name: 'phase_hst_max')
+  final int hstMax;
+
+  /// HST saat ini — diisi via enrichWithHst(), default 0
   @override
-  @JsonKey(name: 'current_hst')
+  @JsonKey(includeFromJson: false, includeToJson: false)
   final int currentHst;
+
+  /// Status fase: upcoming / active / completed — diisi via enrichWithHst()
   @override
-  @JsonKey(name: 'required_gdd')
-  final double requiredGdd;
-  @override
-  @JsonKey(name: 'current_gdd')
-  final double currentGdd;
-  @override
-  @JsonKey(name: 'progress')
-  final double progress;
-  @override
-  @JsonKey(name: 'status')
+  @JsonKey(includeFromJson: false, includeToJson: false)
   final String status;
+
+  /// Progress 0.0–1.0 — dihitung via enrichWithHst()
   @override
-  @JsonKey(name: 'start_date')
-  final DateTime startDate;
-  @override
-  @JsonKey(name: 'end_date')
-  final DateTime? endDate;
-  @override
-  @JsonKey(name: 'created_at')
-  final DateTime createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  final DateTime updatedAt;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final double progress;
 
   @override
   String toString() {
-    return 'PhaseModel(id: $id, plantId: $plantId, plantName: $plantName, phaseName: $phaseName, description: $description, startHst: $startHst, endHst: $endHst, currentHst: $currentHst, requiredGdd: $requiredGdd, currentGdd: $currentGdd, progress: $progress, status: $status, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'PhaseModel(id: $id, cropType: $cropType, phaseName: $phaseName, phaseOrder: $phaseOrder, hstMin: $hstMin, hstMax: $hstMax, currentHst: $currentHst, status: $status, progress: $progress)';
   }
 
   @override
@@ -411,32 +320,19 @@ class _$PhaseModelImpl extends _PhaseModel {
         (other.runtimeType == runtimeType &&
             other is _$PhaseModelImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.plantId, plantId) || other.plantId == plantId) &&
-            (identical(other.plantName, plantName) ||
-                other.plantName == plantName) &&
+            (identical(other.cropType, cropType) ||
+                other.cropType == cropType) &&
             (identical(other.phaseName, phaseName) ||
                 other.phaseName == phaseName) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            (identical(other.startHst, startHst) ||
-                other.startHst == startHst) &&
-            (identical(other.endHst, endHst) || other.endHst == endHst) &&
+            (identical(other.phaseOrder, phaseOrder) ||
+                other.phaseOrder == phaseOrder) &&
+            (identical(other.hstMin, hstMin) || other.hstMin == hstMin) &&
+            (identical(other.hstMax, hstMax) || other.hstMax == hstMax) &&
             (identical(other.currentHst, currentHst) ||
                 other.currentHst == currentHst) &&
-            (identical(other.requiredGdd, requiredGdd) ||
-                other.requiredGdd == requiredGdd) &&
-            (identical(other.currentGdd, currentGdd) ||
-                other.currentGdd == currentGdd) &&
-            (identical(other.progress, progress) ||
-                other.progress == progress) &&
             (identical(other.status, status) || other.status == status) &&
-            (identical(other.startDate, startDate) ||
-                other.startDate == startDate) &&
-            (identical(other.endDate, endDate) || other.endDate == endDate) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.progress, progress) ||
+                other.progress == progress));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -444,21 +340,14 @@ class _$PhaseModelImpl extends _PhaseModel {
   int get hashCode => Object.hash(
     runtimeType,
     id,
-    plantId,
-    plantName,
+    cropType,
     phaseName,
-    description,
-    startHst,
-    endHst,
+    phaseOrder,
+    hstMin,
+    hstMax,
     currentHst,
-    requiredGdd,
-    currentGdd,
-    progress,
     status,
-    startDate,
-    endDate,
-    createdAt,
-    updatedAt,
+    progress,
   );
 
   /// Create a copy of PhaseModel
@@ -477,76 +366,66 @@ class _$PhaseModelImpl extends _PhaseModel {
 
 abstract class _PhaseModel extends PhaseModel {
   const factory _PhaseModel({
-    @JsonKey(name: 'id') required final String id,
-    @JsonKey(name: 'plant_id') required final String plantId,
-    @JsonKey(name: 'plant_name') required final String plantName,
+    @JsonKey(name: 'phase_id') required final String id,
+    @JsonKey(name: 'chrop_type') required final String cropType,
     @JsonKey(name: 'phase_name') required final String phaseName,
-    @JsonKey(name: 'description') required final String description,
-    @JsonKey(name: 'start_hst') required final int startHst,
-    @JsonKey(name: 'end_hst') required final int endHst,
-    @JsonKey(name: 'current_hst') required final int currentHst,
-    @JsonKey(name: 'required_gdd') required final double requiredGdd,
-    @JsonKey(name: 'current_gdd') required final double currentGdd,
-    @JsonKey(name: 'progress') required final double progress,
-    @JsonKey(name: 'status') required final String status,
-    @JsonKey(name: 'start_date') required final DateTime startDate,
-    @JsonKey(name: 'end_date') final DateTime? endDate,
-    @JsonKey(name: 'created_at') required final DateTime createdAt,
-    @JsonKey(name: 'updated_at') required final DateTime updatedAt,
+    @JsonKey(name: 'phase_order') required final int phaseOrder,
+    @JsonKey(name: 'phase_hst_min') required final int hstMin,
+    @JsonKey(name: 'phase_hst_max') required final int hstMax,
+    @JsonKey(includeFromJson: false, includeToJson: false) final int currentHst,
+    @JsonKey(includeFromJson: false, includeToJson: false) final String status,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    final double progress,
   }) = _$PhaseModelImpl;
   const _PhaseModel._() : super._();
 
   factory _PhaseModel.fromJson(Map<String, dynamic> json) =
       _$PhaseModelImpl.fromJson;
 
+  /// phase_id dari API
   @override
-  @JsonKey(name: 'id')
+  @JsonKey(name: 'phase_id')
   String get id;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI (field 'chrop_type' di API)
   @override
-  @JsonKey(name: 'plant_id')
-  String get plantId;
-  @override
-  @JsonKey(name: 'plant_name')
-  String get plantName;
+  @JsonKey(name: 'chrop_type')
+  String get cropType;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   @override
   @JsonKey(name: 'phase_name')
   String get phaseName;
+
+  /// Urutan fase (1, 2, 3, ...)
   @override
-  @JsonKey(name: 'description')
-  String get description;
+  @JsonKey(name: 'phase_order')
+  int get phaseOrder;
+
+  /// HST minimum fase ini dimulai
   @override
-  @JsonKey(name: 'start_hst')
-  int get startHst;
+  @JsonKey(name: 'phase_hst_min')
+  int get hstMin;
+
+  /// HST maksimum fase ini berakhir
   @override
-  @JsonKey(name: 'end_hst')
-  int get endHst;
+  @JsonKey(name: 'phase_hst_max')
+  int get hstMax;
+
+  /// HST saat ini — diisi via enrichWithHst(), default 0
   @override
-  @JsonKey(name: 'current_hst')
+  @JsonKey(includeFromJson: false, includeToJson: false)
   int get currentHst;
+
+  /// Status fase: upcoming / active / completed — diisi via enrichWithHst()
   @override
-  @JsonKey(name: 'required_gdd')
-  double get requiredGdd;
-  @override
-  @JsonKey(name: 'current_gdd')
-  double get currentGdd;
-  @override
-  @JsonKey(name: 'progress')
-  double get progress;
-  @override
-  @JsonKey(name: 'status')
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String get status;
+
+  /// Progress 0.0–1.0 — dihitung via enrichWithHst()
   @override
-  @JsonKey(name: 'start_date')
-  DateTime get startDate;
-  @override
-  @JsonKey(name: 'end_date')
-  DateTime? get endDate;
-  @override
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  double get progress;
 
   /// Create a copy of PhaseModel
   /// with the given fields replaced by the non-null parameter values.

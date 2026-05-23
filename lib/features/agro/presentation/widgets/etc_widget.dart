@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
+import '../../domain/entities/agro_entity.dart';
 
 class EtcWidget extends StatelessWidget {
-  final List<EtcDailyModel> etcData;
+  final List<EtcDailyEntity> etcData;
 
   const EtcWidget({super.key, required this.etcData});
 
@@ -88,7 +88,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLatestEtc(BuildContext context, EtcDailyModel data) {
+  Widget _buildLatestEtc(BuildContext context, EtcDailyEntity data) {
     return Row(
       children: [
         Expanded(
@@ -178,7 +178,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEtcChart(BuildContext context, List<EtcDailyModel> weekData) {
+  Widget _buildEtcChart(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -363,7 +363,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyModel data) {
+  Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyEntity data) {
     final waterNeeds = data.waterNeeds ?? 0;
     String recommendation;
     Color color;
@@ -432,7 +432,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEtcTable(BuildContext context, List<EtcDailyModel> weekData) {
+  Widget _buildEtcTable(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
 
     return Column(

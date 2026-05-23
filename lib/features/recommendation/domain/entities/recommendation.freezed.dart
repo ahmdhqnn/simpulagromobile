@@ -27,7 +27,7 @@ mixin _$Recommendation {
   String? get plantName => throw _privateConstructorUsedError;
   String? get siteId => throw _privateConstructorUsedError;
   String? get siteName => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get parameters => throw _privateConstructorUsedError;
+  RecommendationBundle? get parameters => throw _privateConstructorUsedError;
   List<String>? get actionItems => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get appliedAt => throw _privateConstructorUsedError;
@@ -60,7 +60,7 @@ abstract class $RecommendationCopyWith<$Res> {
     String? plantName,
     String? siteId,
     String? siteName,
-    Map<String, dynamic>? parameters,
+    RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
     DateTime? appliedAt,
@@ -68,6 +68,8 @@ abstract class $RecommendationCopyWith<$Res> {
     double? confidenceScore,
     String? reason,
   });
+
+  $RecommendationBundleCopyWith<$Res>? get parameters;
 }
 
 /// @nodoc
@@ -148,7 +150,7 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
             parameters: freezed == parameters
                 ? _value.parameters
                 : parameters // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>?,
+                      as RecommendationBundle?,
             actionItems: freezed == actionItems
                 ? _value.actionItems
                 : actionItems // ignore: cast_nullable_to_non_nullable
@@ -177,6 +179,20 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
           as $Val,
     );
   }
+
+  /// Create a copy of Recommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RecommendationBundleCopyWith<$Res>? get parameters {
+    if (_value.parameters == null) {
+      return null;
+    }
+
+    return $RecommendationBundleCopyWith<$Res>(_value.parameters!, (value) {
+      return _then(_value.copyWith(parameters: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -199,7 +215,7 @@ abstract class _$$RecommendationImplCopyWith<$Res>
     String? plantName,
     String? siteId,
     String? siteName,
-    Map<String, dynamic>? parameters,
+    RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
     DateTime? appliedAt,
@@ -207,6 +223,9 @@ abstract class _$$RecommendationImplCopyWith<$Res>
     double? confidenceScore,
     String? reason,
   });
+
+  @override
+  $RecommendationBundleCopyWith<$Res>? get parameters;
 }
 
 /// @nodoc
@@ -284,9 +303,9 @@ class __$$RecommendationImplCopyWithImpl<$Res>
             : siteName // ignore: cast_nullable_to_non_nullable
                   as String?,
         parameters: freezed == parameters
-            ? _value._parameters
+            ? _value.parameters
             : parameters // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>?,
+                  as RecommendationBundle?,
         actionItems: freezed == actionItems
             ? _value._actionItems
             : actionItems // ignore: cast_nullable_to_non_nullable
@@ -330,15 +349,14 @@ class _$RecommendationImpl extends _Recommendation {
     this.plantName,
     this.siteId,
     this.siteName,
-    final Map<String, dynamic>? parameters,
+    this.parameters,
     final List<String>? actionItems,
     this.createdAt,
     this.appliedAt,
     this.appliedBy,
     this.confidenceScore,
     this.reason,
-  }) : _parameters = parameters,
-       _actionItems = actionItems,
+  }) : _actionItems = actionItems,
        super._();
 
   @override
@@ -361,16 +379,8 @@ class _$RecommendationImpl extends _Recommendation {
   final String? siteId;
   @override
   final String? siteName;
-  final Map<String, dynamic>? _parameters;
   @override
-  Map<String, dynamic>? get parameters {
-    final value = _parameters;
-    if (value == null) return null;
-    if (_parameters is EqualUnmodifiableMapView) return _parameters;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
+  final RecommendationBundle? parameters;
   final List<String>? _actionItems;
   @override
   List<String>? get actionItems {
@@ -417,10 +427,8 @@ class _$RecommendationImpl extends _Recommendation {
             (identical(other.siteId, siteId) || other.siteId == siteId) &&
             (identical(other.siteName, siteName) ||
                 other.siteName == siteName) &&
-            const DeepCollectionEquality().equals(
-              other._parameters,
-              _parameters,
-            ) &&
+            (identical(other.parameters, parameters) ||
+                other.parameters == parameters) &&
             const DeepCollectionEquality().equals(
               other._actionItems,
               _actionItems,
@@ -449,7 +457,7 @@ class _$RecommendationImpl extends _Recommendation {
     plantName,
     siteId,
     siteName,
-    const DeepCollectionEquality().hash(_parameters),
+    parameters,
     const DeepCollectionEquality().hash(_actionItems),
     createdAt,
     appliedAt,
@@ -482,7 +490,7 @@ abstract class _Recommendation extends Recommendation {
     final String? plantName,
     final String? siteId,
     final String? siteName,
-    final Map<String, dynamic>? parameters,
+    final RecommendationBundle? parameters,
     final List<String>? actionItems,
     final DateTime? createdAt,
     final DateTime? appliedAt,
@@ -513,7 +521,7 @@ abstract class _Recommendation extends Recommendation {
   @override
   String? get siteName;
   @override
-  Map<String, dynamic>? get parameters;
+  RecommendationBundle? get parameters;
   @override
   List<String>? get actionItems;
   @override

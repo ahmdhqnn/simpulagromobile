@@ -18,22 +18,33 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$Phase {
   String get id => throw _privateConstructorUsedError;
-  String get plantId => throw _privateConstructorUsedError;
-  String get plantName => throw _privateConstructorUsedError;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI
+  String get cropType => throw _privateConstructorUsedError;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   String get phaseName => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
-  int get startHst => throw _privateConstructorUsedError;
-  int get endHst => throw _privateConstructorUsedError;
+
+  /// Urutan fase (1, 2, 3, ...)
+  int get phaseOrder => throw _privateConstructorUsedError;
+
+  /// HST minimum fase ini dimulai
+  int get hstMin => throw _privateConstructorUsedError;
+
+  /// HST maksimum fase ini berakhir
+  int get hstMax => throw _privateConstructorUsedError;
+
+  /// HST saat ini (dari /fase/phases-by-hst)
   int get currentHst => throw _privateConstructorUsedError;
-  double get requiredGdd => throw _privateConstructorUsedError;
-  double get currentGdd => throw _privateConstructorUsedError;
+
+  /// Status: upcoming / active / completed
+  String get status => throw _privateConstructorUsedError;
+
+  /// Progress 0.0–1.0
   double get progress => throw _privateConstructorUsedError;
-  String get status =>
-      throw _privateConstructorUsedError; // active, completed, upcoming
-  DateTime get startDate => throw _privateConstructorUsedError;
-  DateTime? get endDate => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+
+  /// Deskripsi fase (dibangun dari phaseName)
+  String get description => throw _privateConstructorUsedError;
 
   /// Create a copy of Phase
   /// with the given fields replaced by the non-null parameter values.
@@ -48,21 +59,15 @@ abstract class $PhaseCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
-    String plantId,
-    String plantName,
+    String cropType,
     String phaseName,
-    String description,
-    int startHst,
-    int endHst,
+    int phaseOrder,
+    int hstMin,
+    int hstMax,
     int currentHst,
-    double requiredGdd,
-    double currentGdd,
-    double progress,
     String status,
-    DateTime startDate,
-    DateTime? endDate,
-    DateTime createdAt,
-    DateTime updatedAt,
+    double progress,
+    String description,
   });
 }
 
@@ -82,21 +87,15 @@ class _$PhaseCopyWithImpl<$Res, $Val extends Phase>
   @override
   $Res call({
     Object? id = null,
-    Object? plantId = null,
-    Object? plantName = null,
+    Object? cropType = null,
     Object? phaseName = null,
-    Object? description = null,
-    Object? startHst = null,
-    Object? endHst = null,
+    Object? phaseOrder = null,
+    Object? hstMin = null,
+    Object? hstMax = null,
     Object? currentHst = null,
-    Object? requiredGdd = null,
-    Object? currentGdd = null,
-    Object? progress = null,
     Object? status = null,
-    Object? startDate = null,
-    Object? endDate = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? progress = null,
+    Object? description = null,
   }) {
     return _then(
       _value.copyWith(
@@ -104,66 +103,42 @@ class _$PhaseCopyWithImpl<$Res, $Val extends Phase>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
-            plantId: null == plantId
-                ? _value.plantId
-                : plantId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            plantName: null == plantName
-                ? _value.plantName
-                : plantName // ignore: cast_nullable_to_non_nullable
+            cropType: null == cropType
+                ? _value.cropType
+                : cropType // ignore: cast_nullable_to_non_nullable
                       as String,
             phaseName: null == phaseName
                 ? _value.phaseName
                 : phaseName // ignore: cast_nullable_to_non_nullable
                       as String,
-            description: null == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                      as String,
-            startHst: null == startHst
-                ? _value.startHst
-                : startHst // ignore: cast_nullable_to_non_nullable
+            phaseOrder: null == phaseOrder
+                ? _value.phaseOrder
+                : phaseOrder // ignore: cast_nullable_to_non_nullable
                       as int,
-            endHst: null == endHst
-                ? _value.endHst
-                : endHst // ignore: cast_nullable_to_non_nullable
+            hstMin: null == hstMin
+                ? _value.hstMin
+                : hstMin // ignore: cast_nullable_to_non_nullable
+                      as int,
+            hstMax: null == hstMax
+                ? _value.hstMax
+                : hstMax // ignore: cast_nullable_to_non_nullable
                       as int,
             currentHst: null == currentHst
                 ? _value.currentHst
                 : currentHst // ignore: cast_nullable_to_non_nullable
                       as int,
-            requiredGdd: null == requiredGdd
-                ? _value.requiredGdd
-                : requiredGdd // ignore: cast_nullable_to_non_nullable
-                      as double,
-            currentGdd: null == currentGdd
-                ? _value.currentGdd
-                : currentGdd // ignore: cast_nullable_to_non_nullable
-                      as double,
-            progress: null == progress
-                ? _value.progress
-                : progress // ignore: cast_nullable_to_non_nullable
-                      as double,
             status: null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as String,
-            startDate: null == startDate
-                ? _value.startDate
-                : startDate // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            endDate: freezed == endDate
-                ? _value.endDate
-                : endDate // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            updatedAt: null == updatedAt
-                ? _value.updatedAt
-                : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+            progress: null == progress
+                ? _value.progress
+                : progress // ignore: cast_nullable_to_non_nullable
+                      as double,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -180,21 +155,15 @@ abstract class _$$PhaseImplCopyWith<$Res> implements $PhaseCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
-    String plantId,
-    String plantName,
+    String cropType,
     String phaseName,
-    String description,
-    int startHst,
-    int endHst,
+    int phaseOrder,
+    int hstMin,
+    int hstMax,
     int currentHst,
-    double requiredGdd,
-    double currentGdd,
-    double progress,
     String status,
-    DateTime startDate,
-    DateTime? endDate,
-    DateTime createdAt,
-    DateTime updatedAt,
+    double progress,
+    String description,
   });
 }
 
@@ -213,21 +182,15 @@ class __$$PhaseImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? plantId = null,
-    Object? plantName = null,
+    Object? cropType = null,
     Object? phaseName = null,
-    Object? description = null,
-    Object? startHst = null,
-    Object? endHst = null,
+    Object? phaseOrder = null,
+    Object? hstMin = null,
+    Object? hstMax = null,
     Object? currentHst = null,
-    Object? requiredGdd = null,
-    Object? currentGdd = null,
-    Object? progress = null,
     Object? status = null,
-    Object? startDate = null,
-    Object? endDate = freezed,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? progress = null,
+    Object? description = null,
   }) {
     return _then(
       _$PhaseImpl(
@@ -235,66 +198,42 @@ class __$$PhaseImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
-        plantId: null == plantId
-            ? _value.plantId
-            : plantId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        plantName: null == plantName
-            ? _value.plantName
-            : plantName // ignore: cast_nullable_to_non_nullable
+        cropType: null == cropType
+            ? _value.cropType
+            : cropType // ignore: cast_nullable_to_non_nullable
                   as String,
         phaseName: null == phaseName
             ? _value.phaseName
             : phaseName // ignore: cast_nullable_to_non_nullable
                   as String,
-        description: null == description
-            ? _value.description
-            : description // ignore: cast_nullable_to_non_nullable
-                  as String,
-        startHst: null == startHst
-            ? _value.startHst
-            : startHst // ignore: cast_nullable_to_non_nullable
+        phaseOrder: null == phaseOrder
+            ? _value.phaseOrder
+            : phaseOrder // ignore: cast_nullable_to_non_nullable
                   as int,
-        endHst: null == endHst
-            ? _value.endHst
-            : endHst // ignore: cast_nullable_to_non_nullable
+        hstMin: null == hstMin
+            ? _value.hstMin
+            : hstMin // ignore: cast_nullable_to_non_nullable
+                  as int,
+        hstMax: null == hstMax
+            ? _value.hstMax
+            : hstMax // ignore: cast_nullable_to_non_nullable
                   as int,
         currentHst: null == currentHst
             ? _value.currentHst
             : currentHst // ignore: cast_nullable_to_non_nullable
                   as int,
-        requiredGdd: null == requiredGdd
-            ? _value.requiredGdd
-            : requiredGdd // ignore: cast_nullable_to_non_nullable
-                  as double,
-        currentGdd: null == currentGdd
-            ? _value.currentGdd
-            : currentGdd // ignore: cast_nullable_to_non_nullable
-                  as double,
-        progress: null == progress
-            ? _value.progress
-            : progress // ignore: cast_nullable_to_non_nullable
-                  as double,
         status: null == status
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as String,
-        startDate: null == startDate
-            ? _value.startDate
-            : startDate // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        endDate: freezed == endDate
-            ? _value.endDate
-            : endDate // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        updatedAt: null == updatedAt
-            ? _value.updatedAt
-            : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+        progress: null == progress
+            ? _value.progress
+            : progress // ignore: cast_nullable_to_non_nullable
+                  as double,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -305,60 +244,63 @@ class __$$PhaseImplCopyWithImpl<$Res>
 class _$PhaseImpl extends _Phase {
   const _$PhaseImpl({
     required this.id,
-    required this.plantId,
-    required this.plantName,
+    required this.cropType,
     required this.phaseName,
-    required this.description,
-    required this.startHst,
-    required this.endHst,
-    required this.currentHst,
-    required this.requiredGdd,
-    required this.currentGdd,
-    required this.progress,
-    required this.status,
-    required this.startDate,
-    this.endDate,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.phaseOrder,
+    required this.hstMin,
+    required this.hstMax,
+    this.currentHst = 0,
+    this.status = 'upcoming',
+    this.progress = 0.0,
+    this.description = '',
   }) : super._();
 
   @override
   final String id;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI
   @override
-  final String plantId;
-  @override
-  final String plantName;
+  final String cropType;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   @override
   final String phaseName;
+
+  /// Urutan fase (1, 2, 3, ...)
   @override
-  final String description;
+  final int phaseOrder;
+
+  /// HST minimum fase ini dimulai
   @override
-  final int startHst;
+  final int hstMin;
+
+  /// HST maksimum fase ini berakhir
   @override
-  final int endHst;
+  final int hstMax;
+
+  /// HST saat ini (dari /fase/phases-by-hst)
   @override
+  @JsonKey()
   final int currentHst;
+
+  /// Status: upcoming / active / completed
   @override
-  final double requiredGdd;
-  @override
-  final double currentGdd;
-  @override
-  final double progress;
-  @override
+  @JsonKey()
   final String status;
-  // active, completed, upcoming
+
+  /// Progress 0.0–1.0
   @override
-  final DateTime startDate;
+  @JsonKey()
+  final double progress;
+
+  /// Deskripsi fase (dibangun dari phaseName)
   @override
-  final DateTime? endDate;
-  @override
-  final DateTime createdAt;
-  @override
-  final DateTime updatedAt;
+  @JsonKey()
+  final String description;
 
   @override
   String toString() {
-    return 'Phase(id: $id, plantId: $plantId, plantName: $plantName, phaseName: $phaseName, description: $description, startHst: $startHst, endHst: $endHst, currentHst: $currentHst, requiredGdd: $requiredGdd, currentGdd: $currentGdd, progress: $progress, status: $status, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Phase(id: $id, cropType: $cropType, phaseName: $phaseName, phaseOrder: $phaseOrder, hstMin: $hstMin, hstMax: $hstMax, currentHst: $currentHst, status: $status, progress: $progress, description: $description)';
   }
 
   @override
@@ -367,53 +309,36 @@ class _$PhaseImpl extends _Phase {
         (other.runtimeType == runtimeType &&
             other is _$PhaseImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.plantId, plantId) || other.plantId == plantId) &&
-            (identical(other.plantName, plantName) ||
-                other.plantName == plantName) &&
+            (identical(other.cropType, cropType) ||
+                other.cropType == cropType) &&
             (identical(other.phaseName, phaseName) ||
                 other.phaseName == phaseName) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            (identical(other.startHst, startHst) ||
-                other.startHst == startHst) &&
-            (identical(other.endHst, endHst) || other.endHst == endHst) &&
+            (identical(other.phaseOrder, phaseOrder) ||
+                other.phaseOrder == phaseOrder) &&
+            (identical(other.hstMin, hstMin) || other.hstMin == hstMin) &&
+            (identical(other.hstMax, hstMax) || other.hstMax == hstMax) &&
             (identical(other.currentHst, currentHst) ||
                 other.currentHst == currentHst) &&
-            (identical(other.requiredGdd, requiredGdd) ||
-                other.requiredGdd == requiredGdd) &&
-            (identical(other.currentGdd, currentGdd) ||
-                other.currentGdd == currentGdd) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.progress, progress) ||
                 other.progress == progress) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.startDate, startDate) ||
-                other.startDate == startDate) &&
-            (identical(other.endDate, endDate) || other.endDate == endDate) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.description, description) ||
+                other.description == description));
   }
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
     id,
-    plantId,
-    plantName,
+    cropType,
     phaseName,
-    description,
-    startHst,
-    endHst,
+    phaseOrder,
+    hstMin,
+    hstMax,
     currentHst,
-    requiredGdd,
-    currentGdd,
-    progress,
     status,
-    startDate,
-    endDate,
-    createdAt,
-    updatedAt,
+    progress,
+    description,
   );
 
   /// Create a copy of Phase
@@ -428,56 +353,56 @@ class _$PhaseImpl extends _Phase {
 abstract class _Phase extends Phase {
   const factory _Phase({
     required final String id,
-    required final String plantId,
-    required final String plantName,
+    required final String cropType,
     required final String phaseName,
-    required final String description,
-    required final int startHst,
-    required final int endHst,
-    required final int currentHst,
-    required final double requiredGdd,
-    required final double currentGdd,
-    required final double progress,
-    required final String status,
-    required final DateTime startDate,
-    final DateTime? endDate,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
+    required final int phaseOrder,
+    required final int hstMin,
+    required final int hstMax,
+    final int currentHst,
+    final String status,
+    final double progress,
+    final String description,
   }) = _$PhaseImpl;
   const _Phase._() : super._();
 
   @override
   String get id;
+
+  /// Jenis tanaman: PADI, JAGUNG, KEDELAI
   @override
-  String get plantId;
-  @override
-  String get plantName;
+  String get cropType;
+
+  /// Nama fase: Vegetatif, Generatif, dll.
   @override
   String get phaseName;
+
+  /// Urutan fase (1, 2, 3, ...)
   @override
-  String get description;
+  int get phaseOrder;
+
+  /// HST minimum fase ini dimulai
   @override
-  int get startHst;
+  int get hstMin;
+
+  /// HST maksimum fase ini berakhir
   @override
-  int get endHst;
+  int get hstMax;
+
+  /// HST saat ini (dari /fase/phases-by-hst)
   @override
   int get currentHst;
+
+  /// Status: upcoming / active / completed
   @override
-  double get requiredGdd;
-  @override
-  double get currentGdd;
+  String get status;
+
+  /// Progress 0.0–1.0
   @override
   double get progress;
+
+  /// Deskripsi fase (dibangun dari phaseName)
   @override
-  String get status; // active, completed, upcoming
-  @override
-  DateTime get startDate;
-  @override
-  DateTime? get endDate;
-  @override
-  DateTime get createdAt;
-  @override
-  DateTime get updatedAt;
+  String get description;
 
   /// Create a copy of Phase
   /// with the given fields replaced by the non-null parameter values.

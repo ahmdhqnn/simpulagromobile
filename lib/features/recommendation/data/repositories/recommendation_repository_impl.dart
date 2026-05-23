@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart' hide Task;
+import 'package:dio/dio.dart';
+import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/recommendation.dart';
 import '../../domain/repositories/recommendation_repository.dart';
@@ -14,10 +16,13 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
   Future<Either<Failure, List<Recommendation>>> getRecommendations() async {
     try {
       final models = await _remoteDatasource.getRecommendations();
-      final entities = models.map((model) => model.toEntity()).toList();
-      return Right(entities);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -27,10 +32,13 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
   ) async {
     try {
       final models = await _remoteDatasource.getRecommendationsBySite(siteId);
-      final entities = models.map((model) => model.toEntity()).toList();
-      return Right(entities);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -40,10 +48,13 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
   ) async {
     try {
       final models = await _remoteDatasource.getRecommendationsByPlant(plantId);
-      final entities = models.map((model) => model.toEntity()).toList();
-      return Right(entities);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -55,10 +66,13 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
       final models = await _remoteDatasource.getRecommendationsByType(
         type.name,
       );
-      final entities = models.map((model) => model.toEntity()).toList();
-      return Right(entities);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -71,8 +85,12 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
         recommendationId,
       );
       return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -85,8 +103,12 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
         recommendationId,
       );
       return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -99,8 +121,12 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
         recommendationId,
       );
       return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -110,10 +136,13 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
   ) async {
     try {
       final models = await _remoteDatasource.generateRecommendations(siteId);
-      final entities = models.map((model) => model.toEntity()).toList();
-      return Right(entities);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 }

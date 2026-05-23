@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
 import '../models/recommendation_model.dart';
+import '../models/recommendation_bundle_model.dart';
 
 /// Recommendation remote datasource
 abstract class RecommendationRemoteDatasource {
@@ -50,12 +52,14 @@ class RecommendationRemoteDatasourceImpl
     String siteId,
   ) async {
     try {
-      final response = await _dio.get('/sites/$siteId/recommendations');
+      final response = await _dio.get(ApiEndpoints.recommendations(siteId));
       final data = response.data['data'] as Map<String, dynamic>? ?? {};
       return _parseRecommendationResponse(data, siteId);
     } on DioException catch (e) {
       if (e.response?.statusCode == 400 || e.response?.statusCode == 404) {
-        debugPrint('⚠️ Recommendation datasource (getBySite) returned ${e.response?.statusCode}: Returning empty list');
+        debugPrint(
+          '⚠️ Recommendation datasource (getBySite) returned ${e.response?.statusCode}: Returning empty list',
+        );
         return [];
       }
       debugPrint('❌ Recommendation datasource error (getBySite): ${e.message}');
@@ -77,9 +81,7 @@ class RecommendationRemoteDatasourceImpl
   ) async {
     try {
       // API tidak memiliki endpoint per-plant, gunakan history
-      final response = await _dio.get(
-        '/sites/$plantId/recommendations/history',
-      );
+      final response = await _dio.get(ApiEndpoints.recHistory(plantId));
       final data = response.data['data'] as List? ?? [];
       return data
           .map(
@@ -268,52 +270,43 @@ class RecommendationRemoteDatasourceImpl
     Map<String, dynamic> data,
     String siteId,
   ) {
-    final recommendations = data['recommendations'] as Map<String, dynamic>?;
-    if (recommendations == null) return [];
+    // Backend API actually returns "sensor_data" and "recommendations" map
+    final recommendationsMap = data['recommendations'] as Map<String, dynamic>?;
+    if (recommendationsMap == null) return [];
 
     final result = <RecommendationModel>[];
     final now = DateTime.now();
 
-    // Parse NPK recommendation
-    final npk = recommendations['npk'] as Map<String, dynamic>?;
-    if (npk != null && !npk.containsKey('error')) {
-      result.add(
-        RecommendationModel(
-          recommendationId: 'npk_${siteId}_${now.millisecondsSinceEpoch}',
-          type: 'npk',
-          title: _buildNpkTitle(npk),
-          description: _buildNpkDescription(npk),
-          priority: _mapNpkPriority(npk['status'] as String?),
-          status: 'pending',
-          siteId: siteId,
-          parameters: npk,
-          actionItems: _buildNpkActionItems(npk),
-          createdAt: now,
-          reason: npk['pesan'] as String?,
-        ),
-      );
+    void parseItem(String key, String typeStr, String defaultTitle) {
+      if (recommendationsMap.containsKey(key)) {
+        final itemMap = recommendationsMap[key];
+        if (itemMap is Map<String, dynamic> && !itemMap.containsKey('error')) {
+          final status = itemMap['status'] as String?;
+          final pesan = itemMap['pesan'] as String?;
+          result.add(
+            RecommendationModel(
+              recommendationId: '${key}_${siteId}_${now.millisecondsSinceEpoch}',
+              type: typeStr,
+              title: typeStr == 'npk' ? _buildNpkTitle(itemMap) : (pesan ?? defaultTitle),
+              description: pesan ?? '-',
+              priority: _mapNpkPriority(status),
+              status: 'pending',
+              siteId: siteId,
+              parameters: RecommendationBundleModel(
+                npk: typeStr == 'npk' ? RecommendationActionResultModel.fromJson(itemMap) : null,
+                ph: typeStr == 'ph' ? RecommendationActionResultModel.fromJson(itemMap) : null,
+              ),
+              actionItems: typeStr == 'npk' ? _buildNpkActionItems(itemMap) : _buildPhActionItems(itemMap),
+              createdAt: now,
+              reason: pesan,
+            ),
+          );
+        }
+      }
     }
 
-    // Parse pH recommendation
-    final ph = recommendations['ph'] as Map<String, dynamic>?;
-    if (ph != null && !ph.containsKey('error')) {
-      result.add(
-        RecommendationModel(
-          recommendationId: 'ph_${siteId}_${now.millisecondsSinceEpoch}',
-          type: 'ph',
-          title: 'Penyesuaian pH Tanah',
-          description:
-              ph['pesan'] as String? ?? 'Lakukan penyesuaian pH tanah.',
-          priority: 'medium',
-          status: 'pending',
-          siteId: siteId,
-          parameters: ph,
-          actionItems: _buildPhActionItems(ph),
-          createdAt: now,
-          reason: ph['pesan'] as String?,
-        ),
-      );
-    }
+    parseItem('npk', 'npk', 'Penyesuaian NPK');
+    parseItem('ph', 'ph', 'Penyesuaian pH Tanah');
 
     return result;
   }
@@ -348,14 +341,10 @@ class RecommendationRemoteDatasourceImpl
           : 'medium',
       status: json['npk_status'] == 'success' ? 'applied' : 'pending',
       siteId: siteId,
-      parameters: {
-        'nitrogen': json['nitrogen'],
-        'phosphorus': json['phosphorus'],
-        'potassium': json['potassium'],
-        'ph_value': json['ph_value'],
-        'npk': npkRec,
-        'ph': phRec,
-      },
+      parameters: RecommendationBundleModel(
+        npk: npkRec != null ? RecommendationActionResultModel.fromJson(npkRec) : null,
+        ph: phRec != null ? RecommendationActionResultModel.fromJson(phRec) : null,
+      ),
       createdAt: json['rec_created'] != null
           ? DateTime.tryParse(json['rec_created'] as String)
           : null,

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../domain/entities/dashboard_entity.dart';
 
 class LatestSensorReadsWidget extends StatelessWidget {
-  final List<Map<String, dynamic>> reads;
+  final List<SensorReadEntity> reads;
 
   const LatestSensorReadsWidget({super.key, required this.reads});
 
@@ -22,7 +23,9 @@ class LatestSensorReadsWidget extends StatelessWidget {
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: reads.length > 5 ? 5 : reads.length, // Tampilkan maksimal 5 terbaru
+        itemCount: reads.length > 5
+            ? 5
+            : reads.length, // Tampilkan maksimal 5 terbaru
         separatorBuilder: (context, index) => const Divider(
           color: AppColors.divider,
           height: 1,
@@ -31,11 +34,9 @@ class LatestSensorReadsWidget extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           final read = reads[index];
-          final dsId = read['ds_id']?.toString() ?? 'Unknown';
-          final value = read['read_update_value']?.toString() ?? '0';
-          final devId = read['dev_id']?.toString() ?? '';
-          // Format date if needed, but for now we'll just show value and sensor
-          
+          final value = read.value;
+          final devId = read.devId;
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -62,7 +63,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getSensorLabel(dsId),
+                        read.label,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(14),
@@ -86,7 +87,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$value ${_getSensorUnit(dsId)}',
+                      '$value ${read.unit}'.trim(),
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(14),
@@ -102,46 +103,6 @@ class LatestSensorReadsWidget extends StatelessWidget {
         },
       ),
     );
-  }
-
-  String _getSensorLabel(String dsId) {
-    switch (dsId) {
-      case 'env_temp': return 'Suhu Lingkungan';
-      case 'env_hum': return 'Kelembaban Lingkungan';
-      case 'soil_nitro': return 'Nitrogen Tanah';
-      case 'soil_phos': return 'Fosfor Tanah';
-      case 'soil_pot': return 'Kalium Tanah';
-      case 'soil_ph': return 'pH Tanah';
-      case 'soil_hum': return 'Kelembaban Tanah';
-      case 'soil_temp': return 'Suhu Tanah';
-      case 'water_temp': return 'Suhu Air';
-      case 'water_lvl': return 'Level Air';
-      case 'light_lux': return 'Intensitas Cahaya';
-      case 'rain_rate': return 'Curah Hujan';
-      case 'wind_dir': return 'Arah Angin';
-      case 'wind_spd': return 'Kecepatan Angin';
-      default: return dsId;
-    }
-  }
-
-  String _getSensorUnit(String dsId) {
-    switch (dsId) {
-      case 'env_temp': 
-      case 'soil_temp':
-      case 'water_temp': return '°C';
-      case 'env_hum': 
-      case 'soil_hum': return '%';
-      case 'soil_nitro':
-      case 'soil_phos':
-      case 'soil_pot': return 'mg/kg';
-      case 'water_lvl': return 'cm';
-      case 'light_lux': return 'lux';
-      case 'rain_rate': return 'mm/h';
-      case 'wind_spd': return 'm/s';
-      case 'wind_dir': return '°';
-      case 'soil_ph': return '';
-      default: return '';
-    }
   }
 
   Widget _buildEmptyState(BuildContext context) {

@@ -2,10 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/dashboard_entity.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../datasources/dashboard_remote_datasource.dart';
-import '../models/environmental_health_model.dart';
-import '../models/dashboard_summary_model.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
   final DashboardRemoteDataSource remoteDataSource;
@@ -13,12 +12,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<Failure, EnvironmentalHealth>> getEnvironmentalHealth(
+  Future<Either<Failure, EnvironmentalHealthEntity>> getEnvironmentalHealth(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getEnvironmentalHealth(siteId);
-      return Right(data);
+      final model = await remoteDataSource.getEnvironmentalHealth(siteId);
+      return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -29,12 +28,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, DashboardDeviceSummary>> getDeviceSummary(
+  Future<Either<Failure, DeviceSummaryEntity>> getDeviceSummary(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getDeviceSummary(siteId);
-      return Right(data);
+      final model = await remoteDataSource.getDeviceSummary(siteId);
+      return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -45,12 +44,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, DashboardSensorSummary>> getSensorSummary(
+  Future<Either<Failure, SensorSummaryEntity>> getSensorSummary(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getSensorSummary(siteId);
-      return Right(data);
+      final model = await remoteDataSource.getSensorSummary(siteId);
+      return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -61,12 +60,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, DashboardPlantSummary>> getPlantSummary(
+  Future<Either<Failure, PlantSummaryEntity>> getPlantSummary(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getPlantSummary(siteId);
-      return Right(data);
+      final model = await remoteDataSource.getPlantSummary(siteId);
+      return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -77,12 +76,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getLatestSensorReads(
+  Future<Either<Failure, List<SensorReadEntity>>> getLatestSensorReads(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getLatestSensorReads(siteId);
-      return Right(data);
+      final models = await remoteDataSource.getLatestSensorReads(siteId);
+      return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -93,12 +92,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSevenDayReads(
+  Future<Either<Failure, List<SensorReadEntity>>> getDailyReads(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getSevenDayReads(siteId);
-      return Right(data);
+      final models = await remoteDataSource.getDailyReads(siteId);
+      return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -109,12 +108,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getTodayReads(
+  Future<Either<Failure, List<SensorReadEntity>>> getTodayReads(
     String siteId,
   ) async {
     try {
-      final data = await remoteDataSource.getTodayReads(siteId);
-      return Right(data);
+      final models = await remoteDataSource.getTodayReads(siteId);
+      return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {

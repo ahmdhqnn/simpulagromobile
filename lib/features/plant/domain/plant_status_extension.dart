@@ -1,16 +1,16 @@
-/// Plant Status Extension
-/// 
-/// Standardizes plant status code comparisons across the application.
-/// Handles both int (1, 0) and string ('1', '0') comparisons.
-/// 
-/// Status Codes:
-/// - 1 / '1': Active plant
-/// - 0 / '0': Inactive plant
-/// - null: Unknown status
-/// 
-/// Harvest Status:
-/// - null: Not harvested (still active)
-/// - DateTime: Harvested on that date
+// Plant Status Extension
+// 
+// Standardizes plant status code comparisons across the application.
+// Handles both int (1, 0) and string ('1', '0') comparisons.
+// 
+// Status Codes:
+// - 1 / '1': Active plant
+// - 0 / '0': Inactive plant
+// - null: Unknown status
+// 
+// Harvest Status:
+// - null: Not harvested (still active)
+// - DateTime: Harvested on that date
 
 extension PlantStatusX on dynamic {
   /// Check if plant is active

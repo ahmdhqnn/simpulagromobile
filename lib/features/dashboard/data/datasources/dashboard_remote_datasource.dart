@@ -1,16 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
 import '../models/environmental_health_model.dart';
 import '../models/dashboard_summary_model.dart';
-
-/// Constants for dashboard field names
-class _DashboardFields {
-  static const String dataKey = 'data';
-  static const String devStsField = 'dev_sts';
-  static const String plantStsField = 'plant_sts';
-  static const String plantHarvestField = 'plant_harvest';
-}
 
 class DashboardRemoteDataSource {
   final Dio _dio;
@@ -18,39 +11,33 @@ class DashboardRemoteDataSource {
   DashboardRemoteDataSource(this._dio);
 
   // ─── Environmental Health ─────────────────────────────
-  /// GET /api/sites/:siteId/agro/environmental-health
-  ///
-  /// Response structure (nested):
-  /// { "message": "Success", "data": { "status": 200, "data": { "overall_health": ..., "sensors": [...] } } }
+  /// GET /sites/{siteId}/agro/environmental-health
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<EnvironmentalHealth> getEnvironmentalHealth(String siteId) async {
+  Future<EnvironmentalHealthModel> getEnvironmentalHealth(String siteId) async {
     try {
-      final response = await _dio.get(
-        '/sites/$siteId/agro/environmental-health',
-      );
+      final response = await _dio.get(ApiEndpoints.envHealth(siteId));
 
-      // Handle nested response: response.data.data.data
       final outer = response.data;
-      if (outer == null) return EnvironmentalHealth.empty();
+      if (outer == null) return EnvironmentalHealthModel.empty();
 
-      dynamic inner = outer[_DashboardFields.dataKey];
-      if (inner == null) return EnvironmentalHealth.empty();
+      dynamic inner = outer['data'];
+      if (inner == null) return EnvironmentalHealthModel.empty();
 
-      // Agro endpoint wraps data twice: { data: { status, data: { ... } } }
-      if (inner is Map && inner.containsKey(_DashboardFields.dataKey)) {
-        inner = inner[_DashboardFields.dataKey];
+      // Agro endpoint kadang double-wrap: { data: { status, data: { ... } } }
+      if (inner is Map && inner.containsKey('data')) {
+        inner = inner['data'];
       }
 
       if (inner == null || inner is! Map<String, dynamic>) {
-        return EnvironmentalHealth.empty();
+        return EnvironmentalHealthModel.empty();
       }
 
       try {
-        return EnvironmentalHealth.fromJson(inner);
+        return EnvironmentalHealthModel.fromJson(inner);
       } catch (e) {
         debugPrint('⚠️ Failed to parse environmental health: $e');
-        return EnvironmentalHealth.empty();
+        return EnvironmentalHealthModel.empty();
       }
     } on DioException catch (e) {
       debugPrint('❌ Environmental health error: ${e.message}');
@@ -62,22 +49,22 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Devices ──────────────────────────────────────────
-  /// GET /api/sites/:siteId/devices
+  /// GET /sites/{siteId}/devices
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<DashboardDeviceSummary> getDeviceSummary(String siteId) async {
+  Future<DashboardDeviceSummaryModel> getDeviceSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/devices');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
+      final response = await _dio.get(ApiEndpoints.devices(siteId));
+      final data = response.data['data'] as List? ?? [];
 
       final total = data.length;
       final active = data.where((d) {
         if (d is! Map) return false;
-        final sts = d[_DashboardFields.devStsField];
+        final sts = d['dev_sts'];
         return sts == 1 || sts == '1';
       }).length;
 
-      return DashboardDeviceSummary(total: total, active: active);
+      return DashboardDeviceSummaryModel(total: total, active: active);
     } on DioException catch (e) {
       debugPrint('❌ Device summary error: ${e.message}');
       rethrow;
@@ -88,17 +75,17 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Sensors ──────────────────────────────────────────
-  /// GET /api/sites/:siteId/sensors
+  /// GET /sites/{siteId}/sensors
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<DashboardSensorSummary> getSensorSummary(String siteId) async {
+  Future<DashboardSensorSummaryModel> getSensorSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/sensors');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
+      final response = await _dio.get(ApiEndpoints.sensors(siteId));
+      final data = response.data['data'] as List? ?? [];
 
       final total = data.length;
-      // Sensor tidak memiliki field sens_sts di response — hitung semua sebagai aktif
-      return DashboardSensorSummary(total: total, active: total);
+      // Sensor tidak memiliki field status di response — semua dihitung aktif
+      return DashboardSensorSummaryModel(total: total, active: total);
     } on DioException catch (e) {
       debugPrint('❌ Sensor summary error: ${e.message}');
       rethrow;
@@ -109,34 +96,32 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Plants ───────────────────────────────────────────
-  /// GET /api/sites/:siteId/plants
+  /// GET /sites/{siteId}/plants
+  /// plant_sts = 1 → aktif, plant_sts = 0 → harvest
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<DashboardPlantSummary> getPlantSummary(String siteId) async {
+  Future<DashboardPlantSummaryModel> getPlantSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/plants');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
+      final response = await _dio.get(ApiEndpoints.plants(siteId));
+      final data = response.data['data'] as List? ?? [];
 
       final total = data.length;
       final active = data.where((p) {
         if (p is! Map) return false;
-        final harvest = p['plant_harvest'];
-        if (harvest != null) return false; // Sudah panen berarti tidak aktif
-
-        dynamic sts = p['plant_sts'] ?? p['status'];
+        // plant_sts = 1 → aktif, plant_sts = 0 → harvest
+        final sts = p['plant_sts'];
+        if (sts == 0 || sts == '0') return false;
         if (sts == 1 || sts == '1' || sts == true) return true;
-        
         if (sts is String) {
           final s = sts.toLowerCase();
           if (s == 'active' || s == 'semai' || s == 'aktif') return true;
           if (s == 'inactive' || s == 'tidak aktif') return false;
         }
-        
-        // Default to active if harvest is null and status is unclear/missing
+        // Default aktif jika status tidak jelas
         return true;
       }).length;
 
-      return DashboardPlantSummary(total: total, active: active);
+      return DashboardPlantSummaryModel(total: total, active: active);
     } on DioException catch (e) {
       debugPrint('❌ Plant summary error: ${e.message}');
       rethrow;
@@ -147,15 +132,17 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Latest Sensor Reads ──────────────────────────────
-  /// GET /api/sites/:siteId/reads/updates
+  /// GET /sites/{siteId}/reads/updates
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<List<Map<String, dynamic>>> getLatestSensorReads(String siteId) async {
+  Future<List<SensorReadModel>> getLatestSensorReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/updates');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
-
-      return data.cast<Map<String, dynamic>>();
+      final response = await _dio.get(ApiEndpoints.readsUpdates(siteId));
+      final data = response.data['data'] as List? ?? [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
     } on DioException catch (e) {
       debugPrint('❌ Latest sensor reads error: ${e.message}');
       rethrow;
@@ -165,35 +152,40 @@ class DashboardRemoteDataSource {
     }
   }
 
-  // ─── Seven Day Reads ──────────────────────────────────
-  /// GET /api/sites/:siteId/reads/seven-day
+  // ─── Daily Reads ──────────────────────────────────────
+  /// GET /sites/{siteId}/reads/daily
+  /// Menggantikan endpoint /reads/seven-day yang tidak ada di Swagger
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<List<Map<String, dynamic>>> getSevenDayReads(String siteId) async {
+  Future<List<SensorReadModel>> getDailyReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/seven-day');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
-
-      return data.cast<Map<String, dynamic>>();
+      final response = await _dio.get(ApiEndpoints.readsDaily(siteId));
+      final data = response.data['data'] as List? ?? [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
     } on DioException catch (e) {
-      debugPrint('❌ Seven day reads error: ${e.message}');
+      debugPrint('❌ Daily reads error: ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in getSevenDayReads: $e');
+      debugPrint('❌ Unexpected error in getDailyReads: $e');
       rethrow;
     }
   }
 
   // ─── Today Reads ──────────────────────────────────────
-  /// GET /api/sites/:siteId/reads/today
+  /// GET /sites/{siteId}/reads/today
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  Future<List<Map<String, dynamic>>> getTodayReads(String siteId) async {
+  Future<List<SensorReadModel>> getTodayReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/today');
-      final data = response.data[_DashboardFields.dataKey] as List? ?? [];
-
-      return data.cast<Map<String, dynamic>>();
+      final response = await _dio.get(ApiEndpoints.readsToday(siteId));
+      final data = response.data['data'] as List? ?? [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
     } on DioException catch (e) {
       debugPrint('❌ Today reads error: ${e.message}');
       rethrow;

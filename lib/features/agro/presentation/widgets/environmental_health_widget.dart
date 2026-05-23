@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
-import '../../../dashboard/data/models/environmental_health_model.dart';
+import '../../domain/entities/agro_entity.dart';
+import '../../../dashboard/domain/entities/dashboard_entity.dart';
 
 class EnvironmentalHealthWidget extends StatelessWidget {
-  final AgroModel? agroData;
-  final EnvironmentalHealth? healthData;
+  final AgroEntity? agroData;
+  final EnvironmentalHealthEntity? healthData;
 
   const EnvironmentalHealthWidget({super.key, this.agroData, this.healthData});
 

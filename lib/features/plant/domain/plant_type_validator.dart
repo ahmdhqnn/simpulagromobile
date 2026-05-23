@@ -9,7 +9,7 @@ class PlantTypeValidator {
 
   /// Validates a plant type string and returns a CropType or ValidationFailure
   /// 
-  /// Returns Either<Failure, CropType> where:
+  /// Returns `Either<Failure, CropType>` where:
   /// - Left: ValidationFailure if the type is unknown
   /// - Right: CropType enum value if valid
   Either<Failure, CropType> validatePlantType(String? typeStr) {

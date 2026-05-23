@@ -408,7 +408,7 @@ class PhaseListScreen extends ConsumerWidget {
                     child: _buildInfoChip(
                       context,
                       'HST',
-                      '${phase.startHst}-${phase.endHst}',
+                      '${phase.hstMin}-${phase.hstMax}',
                       Icons.calendar_today,
                     ),
                   ),
@@ -416,9 +416,9 @@ class PhaseListScreen extends ConsumerWidget {
                   Expanded(
                     child: _buildInfoChip(
                       context,
-                      'GDD',
-                      '${phase.currentGdd.toStringAsFixed(0)}/${phase.requiredGdd.toStringAsFixed(0)}',
-                      Icons.thermostat,
+                      'Durasi',
+                      '${phase.phaseDuration} hari',
+                      Icons.timer,
                     ),
                   ),
                 ],

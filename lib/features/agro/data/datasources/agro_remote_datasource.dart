@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
 import '../models/agro_model.dart';
 
@@ -8,60 +9,43 @@ class AgroRemoteDataSource {
 
   AgroRemoteDataSource(this._dio);
 
-  /// GET /api/sites/:siteId/agro
-  ///
-  /// Response structure (nested):
-  /// { "message": "Success", "data": { "status": 200, "data": { "vdp": {...}, "gdd": {...}, "etc": [...] } } }
+  /// GET /sites/{siteId}/agro
+  /// Response: { "status": 200, "message": "...", "data": { "vdp": {...}, "gdd": {...}, "etc": [...] } }
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<AgroModel> getAgroData(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/agro');
+      final response = await _dio.get(ApiEndpoints.agro(siteId));
       return _parseAgroResponse(response.data);
     } on DioException catch (e) {
       debugPrint('❌ Agro datasource error: ${e.message}');
-      rethrow; // Let repository handle error mapping
+      rethrow;
     } catch (e) {
       debugPrint('❌ Unexpected error in agro datasource: $e');
       rethrow;
     }
   }
 
-  /// Parses agro response with proper validation
-  ///
-  /// Returns empty model only if response structure is valid but empty.
-  /// Throws exception if response is malformed.
+  /// Parse response agro dengan validasi struktur
   static AgroModel _parseAgroResponse(dynamic responseData) {
-    // Validate outer layer
     if (responseData == null) {
       throw const ServerFailure('Response data is null');
     }
-
     if (responseData is! Map<String, dynamic>) {
       throw const ServerFailure('Invalid agro response structure');
     }
 
-    // Extract first 'data' layer
+    // Ekstrak layer 'data' pertama
     dynamic inner = responseData['data'];
-    if (inner == null) {
-      return const AgroModel(); // OK: empty response
-    }
+    if (inner == null) return const AgroModel();
 
-    // Handle second 'data' layer (if present)
+    // Handle double-wrapped: { data: { status, data: { ... } } }
     if (inner is Map && inner.containsKey('data')) {
       inner = inner['data'];
     }
 
-    // Inner should now be the agro data map
-    if (inner == null) {
-      return const AgroModel(); // OK: empty data
-    }
-
-    if (inner is List) {
-      // Unexpected: agro data should be a map, not list
-      return const AgroModel();
-    }
-
+    if (inner == null) return const AgroModel();
+    if (inner is List) return const AgroModel();
     if (inner is! Map<String, dynamic>) {
       throw const ServerFailure('Agro data has unexpected structure');
     }

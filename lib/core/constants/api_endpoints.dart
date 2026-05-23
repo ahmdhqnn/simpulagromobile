@@ -87,8 +87,11 @@ class ApiEndpoints {
   static String plants(String siteId) => '/sites/$siteId/plants';
   static String plantById(String siteId, String plantId) =>
       '/sites/$siteId/plants/$plantId';
+
+  /// POST /sites/{siteId}/plants/{plantId} — harvest action
+  /// Sesuai dokumentasi: POST ke plantById adalah harvest operation
   static String harvestPlant(String siteId, String plantId) =>
-      '/sites/$siteId/plants/$plantId/harvest';
+      '/sites/$siteId/plants/$plantId';
 
   // ═══════════════════════════════════════════════════════════
   // RECOMMENDATION ENDPOINTS (Site-scoped)

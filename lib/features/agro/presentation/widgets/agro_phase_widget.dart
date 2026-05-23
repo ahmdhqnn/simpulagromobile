@@ -94,7 +94,9 @@ class AgroPhaseWidget extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF9C27B0).withValues(alpha: 0.2)),
+        border: Border.all(
+          color: const Color(0xFF9C27B0).withValues(alpha: 0.2),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +114,10 @@ class AgroPhaseWidget extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -150,18 +155,9 @@ class AgroPhaseWidget extends StatelessWidget {
           context,
           label: 'Progress Waktu (HST)',
           current: '${phase!.currentHst}',
-          total: '${phase!.endHst} Hari',
+          total: '${phase!.hstMax} Hari',
           percent: phase!.progressPercentage / 100,
           color: AppColors.primary,
-        ),
-        const SizedBox(height: 12),
-        _buildLinearProgress(
-          context,
-          label: 'Progress GDD',
-          current: phase!.currentGdd.toStringAsFixed(1),
-          total: '${phase!.requiredGdd.toStringAsFixed(1)} °C',
-          percent: phase!.gddProgressPercentage / 100,
-          color: AppColors.warning,
         ),
       ],
     );
