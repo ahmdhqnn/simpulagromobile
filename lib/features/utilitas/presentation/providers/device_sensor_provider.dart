@@ -4,6 +4,7 @@ import '../../data/datasources/device_sensor_remote_datasource.dart';
 import '../../data/repositories/device_sensor_repository_impl.dart';
 import '../../domain/entities/device_sensor.dart';
 import '../../domain/repositories/device_sensor_repository.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 
 // ═══════════════════════════════════════════════════════════
 // DATASOURCE & REPOSITORY PROVIDERS
@@ -26,7 +27,9 @@ final utilitasDeviceSensorListProvider = FutureProvider<List<DeviceSensor>>((
   ref,
 ) async {
   final repository = ref.watch(deviceSensorRepositoryProvider);
-  return repository.getAllDeviceSensors();
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) return [];
+  return repository.getAllDeviceSensors(siteId);
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -35,7 +38,9 @@ final utilitasDeviceSensorListProvider = FutureProvider<List<DeviceSensor>>((
 final utilitasDeviceSensorDetailProvider =
     FutureProvider.family<DeviceSensor, String>((ref, dsId) async {
       final repository = ref.watch(deviceSensorRepositoryProvider);
-      return repository.getDeviceSensorById(dsId);
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) throw Exception('No site selected');
+      return repository.getDeviceSensorById(siteId, dsId);
     });
 
 // ═══════════════════════════════════════════════════════════
@@ -77,9 +82,14 @@ class DeviceSensorFormNotifier extends StateNotifier<DeviceSensorFormState> {
 
   Future<bool> createDeviceSensor(DeviceSensor deviceSensor) async {
     state = state.copyWith(isLoading: true, error: null);
+    final siteId = _ref.read(selectedSiteIdProvider);
+    if (siteId == null) {
+      state = const DeviceSensorFormState(error: 'No site selected');
+      return false;
+    }
 
     try {
-      final saved = await _repository.createDeviceSensor(deviceSensor);
+      final saved = await _repository.createDeviceSensor(siteId, deviceSensor);
       state = DeviceSensorFormState(savedDeviceSensor: saved);
       _ref.invalidate(utilitasDeviceSensorListProvider);
       return true;
@@ -94,9 +104,14 @@ class DeviceSensorFormNotifier extends StateNotifier<DeviceSensorFormState> {
     DeviceSensor deviceSensor,
   ) async {
     state = state.copyWith(isLoading: true, error: null);
+    final siteId = _ref.read(selectedSiteIdProvider);
+    if (siteId == null) {
+      state = const DeviceSensorFormState(error: 'No site selected');
+      return false;
+    }
 
     try {
-      final saved = await _repository.updateDeviceSensor(dsId, deviceSensor);
+      final saved = await _repository.updateDeviceSensor(siteId, dsId, deviceSensor);
       state = DeviceSensorFormState(savedDeviceSensor: saved);
       _ref.invalidate(utilitasDeviceSensorListProvider);
       _ref.invalidate(utilitasDeviceSensorDetailProvider(dsId));
@@ -109,9 +124,14 @@ class DeviceSensorFormNotifier extends StateNotifier<DeviceSensorFormState> {
 
   Future<bool> deleteDeviceSensor(String dsId) async {
     state = state.copyWith(isLoading: true, error: null);
+    final siteId = _ref.read(selectedSiteIdProvider);
+    if (siteId == null) {
+      state = const DeviceSensorFormState(error: 'No site selected');
+      return false;
+    }
 
     try {
-      await _repository.deleteDeviceSensor(dsId);
+      await _repository.deleteDeviceSensor(siteId, dsId);
       state = const DeviceSensorFormState();
       _ref.invalidate(utilitasDeviceSensorListProvider);
       return true;

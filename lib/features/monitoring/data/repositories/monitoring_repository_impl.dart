@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/repositories/monitoring_repository.dart';
 import '../datasources/monitoring_remote_datasource.dart';
@@ -54,6 +55,8 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -86,6 +89,8 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -146,6 +151,8 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -182,6 +189,8 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

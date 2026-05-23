@@ -9,9 +9,9 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   DeviceSensorRepositoryImpl(this.remoteDatasource);
 
   @override
-  Future<List<DeviceSensor>> getAllDeviceSensors() async {
+  Future<List<DeviceSensor>> getAllDeviceSensors(String siteId) async {
     try {
-      final models = await remoteDatasource.getAllDeviceSensors();
+      final models = await remoteDatasource.getAllDeviceSensors(siteId);
       return models.map((m) => m.toEntity()).toList();
     } catch (e) {
       rethrow;
@@ -19,9 +19,9 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   }
 
   @override
-  Future<List<DeviceSensor>> getDeviceSensorsByDevice(String deviceId) async {
+  Future<List<DeviceSensor>> getDeviceSensorsByDevice(String siteId, String deviceId) async {
     try {
-      final all = await getAllDeviceSensors();
+      final all = await getAllDeviceSensors(siteId);
       return all.where((ds) => ds.devId == deviceId).toList();
     } catch (e) {
       rethrow;
@@ -29,9 +29,9 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   }
 
   @override
-  Future<DeviceSensor> getDeviceSensorById(String dsId) async {
+  Future<DeviceSensor> getDeviceSensorById(String siteId, String dsId) async {
     try {
-      final model = await remoteDatasource.getDeviceSensorById(dsId);
+      final model = await remoteDatasource.getDeviceSensorById(siteId, dsId);
       return model.toEntity();
     } catch (e) {
       rethrow;
@@ -39,7 +39,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   }
 
   @override
-  Future<DeviceSensor> createDeviceSensor(DeviceSensor deviceSensor) async {
+  Future<DeviceSensor> createDeviceSensor(String siteId, DeviceSensor deviceSensor) async {
     try {
       final model = DeviceSensorModel.fromEntity(deviceSensor);
       final data = model.toJson();
@@ -49,7 +49,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
             value == null || key == 'ds_created' || key == 'ds_update',
       );
 
-      final createdModel = await remoteDatasource.createDeviceSensor(data);
+      final createdModel = await remoteDatasource.createDeviceSensor(siteId, data);
       return createdModel.toEntity();
     } catch (e) {
       rethrow;
@@ -58,6 +58,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
 
   @override
   Future<DeviceSensor> updateDeviceSensor(
+    String siteId,
     String dsId,
     DeviceSensor deviceSensor,
   ) async {
@@ -74,6 +75,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
       );
 
       final updatedModel = await remoteDatasource.updateDeviceSensor(
+        siteId,
         dsId,
         deviceSensor.devId,
         data,
@@ -85,11 +87,11 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   }
 
   @override
-  Future<void> deleteDeviceSensor(String dsId) async {
+  Future<void> deleteDeviceSensor(String siteId, String dsId) async {
     try {
       // Need devId — fetch first
-      final ds = await getDeviceSensorById(dsId);
-      await remoteDatasource.deleteDeviceSensor(dsId, ds.devId);
+      final ds = await getDeviceSensorById(siteId, dsId);
+      await remoteDatasource.deleteDeviceSensor(siteId, dsId, ds.devId);
     } catch (e) {
       rethrow;
     }

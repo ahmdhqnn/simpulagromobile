@@ -47,3 +47,8 @@ class NotFoundFailure extends Failure {
 class UnknownFailure extends Failure {
   const UnknownFailure(super.message);
 }
+
+/// Failure for backend features not yet supported
+class UnsupportedBackendEndpointFailure extends Failure {
+  const UnsupportedBackendEndpointFailure([super.message = 'Fitur ini belum didukung oleh server']);
+}

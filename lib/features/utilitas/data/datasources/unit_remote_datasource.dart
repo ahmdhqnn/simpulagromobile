@@ -45,7 +45,7 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
   @override
   Future<UnitModel> getUnitById(String unitId) async {
     try {
-      final response = await dio.get(ApiEndpoints.unitById(unitId));
+      final response = await dio.get(ApiEndpoints.unsupportedUnitById(unitId));
 
       final data = response.data;
       if (data == null) {
@@ -86,7 +86,7 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
   Future<UnitModel> updateUnit(String unitId, Map<String, dynamic> data) async {
     try {
       final response = await dio.put(
-        ApiEndpoints.updateUnit(unitId),
+        ApiEndpoints.unsupportedUpdateUnit(unitId),
         data: data,
       );
 
@@ -108,7 +108,7 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
   @override
   Future<void> deleteUnit(String unitId) async {
     try {
-      await dio.delete(ApiEndpoints.unitById(unitId));
+      await dio.delete(ApiEndpoints.unsupportedUnitById(unitId));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {

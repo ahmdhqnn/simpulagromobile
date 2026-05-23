@@ -43,3 +43,8 @@ class PermissionException extends AppException {
 class NotFoundException extends AppException {
   const NotFoundException(super.message);
 }
+
+/// Exception for backend features not yet supported
+class UnsupportedBackendEndpointException extends AppException {
+  const UnsupportedBackendEndpointException([super.message = 'Fitur ini belum didukung oleh server']);
+}

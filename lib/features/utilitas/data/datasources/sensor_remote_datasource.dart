@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/sensor_model.dart';
 
 /// Remote datasource for Sensor operations
@@ -64,7 +65,7 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
   @override
   Future<List<SensorModel>> getAllSensors(String siteId) async {
     try {
-      final response = await dio.get(ApiEndpoints.sensorsAll(siteId));
+      final response = await dio.get(ApiEndpoints.unsupportedSensorsAll(siteId));
 
       final data = response.data;
       if (data == null) {
@@ -160,13 +161,7 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
 
   @override
   Future<void> deleteSensor(String siteId, String sensorId) async {
-    try {
-      await dio.delete(ApiEndpoints.sensorById(siteId, sensorId));
-    } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw Exception('Failed to delete sensor: $e');
-    }
+    throw const UnsupportedBackendEndpointException('Hapus sensor belum didukung oleh server');
   }
 
   /// Handle Dio errors and convert to user-friendly messages

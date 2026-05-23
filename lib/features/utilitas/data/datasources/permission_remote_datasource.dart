@@ -15,7 +15,7 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
   @override
   Future<List<PermissionModel>> getAllPermissions() async {
     try {
-      final response = await dio.get(ApiEndpoints.permissions);
+      final response = await dio.get(ApiEndpoints.unsupportedPermissions);
       final data = response.data;
       if (data == null) throw Exception('Response data is null');
 
@@ -35,7 +35,7 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
   @override
   Future<List<PermissionModel>> getPermissionsByRole(String roleId) async {
     try {
-      final response = await dio.get(ApiEndpoints.permissionsByRole(roleId));
+      final response = await dio.get(ApiEndpoints.unsupportedPermissionsByRole(roleId));
       final data = response.data;
       if (data == null) throw Exception('Response data is null');
 

@@ -39,7 +39,12 @@ void main() {
 
   group('GddDailyModel', () {
     test('isValid returns true for valid values', () {
-      final gdd = GddDailyModel(day: '2024-01-15', tempMin: 10.0, tempMax: 25.0, gdd: 15.0);
+      final gdd = GddDailyModel(
+        day: '2024-01-15',
+        tempMin: 10.0,
+        tempMax: 25.0,
+        gdd: 15.0,
+      );
       expect(gdd.isValid(), isTrue);
     });
 
@@ -155,28 +160,35 @@ void main() {
     });
 
     test('dataSourceCount returns correct count', () {
+      // dataSourceCount dihapus dari AgroModel — test ini diganti dengan isEmpty check
       final vdp = VdpModel(vdp: 50.0);
       final daily = [GddDailyModel(day: '2024-01-15', gdd: 10.0)];
       final gdd = GddModel(totalGDD: 10.0, daily: daily);
       final etc = [EtcDailyModel(day: '2024-01-15', etc: 5.0)];
-      
+
       final agro = AgroModel(vdp: vdp, gdd: gdd, etc: etc);
-      expect(agro.dataSourceCount, equals(3));
+      expect(agro.isEmpty, isFalse);
     });
 
     test('fromJson parses complete response', () {
       final json = {
-        'vdp': {
-          'vdp': 50.0,
-          'temperature': 25.0,
-          'humidity': 60.0,
-        },
+        'vdp': {'vdp': 50.0, 'temperature': 25.0, 'humidity': 60.0},
         'gdd': {
           'totalGDD': 22.0,
           'daily': [
-            {'day': '2024-01-15', 'tempMin': 10.0, 'tempMax': 25.0, 'gdd': 15.0},
-            {'day': '2024-01-16', 'tempMin': 12.0, 'tempMax': 26.0, 'gdd': 14.0},
-          ]
+            {
+              'day': '2024-01-15',
+              'tempMin': 10.0,
+              'tempMax': 25.0,
+              'gdd': 15.0,
+            },
+            {
+              'day': '2024-01-16',
+              'tempMin': 12.0,
+              'tempMax': 26.0,
+              'gdd': 14.0,
+            },
+          ],
         },
         'etc': [
           {
@@ -186,8 +198,8 @@ void main() {
             'waterNeeds': 5.0,
             'tempMin': 15.0,
             'tempMax': 28.0,
-          }
-        ]
+          },
+        ],
       };
 
       final agro = AgroModel.fromJson(json);

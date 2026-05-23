@@ -138,7 +138,7 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
   ) async {
     try {
       await dio.post(
-        ApiEndpoints.newRolePermission,
+        ApiEndpoints.unsupportedNewRolePermission,
         data: {'role_id': roleId, 'perm_ids': permissionIds},
       );
     } on DioException catch (e) {
@@ -151,7 +151,7 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
   @override
   Future<void> removePermission(String permId, String roleId) async {
     try {
-      await dio.delete(ApiEndpoints.deleteRolePermission(permId, roleId));
+      await dio.delete(ApiEndpoints.unsupportedDeleteRolePermission(permId, roleId));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {

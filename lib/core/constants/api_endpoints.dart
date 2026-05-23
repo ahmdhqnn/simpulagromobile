@@ -5,9 +5,11 @@ class ApiEndpoints {
   // AUTH ENDPOINTS
   // ═══════════════════════════════════════════════════════════
   static const String login = '/auth/login';
-  static const String refreshToken = '/auth/refresh-token';
+  static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
-  static const String register = '/auth/new-users';
+  static const String register = '/sites/users/new-users';
+
+  // ═══════════════════════════════════════════════════════════
 
   // ═══════════════════════════════════════════════════════════
   // PROFILE ENDPOINTS
@@ -30,50 +32,44 @@ class ApiEndpoints {
       '/sites/$siteId/devices/$devId';
   static String deviceCoordinates(String siteId) =>
       '/sites/$siteId/devices/coordinates';
-  static String addDevice(String siteId) => '/sites/$siteId/devices/add';
+  static String addDevice(String siteId) => '/sites/$siteId/devices';
 
   // ═══════════════════════════════════════════════════════════
   // SENSOR ENDPOINTS (Site-scoped)
   // ═══════════════════════════════════════════════════════════
   static String sensors(String siteId) => '/sites/$siteId/sensors';
-  static String sensorsAll(String siteId) => '/sites/$siteId/sensors/all';
-  static String sensorDetail(String siteId, String sensId) =>
-      '/sites/$siteId/sensors/detail/$sensId';
+  static String unsupportedSensorsAll(String siteId) => '/sites/$siteId/sensors/all';
   static String sensorById(String siteId, String sensId) =>
       '/sites/$siteId/sensors/$sensId';
 
   // ═══════════════════════════════════════════════════════════
   // DEVICE-SENSOR ENDPOINTS
   // ═══════════════════════════════════════════════════════════
-  static const String deviceSensors = '/sites/device-sensors';
-  static String deviceSensorBySensor(String sensId) =>
-      '/sites/device-sensors/sensor/$sensId';
-  static String deviceSensorById(String dsId, String devId) =>
-      '/sites/device-sensors/$dsId/$devId';
-  static const String deviceSensorValues = '/sites/device-sensors/values';
+  static String deviceSensors(String siteId) => '/sites/$siteId/device-sensors';
+  static String deviceSensorValues(String siteId) =>
+      '/sites/$siteId/device-sensors/values';
+  static String deviceSensorById(String siteId, String dsId, String devId) =>
+      '/sites/$siteId/device-sensors/$dsId/$devId';
 
   // ═══════════════════════════════════════════════════════════
   // SENSOR READS ENDPOINTS (Site-scoped)
   // ═══════════════════════════════════════════════════════════
   static String reads(String siteId) => '/sites/$siteId/reads';
-  static String readsToday(String siteId) => '/sites/$siteId/reads/today';
   static String readsSevenDay(String siteId) =>
       '/sites/$siteId/reads/seven-day';
-  static String readsDateRange(String siteId) =>
-      '/sites/$siteId/reads/date-range';
   static String readsPlantingDate(String siteId) =>
       '/sites/$siteId/reads/planting-date';
   static String updateRead(String siteId, String id) =>
-      '/sites/$siteId/reads/update-read/$id';
+      '/sites/$siteId/reads/$id';
 
   // Reads - Daily
   static String readsDaily(String siteId) => '/sites/$siteId/reads/daily';
   static String readsDailyToday(String siteId) =>
       '/sites/$siteId/reads/daily/today';
   static String readsRekapDaily(String siteId) =>
-      '/sites/$siteId/reads/daily/rekap-daily';
+      '/sites/$siteId/reads/daily/rekap';
   static String readsDailyByDay(String siteId) =>
-      '/sites/$siteId/reads/daily/daily-by-day';
+      '/sites/$siteId/reads/daily/by-day';
 
   // Reads - Monthly
   static String readsMonthly(String siteId) => '/sites/$siteId/reads/mounth';
@@ -91,7 +87,7 @@ class ApiEndpoints {
   /// POST /sites/{siteId}/plants/{plantId} — harvest action
   /// Sesuai dokumentasi: POST ke plantById adalah harvest operation
   static String harvestPlant(String siteId, String plantId) =>
-      '/sites/$siteId/plants/$plantId';
+      '/sites/$siteId/plants/$plantId/harvest';
 
   // ═══════════════════════════════════════════════════════════
   // RECOMMENDATION ENDPOINTS (Site-scoped)
@@ -119,16 +115,9 @@ class ApiEndpoints {
   // ═══════════════════════════════════════════════════════════
   static const String phasesList = '/fase/phases-list';
   static String phasesByType(String type) => '/fase/phases-list/$type';
-  static const String gddStandards = '/fase/gdd-standards';
-  static const String gddKumulatif = '/fase/gdd-kumulatif';
   static String phasesByHst(String siteId) => '/fase/phases-by-hst/$siteId';
 
-  // ═══════════════════════════════════════════════════════════
-  // CONFIG MQTT ENDPOINTS (Site-scoped)
-  // ═══════════════════════════════════════════════════════════
-  static String configMqtt(String siteId) => '/sites/$siteId/config';
-  static String configMqttById(String siteId, String id) =>
-      '/sites/$siteId/config/$id';
+  // Removed CONFIG MQTT ENDPOINTS as they are not in swagger live
 
   // ═══════════════════════════════════════════════════════════
   // TASK ENDPOINTS  (site-scoped, see Swagger contract)
@@ -155,27 +144,6 @@ class ApiEndpoints {
   static String roleById(String roleId) => '/roles/$roleId';
 
   // ═══════════════════════════════════════════════════════════
-  // PERMISSION ENDPOINTS
-  // ═══════════════════════════════════════════════════════════
-  static const String permissions = '/permissions/all-permissions';
-  static const String rolePermissions = '/permissions/role-permissions';
-  static String permissionsByRole(String roleId) => '/permissions/role/$roleId';
-  static const String newPermission = '/permissions/new-permission';
-  static const String newRolePermission = '/permissions/new-role-permission';
-  static const String updateRolePermission =
-      '/permissions/update-role-permission';
-  static const String updatePermission = '/permissions/update-permission';
-  static String deleteRolePermission(String permId, String roleId) =>
-      '/permissions/delete-role-permission/$permId/$roleId';
-
-  // ═══════════════════════════════════════════════════════════
-  // ALARM ENDPOINTS
-  // ═══════════════════════════════════════════════════════════
-  static const String alarms = '/sites/alarms';
-  static const String alarmCodes = '/sites/alarms/codes';
-  static const String alarmData = '/sites/alarms/data';
-
-  // ═══════════════════════════════════════════════════════════
   // FORUM ENDPOINTS
   // ═══════════════════════════════════════════════════════════
   static const String forumPosts = '/forum/posts';
@@ -188,20 +156,25 @@ class ApiEndpoints {
       '/forum/posts/$postId/reactions';
   static String forumDeleteComment(String postId, String commentId) =>
       '/forum/posts/$postId/comments/$commentId';
-  static const String forumMyPosts = '/forum/my-posts';
-  static const String forumLikedPosts = '/forum/liked-posts';
+  static const String forumMyPosts = '/forum/posts/my-posts';
+  static const String forumLikedPosts = '/forum/posts/liked-posts';
   static const String forumMyComments = '/forum/my-comments';
 
-  // ═══════════════════════════════════════════════════════════
-  // LOG ENDPOINTS
-  // ═══════════════════════════════════════════════════════════
-  static const String logs = '/sites/logs';
+  // Removed LOG ENDPOINTS as they are not in swagger live
 
   // ═══════════════════════════════════════════════════════════
   // UNIT ENDPOINTS
   // ═══════════════════════════════════════════════════════════
   static const String units = '/sites/units';
-  static String unitById(String id) => '/sites/units/$id';
   static const String createUnits = '/sites/units/create-units';
-  static String updateUnit(String id) => '/sites/units/update-unit/$id';
+  static String unsupportedUnitById(String id) => '/sites/units/$id';
+  static String unsupportedUpdateUnit(String id) => '/sites/units/update-unit/$id';
+
+  // ═══════════════════════════════════════════════════════════
+  // UNSUPPORTED PERMISSION ENDPOINTS (Not in Swagger live)
+  // ═══════════════════════════════════════════════════════════
+  static const String unsupportedPermissions = '/permissions';
+  static String unsupportedPermissionsByRole(String roleId) => '/permissions/role/$roleId';
+  static const String unsupportedNewRolePermission = '/permissions/new-role-permission';
+  static String unsupportedDeleteRolePermission(String permId, String roleId) => '/permissions/$permId';
 }

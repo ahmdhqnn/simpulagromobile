@@ -1,47 +1,8 @@
 import 'package:dio/dio.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/monitoring_models.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RESPONSE PARSING HELPERS
-//
-// Backend API memiliki dua pola response:
-//   Single-nested : { "data": [ ... ] }
-//   Double-nested : { "data": { "status": 200, "data": [ ... ] } }
-//
-// Helper di bawah menangani keduanya secara transparan.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Ekstrak List dari response (single-nested atau double-nested).
-List<dynamic> _extractList(dynamic responseData) {
-  if (responseData == null) return [];
-  final first = responseData['data'];
-  if (first == null) return [];
-  if (first is Map && first.containsKey('data')) {
-    final second = first['data'];
-    if (second is List) return second;
-    if (second is Map) return [second];
-    return [];
-  }
-  if (first is List) return first;
-  if (first is Map) return [first];
-  return [];
-}
-
-/// Ekstrak Map dari response (single-nested atau double-nested).
-Map<String, dynamic>? _extractMap(dynamic responseData) {
-  if (responseData == null) return null;
-  final first = responseData['data'];
-  if (first == null) return null;
-  if (first is Map && first.containsKey('data') && first['data'] is Map) {
-    return Map<String, dynamic>.from(first['data'] as Map);
-  }
-  if (first is Map) return Map<String, dynamic>.from(first);
-  return null;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DATASOURCE
-// ─────────────────────────────────────────────────────────────────────────────
 
 class MonitoringRemoteDataSource {
   final Dio _dio;
@@ -53,43 +14,27 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/reads/updates
   /// Nilai sensor terkini per ds_id.
   Future<List<SensorReadUpdate>> getLatestReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/updates');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorReadUpdate.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.readsUpdates(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorReadUpdate.fromJson)
+        .toList();
   }
 
   // ── History ─────────────────────────────────────────────────────────────────
 
   /// GET /api/sites/:siteId/reads/today
   Future<List<SensorReadModel>> getTodayReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/today');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorReadModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    throw const UnsupportedBackendEndpointException();
   }
 
   /// GET /api/sites/:siteId/reads/seven-day
   Future<List<SensorReadModel>> getSevenDayReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/seven-day');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorReadModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.readsSevenDay(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorReadModel.fromJson)
+        .toList();
   }
 
   /// GET /api/sites/:siteId/reads/date-range?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
@@ -98,45 +43,26 @@ class MonitoringRemoteDataSource {
     required String startDate,
     required String endDate,
   }) async {
-    try {
-      final res = await _dio.get(
-        '/sites/$siteId/reads/date-range',
-        queryParameters: {'startDate': startDate, 'endDate': endDate},
-      );
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorReadModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    throw const UnsupportedBackendEndpointException();
   }
 
   /// GET /api/sites/:siteId/reads/planting-date
   Future<List<SensorReadModel>> getPlantingDateReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/planting-date');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorReadModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.readsPlantingDate(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorReadModel.fromJson)
+        .toList();
   }
 
   /// GET /api/sites/:siteId/reads/daily
   /// Agregasi harian (avg/min/max) per ds_id.
   Future<List<SensorDailyModel>> getDailyReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/daily');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(SensorDailyModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.readsDaily(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorDailyModel.fromJson)
+        .toList();
   }
 
   // ── Devices & Sensors ───────────────────────────────────────────────────────
@@ -144,25 +70,18 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/devices
   /// Device beserta nested sensor list (key 'sensor' atau 'sensors').
   Future<List<DeviceModel>> getDevices(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/devices');
-      return _extractList(
-        res.data,
-      ).whereType<Map<String, dynamic>>().map(DeviceModel.fromJson).toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.devices(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(DeviceModel.fromJson)
+        .toList();
   }
 
   /// GET /api/sites/:siteId/sensors
   /// Jumlah total sensor yang terdaftar di site.
   Future<int> getSensorCount(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/sensors');
-      return _extractList(res.data).length;
-    } catch (_) {
-      return 0;
-    }
+    final res = await _dio.get(ApiEndpoints.sensors(siteId));
+    return ResponseParser.extractDataList(res.data).length;
   }
 
   // ── Logs ────────────────────────────────────────────────────────────────────
@@ -170,41 +89,21 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/logs
   /// Log payload MQTT terbaru.
   Future<List<LogModel>> getLogs() async {
-    try {
-      final res = await _dio.get('/sites/logs');
-      return _extractList(
-        res.data,
-      ).whereType<Map<String, dynamic>>().map(LogModel.fromJson).toList();
-    } catch (_) {
-      return [];
-    }
+    throw const UnsupportedBackendEndpointException();
   }
 
   // ── Analytics ───────────────────────────────────────────────────────────────
 
   /// GET /api/sites/:siteId/agro/environmental-health
-  ///
-  /// Response double-nested:
-  /// { "data": { "status": 200, "data": { "overall_health": ..., "sensors": [...] } } }
   Future<Map<String, dynamic>> getEnvironmentalHealth(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/agro/environmental-health');
-      return _extractMap(res.data) ?? {};
-    } catch (_) {
-      return {};
-    }
+    final res = await _dio.get(ApiEndpoints.envHealth(siteId));
+    return ResponseParser.extractDataMap(res.data);
   }
 
   /// GET /api/sites/:siteId/recommendations/plant-by-site
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId) async {
-    try {
-      final res = await _dio.get(
-        '/sites/$siteId/recommendations/plant-by-site',
-      );
-      return res.data as Map<String, dynamic>? ?? {};
-    } catch (_) {
-      return {};
-    }
+    final res = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
+    return res.data as Map<String, dynamic>? ?? {};
   }
 
   // ── Alarms ──────────────────────────────────────────────────────────────────
@@ -212,15 +111,7 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/alarms/data
   /// Alarm lengkap beserta kode alarm (join).
   Future<List<AlarmDataModel>> getAlarmData() async {
-    try {
-      final res = await _dio.get('/sites/alarms/data');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(AlarmDataModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    throw const UnsupportedBackendEndpointException();
   }
 
   // ── Monthly Rekap ────────────────────────────────────────────────────────────
@@ -228,14 +119,10 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/reads/mounth
   /// Rekap bulanan sensor (avg/min/max) per ds_id.
   Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId) async {
-    try {
-      final res = await _dio.get('/sites/$siteId/reads/mounth');
-      return _extractList(res.data)
-          .whereType<Map<String, dynamic>>()
-          .map(MonthlyRekapModel.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final res = await _dio.get(ApiEndpoints.readsMonthly(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(MonthlyRekapModel.fromJson)
+        .toList();
   }
 }
