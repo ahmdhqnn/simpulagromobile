@@ -19,8 +19,8 @@ class TokenManager {
   /// Callback invoked when refresh fails and session is truly expired
   VoidCallback? onSessionExpired;
 
-  TokenManager(this._storage) {
-    _refreshDio = Dio(
+  TokenManager(this._storage, {Dio? refreshDio}) {
+    _refreshDio = refreshDio ?? Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
         connectTimeout: ApiConfig.connectTimeout,

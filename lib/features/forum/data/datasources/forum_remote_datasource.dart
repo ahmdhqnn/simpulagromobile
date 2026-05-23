@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import '../models/reaction_model.dart';
@@ -82,7 +83,7 @@ class ForumRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '/forum/posts',
+        ApiEndpoints.forumPosts,
         queryParameters: {
           'page': page,
           'limit': limit,
@@ -102,7 +103,7 @@ class ForumRemoteDataSource {
 
   Future<PostModel> getPostById(String postId) async {
     try {
-      final response = await _dio.get('/forum/posts/$postId');
+      final response = await _dio.get(ApiEndpoints.forumPostById(postId));
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -134,7 +135,7 @@ class ForumRemoteDataSource {
         formData.fields.add(MapEntry('forum_image_url', imageUrl));
       }
 
-      final response = await _dio.post('/forum/posts', data: formData);
+      final response = await _dio.post(ApiEndpoints.forumPosts, data: formData);
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -165,7 +166,7 @@ class ForumRemoteDataSource {
         formData.fields.add(MapEntry('forum_image_url', imageUrl));
       }
 
-      final response = await _dio.put('/forum/posts/$postId', data: formData);
+      final response = await _dio.put(ApiEndpoints.forumPostById(postId), data: formData);
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -182,7 +183,7 @@ class ForumRemoteDataSource {
 
   Future<void> deletePost(String postId) async {
     try {
-      await _dio.delete('/forum/posts/$postId');
+      await _dio.delete(ApiEndpoints.forumPostById(postId));
     } catch (e) {
       throw _handleError(e);
     }
@@ -191,7 +192,7 @@ class ForumRemoteDataSource {
   Future<List<PostModel>> getMyPosts({int page = 1, int limit = 20}) async {
     try {
       final response = await _dio.get(
-        '/forum/posts/my-posts',
+        ApiEndpoints.forumMyPosts,
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -208,7 +209,7 @@ class ForumRemoteDataSource {
   Future<List<PostModel>> getLikedPosts({int page = 1, int limit = 20}) async {
     try {
       final response = await _dio.get(
-        '/forum/posts/liked-posts',
+        ApiEndpoints.forumLikedPosts,
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -228,7 +229,7 @@ class ForumRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '/forum/my-comments',
+        ApiEndpoints.forumMyComments,
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -248,7 +249,7 @@ class ForumRemoteDataSource {
 
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
     try {
-      final response = await _dio.post('/forum/posts/$postId/like');
+      final response = await _dio.post(ApiEndpoints.forumPostLike(postId));
       final data = _extractResponseData(response.data);
       final map = JsonParser.parseMap(data);
       return (
@@ -264,7 +265,7 @@ class ForumRemoteDataSource {
 
   Future<int> sharePost(String postId) async {
     try {
-      final response = await _dio.post('/forum/posts/$postId/share');
+      final response = await _dio.post(ApiEndpoints.forumPostShare(postId));
       final data = _extractResponseData(response.data);
       if (data is num) return data.toInt();
       final map = JsonParser.parseMap(data);
@@ -287,7 +288,7 @@ class ForumRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '/forum/posts/$postId/comments',
+        ApiEndpoints.forumPostComments(postId),
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -307,7 +308,7 @@ class ForumRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/forum/posts/$postId/comments',
+        ApiEndpoints.forumPostComments(postId),
         data: {'cf_content': content},
       );
       final data = _extractResponseData(response.data);
@@ -326,7 +327,7 @@ class ForumRemoteDataSource {
     required String commentId,
   }) async {
     try {
-      await _dio.delete('/forum/posts/$postId/comments/$commentId');
+      await _dio.delete(ApiEndpoints.forumDeleteComment(postId, commentId));
     } catch (e) {
       throw _handleError(e);
     }
@@ -338,7 +339,7 @@ class ForumRemoteDataSource {
 
   Future<List<ReactionModel>> getReactions(String postId) async {
     try {
-      final response = await _dio.get('/forum/posts/$postId/reactions');
+      final response = await _dio.get(ApiEndpoints.forumPostReactions(postId));
       final rawData = _extractResponseData(response.data);
       final list = _extractList(rawData);
       return list

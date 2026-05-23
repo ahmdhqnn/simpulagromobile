@@ -68,7 +68,7 @@ class _AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth header for refresh endpoint to avoid loops
-    if (options.path.contains('refresh-token') ||
+    if (options.path.contains('refresh') ||
         options.path.contains('login')) {
       handler.next(options);
       return;
@@ -101,7 +101,7 @@ class _AuthInterceptor extends Interceptor {
     }
 
     final requestPath = err.requestOptions.path;
-    if (requestPath.contains('refresh-token') ||
+    if (requestPath.contains('refresh') ||
         requestPath.contains('login')) {
       handler.next(err);
       return;

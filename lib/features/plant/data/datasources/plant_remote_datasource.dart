@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../models/plant_model.dart';
 
@@ -13,7 +15,7 @@ class PlantRemoteDataSource {
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<List<PlantModel>> getPlants(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/plants');
+      final response = await _dio.get(ApiEndpoints.plants(siteId));
       final data = response.data['data'] as List? ?? [];
 
       try {
@@ -42,7 +44,7 @@ class PlantRemoteDataSource {
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<PlantModel> getPlantById(String siteId, String plantId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/plants/$plantId');
+      final response = await _dio.get(ApiEndpoints.plantById(siteId, plantId));
       final jsonData = response.data['data'];
 
       if (jsonData == null) {
@@ -77,7 +79,7 @@ class PlantRemoteDataSource {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await _dio.post('/sites/$siteId/plants', data: data);
+      final response = await _dio.post(ApiEndpoints.plants(siteId), data: data);
       final jsonData = response.data['data'];
 
       if (jsonData == null) {
@@ -106,50 +108,22 @@ class PlantRemoteDataSource {
 
   /// PUT /api/sites/:siteId/plants/:plantId
   ///
-  /// Throws: [ServerFailure], [NetworkFailure], [ValidationFailure], [UnknownFailure]
+  /// Throws: [UnsupportedBackendEndpointException]
   Future<PlantModel> updatePlant(
     String siteId,
     String plantId,
     Map<String, dynamic> data,
   ) async {
-    try {
-      final response = await _dio.put(
-        '/sites/$siteId/plants/$plantId',
-        data: data,
-      );
-      final jsonData = response.data['data'];
-
-      if (jsonData == null) {
-        throw const ServerFailure('No data returned from update plant');
-      }
-
-      if (jsonData is! Map<String, dynamic>) {
-        throw const ServerFailure('Invalid update plant response structure');
-      }
-
-      try {
-        return PlantModel.fromJson(jsonData);
-      } catch (e) {
-        throw ServerFailure('Failed to parse updated plant: $e');
-      }
-    } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (updatePlant): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (updatePlant): $e');
-      rethrow;
-    }
+    throw const UnsupportedBackendEndpointException('Update tanaman belum didukung oleh server');
   }
 
-  /// POST /api/sites/:siteId/plants/:plantId
+  /// POST /api/sites/:siteId/plants/:plantId/harvest
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<void> harvestPlant(String siteId, String plantId) async {
     try {
       final response = await _dio.post(
-        '/sites/$siteId/plants/$plantId',
+        ApiEndpoints.harvestPlant(siteId, plantId),
       );
       
       final data = response.data;
@@ -168,66 +142,16 @@ class PlantRemoteDataSource {
   }
 
   /// GET /api/varietas
-  /// Get all varietas (plant varieties) for dropdown
   ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  /// Throws: [UnsupportedBackendEndpointException]
   Future<List<VarietasModel>> getVarietas() async {
-    try {
-      final response = await _dio.get('/varietas');
-      final data = response.data['data'] as List? ?? [];
-
-      try {
-        return data.map((json) {
-          if (json is! Map<String, dynamic>) {
-            throw const ServerFailure('Invalid varietas item structure');
-          }
-          return VarietasModel.fromJson(json);
-        }).toList();
-      } catch (e) {
-        throw ServerFailure('Failed to parse varietas: $e');
-      }
-    } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (getVarietas): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (getVarietas): $e');
-      rethrow;
-    }
+    throw const UnsupportedBackendEndpointException('Daftar varietas belum didukung oleh server');
   }
 
   /// GET /api/varietas/:varietasId
   ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  /// Throws: [UnsupportedBackendEndpointException]
   Future<VarietasModel> getVarietasById(String varietasId) async {
-    try {
-      final response = await _dio.get('/varietas/$varietasId');
-      final jsonData = response.data['data'];
-
-      if (jsonData == null) {
-        throw const NotFoundFailure('Varietas not found');
-      }
-
-      if (jsonData is! Map<String, dynamic>) {
-        throw const ServerFailure('Invalid varietas data structure');
-      }
-
-      try {
-        return VarietasModel.fromJson(jsonData);
-      } catch (e) {
-        throw ServerFailure('Failed to parse varietas: $e');
-      }
-    } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (getVarietasById): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      debugPrint(
-        '❌ Unexpected error in plant datasource (getVarietasById): $e',
-      );
-      rethrow;
-    }
+    throw const UnsupportedBackendEndpointException('Detail varietas belum didukung oleh server');
   }
 }

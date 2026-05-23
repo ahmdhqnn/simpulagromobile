@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
 import '../../domain/repositories/plant_repository.dart';
@@ -46,6 +47,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final models = await remoteDatasource.getPlantsBySite(siteId);
       return Right(models.map((model) => model.toEntity()).toList());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -61,6 +64,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final model = await remoteDatasource.getPlantById(siteId, plantId);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -84,6 +89,8 @@ class PlantRepositoryImpl implements PlantRepository {
 
       final createdModel = await remoteDatasource.createPlant(siteId, data);
       return Right(createdModel.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -116,6 +123,8 @@ class PlantRepositoryImpl implements PlantRepository {
         data,
       );
       return Right(updatedModel.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -134,6 +143,8 @@ class PlantRepositoryImpl implements PlantRepository {
         plantId,
       );
       return Right(harvestedModel.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -149,6 +160,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       await remoteDatasource.deletePlant(siteId, plantId);
       return const Right(null);
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {

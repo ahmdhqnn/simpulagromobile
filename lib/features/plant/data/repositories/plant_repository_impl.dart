@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exception_mapper.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
 import '../../domain/entities/varietas.dart';
@@ -17,6 +18,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final models = await remoteDataSource.getPlants(siteId);
       return Right(models.map((m) => m.toEntity()).toList());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -34,6 +37,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final model = await remoteDataSource.getPlantById(siteId, plantId);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -51,6 +56,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final model = await remoteDataSource.createPlant(siteId, data);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -69,6 +76,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final model = await remoteDataSource.updatePlant(siteId, plantId, data);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -86,6 +95,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       await remoteDataSource.harvestPlant(siteId, plantId);
       return const Right(null);
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -100,6 +111,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final models = await remoteDataSource.getVarietas();
       return Right(models.map((m) => m.toEntity()).toList());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -114,6 +127,8 @@ class PlantRepositoryImpl implements PlantRepository {
     try {
       final model = await remoteDataSource.getVarietasById(varietasId);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {

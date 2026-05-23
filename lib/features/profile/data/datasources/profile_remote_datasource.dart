@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/user_profile_model.dart';
 
 class ProfileRemoteDatasource {
@@ -10,7 +12,7 @@ class ProfileRemoteDatasource {
   /// Mendapatkan informasi user yang sedang login
   Future<UserProfileModel> getUserProfile() async {
     try {
-      final response = await _dio.get('/profile/me');
+      final response = await _dio.get(ApiEndpoints.profileMe);
 
       if (response.statusCode == 200 && response.data['data'] != null) {
         return UserProfileModel.fromJson(response.data['data']);
@@ -29,7 +31,7 @@ class ProfileRemoteDatasource {
   /// Mendapatkan daftar permissions yang dimiliki user saat ini
   Future<List<String>> getUserPermissions() async {
     try {
-      final response = await _dio.get('/profile/permissions');
+      final response = await _dio.get(ApiEndpoints.profilePermissions);
 
       if (response.statusCode == 200 && response.data['data'] != null) {
         final permissions =
@@ -48,21 +50,6 @@ class ProfileRemoteDatasource {
     String email,
     String phone,
   ) async {
-    // TODO: Implement update profile API when available
-    await Future.delayed(const Duration(seconds: 1));
-
-    throw UnimplementedError('Update profile API not yet implemented');
-
-    /* Real API (when available):
-    final response = await _dio.put(
-      '/profile/update',
-      data: {
-        'user_name': name,
-        'user_email': email,
-        'user_phone': phone,
-      },
-    );
-    return UserProfileModel.fromJson(response.data['data']);
-    */
+    throw const UnsupportedBackendEndpointException('Update profil belum didukung oleh server');
   }
 }

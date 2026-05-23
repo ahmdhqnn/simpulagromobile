@@ -100,13 +100,7 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
     Either<Failure, List<SensorReadModel>> result;
     switch (filter) {
       case HistoryFilter.sevenDay:
-        final start = DateTime.now().subtract(const Duration(days: 7));
-        final end = DateTime.now();
-        result = await repo.getDateRangeReads(
-          siteId,
-          startDate: fmt(start),
-          endDate: fmt(end),
-        );
+        result = await repo.getSevenDayReads(siteId);
         break;
       case HistoryFilter.dateRange:
         final start = ref.read(historyStartDateProvider);
@@ -118,13 +112,7 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
         );
         break;
       case HistoryFilter.plantingDate:
-        final start = DateTime.now().subtract(const Duration(days: 120));
-        final end = DateTime.now();
-        result = await repo.getDateRangeReads(
-          siteId,
-          startDate: fmt(start),
-          endDate: fmt(end),
-        );
+        result = await repo.getPlantingDateReads(siteId);
         break;
     }
     return result.fold((f) => throw f, (data) => data);

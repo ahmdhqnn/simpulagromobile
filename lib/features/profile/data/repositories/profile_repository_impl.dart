@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -40,6 +41,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final model = await remoteDatasource.getUserProfile();
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -56,6 +59,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final model = await remoteDatasource.updateProfile(name, email, phone);
       return Right(model.toEntity());
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {

@@ -1,13 +1,14 @@
 import '../entities/device_sensor.dart';
 
 abstract class DeviceSensorRepository {
-  Future<List<DeviceSensor>> getDeviceSensorsByDevice(String deviceId);
-  Future<List<DeviceSensor>> getAllDeviceSensors();
-  Future<DeviceSensor> getDeviceSensorById(String dsId);
-  Future<DeviceSensor> createDeviceSensor(DeviceSensor deviceSensor);
+  Future<List<DeviceSensor>> getDeviceSensorsByDevice(String siteId, String deviceId);
+  Future<List<DeviceSensor>> getAllDeviceSensors(String siteId);
+  Future<DeviceSensor> getDeviceSensorById(String siteId, String dsId);
+  Future<DeviceSensor> createDeviceSensor(String siteId, DeviceSensor deviceSensor);
   Future<DeviceSensor> updateDeviceSensor(
+    String siteId,
     String dsId,
     DeviceSensor deviceSensor,
   );
-  Future<void> deleteDeviceSensor(String dsId);
+  Future<void> deleteDeviceSensor(String siteId, String dsId);
 }

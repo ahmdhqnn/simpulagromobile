@@ -328,7 +328,11 @@ class EnvironmentalHealthWidget extends StatelessWidget {
   }
 
   double _calculateHealthScore() {
-    return healthData?.overallHealth ?? 0.0;
+    if (healthData != null) return healthData!.overallHealth;
+    final vdpScore = _calculateVdpScore();
+    final gddScore = _calculateGddScore();
+    final etcScore = _calculateEtcScore();
+    return (vdpScore + gddScore + etcScore) / 3;
   }
 
   double _calculateVdpScore() {

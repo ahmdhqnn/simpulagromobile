@@ -9,8 +9,6 @@ import '../../../dashboard/domain/entities/dashboard_entity.dart';
 import '../../../dashboard/presentation/widgets/sensor_status_card.dart';
 import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
-import '../widgets/realtime/alarm_banner_widget.dart';
-import '../widgets/realtime/sensor_log_list_widget.dart';
 import '../widgets/realtime/sensor_status_list_widget.dart';
 import '../widgets/realtime/today_chart_widget.dart';
 
@@ -21,18 +19,14 @@ class RealtimeTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final latestAsync = ref.watch(latestReadsProvider);
     final todayAsync = ref.watch(todayReadsProvider);
-    final logsAsync = ref.watch(logsProvider);
     final envHealthAsync = ref.watch(envHealthProvider);
-    final alarmAsync = ref.watch(alarmDataProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
         ref.invalidate(latestReadsProvider);
         ref.invalidate(todayReadsProvider);
-        ref.invalidate(logsProvider);
         ref.invalidate(envHealthProvider);
-        ref.invalidate(alarmDataProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -43,20 +37,8 @@ class RealtimeTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Alarm Banner
-            alarmAsync.whenOrNull(
-                  data: (alarms) {
-                    final recent = alarms.where((a) => a.isRecent).toList();
-                    if (recent.isEmpty) return null;
-                    return Column(
-                      children: [
-                        AlarmBannerWidget(alarms: recent),
-                        SizedBox(height: context.rh(0.018)),
-                      ],
-                    );
-                  },
-                ) ??
-                const SizedBox.shrink(),
+            // Alarm Banner (Disabled - unsupported by backend live)
+            const SizedBox.shrink(),
 
             // Sensor Grid
             const SectionHeaderWidget(title: 'Status Sensor Terkini'),
@@ -121,24 +103,8 @@ class RealtimeTab extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.024)),
 
-            // Sensor Logs
-            const SectionHeaderWidget(title: 'Log Sensor'),
-            SizedBox(height: context.rh(0.014)),
-            logsAsync.when(
-              loading: () =>
-                  const LoadingCardWidget(height: 60, radius: AppRadius.lg),
-              error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
-                onRetry: () => ref.invalidate(logsProvider),
-              ),
-              data: (logs) => logs.isEmpty
-                  ? const InfoStateWidget.svg(
-                      svgIconPath: 'assets/icons/sensor-icon.svg',
-                      message: 'Belum ada log sensor',
-                      height: 60,
-                    )
-                  : SensorLogListWidget(logs: logs.take(20).toList()),
-            ),
+            // Log Sensor (Disabled - unsupported by backend live)
+            const SizedBox.shrink(),
             SizedBox(height: context.rh(0.02)),
           ],
         ),

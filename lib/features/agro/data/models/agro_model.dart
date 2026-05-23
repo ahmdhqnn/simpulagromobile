@@ -159,6 +159,10 @@ class GddModel with _$GddModel {
       if (kDebugMode) debugPrint('GddModel: totalGDD=$totalGDD is negative');
       return false;
     }
+    if (daily.isEmpty) {
+      if (kDebugMode) debugPrint('GddModel: daily list is empty');
+      return false;
+    }
     for (final item in daily) {
       if (!item.isValid()) return false;
     }

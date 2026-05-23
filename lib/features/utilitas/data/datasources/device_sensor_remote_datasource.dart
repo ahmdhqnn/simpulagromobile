@@ -1,17 +1,19 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/device_sensor_model.dart';
 
 abstract class DeviceSensorRemoteDatasource {
-  Future<List<DeviceSensorModel>> getAllDeviceSensors();
-  Future<DeviceSensorModel> getDeviceSensorById(String dsId);
-  Future<DeviceSensorModel> createDeviceSensor(Map<String, dynamic> data);
+  Future<List<DeviceSensorModel>> getAllDeviceSensors(String siteId);
+  Future<DeviceSensorModel> getDeviceSensorById(String siteId, String dsId);
+  Future<DeviceSensorModel> createDeviceSensor(String siteId, Map<String, dynamic> data);
   Future<DeviceSensorModel> updateDeviceSensor(
+    String siteId,
     String dsId,
     String devId,
     Map<String, dynamic> data,
   );
-  Future<void> deleteDeviceSensor(String dsId, String devId);
+  Future<void> deleteDeviceSensor(String siteId, String dsId, String devId);
 }
 
 class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
@@ -20,9 +22,9 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   DeviceSensorRemoteDatasourceImpl(this.dio);
 
   @override
-  Future<List<DeviceSensorModel>> getAllDeviceSensors() async {
+  Future<List<DeviceSensorModel>> getAllDeviceSensors(String siteId) async {
     try {
-      final response = await dio.get(ApiEndpoints.deviceSensors);
+      final response = await dio.get(ApiEndpoints.deviceSensors(siteId));
       final data = response.data;
       if (data == null) throw Exception('Response data is null');
 
@@ -46,10 +48,10 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   }
 
   @override
-  Future<DeviceSensorModel> getDeviceSensorById(String dsId) async {
+  Future<DeviceSensorModel> getDeviceSensorById(String siteId, String dsId) async {
     try {
       // Fetch all and filter — avoids "not found" on single endpoint
-      final all = await getAllDeviceSensors();
+      final all = await getAllDeviceSensors(siteId);
       final found = all.where((ds) => ds.dsId == dsId).firstOrNull;
       if (found == null) throw Exception('Device Sensor tidak ditemukan');
       return found;
@@ -60,10 +62,11 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
 
   @override
   Future<DeviceSensorModel> createDeviceSensor(
+    String siteId,
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await dio.post(ApiEndpoints.deviceSensors, data: data);
+      final response = await dio.post(ApiEndpoints.deviceSensors(siteId), data: data);
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
@@ -80,13 +83,14 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
 
   @override
   Future<DeviceSensorModel> updateDeviceSensor(
+    String siteId,
     String dsId,
     String devId,
     Map<String, dynamic> data,
   ) async {
     try {
       final response = await dio.put(
-        ApiEndpoints.deviceSensorById(dsId, devId),
+        ApiEndpoints.deviceSensorById(siteId, dsId, devId),
         data: data,
       );
       final responseData = response.data;
@@ -104,14 +108,8 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   }
 
   @override
-  Future<void> deleteDeviceSensor(String dsId, String devId) async {
-    try {
-      await dio.delete(ApiEndpoints.deviceSensorById(dsId, devId));
-    } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw Exception('Failed to delete device sensor: $e');
-    }
+  Future<void> deleteDeviceSensor(String siteId, String dsId, String devId) async {
+    throw const UnsupportedBackendEndpointException('Hapus device sensor belum didukung oleh server');
   }
 
   /// Normalize device sensor JSON — API sometimes returns sts/seq as String

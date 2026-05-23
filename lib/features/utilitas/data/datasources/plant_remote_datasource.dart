@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/plant_model.dart';
 
 /// Remote datasource for Plant operations
@@ -108,25 +109,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
     String plantId,
     Map<String, dynamic> data,
   ) async {
-    try {
-      final response = await dio.put(
-        ApiEndpoints.plantById(siteId, plantId),
-        data: data,
-      );
-
-      final responseData = response.data;
-      if (responseData == null) {
-        throw Exception('Response data is null');
-      }
-
-      final plantData = responseData['data'] ?? responseData;
-
-      return PlantModel.fromJson(plantData as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw Exception('Failed to update plant: $e');
-    }
+    throw const UnsupportedBackendEndpointException('Update tanaman belum didukung oleh server');
   }
 
   @override
@@ -153,13 +136,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
 
   @override
   Future<void> deletePlant(String siteId, String plantId) async {
-    try {
-      await dio.delete(ApiEndpoints.plantById(siteId, plantId));
-    } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw Exception('Failed to delete plant: $e');
-    }
+    throw const UnsupportedBackendEndpointException('Hapus tanaman belum didukung oleh server');
   }
 
   /// Handle Dio errors and convert to user-friendly messages
