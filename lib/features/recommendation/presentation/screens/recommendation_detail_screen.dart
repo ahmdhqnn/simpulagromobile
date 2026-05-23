@@ -148,16 +148,28 @@ class RecommendationDetailScreen extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      final repository = ref.read(recommendationRepositoryProvider);
-      await repository.applyRecommendation(recommendation.recommendationId);
+      final useCase = ref.read(applyRecommendationUseCaseProvider);
+      final result = await useCase(recommendation.recommendationId);
 
       if (!context.mounted) return;
-      ref.invalidate(recommendationListProvider);
-      ref.invalidate(recommendationDetailProvider(recommendationId));
-      _showSnack(
-        context,
-        'Rekomendasi berhasil diterapkan',
-        backgroundColor: AppColors.success,
+      
+      result.fold(
+        (failure) {
+          _showSnack(
+            context,
+            'Gagal menerapkan: ${failure.message}',
+            backgroundColor: AppColors.error,
+          );
+        },
+        (_) {
+          ref.invalidate(recommendationListProvider);
+          ref.invalidate(recommendationDetailProvider(recommendation.recommendationId));
+          _showSnack(
+            context,
+            'Rekomendasi berhasil diterapkan',
+            backgroundColor: AppColors.success,
+          );
+        },
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -184,13 +196,25 @@ class RecommendationDetailScreen extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      final repository = ref.read(recommendationRepositoryProvider);
-      await repository.dismissRecommendation(recommendation.recommendationId);
+      final useCase = ref.read(dismissRecommendationUseCaseProvider);
+      final result = await useCase(recommendation.recommendationId);
 
       if (!context.mounted) return;
-      ref.invalidate(recommendationListProvider);
-      _showSnack(context, 'Rekomendasi diabaikan');
-      context.pop();
+      
+      result.fold(
+        (failure) {
+          _showSnack(
+            context,
+            'Gagal mengabaikan: ${failure.message}',
+            backgroundColor: AppColors.error,
+          );
+        },
+        (_) {
+          ref.invalidate(recommendationListProvider);
+          _showSnack(context, 'Rekomendasi diabaikan');
+          context.pop();
+        },
+      );
     } catch (e) {
       if (!context.mounted) return;
       _showSnack(

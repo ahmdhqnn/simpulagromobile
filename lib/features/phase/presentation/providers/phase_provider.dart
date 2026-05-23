@@ -6,6 +6,9 @@ import '../../data/datasources/phase_remote_datasource.dart';
 import '../../data/repositories/phase_repository_impl.dart';
 import '../../domain/entities/phase.dart';
 import '../../domain/repositories/phase_repository.dart';
+import '../../domain/usecases/get_phases_usecase.dart';
+import '../../domain/usecases/get_current_phase_usecase.dart';
+import '../../domain/usecases/get_phase_history_usecase.dart';
 
 // ─── DataSource Provider ─────────────────────────────────
 /// Menggunakan dioClientProvider agar JWT token disertakan
@@ -20,6 +23,22 @@ final phaseRepositoryProvider = Provider<PhaseRepository>((ref) {
   return PhaseRepositoryImpl(datasource);
 });
 
+final getPhasesByPlantUseCaseProvider = Provider<GetPhasesByPlantUseCase>((ref) {
+  return GetPhasesByPlantUseCase(ref.watch(phaseRepositoryProvider));
+});
+
+final getPhaseByIdUseCaseProvider = Provider<GetPhaseByIdUseCase>((ref) {
+  return GetPhaseByIdUseCase(ref.watch(phaseRepositoryProvider));
+});
+
+final getCurrentPhaseUseCaseProvider = Provider<GetCurrentPhaseUseCase>((ref) {
+  return GetCurrentPhaseUseCase(ref.watch(phaseRepositoryProvider));
+});
+
+final getPhaseHistoryUseCaseProvider = Provider<GetPhaseHistoryUseCase>((ref) {
+  return GetPhaseHistoryUseCase(ref.watch(phaseRepositoryProvider));
+});
+
 // ─── Phase List Provider (by plantId/siteId) ─────────────
 /// Mengambil semua fase untuk plant/site tertentu
 final phaseListProvider = FutureProvider.autoDispose.family<List<Phase>, String>((
@@ -27,7 +46,8 @@ final phaseListProvider = FutureProvider.autoDispose.family<List<Phase>, String>
   plantId,
 ) async {
   return ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId);
+    final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
+    final result = await useCase(plantId);
     return result.fold((f) => throw f, (data) => data);
   });
 });
@@ -38,7 +58,8 @@ final phasesForSelectedSiteProvider = FutureProvider.autoDispose<List<Phase>>((r
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   return ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(siteId);
+    final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
+    final result = await useCase(siteId);
     return result.fold((f) => throw f, (data) => data);
   });
 });
@@ -49,7 +70,8 @@ final currentPhaseProvider = FutureProvider.autoDispose.family<Phase?, String>((
   plantId,
 ) async {
   return ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getCurrentPhase(plantId);
+    final useCase = ref.watch(getCurrentPhaseUseCaseProvider);
+    final result = await useCase(plantId);
     return result.fold((f) => throw f, (data) => data);
   });
 });
@@ -60,7 +82,8 @@ final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
   phaseId,
 ) async {
   return ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getPhaseById(phaseId);
+    final useCase = ref.watch(getPhaseByIdUseCaseProvider);
+    final result = await useCase(phaseId);
     return result.fold((f) => throw f, (data) => data);
   });
 });
@@ -71,7 +94,8 @@ final phaseHistoryProvider = FutureProvider.autoDispose.family<List<Phase>, Stri
   plantId,
 ) async {
   return ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getPhaseHistory(plantId);
+    final useCase = ref.watch(getPhaseHistoryUseCaseProvider);
+    final result = await useCase(plantId);
     return result.fold((f) => throw f, (data) => data);
   });
 });
@@ -82,7 +106,8 @@ final phaseStatsProvider = FutureProvider.autoDispose.family<Map<String, dynamic
   plantId,
 ) async {
   final phases = await ref.retryOnError(() async {
-    final result = await ref.read(phaseRepositoryProvider).getPhasesByPlant(plantId);
+    final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
+    final result = await useCase(plantId);
     return result.fold((f) => throw f, (data) => data);
   });
 

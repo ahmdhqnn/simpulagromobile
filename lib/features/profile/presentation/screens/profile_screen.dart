@@ -16,7 +16,6 @@ import '../widgets/profile_avatar_widget.dart';
 import '../widgets/profile_forum_card_widget.dart';
 import '../widgets/profile_permissions_card_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
-import 'settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -98,10 +97,7 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           CircularIconActionWidget(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+            onPressed: () => context.push('/settings'),
             icon: Icons.settings_outlined,
           ),
         ],

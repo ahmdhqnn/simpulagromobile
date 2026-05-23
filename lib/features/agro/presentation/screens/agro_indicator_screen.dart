@@ -10,7 +10,14 @@ import '../widgets/vdp_widget.dart';
 import '../widgets/gdd_widget.dart';
 import '../widgets/etc_widget.dart';
 import '../widgets/environmental_health_widget.dart';
+import '../widgets/agro_recommendation_widget.dart';
+import '../widgets/agro_phase_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../dashboard/presentation/providers/dashboard_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../recommendation/domain/entities/recommendation.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 
 class AgroIndicatorScreen extends ConsumerWidget {
   const AgroIndicatorScreen({super.key});
@@ -18,6 +25,15 @@ class AgroIndicatorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final agroAsync = ref.watch(agroDataProvider);
+    final healthAsync = ref.watch(environmentalHealthProvider);
+    final siteId = ref.watch(selectedSiteIdProvider);
+
+    final phaseAsync = siteId != null
+        ? ref.watch(currentPhaseProvider(siteId))
+        : const AsyncValue.data(null);
+    final recommendationsAsync = siteId != null
+        ? ref.watch(recommendationsBySiteProvider(siteId))
+        : const AsyncValue.data(<Recommendation>[]);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
@@ -27,7 +43,11 @@ class AgroIndicatorScreen extends ConsumerWidget {
             children: [
               _buildHeader(context, ref),
               const Expanded(
-                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: true, headerHeight: 120),
+                child: DetailScreenSkeleton(
+                  infoRowCount: 4,
+                  hasDescription: true,
+                  headerHeight: 120,
+                ),
               ),
             ],
           ),
@@ -36,6 +56,11 @@ class AgroIndicatorScreen extends ConsumerWidget {
             color: AppColors.primary,
             onRefresh: () async {
               ref.invalidate(agroDataProvider);
+              ref.invalidate(environmentalHealthProvider);
+              if (siteId != null) {
+                ref.invalidate(currentPhaseProvider(siteId));
+                ref.invalidate(recommendationsBySiteProvider(siteId));
+              }
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Column(
@@ -51,11 +76,54 @@ class AgroIndicatorScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        recommendationsAsync.when(
+                          data: (recommendations) {
+                            return Column(
+                              children: [
+                                const SectionHeaderWidget(
+                                  title: 'Rekomendasi Tindakan',
+                                ),
+                                SizedBox(height: context.rh(0.014)),
+                                AgroRecommendationWidget(
+                                  recommendations: recommendations,
+                                ),
+                                SizedBox(height: context.rh(0.024)),
+                              ],
+                            );
+                          },
+                          loading: () => const Padding(
+                            padding: EdgeInsets.only(bottom: 24),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+
+                        phaseAsync.when(
+                          data: (phase) {
+                            return Column(
+                              children: [
+                                const SectionHeaderWidget(title: 'Fase Tanam'),
+                                SizedBox(height: context.rh(0.014)),
+                                AgroPhaseWidget(phase: phase),
+                                SizedBox(height: context.rh(0.024)),
+                              ],
+                            );
+                          },
+                          loading: () => const Padding(
+                            padding: EdgeInsets.only(bottom: 24),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+
                         const SectionHeaderWidget(
                           title: 'Kesehatan Lingkungan',
                         ),
                         SizedBox(height: context.rh(0.014)),
-                        EnvironmentalHealthWidget(agroData: agroData),
+                        EnvironmentalHealthWidget(
+                          agroData: agroData,
+                          healthData: healthAsync.valueOrNull,
+                        ),
 
                         SizedBox(height: context.rh(0.024)),
 
@@ -107,7 +175,15 @@ class AgroIndicatorScreen extends ConsumerWidget {
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           CircularIconActionWidget(
-            onPressed: () => ref.invalidate(agroDataProvider),
+            onPressed: () {
+              ref.invalidate(agroDataProvider);
+              ref.invalidate(environmentalHealthProvider);
+              final siteId = ref.read(selectedSiteIdProvider);
+              if (siteId != null) {
+                ref.invalidate(currentPhaseProvider(siteId));
+                ref.invalidate(recommendationsBySiteProvider(siteId));
+              }
+            },
             icon: Icons.refresh,
           ),
         ],

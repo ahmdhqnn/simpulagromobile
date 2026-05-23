@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import '../../../../core/error/failures.dart';
 import '../models/recommendation_model.dart';
 
 /// Recommendation remote datasource
@@ -19,93 +21,249 @@ class RecommendationRemoteDatasourceImpl
     implements RecommendationRemoteDatasource {
   final Dio _dio;
 
+  /// Feature flag untuk endpoint yang belum diimplementasi di backend
+  /// Set ke true ketika endpoint tersedia
+  static const _supportsGetById = false;
+  static const _supportsApply = false;
+  static const _supportsDismiss = false;
+
   RecommendationRemoteDatasourceImpl(this._dio);
 
   /// GET /api/sites/:siteId/recommendations
   /// Mendapatkan rekomendasi NPK dan pH berdasarkan data sensor terkini
   /// Karena endpoint ini site-scoped, kita perlu siteId.
   /// Untuk getRecommendations() tanpa siteId, kita kembalikan list kosong.
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendations() async {
     // Endpoint ini memerlukan siteId — gunakan getRecommendationsBySite
+    // TODO: Implement global recommendations endpoint jika backend menyediakannya
     return [];
   }
 
   /// GET /api/sites/:siteId/recommendations
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendationsBySite(
     String siteId,
   ) async {
-    final response = await _dio.get('/sites/$siteId/recommendations');
-    final data = response.data['data'] as Map<String, dynamic>? ?? {};
-    return _parseRecommendationResponse(data, siteId);
+    try {
+      final response = await _dio.get('/sites/$siteId/recommendations');
+      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      return _parseRecommendationResponse(data, siteId);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 404) {
+        debugPrint('⚠️ Recommendation datasource (getBySite) returned ${e.response?.statusCode}: Returning empty list');
+        return [];
+      }
+      debugPrint('❌ Recommendation datasource error (getBySite): ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        '❌ Unexpected error in recommendation datasource (getBySite): $e',
+      );
+      rethrow;
+    }
   }
 
   /// GET /api/sites/:siteId/recommendations/history
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendationsByPlant(
     String plantId,
   ) async {
-    // API tidak memiliki endpoint per-plant, gunakan history
-    final response = await _dio.get('/sites/$plantId/recommendations/history');
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map((json) => _parseHistoryItem(json as Map<String, dynamic>, plantId))
-        .toList();
+    try {
+      // API tidak memiliki endpoint per-plant, gunakan history
+      final response = await _dio.get(
+        '/sites/$plantId/recommendations/history',
+      );
+      final data = response.data['data'] as List? ?? [];
+      return data
+          .map(
+            (json) => _parseHistoryItem(json as Map<String, dynamic>, plantId),
+          )
+          .toList();
+    } on DioException catch (e) {
+      debugPrint(
+        '❌ Recommendation datasource error (getByPlant): ${e.message}',
+      );
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        '❌ Unexpected error in recommendation datasource (getByPlant): $e',
+      );
+      rethrow;
+    }
   }
 
+  /// Mendapatkan rekomendasi berdasarkan type (client-side filtering)
+  /// API tidak support filter by type
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendationsByType(
     String type,
   ) async {
     // Filter dilakukan di client side karena API tidak support filter by type
+    // TODO: Coordinate with backend to implement server-side filtering
     return [];
   }
 
+  /// Mendapatkan rekomendasi berdasarkan ID
+  /// ⚠️ Endpoint belum diimplementasi di backend
+  /// Feature flag: [_supportsGetById]
+  ///
+  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
   @override
   Future<RecommendationModel> getRecommendationById(
     String recommendationId,
   ) async {
-    // API tidak memiliki endpoint get-by-id untuk rekomendasi
-    // Coba ambil dari history dengan parsing rec_id
-    // Format recommendationId: "siteId_recId" atau hanya recId
-    throw Exception('Endpoint get recommendation by ID tidak tersedia');
+    if (!_supportsGetById) {
+      throw const ServerFailure(
+        'Endpoint "get recommendation by ID" belum diimplementasi di backend. '
+        'Gunakan getRecommendationsBySite() lalu filter di client-side.',
+      );
+    }
+
+    try {
+      // TODO: Update path ketika backend mengimplementasikan endpoint
+      final response = await _dio.get('/recommendations/$recommendationId');
+      final data = response.data['data'] as Map<String, dynamic>?;
+
+      if (data == null) {
+        throw const NotFoundFailure('Recommendation not found');
+      }
+
+      return RecommendationModel.fromJson(data);
+    } on DioException catch (e) {
+      debugPrint('❌ Recommendation datasource error (getById): ${e.message}');
+      rethrow;
+    } on Failure {
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        '❌ Unexpected error in recommendation datasource (getById): $e',
+      );
+      rethrow;
+    }
   }
 
+  /// Menerapkan rekomendasi
+  /// ⚠️ Endpoint belum diimplementasi di backend
+  /// Feature flag: [_supportsApply]
+  ///
+  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
   @override
   Future<RecommendationModel> applyRecommendation(
     String recommendationId,
   ) async {
-    // API tidak memiliki endpoint apply recommendation
-    // Return model yang sama dengan status 'applied'
-    throw Exception('Endpoint apply recommendation tidak tersedia di backend');
+    if (!_supportsApply) {
+      throw const ServerFailure(
+        'Endpoint "apply recommendation" belum diimplementasi di backend. '
+        'Hubungi backend team untuk koordinasi implementasi.',
+      );
+    }
+
+    try {
+      // TODO: Update path dan method ketika backend mengimplementasikan endpoint
+      final response = await _dio.post(
+        '/recommendations/$recommendationId/apply',
+      );
+      final data = response.data['data'] as Map<String, dynamic>?;
+
+      if (data == null) {
+        throw const ServerFailure('No data returned from apply recommendation');
+      }
+
+      return RecommendationModel.fromJson(data);
+    } on DioException catch (e) {
+      debugPrint('❌ Recommendation datasource error (apply): ${e.message}');
+      rethrow;
+    } on Failure {
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in recommendation datasource (apply): $e');
+      rethrow;
+    }
   }
 
+  /// Menolak/membatalkan rekomendasi
+  /// ⚠️ Endpoint belum diimplementasi di backend
+  /// Feature flag: [_supportsDismiss]
+  ///
+  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
   @override
   Future<RecommendationModel> dismissRecommendation(
     String recommendationId,
   ) async {
-    // API tidak memiliki endpoint dismiss recommendation
-    throw Exception(
-      'Endpoint dismiss recommendation tidak tersedia di backend',
-    );
+    if (!_supportsDismiss) {
+      throw const ServerFailure(
+        'Endpoint "dismiss recommendation" belum diimplementasi di backend. '
+        'Hubungi backend team untuk koordinasi implementasi.',
+      );
+    }
+
+    try {
+      // TODO: Update path dan method ketika backend mengimplementasikan endpoint
+      final response = await _dio.post(
+        '/recommendations/$recommendationId/dismiss',
+      );
+      final data = response.data['data'] as Map<String, dynamic>?;
+
+      if (data == null) {
+        throw const ServerFailure(
+          'No data returned from dismiss recommendation',
+        );
+      }
+
+      return RecommendationModel.fromJson(data);
+    } on DioException catch (e) {
+      debugPrint('❌ Recommendation datasource error (dismiss): ${e.message}');
+      rethrow;
+    } on Failure {
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        '❌ Unexpected error in recommendation datasource (dismiss): $e',
+      );
+      rethrow;
+    }
   }
 
   /// GET /api/sites/:siteId/recommendations?refresh=true
+  /// Menghasilkan/refresh rekomendasi terbaru
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> generateRecommendations(
     String siteId,
   ) async {
-    final response = await _dio.get(
-      '/sites/$siteId/recommendations',
-      queryParameters: {'refresh': 'true'},
-    );
-    final data = response.data['data'] as Map<String, dynamic>? ?? {};
-    return _parseRecommendationResponse(data, siteId);
+    try {
+      final response = await _dio.get(
+        '/sites/$siteId/recommendations',
+        queryParameters: {'refresh': 'true'},
+      );
+      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      return _parseRecommendationResponse(data, siteId);
+    } on DioException catch (e) {
+      debugPrint('❌ Recommendation datasource error (generate): ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        '❌ Unexpected error in recommendation datasource (generate): $e',
+      );
+      rethrow;
+    }
   }
 
   /// Parse response dari GET /recommendations menjadi list RecommendationModel
   /// Response: { sensor_data: {...}, recommendations: { npk: {...}, ph: {...} }, cached: bool }
+  ///
+  /// ⚠️ Catatan: ID dihasilkan dengan timestamp karena backend tidak mengembalikan ID
+  /// TODO: Minta backend untuk menambahkan ID field di response
   List<RecommendationModel> _parseRecommendationResponse(
     Map<String, dynamic> data,
     String siteId,
@@ -125,13 +283,13 @@ class RecommendationRemoteDatasourceImpl
           type: 'npk',
           title: _buildNpkTitle(npk),
           description: _buildNpkDescription(npk),
-          priority: _mapNpkPriority(npk['priority'] as String?),
+          priority: _mapNpkPriority(npk['status'] as String?),
           status: 'pending',
           siteId: siteId,
           parameters: npk,
           actionItems: _buildNpkActionItems(npk),
           createdAt: now,
-          reason: npk['notes'] as String?,
+          reason: npk['pesan'] as String?,
         ),
       );
     }
@@ -145,15 +303,14 @@ class RecommendationRemoteDatasourceImpl
           type: 'ph',
           title: 'Penyesuaian pH Tanah',
           description:
-              ph['recommendation'] as String? ??
-              'Lakukan penyesuaian pH tanah sesuai rekomendasi.',
+              ph['pesan'] as String? ?? 'Lakukan penyesuaian pH tanah.',
           priority: 'medium',
           status: 'pending',
           siteId: siteId,
           parameters: ph,
           actionItems: _buildPhActionItems(ph),
           createdAt: now,
-          reason: ph['notes'] as String?,
+          reason: ph['pesan'] as String?,
         ),
       );
     }
@@ -170,7 +327,8 @@ class RecommendationRemoteDatasourceImpl
       if (jsonStr == null) return null;
       try {
         return jsonDecode(jsonStr) as Map<String, dynamic>;
-      } catch (_) {
+      } catch (e) {
+        debugPrint('⚠️ Failed to parse JSON string: $e');
         return null;
       }
     }
@@ -208,57 +366,41 @@ class RecommendationRemoteDatasourceImpl
     final status = npk['status'] as String?;
     switch (status) {
       case 'deficient':
+      case 'kurang':
         return 'Pemupukan NPK Diperlukan';
       case 'excess':
+      case 'berlebih':
         return 'Kelebihan Nutrisi NPK';
       case 'optimal':
-        return 'Kondisi NPK Optimal';
+      case 'normal':
+        return 'Kondisi NPK Normal';
       default:
         return 'Rekomendasi Pemupukan NPK';
     }
   }
 
   String _buildNpkDescription(Map<String, dynamic> npk) {
-    final parts = <String>[];
-    if (npk['nitrogen_recommendation'] != null) {
-      parts.add('N: ${npk['nitrogen_recommendation']}');
+    if (npk['pesan'] != null) {
+      return npk['pesan'] as String;
     }
-    if (npk['phosphorus_recommendation'] != null) {
-      parts.add('P: ${npk['phosphorus_recommendation']}');
-    }
-    if (npk['potassium_recommendation'] != null) {
-      parts.add('K: ${npk['potassium_recommendation']}');
-    }
-    if (parts.isEmpty && npk['notes'] != null) {
-      return npk['notes'] as String;
-    }
-    return parts.isNotEmpty ? parts.join('\n') : 'Lihat detail rekomendasi.';
+    return 'Lihat detail rekomendasi.';
   }
 
   List<String> _buildNpkActionItems(Map<String, dynamic> npk) {
     final items = <String>[];
-    if (npk['nitrogen_recommendation'] != null) {
-      items.add('Nitrogen: ${npk['nitrogen_recommendation']}');
+    if (npk['dosis_kg_ha'] != null && npk['dosis_kg_ha'] > 0) {
+      items.add('Dosis: ${npk['dosis_kg_ha']} kg/ha');
     }
-    if (npk['phosphorus_recommendation'] != null) {
-      items.add('Fosfor: ${npk['phosphorus_recommendation']}');
-    }
-    if (npk['potassium_recommendation'] != null) {
-      items.add('Kalium: ${npk['potassium_recommendation']}');
-    }
-    if (npk['notes'] != null) items.add('Catatan: ${npk['notes']}');
+    if (npk['pesan'] != null) items.add('Catatan: ${npk['pesan']}');
     return items;
   }
 
   List<String> _buildPhActionItems(Map<String, dynamic> ph) {
     final items = <String>[];
-    if (ph['recommendation'] != null) {
-      items.add(ph['recommendation'] as String);
+    if (ph['dosis_kg_ha'] != null && ph['dosis_kg_ha'] > 0) {
+      items.add('Dosis: ${ph['dosis_kg_ha']} kg/ha');
     }
-    if (ph['target_ph'] != null) {
-      items.add('Target pH: ${ph['target_ph']}');
-    }
-    if (ph['notes'] != null) items.add('Catatan: ${ph['notes']}');
+    if (ph['pesan'] != null) items.add('Catatan: ${ph['pesan']}');
     return items;
   }
 
@@ -270,6 +412,14 @@ class RecommendationRemoteDatasourceImpl
         return 'medium';
       case 'low':
         return 'low';
+      case 'normal':
+      case 'optimal':
+        return 'low';
+      case 'kurang':
+      case 'berlebih':
+      case 'deficient':
+      case 'excess':
+        return 'high';
       default:
         return 'medium';
     }

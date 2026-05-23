@@ -6,7 +6,6 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/phase_provider.dart';
-import 'phase_detail_screen.dart';
 
 class PhaseListScreen extends ConsumerWidget {
   final String plantId;
@@ -338,12 +337,7 @@ class PhaseListScreen extends ConsumerWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PhaseDetailScreen(phaseId: phase.id),
-            ),
-          );
+          context.push('/phase/${phase.id}');
         },
         borderRadius: BorderRadius.circular(18),
         child: Padding(

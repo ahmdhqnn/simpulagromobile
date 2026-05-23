@@ -50,7 +50,7 @@ class PlantDetailScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.024)),
                         PlantActionButtonsWidget(
                           plant: plant,
-                          onHarvest: () => _showHarvestDialog(context, plant),
+                          onHarvest: () => _showHarvestDialog(context, ref, plant),
                         ),
                         SizedBox(height: context.rh(0.02)),
                       ],
@@ -142,7 +142,7 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showHarvestDialog(BuildContext context, dynamic plant) {
+  void _showHarvestDialog(BuildContext context, WidgetRef ref, dynamic plant) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -178,7 +178,7 @@ class PlantDetailScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(dialogCtx);
-              await _doHarvest(context, plant);
+              await _doHarvest(context, ref, plant);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
@@ -200,14 +200,16 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _doHarvest(BuildContext context, dynamic plant) async {
+  Future<void> _doHarvest(BuildContext context, WidgetRef ref, dynamic plant) async {
     final siteId = plant.siteId as String?;
-    if (siteId == null) {
+    final plantId = plant.plantId as String?;
+    
+    if (siteId == null || plantId == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Tidak dapat memproses panen: site tidak ditemukan',
+              'Tidak dapat memproses panen: ID tidak valid',
               style: TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
@@ -218,27 +220,47 @@ class PlantDetailScreen extends ConsumerWidget {
     }
 
     try {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Tanaman "${plant.displayName}" berhasil ditandai sudah panen',
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+      final useCase = ref.read(harvestPlantUseCaseProvider);
+      final result = await useCase(siteId, plantId);
+      
+      if (!context.mounted) return;
+      
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Gagal memproses panen: ${failure.message}',
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+              ),
+              backgroundColor: AppColors.error,
             ),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+          );
+        },
+        (success) {
+          ref.invalidate(plantDetailProvider(plantId));
+          ref.invalidate(plantsProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Tanaman "${plant.displayName}" berhasil ditandai sudah panen',
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+              ),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
             ),
-          ),
-        );
-      }
+          );
+        },
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gagal memproses panen: $e',
+              'Terjadi kesalahan: $e',
               style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,

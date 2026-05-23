@@ -6,7 +6,6 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../task/presentation/providers/task_provider.dart';
 import '../providers/dashboard_provider.dart';
@@ -17,12 +16,15 @@ import '../widgets/sensor_status_card.dart';
 import '../widgets/site_selector_widget.dart';
 import '../widgets/summary_card_widget.dart';
 import '../widgets/task_overview_widget.dart';
+import '../widgets/latest_sensor_reads_widget.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final sitesAsync = ref.watch(sitesProvider);
     final selectedSite = ref.watch(selectedSiteProvider);
@@ -30,6 +32,7 @@ class DashboardScreen extends ConsumerWidget {
     final deviceSummaryAsync = ref.watch(deviceSummaryProvider);
     final sensorSummaryAsync = ref.watch(sensorSummaryProvider);
     final plantSummaryAsync = ref.watch(plantSummaryProvider);
+    final latestReadsAsync = ref.watch(latestSensorReadsProvider);
     final taskStats = ref.watch(taskStatsProvider);
 
     return Scaffold(
@@ -55,10 +58,7 @@ class DashboardScreen extends ConsumerWidget {
                 DashboardHeaderWidget(
                   userName: authState.user?.userName ?? 'User',
                   role: authState.isAdmin ? 'Admin' : 'User',
-                  onProfileTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                  ),
+                  onProfileTap: () => context.push('/profile'),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
@@ -80,20 +80,20 @@ class DashboardScreen extends ConsumerWidget {
                           height: context.rh(0.07).clamp(52.0, 72.0),
                         ),
                         error: (e, _) => ErrorStateCardWidget(
-                          message: 'Gagal memuat site',
+                          message: l10n.errorLoadSite,
                           onRetry: () => ref.invalidate(sitesProvider),
                         ),
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
+                      SectionHeaderWidget(title: l10n.healthSectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       healthAsync.when(
                         data: (health) {
                           if (health == null) {
-                            return const InfoStateWidget.icon(
+                            return InfoStateWidget.icon(
                               icon: Icons.inbox_outlined,
-                              message: 'Pilih site terlebih dahulu',
+                              message: l10n.emptySite,
                               height: 100,
                             );
                           }
@@ -103,21 +103,21 @@ class DashboardScreen extends ConsumerWidget {
                           height: context.rh(0.3).clamp(220.0, 280.0),
                         ),
                         error: (e, _) => ErrorStateCardWidget(
-                          message: 'Gagal memuat data kesehatan',
+                          message: l10n.errorLoadHealth,
                           onRetry: () =>
                               ref.invalidate(environmentalHealthProvider),
                         ),
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      const SectionHeaderWidget(title: 'Status Sensor'),
+                      SectionHeaderWidget(title: l10n.sensorSectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       healthAsync.when(
                         data: (health) {
                           if (health == null || health.sensors.isEmpty) {
-                            return const InfoStateWidget.svg(
+                            return InfoStateWidget.svg(
                               svgIconPath: 'assets/icons/sensor-icon.svg',
-                              message: 'Belum ada data sensor',
+                              message: l10n.emptySensor,
                               height: 195,
                             );
                           }
@@ -126,15 +126,29 @@ class DashboardScreen extends ConsumerWidget {
                         loading: () => LoadingCardWidget(
                           height: context.rh(0.25).clamp(180.0, 240.0),
                         ),
-                        error: (_, __) => const InfoStateWidget.svg(
+                        error: (_, __) => InfoStateWidget.svg(
                           svgIconPath: 'assets/icons/sensor-icon.svg',
-                          message: 'Belum ada data sensor',
+                          message: l10n.emptySensor,
                           height: 195,
                         ),
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      const SectionHeaderWidget(title: 'Ringkasan'),
+                      const SectionHeaderWidget(title: 'Aktivitas Terbaru'),
+                      SizedBox(height: context.rh(0.014)),
+                      latestReadsAsync.when(
+                        data: (reads) => LatestSensorReadsWidget(reads: reads),
+                        loading: () => LoadingCardWidget(
+                          height: context.rh(0.2).clamp(120.0, 180.0),
+                        ),
+                        error: (_, __) => ErrorStateCardWidget(
+                          message: 'Gagal memuat aktivitas',
+                          onRetry: () => ref.invalidate(latestSensorReadsProvider),
+                        ),
+                      ),
+                      SizedBox(height: context.rh(0.024)),
+
+                      SectionHeaderWidget(title: l10n.summarySectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       GridView.count(
                         shrinkWrap: true,
@@ -145,7 +159,7 @@ class DashboardScreen extends ConsumerWidget {
                         mainAxisSpacing: context.rw(0.025),
                         children: [
                           SummaryCardWidget(
-                            title: 'Device',
+                            title: l10n.deviceTitle,
                             value: deviceSummaryAsync.when(
                               data: (d) => d?.total.toString() ?? '0',
                               loading: () => '...',
@@ -157,7 +171,7 @@ class DashboardScreen extends ConsumerWidget {
                             onTap: () {},
                           ),
                           SummaryCardWidget(
-                            title: 'Sensor',
+                            title: l10n.sensorTitle,
                             value: sensorSummaryAsync.when(
                               data: (s) => s?.total.toString() ?? '0',
                               loading: () => '...',
@@ -169,7 +183,7 @@ class DashboardScreen extends ConsumerWidget {
                             onTap: () {},
                           ),
                           SummaryCardWidget(
-                            title: 'Tanaman',
+                            title: l10n.plantTitle,
                             value: plantSummaryAsync.when(
                               data: (p) => p?.active.toString() ?? '0',
                               loading: () => '...',
@@ -181,7 +195,7 @@ class DashboardScreen extends ConsumerWidget {
                             onTap: () {},
                           ),
                           SummaryCardWidget(
-                            title: 'Task',
+                            title: l10n.taskTitle,
                             value: taskStats.total.toString(),
                             svgIcon: 'assets/icons/check-task-outline-icon.svg',
                             iconBgColor: AppColors.softOrange,
@@ -195,7 +209,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: context.rh(0.024)),
 
-                      const SectionHeaderWidget(title: 'Ringkasan Task'),
+                      SectionHeaderWidget(title: l10n.taskSummarySectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       TaskOverviewWidget(
                         totalTasks: taskStats.total,
@@ -204,7 +218,7 @@ class DashboardScreen extends ConsumerWidget {
                       SizedBox(height: context.rh(0.024)),
 
                       // Quick Actions
-                      const SectionHeaderWidget(title: 'Aksi Cepat'),
+                      SectionHeaderWidget(title: l10n.quickActionSectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       const QuickActionsWidget(),
                       SizedBox(height: context.rh(0.04)),

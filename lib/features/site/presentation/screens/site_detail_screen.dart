@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/site_provider.dart';
-import 'site_form_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SiteDetailScreen extends ConsumerWidget {
   final String siteId;
@@ -22,12 +22,7 @@ class SiteDetailScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => SiteFormScreen(siteId: siteId),
-                ),
-              );
+              context.push('/site/$siteId/edit');
             },
           ),
         ],

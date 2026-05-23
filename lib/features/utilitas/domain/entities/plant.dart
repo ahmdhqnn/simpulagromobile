@@ -30,7 +30,7 @@ class Plant with _$Plant {
   }) = _Plant;
 
   /// Check if plant is active (not harvested)
-  bool get isActive => plantSts == 1;
+  bool get isActive => plantSts == 1 && plantHarvest == null;
 
   /// Check if plant is harvested
   bool get isHarvested => plantHarvest != null;

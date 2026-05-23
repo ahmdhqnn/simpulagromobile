@@ -3,6 +3,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'plant.freezed.dart';
 
 /// Crop Type Enum
+/// 
+/// Valid plant types in the system:
+/// - PADI: Rice (default fallback)
+/// - JAGUNG: Corn
+/// - KEDELAI: Soybean
 // ignore: constant_identifier_names
 enum CropType { PADI, JAGUNG, KEDELAI }
 
@@ -34,6 +39,11 @@ extension CropTypeExtension on CropType {
 class Plant with _$Plant {
   const Plant._();
 
+  /// Plant entity representing crop data
+  /// 
+  /// [plantType] is validated during model-to-entity conversion.
+  /// If an invalid type is provided, it defaults to PADI (rice) with a warning.
+  /// Valid types: PADI, JAGUNG, KEDELAI
   const factory Plant({
     required String plantId,
     String? siteId,

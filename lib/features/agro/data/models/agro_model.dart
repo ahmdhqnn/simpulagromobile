@@ -1,6 +1,8 @@
 /// Models for /api/sites/:siteId/agro endpoint
 library;
 
+import 'package:flutter/foundation.dart';
+
 class VdpModel {
   final double? vdp;
   final String? status;
@@ -21,15 +23,48 @@ class VdpModel {
   });
 
   factory VdpModel.fromJson(Map<String, dynamic> json) {
+    double? parseD(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
     return VdpModel(
-      vdp: (json['vdp'] as num?)?.toDouble(),
-      status: json['status'] as String?,
-      temperature: (json['temperature'] as num?)?.toDouble(),
-      humidity: (json['humidity'] as num?)?.toDouble(),
-      es: (json['es'] as num?)?.toDouble(),
-      ea: (json['ea'] as num?)?.toDouble(),
-      description: json['description'] as String?,
+      vdp: parseD(json['vdp']) ?? parseD(json['v']),
+      status: json['status']?.toString(),
+      temperature: parseD(json['temperature']) ?? parseD(json['d']),
+      humidity: parseD(json['humidity']) ?? parseD(json['p']),
+      es: parseD(json['es']),
+      ea: parseD(json['ea']),
+      description: json['description']?.toString(),
     );
+  }
+
+  /// Validates VdpModel values within expected ranges
+  /// - vdp: 0-100 (vapor pressure deficit in kPa)
+  /// - temperature: -50 to 60 °C
+  /// - humidity: 0-100 %RH
+  bool isValid() {
+    if (vdp != null && (vdp! < 0 || vdp! > 100)) {
+      if (kDebugMode) {
+        debugPrint('VdpModel: vdp=$vdp is out of range [0, 100]');
+      }
+      return false;
+    }
+    if (temperature != null && (temperature! < -50 || temperature! > 60)) {
+      if (kDebugMode) {
+        debugPrint('VdpModel: temperature=$temperature is out of range [-50, 60]');
+      }
+      return false;
+    }
+    if (humidity != null && (humidity! < 0 || humidity! > 100)) {
+      if (kDebugMode) {
+        debugPrint('VdpModel: humidity=$humidity is out of range [0, 100]');
+      }
+      return false;
+    }
+    return true;
   }
 }
 
@@ -54,6 +89,31 @@ class GddDailyModel {
                 : null),
     );
   }
+
+  /// Validates GddDailyModel values
+  /// - gdd: must be >= 0 (Growing Degree Days)
+  /// - temperature values: -50 to 60 °C
+  bool isValid() {
+    if (gdd != null && gdd! < 0) {
+      if (kDebugMode) {
+        debugPrint('GddDailyModel: gdd=$gdd is negative');
+      }
+      return false;
+    }
+    if (tempMin != null && (tempMin! < -50 || tempMin! > 60)) {
+      if (kDebugMode) {
+        debugPrint('GddDailyModel: tempMin=$tempMin is out of range [-50, 60]');
+      }
+      return false;
+    }
+    if (tempMax != null && (tempMax! < -50 || tempMax! > 60)) {
+      if (kDebugMode) {
+        debugPrint('GddDailyModel: tempMax=$tempMax is out of range [-50, 60]');
+      }
+      return false;
+    }
+    return true;
+  }
 }
 
 class GddModel {
@@ -76,6 +136,37 @@ class GddModel {
       daily: dailyList,
     );
   }
+
+  /// Validates GddModel structure and values
+  /// - totalGDD: must be >= 0 if present
+  /// - daily list: should not be empty if GddModel exists
+  /// - all daily items: must pass individual validation
+  bool isValid() {
+    if (totalGDD != null && totalGDD! < 0) {
+      if (kDebugMode) {
+        debugPrint('GddModel: totalGDD=$totalGDD is negative');
+      }
+      return false;
+    }
+    
+    if (daily.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('GddModel: daily list is empty');
+      }
+      return false;
+    }
+    
+    for (final item in daily) {
+      if (!item.isValid()) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /// Check if GddModel has meaningful data
+  bool get isEmpty => (totalGDD == null || totalGDD == 0) && daily.isEmpty;
 }
 
 class EtcDailyModel {
@@ -131,6 +222,75 @@ class EtcDailyModel {
               : null),
     );
   }
+
+  /// Validates EtcDailyModel values
+  /// - day: should be a valid date string if present
+  /// - etc: must be >= 0 (Evapotranspiration in mm/day)
+  /// - kc: typically 0-2 (crop coefficient)
+  /// - waterNeeds: must be >= 0
+  /// - temperature/humidity: within reasonable ranges
+  bool isValid() {
+    if (day != null && day!.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: day is empty string');
+      }
+      return false;
+    }
+
+    if (etc != null && etc! < 0) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: etc=$etc is negative');
+      }
+      return false;
+    }
+
+    if (kc != null && (kc! < 0 || kc! > 3)) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: kc=$kc is out of typical range [0, 3]');
+      }
+      return false;
+    }
+
+    if (waterNeeds != null && waterNeeds! < 0) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: waterNeeds=$waterNeeds is negative');
+      }
+      return false;
+    }
+
+    if (tempMin != null && (tempMin! < -50 || tempMin! > 60)) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: tempMin=$tempMin is out of range [-50, 60]');
+      }
+      return false;
+    }
+
+    if (tempMax != null && (tempMax! < -50 || tempMax! > 60)) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: tempMax=$tempMax is out of range [-50, 60]');
+      }
+      return false;
+    }
+
+    if (rhMin != null && (rhMin! < 0 || rhMin! > 100)) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: rhMin=$rhMin is out of range [0, 100]');
+      }
+      return false;
+    }
+
+    if (rhMax != null && (rhMax! < 0 || rhMax! > 100)) {
+      if (kDebugMode) {
+        debugPrint('EtcDailyModel: rhMax=$rhMax is out of range [0, 100]');
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Check if EtcDailyModel has meaningful data
+  bool get isEmpty => etc == null && waterNeeds == null && kc == null;
 }
 
 class AgroModel {
@@ -166,5 +326,54 @@ class AgroModel {
     }
 
     return AgroModel(vdp: vdpModel, gdd: gddModel, etc: etcList);
+  }
+
+  /// Check if AgroModel is empty (no valid agro data)
+  bool get isEmpty => vdp == null && gdd == null && etc.isEmpty;
+
+  /// Validates AgroModel structure
+  /// - At least one of vdp/gdd/etc must be present
+  /// - All nested models must pass their own validation
+  bool isValid() {
+    if (isEmpty) {
+      if (kDebugMode) {
+        debugPrint('AgroModel: all fields are empty (vdp=null, gdd=null, etc=[])');
+      }
+      return false;
+    }
+
+    if (vdp != null && !vdp!.isValid()) {
+      if (kDebugMode) {
+        debugPrint('AgroModel: vdp validation failed');
+      }
+      return false;
+    }
+
+    if (gdd != null && !gdd!.isValid()) {
+      if (kDebugMode) {
+        debugPrint('AgroModel: gdd validation failed');
+      }
+      return false;
+    }
+
+    for (final etcItem in etc) {
+      if (!etcItem.isValid()) {
+        if (kDebugMode) {
+          debugPrint('AgroModel: EtcDailyModel validation failed for day=${etcItem.day}');
+        }
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Get count of valid data sources present
+  int get dataSourceCount {
+    int count = 0;
+    if (vdp != null) count++;
+    if (gdd != null && !gdd!.isEmpty) count++;
+    if (etc.isNotEmpty) count++;
+    return count;
   }
 }

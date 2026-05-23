@@ -5,7 +5,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/sensor_provider.dart';
-import 'sensor_form_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SensorDetailScreen extends ConsumerWidget {
   final String siteId;
@@ -320,13 +320,7 @@ class SensorDetailScreen extends ConsumerWidget {
   }
 
   void _navigateToEdit(BuildContext context, WidgetRef ref) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            SensorFormScreen(siteId: siteId, sensorId: sensorId),
-      ),
-    ).then((_) {
+    context.push('/site-sensor-edit/$siteId/$sensorId').then((_) {
       ref.invalidate(sensorDetailProvider((siteId: siteId, sensId: sensorId)));
     });
   }

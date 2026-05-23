@@ -6,6 +6,9 @@ import '../../data/datasources/recommendation_remote_datasource.dart';
 import '../../data/repositories/recommendation_repository_impl.dart';
 import '../../domain/entities/recommendation.dart';
 import '../../domain/repositories/recommendation_repository.dart';
+import '../../domain/usecases/get_recommendations_usecase.dart';
+import '../../domain/usecases/generate_recommendation_usecase.dart';
+import '../../domain/usecases/manage_recommendation_usecase.dart';
 
 // ─── DataSource Provider ─────────────────────────────────
 final recommendationDatasourceProvider =
@@ -15,11 +18,41 @@ final recommendationDatasourceProvider =
     });
 
 // ─── Repository Provider ─────────────────────────────────
-final recommendationRepositoryProvider = Provider<RecommendationRepository>((
-  ref,
-) {
+final recommendationRepositoryProvider = Provider<RecommendationRepository>((ref) {
   final datasource = ref.watch(recommendationDatasourceProvider);
   return RecommendationRepositoryImpl(datasource);
+});
+
+final getRecommendationsUseCaseProvider = Provider<GetRecommendationsUseCase>((ref) {
+  return GetRecommendationsUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final getRecommendationsBySiteUseCaseProvider = Provider<GetRecommendationsBySiteUseCase>((ref) {
+  return GetRecommendationsBySiteUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final getRecommendationsByPlantUseCaseProvider = Provider<GetRecommendationsByPlantUseCase>((ref) {
+  return GetRecommendationsByPlantUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final getRecommendationsByTypeUseCaseProvider = Provider<GetRecommendationsByTypeUseCase>((ref) {
+  return GetRecommendationsByTypeUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final getRecommendationByIdUseCaseProvider = Provider<GetRecommendationByIdUseCase>((ref) {
+  return GetRecommendationByIdUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final generateRecommendationUseCaseProvider = Provider<GenerateRecommendationUseCase>((ref) {
+  return GenerateRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final applyRecommendationUseCaseProvider = Provider<ApplyRecommendationUseCase>((ref) {
+  return ApplyRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
+});
+
+final dismissRecommendationUseCaseProvider = Provider<DismissRecommendationUseCase>((ref) {
+  return DismissRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
 });
 
 // ─── Recommendation List for Selected Site ────────────────
@@ -30,9 +63,9 @@ final recommendationListProvider = FutureProvider<List<Recommendation>>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
 
-  final repository = ref.watch(recommendationRepositoryProvider);
+  final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
   return await ref.retryOnError(() async {
-    final result = await repository.getRecommendationsBySite(siteId);
+    final result = await useCase(siteId);
     return result.fold(
       (failure) => throw Exception(failure.message),
       (recommendations) => List<Recommendation>.from(recommendations),
@@ -43,9 +76,9 @@ final recommendationListProvider = FutureProvider<List<Recommendation>>((
 // ─── Recommendations by Site ─────────────────────────────
 final recommendationsBySiteProvider =
     FutureProvider.family<List<Recommendation>, String>((ref, siteId) async {
-      final repository = ref.watch(recommendationRepositoryProvider);
+      final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getRecommendationsBySite(siteId);
+        final result = await useCase(siteId);
         return result.fold(
           (failure) => throw Exception(failure.message),
           (recommendations) => List<Recommendation>.from(recommendations),
@@ -56,9 +89,9 @@ final recommendationsBySiteProvider =
 // ─── Recommendations by Plant ─────────────────────────────
 final recommendationsByPlantProvider =
     FutureProvider.family<List<Recommendation>, String>((ref, plantId) async {
-      final repository = ref.watch(recommendationRepositoryProvider);
+      final useCase = ref.watch(getRecommendationsByPlantUseCaseProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getRecommendationsByPlant(plantId);
+        final result = await useCase(plantId);
         return result.fold(
           (failure) => throw Exception(failure.message),
           (recommendations) => List<Recommendation>.from(recommendations),
@@ -72,9 +105,9 @@ final recommendationsByTypeProvider =
       ref,
       type,
     ) async {
-      final repository = ref.watch(recommendationRepositoryProvider);
+      final useCase = ref.watch(getRecommendationsByTypeUseCaseProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getRecommendationsByType(type);
+        final result = await useCase(type);
         return result.fold(
           (failure) => throw Exception(failure.message),
           (recommendations) => List<Recommendation>.from(recommendations),
@@ -88,9 +121,9 @@ final recommendationDetailProvider =
       ref,
       recommendationId,
     ) async {
-      final repository = ref.watch(recommendationRepositoryProvider);
+      final useCase = ref.watch(getRecommendationByIdUseCaseProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getRecommendationById(recommendationId);
+        final result = await useCase(recommendationId);
         return result.fold(
           (failure) => throw Exception(failure.message),
           (recommendation) => recommendation,
@@ -199,16 +232,16 @@ class GenerateRecommendationState {
 
 class GenerateRecommendationNotifier
     extends StateNotifier<GenerateRecommendationState> {
-  final RecommendationRepository _repository;
+  final GenerateRecommendationUseCase _useCase;
   final Ref _ref;
 
-  GenerateRecommendationNotifier(this._repository, this._ref)
+  GenerateRecommendationNotifier(this._useCase, this._ref)
     : super(const GenerateRecommendationState());
 
   Future<bool> generate(String siteId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final result = await _repository.generateRecommendations(siteId);
+      final result = await _useCase(siteId);
       return result.fold(
         (failure) {
           state = GenerateRecommendationState(error: failure.message);
@@ -238,8 +271,8 @@ final generateRecommendationProvider =
       GenerateRecommendationNotifier,
       GenerateRecommendationState
     >((ref) {
-      final repository = ref.watch(recommendationRepositoryProvider);
-      return GenerateRecommendationNotifier(repository, ref);
+      final useCase = ref.watch(generateRecommendationUseCaseProvider);
+      return GenerateRecommendationNotifier(useCase, ref);
     });
 
 // ─── Enums & Models ───────────────────────────────────────

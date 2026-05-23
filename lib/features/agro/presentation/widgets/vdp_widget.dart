@@ -99,6 +99,8 @@ class VdpWidget extends StatelessWidget {
           _buildVdpIndicator(context, vdpData!.vdp),
           const SizedBox(height: 16),
           _buildVdpInfo(context, vdpData!.vdp),
+          const SizedBox(height: 16),
+          _buildVdpDetails(context),
         ],
       ),
     );
@@ -201,33 +203,21 @@ class VdpWidget extends StatelessWidget {
   Widget _buildVdpInfo(BuildContext context, double? vdp) {
     if (vdp == null) return const SizedBox.shrink();
 
-    String title;
-    String description;
-    IconData icon;
-    Color color;
+    String title = vdpData!.status ?? 'VDP Normal';
+    String description = vdpData!.description ?? '-';
+    IconData icon = Icons.info_outline;
+    Color color = AppColors.info;
 
     if (vdp < 0.4) {
-      title = 'VDP Rendah';
-      description =
-          'Kelembaban tinggi, risiko penyakit meningkat. Pertimbangkan ventilasi.';
       icon = Icons.info_outline;
       color = AppColors.info;
     } else if (vdp <= 1.2) {
-      title = 'VDP Optimal';
-      description =
-          'Kondisi ideal untuk pertumbuhan tanaman. Transpirasi normal.';
       icon = Icons.check_circle_outline;
       color = AppColors.success;
     } else if (vdp <= 1.6) {
-      title = 'VDP Tinggi';
-      description =
-          'Kelembaban rendah, tanaman mulai stress. Pertimbangkan penyiraman.';
       icon = Icons.warning_amber_outlined;
       color = AppColors.warning;
     } else {
-      title = 'VDP Sangat Tinggi';
-      description =
-          'Stress air tinggi! Segera lakukan penyiraman dan tingkatkan kelembaban.';
       icon = Icons.error_outline;
       color = AppColors.error;
     }
@@ -271,6 +261,50 @@ class VdpWidget extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVdpDetails(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildDetailItem(context, 'Temp', '${vdpData!.temperature?.toStringAsFixed(1) ?? '-'}°C'),
+          _buildDetailItem(context, 'RH', '${vdpData!.humidity?.toStringAsFixed(1) ?? '-'}%'),
+          _buildDetailItem(context, 'Es', '${vdpData!.es?.toStringAsFixed(2) ?? '-'} kPa'),
+          _buildDetailItem(context, 'Ea', '${vdpData!.ea?.toStringAsFixed(2) ?? '-'} kPa'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(BuildContext context, String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(10),
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+          ),
+        ),
+      ],
     );
   }
 
