@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/failures.dart';
 import '../models/environmental_health_model.dart';
 import '../models/dashboard_summary_model.dart';
 
@@ -8,121 +11,187 @@ class DashboardRemoteDataSource {
   DashboardRemoteDataSource(this._dio);
 
   // ─── Environmental Health ─────────────────────────────
-  /// GET /api/sites/:siteId/agro/environmental-health
+  /// GET /sites/{siteId}/agro/environmental-health
   ///
-  /// Response structure (nested):
-  /// { "message": "Success", "data": { "status": 200, "data": { "overall_health": ..., "sensors": [...] } } }
-  Future<EnvironmentalHealth> getEnvironmentalHealth(String siteId) async {
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<EnvironmentalHealthModel> getEnvironmentalHealth(String siteId) async {
     try {
-      final response = await _dio.get(
-        '/sites/$siteId/agro/environmental-health',
-      );
+      final response = await _dio.get(ApiEndpoints.envHealth(siteId));
 
-      // Handle nested response: response.data.data.data
       final outer = response.data;
-      if (outer == null) return EnvironmentalHealth.empty();
+      if (outer == null) return EnvironmentalHealthModel.empty();
 
       dynamic inner = outer['data'];
-      if (inner == null) return EnvironmentalHealth.empty();
+      if (inner == null) return EnvironmentalHealthModel.empty();
 
-      // Agro endpoint wraps data twice: { data: { status, data: { ... } } }
+      // Agro endpoint kadang double-wrap: { data: { status, data: { ... } } }
       if (inner is Map && inner.containsKey('data')) {
         inner = inner['data'];
       }
 
       if (inner == null || inner is! Map<String, dynamic>) {
-        return EnvironmentalHealth.empty();
+        return EnvironmentalHealthModel.empty();
       }
 
-      return EnvironmentalHealth.fromJson(inner);
-    } catch (_) {
-      return EnvironmentalHealth.empty();
+      try {
+        return EnvironmentalHealthModel.fromJson(inner);
+      } catch (e) {
+        debugPrint('⚠️ Failed to parse environmental health: $e');
+        return EnvironmentalHealthModel.empty();
+      }
+    } on DioException catch (e) {
+      debugPrint('❌ Environmental health error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getEnvironmentalHealth: $e');
+      rethrow;
     }
   }
 
   // ─── Devices ──────────────────────────────────────────
-  /// GET /api/sites/:siteId/devices
-  Future<DashboardDeviceSummary> getDeviceSummary(String siteId) async {
+  /// GET /sites/{siteId}/devices
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<DashboardDeviceSummaryModel> getDeviceSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/devices');
+      final response = await _dio.get(ApiEndpoints.devices(siteId));
       final data = response.data['data'] as List? ?? [];
+
       final total = data.length;
       final active = data.where((d) {
+        if (d is! Map) return false;
         final sts = d['dev_sts'];
         return sts == 1 || sts == '1';
       }).length;
-      return DashboardDeviceSummary(total: total, active: active);
-    } catch (_) {
-      return const DashboardDeviceSummary(total: 0, active: 0);
+
+      return DashboardDeviceSummaryModel(total: total, active: active);
+    } on DioException catch (e) {
+      debugPrint('❌ Device summary error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getDeviceSummary: $e');
+      rethrow;
     }
   }
 
   // ─── Sensors ──────────────────────────────────────────
-  /// GET /api/sites/:siteId/sensors
-  Future<DashboardSensorSummary> getSensorSummary(String siteId) async {
+  /// GET /sites/{siteId}/sensors
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<DashboardSensorSummaryModel> getSensorSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/sensors');
+      final response = await _dio.get(ApiEndpoints.sensors(siteId));
       final data = response.data['data'] as List? ?? [];
+
       final total = data.length;
-      // Sensor tidak memiliki field sens_sts di response — hitung semua sebagai aktif
-      return DashboardSensorSummary(total: total, active: total);
-    } catch (_) {
-      return const DashboardSensorSummary(total: 0, active: 0);
+      // Sensor tidak memiliki field status di response — semua dihitung aktif
+      return DashboardSensorSummaryModel(total: total, active: total);
+    } on DioException catch (e) {
+      debugPrint('❌ Sensor summary error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getSensorSummary: $e');
+      rethrow;
     }
   }
 
   // ─── Plants ───────────────────────────────────────────
-  /// GET /api/sites/:siteId/plants
-  Future<DashboardPlantSummary> getPlantSummary(String siteId) async {
+  /// GET /sites/{siteId}/plants
+  /// plant_sts = 1 → aktif, plant_sts = 0 → harvest
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<DashboardPlantSummaryModel> getPlantSummary(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/plants');
+      final response = await _dio.get(ApiEndpoints.plants(siteId));
       final data = response.data['data'] as List? ?? [];
+
       final total = data.length;
-      // Active = plant_sts == 1 dan belum panen (plant_harvest == null)
       final active = data.where((p) {
+        if (p is! Map) return false;
+        // plant_sts = 1 → aktif, plant_sts = 0 → harvest
         final sts = p['plant_sts'];
-        final harvest = p['plant_harvest'];
-        return (sts == 1 || sts == '1') && harvest == null;
+        if (sts == 0 || sts == '0') return false;
+        if (sts == 1 || sts == '1' || sts == true) return true;
+        if (sts is String) {
+          final s = sts.toLowerCase();
+          if (s == 'active' || s == 'semai' || s == 'aktif') return true;
+          if (s == 'inactive' || s == 'tidak aktif') return false;
+        }
+        // Default aktif jika status tidak jelas
+        return true;
       }).length;
-      return DashboardPlantSummary(total: total, active: active);
-    } catch (_) {
-      return const DashboardPlantSummary(total: 0, active: 0);
+
+      return DashboardPlantSummaryModel(total: total, active: active);
+    } on DioException catch (e) {
+      debugPrint('❌ Plant summary error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getPlantSummary: $e');
+      rethrow;
     }
   }
 
   // ─── Latest Sensor Reads ──────────────────────────────
-  /// GET /api/sites/:siteId/reads/updates
-  Future<List<Map<String, dynamic>>> getLatestSensorReads(String siteId) async {
+  /// GET /sites/{siteId}/reads/updates
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<List<SensorReadModel>> getLatestSensorReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/updates');
+      final response = await _dio.get(ApiEndpoints.readsUpdates(siteId));
       final data = response.data['data'] as List? ?? [];
-      return data.cast<Map<String, dynamic>>();
-    } catch (_) {
-      return [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      debugPrint('❌ Latest sensor reads error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getLatestSensorReads: $e');
+      rethrow;
     }
   }
 
-  // ─── Seven Day Reads ──────────────────────────────────
-  /// GET /api/sites/:siteId/reads/seven-day
-  Future<List<Map<String, dynamic>>> getSevenDayReads(String siteId) async {
+  // ─── Daily Reads ──────────────────────────────────────
+  /// GET /sites/{siteId}/reads/daily
+  /// Menggantikan endpoint /reads/seven-day yang tidak ada di Swagger
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<List<SensorReadModel>> getDailyReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/seven-day');
+      final response = await _dio.get(ApiEndpoints.readsDaily(siteId));
       final data = response.data['data'] as List? ?? [];
-      return data.cast<Map<String, dynamic>>();
-    } catch (_) {
-      return [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      debugPrint('❌ Daily reads error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getDailyReads: $e');
+      rethrow;
     }
   }
 
   // ─── Today Reads ──────────────────────────────────────
-  /// GET /api/sites/:siteId/reads/today
-  Future<List<Map<String, dynamic>>> getTodayReads(String siteId) async {
+  /// GET /sites/{siteId}/reads/today
+  ///
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
+  Future<List<SensorReadModel>> getTodayReads(String siteId) async {
     try {
-      final response = await _dio.get('/sites/$siteId/reads/today');
+      final response = await _dio.get(ApiEndpoints.readsToday(siteId));
       final data = response.data['data'] as List? ?? [];
-      return data.cast<Map<String, dynamic>>();
-    } catch (_) {
-      return [];
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => SensorReadModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      debugPrint('❌ Today reads error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in getTodayReads: $e');
+      rethrow;
     }
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_provider.dart';
-import 'device_form_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class DeviceDetailScreen extends ConsumerWidget {
   final String siteId;
@@ -29,13 +29,7 @@ class DeviceDetailScreen extends ConsumerWidget {
             icon: const Icon(Icons.edit),
             onPressed: () {
               deviceAsync.whenData((device) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        DeviceFormScreen(siteId: siteId, device: device),
-                  ),
-                );
+                context.push('/site-device-edit/$siteId', extra: device);
               });
             },
           ),

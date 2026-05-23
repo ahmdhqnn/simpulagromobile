@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
-import '../../../phase/presentation/screens/gdd_tracking_screen.dart';
-import '../../../phase/presentation/screens/phase_list_screen.dart';
 
 class PlantHeaderCardWidget extends StatelessWidget {
   final dynamic plant;
@@ -285,14 +284,8 @@ class PlantActionButtonsWidget extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PhaseListScreen(
-                  plantId: plant.siteId ?? plant.plantId,
-                  plantName: plant.displayName,
-                ),
-              ),
+            onPressed: () => context.push(
+              '/phases/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
             icon: const Icon(Icons.timeline),
             label: Text(
@@ -316,14 +309,8 @@ class PlantActionButtonsWidget extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => GddTrackingScreen(
-                  plantId: plant.siteId ?? plant.plantId,
-                  plantName: plant.displayName,
-                ),
-              ),
+            onPressed: () => context.push(
+              '/gdd-tracking/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
             icon: const Icon(Icons.thermostat),
             label: Text(

@@ -1,14 +1,32 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/environmental_health_model.dart';
-import '../../data/models/dashboard_summary_model.dart';
+import '../entities/dashboard_entity.dart';
 
+/// Repository interface untuk fitur Dashboard
+/// Domain layer — tidak boleh import dari data layer
 abstract class DashboardRepository {
-  Future<Either<Failure, EnvironmentalHealth>> getEnvironmentalHealth(String siteId);
-  Future<Either<Failure, DashboardDeviceSummary>> getDeviceSummary(String siteId);
-  Future<Either<Failure, DashboardSensorSummary>> getSensorSummary(String siteId);
-  Future<Either<Failure, DashboardPlantSummary>> getPlantSummary(String siteId);
-  Future<Either<Failure, List<Map<String, dynamic>>>> getLatestSensorReads(String siteId);
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSevenDayReads(String siteId);
-  Future<Either<Failure, List<Map<String, dynamic>>>> getTodayReads(String siteId);
+  /// GET /sites/{siteId}/agro/environmental-health
+  Future<Either<Failure, EnvironmentalHealthEntity>> getEnvironmentalHealth(
+    String siteId,
+  );
+
+  /// GET /sites/{siteId}/devices
+  Future<Either<Failure, DeviceSummaryEntity>> getDeviceSummary(String siteId);
+
+  /// GET /sites/{siteId}/sensors
+  Future<Either<Failure, SensorSummaryEntity>> getSensorSummary(String siteId);
+
+  /// GET /sites/{siteId}/plants
+  Future<Either<Failure, PlantSummaryEntity>> getPlantSummary(String siteId);
+
+  /// GET /sites/{siteId}/reads/updates
+  Future<Either<Failure, List<SensorReadEntity>>> getLatestSensorReads(
+    String siteId,
+  );
+
+  /// GET /sites/{siteId}/reads/daily
+  Future<Either<Failure, List<SensorReadEntity>>> getDailyReads(String siteId);
+
+  /// GET /sites/{siteId}/reads/today
+  Future<Either<Failure, List<SensorReadEntity>>> getTodayReads(String siteId);
 }

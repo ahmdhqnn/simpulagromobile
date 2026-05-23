@@ -2,9 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/agro_entity.dart';
 import '../../domain/repositories/agro_repository.dart';
 import '../datasources/agro_remote_datasource.dart';
-import '../models/agro_model.dart';
 
 class AgroRepositoryImpl implements AgroRepository {
   final AgroRemoteDataSource remoteDataSource;
@@ -12,10 +12,10 @@ class AgroRepositoryImpl implements AgroRepository {
   AgroRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<Failure, AgroModel>> getAgroData(String siteId) async {
+  Future<Either<Failure, AgroEntity>> getAgroData(String siteId) async {
     try {
-      final data = await remoteDataSource.getAgroData(siteId);
-      return Right(data);
+      final model = await remoteDataSource.getAgroData(siteId);
+      return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -26,13 +26,14 @@ class AgroRepositoryImpl implements AgroRepository {
   }
 
   @override
-  Future<Either<Failure, VdpModel>> getVdpData(String siteId) async {
+  Future<Either<Failure, VdpEntity>> getVdpData(String siteId) async {
     try {
-      final data = await remoteDataSource.getAgroData(siteId);
-      if (data.vdp == null) {
-        return Left(NotFoundFailure('VDP data not available'));
+      final model = await remoteDataSource.getAgroData(siteId);
+      final entity = model.toEntity();
+      if (entity.vdp == null) {
+        return const Left(NotFoundFailure('Data VDP tidak tersedia'));
       }
-      return Right(data.vdp!);
+      return Right(entity.vdp!);
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -43,13 +44,14 @@ class AgroRepositoryImpl implements AgroRepository {
   }
 
   @override
-  Future<Either<Failure, GddModel>> getGddData(String siteId) async {
+  Future<Either<Failure, GddEntity>> getGddData(String siteId) async {
     try {
-      final data = await remoteDataSource.getAgroData(siteId);
-      if (data.gdd == null) {
-        return Left(NotFoundFailure('GDD data not available'));
+      final model = await remoteDataSource.getAgroData(siteId);
+      final entity = model.toEntity();
+      if (entity.gdd == null) {
+        return const Left(NotFoundFailure('Data GDD tidak tersedia'));
       }
-      return Right(data.gdd!);
+      return Right(entity.gdd!);
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {
@@ -60,10 +62,12 @@ class AgroRepositoryImpl implements AgroRepository {
   }
 
   @override
-  Future<Either<Failure, List<EtcDailyModel>>> getEtcData(String siteId) async {
+  Future<Either<Failure, List<EtcDailyEntity>>> getEtcData(
+    String siteId,
+  ) async {
     try {
-      final data = await remoteDataSource.getAgroData(siteId);
-      return Right(data.etc);
+      final model = await remoteDataSource.getAgroData(siteId);
+      return Right(model.toEntity().etc);
     } on DioException catch (e) {
       return Left(e.toFailure());
     } on Failure catch (e) {

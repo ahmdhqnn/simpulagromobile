@@ -5,8 +5,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/sensor_provider.dart';
-import 'sensor_detail_screen.dart';
-import 'sensor_form_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SensorListScreen extends ConsumerWidget {
   final String? siteId;
@@ -346,20 +345,11 @@ class SensorListScreen extends ConsumerWidget {
   }
 
   void _navigateToDetail(BuildContext context, String siteId, String sensorId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            SensorDetailScreen(siteId: siteId, sensorId: sensorId),
-      ),
-    );
+    context.push('/site-sensor/$siteId/$sensorId');
   }
 
   void _navigateToForm(BuildContext context, WidgetRef ref, String siteId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SensorFormScreen(siteId: siteId)),
-    ).then((_) {
+    context.push('/site-sensor-create/$siteId').then((_) {
       ref.invalidate(sensorListProvider(siteId));
     });
   }

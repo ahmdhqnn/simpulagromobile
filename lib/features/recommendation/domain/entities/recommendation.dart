@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'recommendation_bundle.dart';
 
 part 'recommendation.freezed.dart';
 
@@ -18,7 +19,7 @@ class Recommendation with _$Recommendation {
     String? plantName,
     String? siteId,
     String? siteName,
-    Map<String, dynamic>? parameters,
+    RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
     DateTime? appliedAt,

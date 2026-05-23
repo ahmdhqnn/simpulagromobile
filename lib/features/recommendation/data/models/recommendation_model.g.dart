@@ -19,7 +19,11 @@ _$RecommendationModelImpl _$$RecommendationModelImplFromJson(
   plantName: json['plant_name'] as String?,
   siteId: json['site_id'] as String?,
   siteName: json['site_name'] as String?,
-  parameters: json['parameters'] as Map<String, dynamic>?,
+  parameters: json['parameters'] == null
+      ? null
+      : RecommendationBundleModel.fromJson(
+          json['parameters'] as Map<String, dynamic>,
+        ),
   actionItems: (json['action_items'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),

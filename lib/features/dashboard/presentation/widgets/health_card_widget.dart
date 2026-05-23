@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../domain/entities/dashboard_entity.dart';
 import 'smart_score_gauge.dart';
 
 class HealthCardWidget extends StatelessWidget {
-  final dynamic health;
+  final EnvironmentalHealthEntity health;
   const HealthCardWidget({super.key, required this.health});
 
   @override
   Widget build(BuildContext context) {
-    final score = (health.overallHealth as num).toDouble();
-    final totalSensors = health.totalSensors as int? ?? 0;
+    final score = health.overallHealth;
+    final totalSensors = health.totalSensors;
 
     final (statusLabel, statusColor, showWarning) = _resolveStatus(score);
 

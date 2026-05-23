@@ -210,17 +210,21 @@ class DetailHeaderSkeleton extends StatelessWidget {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (hasAvatar) ...[
-                const SkeletonCircle(size: 64),
-                const SizedBox(height: 16),
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasAvatar) ...[
+                  const SkeletonCircle(size: 64),
+                  const SizedBox(height: 16),
+                ],
+                const SkeletonLine(width: 150, height: 20),
+                const SizedBox(height: 8),
+                const SkeletonBox(width: 80, height: 24, borderRadius: 12),
               ],
-              const SkeletonLine(width: 150, height: 20),
-              const SizedBox(height: 8),
-              const SkeletonBox(width: 80, height: 24, borderRadius: 12),
-            ],
+            ),
           ),
         ),
       ),

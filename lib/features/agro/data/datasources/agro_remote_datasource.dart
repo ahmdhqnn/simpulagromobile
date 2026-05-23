@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/failures.dart';
 import '../models/agro_model.dart';
 
 class AgroRemoteDataSource {
@@ -6,29 +9,51 @@ class AgroRemoteDataSource {
 
   AgroRemoteDataSource(this._dio);
 
-  /// GET /api/sites/:siteId/agro
+  /// GET /sites/{siteId}/agro
+  /// Response: { "status": 200, "message": "...", "data": { "vdp": {...}, "gdd": {...}, "etc": [...] } }
   ///
-  /// Response structure (nested):
-  /// { "message": "Success", "data": { "status": 200, "data": { "vdp": {...}, "gdd": {...}, "etc": [...] } } }
+  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<AgroModel> getAgroData(String siteId) async {
-    final response = await _dio.get('/sites/$siteId/agro');
+    try {
+      final response = await _dio.get(ApiEndpoints.agro(siteId));
+      return _parseAgroResponse(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ Agro datasource error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ Unexpected error in agro datasource: $e');
+      rethrow;
+    }
+  }
 
-    final outer = response.data;
-    if (outer == null) return const AgroModel();
+  /// Parse response agro dengan validasi struktur
+  static AgroModel _parseAgroResponse(dynamic responseData) {
+    if (responseData == null) {
+      throw const ServerFailure('Response data is null');
+    }
+    if (responseData is! Map<String, dynamic>) {
+      throw const ServerFailure('Invalid agro response structure');
+    }
 
-    // Handle nested response: response.data.data.data
-    dynamic inner = outer['data'];
+    // Ekstrak layer 'data' pertama
+    dynamic inner = responseData['data'];
     if (inner == null) return const AgroModel();
 
-    // Agro endpoint wraps data twice: { data: { status, data: { ... } } }
+    // Handle double-wrapped: { data: { status, data: { ... } } }
     if (inner is Map && inner.containsKey('data')) {
       inner = inner['data'];
     }
 
-    // If data is empty list or null, return empty model
-    if (inner == null || inner is List) return const AgroModel();
-    if (inner is! Map<String, dynamic>) return const AgroModel();
+    if (inner == null) return const AgroModel();
+    if (inner is List) return const AgroModel();
+    if (inner is! Map<String, dynamic>) {
+      throw const ServerFailure('Agro data has unexpected structure');
+    }
 
-    return AgroModel.fromJson(inner);
+    try {
+      return AgroModel.fromJson(inner);
+    } catch (e) {
+      throw ServerFailure('Failed to parse agro data: $e');
+    }
   }
 }

@@ -5,6 +5,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../dashboard/data/models/environmental_health_model.dart';
+import '../../../dashboard/domain/entities/dashboard_entity.dart';
 import '../../../dashboard/presentation/widgets/sensor_status_card.dart';
 import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
@@ -146,7 +147,7 @@ class RealtimeTab extends ConsumerWidget {
   }
 }
 
-/// Adapts [SensorReadUpdate] to the interface expected by [SensorStatusGrid].
+/// Adapts [SensorReadUpdate] to [SensorHealthEntity] for [SensorStatusGrid].
 class _RealtimeSensorGrid extends StatelessWidget {
   final List<SensorReadUpdate> reads;
   final EnvironmentalHealth? envHealth;
@@ -154,25 +155,23 @@ class _RealtimeSensorGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final proxies = reads.map((r) => _SensorProxy(r, envHealth)).toList();
-    return SensorStatusGrid(sensors: proxies, defaultCount: 6);
-  }
-}
+    // Konversi SensorReadUpdate ke SensorHealthEntity
+    final entities = reads.map((r) {
+      double persentase = r.numericValue > 0 ? 80.0 : 0.0;
+      if (envHealth != null && envHealth!.sensors.isNotEmpty) {
+        final match = envHealth!.sensors
+            .where((s) => s.dsId == r.dsId)
+            .firstOrNull;
+        if (match != null) persentase = match.persentase;
+      }
+      return SensorHealthEntity(
+        devId: r.devId,
+        dsId: r.dsId,
+        readUpdateValue: r.readUpdateValue ?? '0',
+        persentase: persentase,
+      );
+    }).toList();
 
-class _SensorProxy {
-  final SensorReadUpdate _r;
-  final EnvironmentalHealth? _health;
-
-  const _SensorProxy(this._r, this._health);
-
-  String get dsId => _r.dsId;
-  String get readUpdateValue => _r.readUpdateValue ?? '0';
-
-  double get persentase {
-    if (_health != null && _health.sensors.isNotEmpty) {
-      final match = _health.sensors.where((s) => s.dsId == _r.dsId).firstOrNull;
-      if (match != null) return match.persentase;
-    }
-    return _r.numericValue > 0 ? 80.0 : 0.0;
+    return SensorStatusGrid(sensors: entities, defaultCount: 6);
   }
 }

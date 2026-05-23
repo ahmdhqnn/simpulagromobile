@@ -6,118 +6,109 @@ import '../../domain/entities/phase.dart';
 part 'phase_model.freezed.dart';
 part 'phase_model.g.dart';
 
+/// PhaseModel — data layer model sesuai kontrak API backend.
+///
+/// API /fase/phases-list dan /fase/phases-list/{cropType} mengembalikan:
+/// { "phase_id", "phase_name", "phase_order", "phase_hst_min",
+///   "phase_hst_max", "chrop_type" }
+///
+/// Field seperti startDate, createdAt, requiredGdd TIDAK ada di API —
+/// dihapus dari model ini. Logika progress/status dihitung di domain layer.
 @freezed
 class PhaseModel with _$PhaseModel {
   const PhaseModel._();
 
   const factory PhaseModel({
-    @JsonKey(name: 'id') required String id,
-    @JsonKey(name: 'plant_id') required String plantId,
-    @JsonKey(name: 'plant_name') required String plantName,
+    /// phase_id dari API
+    @JsonKey(name: 'phase_id') required String id,
+
+    /// Jenis tanaman: PADI, JAGUNG, KEDELAI (field 'chrop_type' di API)
+    @JsonKey(name: 'chrop_type') required String cropType,
+
+    /// Nama fase: Vegetatif, Generatif, dll.
     @JsonKey(name: 'phase_name') required String phaseName,
-    @JsonKey(name: 'description') required String description,
-    @JsonKey(name: 'start_hst') required int startHst,
-    @JsonKey(name: 'end_hst') required int endHst,
-    @JsonKey(name: 'current_hst') required int currentHst,
-    @JsonKey(name: 'required_gdd') required double requiredGdd,
-    @JsonKey(name: 'current_gdd') required double currentGdd,
-    @JsonKey(name: 'progress') required double progress,
-    @JsonKey(name: 'status') required String status,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+
+    /// Urutan fase (1, 2, 3, ...)
+    @JsonKey(name: 'phase_order') required int phaseOrder,
+
+    /// HST minimum fase ini dimulai
+    @JsonKey(name: 'phase_hst_min') required int hstMin,
+
+    /// HST maksimum fase ini berakhir
+    @JsonKey(name: 'phase_hst_max') required int hstMax,
+
+    /// HST saat ini — diisi via enrichWithHst(), default 0
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    @Default(0)
+    int currentHst,
+
+    /// Status fase: upcoming / active / completed — diisi via enrichWithHst()
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    @Default('upcoming')
+    String status,
+
+    /// Progress 0.0–1.0 — dihitung via enrichWithHst()
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    @Default(0.0)
+    double progress,
   }) = _PhaseModel;
 
   factory PhaseModel.fromJson(Map<String, dynamic> json) =>
       _$PhaseModelFromJson(json);
 
-  /// Buat PhaseModel dari response API backend
-  /// API mengembalikan: phase_id, phase_name, chrop_type, phase_order,
-  ///                    phase_hst_min, phase_hst_max
+  /// Buat PhaseModel dari response API backend.
+  /// Menangani kedua format: field langsung atau nested.
   factory PhaseModel.fromApiJson(Map<String, dynamic> json) {
-    final phaseId = (json['phase_id'] as String?) ?? '';
-    final phaseName = (json['phase_name'] as String?) ?? '';
-    final cropType = (json['chrop_type'] as String?) ?? '';
-    final hstMin = (json['phase_hst_min'] as int?) ?? 0;
-    final hstMax = (json['phase_hst_max'] as int?) ?? 0;
-    final phaseOrder = (json['phase_order'] as int?) ?? 1;
-
-    // Estimasi GDD berdasarkan durasi fase (10 GDD per hari sebagai default)
-    final estimatedGdd = (hstMax - hstMin) * 10.0;
-
     return PhaseModel(
-      id: phaseId,
-      plantId: cropType, // gunakan cropType sebagai plantId sementara
-      plantName: cropType,
-      phaseName: phaseName,
-      description: _buildDescription(phaseName, cropType, phaseOrder),
-      startHst: hstMin,
-      endHst: hstMax,
-      currentHst: 0, // akan di-update via enrichWithHst
-      requiredGdd: estimatedGdd,
-      currentGdd: 0.0, // akan di-update via enrichWithHst
-      progress: 0.0, // akan di-update via enrichWithHst
-      status: 'upcoming', // akan di-update via enrichWithHst
-      startDate: DateTime.now(),
-      endDate: null,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      id: (json['phase_id'] as String?) ?? '',
+      cropType: (json['chrop_type'] as String?) ?? '',
+      phaseName: (json['phase_name'] as String?) ?? '',
+      phaseOrder: (json['phase_order'] as num?)?.toInt() ?? 1,
+      hstMin: (json['phase_hst_min'] as num?)?.toInt() ?? 0,
+      hstMax: (json['phase_hst_max'] as num?)?.toInt() ?? 0,
     );
   }
 
-  /// Enrich model dengan data HST saat ini untuk menentukan status dan progress
+  /// Enrich model dengan HST saat ini untuk menentukan status dan progress.
+  /// Dipanggil setelah mendapat data dari /fase/phases-by-hst/{siteId}.
   PhaseModel enrichWithHst({required int currentHst, String? currentPhaseId}) {
     final String phaseStatus;
     final double phaseProgress;
-    final double phaseCurrentGdd;
 
-    if (currentHst > endHst) {
-      // Fase sudah selesai
+    if (currentHst > hstMax) {
       phaseStatus = 'completed';
       phaseProgress = 1.0;
-      phaseCurrentGdd = requiredGdd;
     } else if (id == currentPhaseId ||
-        (currentHst >= startHst && currentHst <= endHst)) {
-      // Fase sedang aktif
+        (currentHst >= hstMin && currentHst <= hstMax)) {
       phaseStatus = 'active';
-      final range = endHst - startHst;
+      final range = hstMax - hstMin;
       phaseProgress = range > 0
-          ? ((currentHst - startHst) / range).clamp(0.0, 1.0)
+          ? ((currentHst - hstMin) / range).clamp(0.0, 1.0)
           : 0.0;
-      phaseCurrentGdd = requiredGdd * phaseProgress;
     } else {
-      // Fase belum dimulai
       phaseStatus = 'upcoming';
       phaseProgress = 0.0;
-      phaseCurrentGdd = 0.0;
     }
 
     return copyWith(
       currentHst: currentHst,
       status: phaseStatus,
       progress: phaseProgress,
-      currentGdd: phaseCurrentGdd,
     );
   }
 
+  /// Konversi ke domain entity.
   Phase toEntity() => Phase(
     id: id,
-    plantId: plantId,
-    plantName: plantName,
+    cropType: cropType,
     phaseName: phaseName,
-    description: description,
-    startHst: startHst,
-    endHst: endHst,
+    phaseOrder: phaseOrder,
+    hstMin: hstMin,
+    hstMax: hstMax,
     currentHst: currentHst,
-    requiredGdd: requiredGdd,
-    currentGdd: currentGdd,
-    progress: progress,
     status: status,
-    startDate: startDate,
-    endDate: endDate,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
+    progress: progress,
+    description: _buildDescription(phaseName, cropType, phaseOrder),
   );
 
   static String _buildDescription(
@@ -125,7 +116,7 @@ class PhaseModel with _$PhaseModel {
     String cropType,
     int order,
   ) {
-    final descriptions = {
+    const descriptions = {
       'Vegetatif Awal':
           'Fase awal pertumbuhan vegetatif — pembentukan akar dan daun pertama.',
       'Vegetatif Akhir':

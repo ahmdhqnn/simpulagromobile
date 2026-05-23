@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
-import 'recommendation_color_helper.dart';
+import '../../domain/entities/recommendation_bundle.dart';
 
 class RecommendationParametersCardWidget extends StatelessWidget {
-  final Map<String, dynamic> parameters;
+  final RecommendationBundle parameters;
 
   const RecommendationParametersCardWidget({
     super.key,
@@ -23,31 +23,40 @@ class RecommendationParametersCardWidget extends StatelessWidget {
         children: [
           Text('Parameter', style: AppTextStyles.cardTitle(context)),
           const SizedBox(height: 12),
-          ...parameters.entries.map(
-            (entry) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    RecommendationColors.formatParameterKey(entry.key),
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(13),
-                      color: AppColors.textPrimary.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  Text(
-                    entry.value.toString(),
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(13),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
+          if (parameters.npk != null) ...[
+            _buildRow(context, 'Status NPK', parameters.npk!.status),
+            _buildRow(context, 'Dosis NPK', '${parameters.npk!.dosisKgHa} kg/ha'),
+          ],
+          if (parameters.ph != null) ...[
+            _buildRow(context, 'Status pH', parameters.ph!.status),
+            _buildRow(context, 'Dosis pH', '${parameters.ph!.dosisKgHa} kg/ha'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(13),
+              color: AppColors.textPrimary.withValues(alpha: 0.6),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(13),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

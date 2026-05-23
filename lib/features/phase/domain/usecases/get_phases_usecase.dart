@@ -3,24 +3,20 @@ import '../../../../core/error/failures.dart';
 import '../entities/phase.dart';
 import '../repositories/phase_repository.dart';
 
-/// UseCase to retrieve all phases for a plant
-/// 
-/// This UseCase handles the business logic for fetching phases by plant ID.
-/// It includes caching logic to reduce unnecessary API calls.
-class GetPhasesUseCase {
+class GetPhasesByPlantUseCase {
   final PhaseRepository repository;
+  GetPhasesByPlantUseCase(this.repository);
 
-  /// Constructor that injects the PhaseRepository dependency
-  GetPhasesUseCase(this.repository);
-
-  /// Execute the use case to get all phases for a plant
-  /// 
-  /// Parameters:
-  ///   - [plantId]: The ID of the plant to fetch phases for
-  /// 
-  /// Returns:
-  ///   - Either a [Failure] on error or a List of [Phase] on success
   Future<Either<Failure, List<Phase>>> call(String plantId) async {
-    return repository.getPhasesByPlant(plantId);
+    return await repository.getPhasesByPlant(plantId);
+  }
+}
+
+class GetPhaseByIdUseCase {
+  final PhaseRepository repository;
+  GetPhaseByIdUseCase(this.repository);
+
+  Future<Either<Failure, Phase>> call(String id) async {
+    return await repository.getPhaseById(id);
   }
 }

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
+import '../../domain/entities/agro_entity.dart';
 
 class GddWidget extends StatelessWidget {
-  final GddModel? gddData;
+  final GddEntity? gddData;
 
   const GddWidget({super.key, this.gddData});
 

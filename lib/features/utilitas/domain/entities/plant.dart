@@ -29,11 +29,12 @@ class Plant with _$Plant {
     DateTime? plantUpdate,
   }) = _Plant;
 
-  /// Check if plant is active (not harvested)
+  /// Tanaman aktif: plant_sts = 1
+  /// (plant_harvest tidak ada di API response, hanya plant_sts yang digunakan)
   bool get isActive => plantSts == 1;
 
-  /// Check if plant is harvested
-  bool get isHarvested => plantHarvest != null;
+  /// Tanaman sudah panen: plant_sts = 0
+  bool get isHarvested => plantSts == 0;
 
   /// Get display name (fallback to ID if name is null)
   String get displayName => plantName ?? plantId;

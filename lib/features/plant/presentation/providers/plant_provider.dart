@@ -7,6 +7,10 @@ import '../../data/models/plant_model.dart';
 import '../../data/repositories/plant_repository_impl.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../../domain/entities/plant.dart';
+import '../../domain/entities/varietas.dart';
+import '../../domain/usecases/get_plants_usecase.dart';
+import '../../domain/usecases/manage_plant_usecase.dart';
+import '../../domain/usecases/get_varietas_usecase.dart';
 
 final plantRemoteDataSourceProvider = Provider<PlantRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
@@ -18,15 +22,39 @@ final plantRepositoryProvider = Provider<PlantRepository>((ref) {
   return PlantRepositoryImpl(dataSource);
 });
 
+final getPlantsUseCaseProvider = Provider<GetPlantsUseCase>((ref) {
+  return GetPlantsUseCase(ref.watch(plantRepositoryProvider));
+});
+
+final getPlantByIdUseCaseProvider = Provider<GetPlantByIdUseCase>((ref) {
+  return GetPlantByIdUseCase(ref.watch(plantRepositoryProvider));
+});
+
+final createPlantUseCaseProvider = Provider<CreatePlantUseCase>((ref) {
+  return CreatePlantUseCase(ref.watch(plantRepositoryProvider));
+});
+
+final updatePlantUseCaseProvider = Provider<UpdatePlantUseCase>((ref) {
+  return UpdatePlantUseCase(ref.watch(plantRepositoryProvider));
+});
+
+final harvestPlantUseCaseProvider = Provider<HarvestPlantUseCase>((ref) {
+  return HarvestPlantUseCase(ref.watch(plantRepositoryProvider));
+});
+
+final getVarietasUseCaseProvider = Provider<GetVarietasUseCase>((ref) {
+  return GetVarietasUseCase(ref.watch(plantRepositoryProvider));
+});
+
 /// Plants for selected site
 final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-  final repository = ref.watch(plantRepositoryProvider);
+  final useCase = ref.watch(getPlantsUseCaseProvider);
   return ref.retryOnError(() async {
-    final result = await repository.getPlants(siteId);
+    final result = await useCase(siteId);
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (plants) => plants,
     );
   });
@@ -41,14 +69,14 @@ final currentPlantProvider = Provider<Plant?>((ref) {
 });
 
 /// All varietas for dropdown
-final varietasProvider = FutureProvider.autoDispose<List<VarietasModel>>((
+final varietasProvider = FutureProvider.autoDispose<List<Varietas>>((
   ref,
 ) async {
-  final repository = ref.watch(plantRepositoryProvider);
+  final useCase = ref.watch(getVarietasUseCaseProvider);
   return ref.retryOnError(() async {
-    final result = await repository.getVarietas();
+    final result = await useCase();
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (varietas) => varietas,
     );
   });
@@ -76,10 +104,10 @@ class CreatePlantState {
 }
 
 class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
-  final PlantRepository _repository;
+  final CreatePlantUseCase _useCase;
   final Ref _ref;
 
-  CreatePlantNotifier(this._repository, this._ref)
+  CreatePlantNotifier(this._useCase, this._ref)
     : super(const CreatePlantState());
 
   Future<bool> createPlant({
@@ -93,7 +121,7 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _repository.createPlant(siteId, {
+      final result = await _useCase(siteId, {
         'plant_name': plantName,
         'varietas_id': varietasId,
         'plant_type': plantType.name,
@@ -125,8 +153,8 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
 
 final createPlantProvider =
     StateNotifierProvider<CreatePlantNotifier, CreatePlantState>((ref) {
-      final repository = ref.watch(plantRepositoryProvider);
-      return CreatePlantNotifier(repository, ref);
+      final useCase = ref.watch(createPlantUseCaseProvider);
+      return CreatePlantNotifier(useCase, ref);
     });
 
 /// Plant detail provider
@@ -137,11 +165,11 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) throw Exception('No site selected');
 
-  final repository = ref.watch(plantRepositoryProvider);
+  final useCase = ref.watch(getPlantByIdUseCaseProvider);
   return ref.retryOnError(() async {
-    final result = await repository.getPlantById(siteId, plantId);
+    final result = await useCase(siteId, plantId);
     return result.fold(
-      (failure) => throw Exception(failure.message),
+      (failure) => throw failure,
       (plant) => plant,
     );
   });

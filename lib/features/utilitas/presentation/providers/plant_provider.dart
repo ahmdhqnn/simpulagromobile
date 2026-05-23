@@ -25,7 +25,9 @@ final plantRepositoryProvider = Provider<PlantRepository>((ref) {
 // ═══════════════════════════════════════════════════════════
 // PLANT LIST PROVIDER (by selected site)
 // ═══════════════════════════════════════════════════════════
-final utilitasPlantListProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
+final utilitasPlantListProvider = FutureProvider.autoDispose<List<Plant>>((
+  ref,
+) async {
   final repository = ref.watch(plantRepositoryProvider);
   final selectedSite = ref.watch(selectedSiteProvider);
 
@@ -40,20 +42,21 @@ final utilitasPlantListProvider = FutureProvider.autoDispose<List<Plant>>((ref) 
 // ═══════════════════════════════════════════════════════════
 // PLANT DETAIL PROVIDER (by ID)
 // ═══════════════════════════════════════════════════════════
-final utilitasPlantDetailProvider = FutureProvider.autoDispose.family<Plant, String>((
-  ref,
-  plantId,
-) async {
-  final repository = ref.watch(plantRepositoryProvider);
-  final selectedSite = ref.watch(selectedSiteProvider);
+final utilitasPlantDetailProvider = FutureProvider.autoDispose
+    .family<Plant, String>((ref, plantId) async {
+      final repository = ref.watch(plantRepositoryProvider);
+      final selectedSite = ref.watch(selectedSiteProvider);
 
-  if (selectedSite == null) {
-    throw Exception('Tidak ada site yang dipilih');
-  }
+      if (selectedSite == null) {
+        throw Exception('Tidak ada site yang dipilih');
+      }
 
-  final result = await repository.getPlantById(selectedSite.siteId, plantId);
-  return result.fold((f) => throw f, (data) => data);
-});
+      final result = await repository.getPlantById(
+        selectedSite.siteId,
+        plantId,
+      );
+      return result.fold((f) => throw f, (data) => data);
+    });
 
 // ═══════════════════════════════════════════════════════════
 // PLANT FORM STATE
@@ -94,10 +97,7 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
       return false;
     }
 
-    final result = await _repository.createPlant(
-      selectedSite.siteId,
-      plant,
-    );
+    final result = await _repository.createPlant(selectedSite.siteId, plant);
 
     return result.fold(
       (failure) {
@@ -152,10 +152,7 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
       return false;
     }
 
-    final result = await _repository.harvestPlant(
-      selectedSite.siteId,
-      plantId,
-    );
+    final result = await _repository.harvestPlant(selectedSite.siteId, plantId);
 
     return result.fold(
       (failure) {

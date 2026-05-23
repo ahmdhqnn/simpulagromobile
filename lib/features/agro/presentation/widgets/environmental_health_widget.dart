@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
+import '../../domain/entities/agro_entity.dart';
+import '../../../dashboard/domain/entities/dashboard_entity.dart';
 
 class EnvironmentalHealthWidget extends StatelessWidget {
-  final AgroModel? agroData;
+  final AgroEntity? agroData;
+  final EnvironmentalHealthEntity? healthData;
 
-  const EnvironmentalHealthWidget({super.key, this.agroData});
+  const EnvironmentalHealthWidget({super.key, this.agroData, this.healthData});
 
   @override
   Widget build(BuildContext context) {
@@ -326,13 +328,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
   }
 
   double _calculateHealthScore() {
-    if (agroData == null) return 0;
-
-    final vdpScore = _calculateVdpScore();
-    final gddScore = _calculateGddScore();
-    final etcScore = _calculateEtcScore();
-
-    return (vdpScore * 0.3) + (gddScore * 0.3) + (etcScore * 0.4);
+    return healthData?.overallHealth ?? 0.0;
   }
 
   double _calculateVdpScore() {

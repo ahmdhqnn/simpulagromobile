@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../domain/entities/dashboard_entity.dart';
 
 class _StatusInfo {
   final String label;
@@ -165,7 +166,7 @@ class SensorStatusCard extends StatelessWidget {
 }
 
 class SensorStatusGrid extends StatefulWidget {
-  final List sensors;
+  final List<SensorHealthEntity> sensors;
 
   final int defaultCount;
 
@@ -246,12 +247,11 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
           itemCount: showCount,
           itemBuilder: (context, i) {
             final sensor = widget.sensors[i];
-            final dsId = sensor.dsId as String;
             return SensorStatusCard(
-              label: _labelFor(dsId),
-              value: sensor.readUpdateValue as String,
-              unit: _unitFor(dsId),
-              persentase: sensor.persentase as double,
+              label: _labelFor(sensor.dsId),
+              value: sensor.readUpdateValue,
+              unit: _unitFor(sensor.dsId),
+              persentase: sensor.persentase,
             );
           },
         ),

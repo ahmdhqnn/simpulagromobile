@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_provider.dart';
-import 'device_detail_screen.dart';
-import 'device_form_screen.dart';
 
 class DeviceListScreen extends ConsumerWidget {
   final String siteId;
@@ -39,23 +39,13 @@ class DeviceListScreen extends ConsumerWidget {
       body: deviceListAsync.when(
         data: (devices) {
           if (devices.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.devices_other, size: 64, color: Colors.grey[400]),
-                  const Gap(16),
-                  Text(
-                    'Belum ada perangkat',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const Gap(8),
-                  Text(
-                    'Tambahkan perangkat IoT untuk memulai monitoring',
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: InfoStateWidget.icon(
+                  message: 'Tidak ada perangkat ditemukan',
+                  icon: Icons.router,
+                ),
               ),
             );
           }
@@ -125,15 +115,7 @@ class DeviceListScreen extends ConsumerWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DeviceDetailScreen(
-                            siteId: siteId,
-                            devId: device.devId,
-                          ),
-                        ),
-                      );
+                      context.push('/site-device/$siteId/${device.devId}');
                     },
                   ),
                 );
@@ -143,37 +125,18 @@ class DeviceListScreen extends ConsumerWidget {
         },
         loading: () => buildListSkeleton(count: 6),
         error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-              const Gap(16),
-              Text(
-                'Gagal memuat data',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const Gap(8),
-              Text(
-                error.toString(),
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-              const Gap(16),
-              ElevatedButton.icon(
-                onPressed: () => ref.invalidate(deviceListProvider(siteId)),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ErrorStateCardWidget(
+              message: error.toString(),
+              onRetry: () => ref.invalidate(deviceListProvider(siteId)),
+            ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => DeviceFormScreen(siteId: siteId)),
-          );
+          context.push('/site-device-create/$siteId');
         },
         icon: const Icon(Icons.add),
         label: const Text('Tambah Perangkat'),

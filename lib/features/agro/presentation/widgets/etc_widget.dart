@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../data/models/agro_model.dart';
+import '../../domain/entities/agro_entity.dart';
 
 class EtcWidget extends StatelessWidget {
-  final List<EtcDailyModel> etcData;
+  final List<EtcDailyEntity> etcData;
 
   const EtcWidget({super.key, required this.etcData});
 
@@ -81,12 +81,14 @@ class EtcWidget extends StatelessWidget {
           _buildEtcChart(context, weekData),
           const SizedBox(height: 16),
           _buildWaterNeedsInfo(context, latestData),
+          const SizedBox(height: 16),
+          _buildEtcTable(context, weekData),
         ],
       ),
     );
   }
 
-  Widget _buildLatestEtc(BuildContext context, EtcDailyModel data) {
+  Widget _buildLatestEtc(BuildContext context, EtcDailyEntity data) {
     return Row(
       children: [
         Expanded(
@@ -176,7 +178,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEtcChart(BuildContext context, List<EtcDailyModel> weekData) {
+  Widget _buildEtcChart(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -361,7 +363,7 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyModel data) {
+  Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyEntity data) {
     final waterNeeds = data.waterNeeds ?? 0;
     String recommendation;
     Color color;
@@ -427,6 +429,138 @@ class EtcWidget extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEtcTable(BuildContext context, List<EtcDailyEntity> weekData) {
+    if (weekData.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Detail Iklim Harian',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1D1D1D),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.divider),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Tanggal',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1D1D1D),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Temp (Min-Max)',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1D1D1D),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'RH (Min-Max)',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1D1D1D),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ...weekData.asMap().entries.map((entry) {
+                final index = entry.key;
+                final data = entry.value;
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: index < weekData.length - 1
+                        ? const Border(
+                            bottom: BorderSide(color: AppColors.divider),
+                          )
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          data.day ?? '-',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            color: const Color(0xFF1D1D1D),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          '${data.tempMin?.toStringAsFixed(1) ?? '-'}° - ${data.tempMax?.toStringAsFixed(1) ?? '-'}°',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            color: const Color(0xFF1D1D1D),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          '${data.rhMin?.toStringAsFixed(1) ?? '-'}% - ${data.rhMax?.toStringAsFixed(1) ?? '-'}%',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            color: const Color(0xFF1D1D1D),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

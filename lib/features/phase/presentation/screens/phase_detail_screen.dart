@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
@@ -25,7 +24,11 @@ class PhaseDetailScreen extends ConsumerWidget {
             children: [
               _buildHeader(context, ref),
               const Expanded(
-                child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: true, headerHeight: 120),
+                child: DetailScreenSkeleton(
+                  infoRowCount: 3,
+                  hasDescription: true,
+                  headerHeight: 120,
+                ),
               ),
             ],
           ),
@@ -53,9 +56,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.024)),
                         _buildProgressCard(context, phase),
                         SizedBox(height: context.rh(0.024)),
-                        _buildGddCard(context, phase),
-                        SizedBox(height: context.rh(0.024)),
-                        _buildTimelineCard(context, phase),
+                        _buildHstCard(context, phase),
                         SizedBox(height: context.rh(0.02)),
                       ],
                     ),
@@ -200,8 +201,9 @@ class PhaseDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 1),
+                    // cropType menggantikan plantName yang tidak ada di API
                     Text(
-                      phase.plantName,
+                      phase.cropType,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -346,7 +348,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                   child: _buildInfoItem(
                     context,
                     'Target HST',
-                    '${phase.endHst}',
+                    '${phase.hstMax}',
                     Icons.flag,
                   ),
                 ),
@@ -358,219 +360,7 @@ class PhaseDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGddCard(BuildContext context, phase) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.thermostat,
-                  color: AppColors.warning,
-                  size: 20,
-                ),
-              ),
-              SizedBox(width: context.rw(0.02)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'GDD',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(22),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      'Growing Degree Days',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.83,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 200,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: phase.requiredGdd,
-                barGroups: [
-                  BarChartGroupData(
-                    x: 0,
-                    barRods: [
-                      BarChartRodData(
-                        toY: phase.currentGdd,
-                        color: AppColors.primary,
-                        width: 40,
-                      ),
-                    ],
-                  ),
-                  BarChartGroupData(
-                    x: 1,
-                    barRods: [
-                      BarChartRodData(
-                        toY: phase.requiredGdd,
-                        color: Colors.grey[300]!,
-                        width: 40,
-                      ),
-                    ],
-                  ),
-                ],
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(10),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.6),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value == 0 ? 'Saat Ini' : 'Target',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(12),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(color: AppColors.divider, strokeWidth: 1);
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
-                children: [
-                  Text(
-                    '${phase.currentGdd.toStringAsFixed(1)}',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(20),
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  Text(
-                    'GDD Saat Ini',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    '${phase.requiredGdd.toStringAsFixed(1)}',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(20),
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                  Text(
-                    'GDD Target',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    '${phase.gddProgressPercentage.toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(20),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  Text(
-                    'Progress',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(12),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimelineCard(BuildContext context, phase) {
+  Widget _buildHstCard(BuildContext context, phase) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -599,7 +389,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Timeline',
+                      'Rentang HST',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -610,7 +400,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Phase Timeline',
+                      'Hari Setelah Tanam',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -628,27 +418,22 @@ class PhaseDetailScreen extends ConsumerWidget {
           _buildTimelineItem(
             context,
             'Mulai',
-            _formatDate(phase.startDate),
-            'HST ${phase.startHst}',
+            'HST ${phase.hstMin}',
+            'Awal fase',
             Colors.green,
           ),
           const SizedBox(height: 16),
-          if (phase.endDate != null)
-            _buildTimelineItem(
-              context,
-              'Selesai',
-              _formatDate(phase.endDate!),
-              'HST ${phase.endHst}',
-              AppColors.primary,
-            )
-          else
-            _buildTimelineItem(
-              context,
-              'Target Selesai',
-              'HST ${phase.endHst}',
-              '~${phase.remainingDays} hari lagi',
-              Colors.orange,
-            ),
+          _buildTimelineItem(
+            context,
+            'Selesai',
+            'HST ${phase.hstMax}',
+            phase.isActive
+                ? '~${phase.remainingDays} hari lagi'
+                : phase.isCompleted
+                ? 'Sudah selesai'
+                : 'Belum dimulai',
+            phase.isCompleted ? Colors.green : AppColors.primary,
+          ),
         ],
       ),
     );
@@ -734,9 +519,5 @@ class PhaseDetailScreen extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

@@ -31,7 +31,11 @@ class GddTrackingScreen extends ConsumerWidget {
             children: [
               _buildHeader(context, ref),
               const Expanded(
-                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: false, headerHeight: 150),
+                child: DetailScreenSkeleton(
+                  infoRowCount: 4,
+                  hasDescription: false,
+                  headerHeight: 150,
+                ),
               ),
             ],
           ),
@@ -217,7 +221,7 @@ class GddTrackingScreen extends ConsumerWidget {
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            'Data GDD akan tersedia setelah\ntanaman aktif terdaftar di site ini.',
+            'Data GDD akan ditarik dari API Agro setelah\ntanaman aktif terdaftar di site ini.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
@@ -315,19 +319,13 @@ class GddTrackingScreen extends ConsumerWidget {
             children: [
               _buildStatItem(
                 context,
-                'Total GDD',
-                '${stats['totalGdd'].toStringAsFixed(0)}',
+                'Total GDD (Riil)',
+                (stats['totalGdd'] as num).toStringAsFixed(1),
                 AppColors.primary,
               ),
               _buildStatItem(
                 context,
-                'Tercapai',
-                '${stats['completedGdd'].toStringAsFixed(0)}',
-                Colors.green,
-              ),
-              _buildStatItem(
-                context,
-                'Progress',
+                'Progress Lahan',
                 '${(stats['overallProgress'] * 100).toStringAsFixed(0)}%',
                 Colors.orange,
               ),
@@ -401,7 +399,7 @@ class GddTrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'GDD per Fase',
+                      'Durasi HST per Fase',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -412,7 +410,7 @@ class GddTrackingScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'GDD by Phase',
+                      'HST Duration by Phase',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -434,7 +432,9 @@ class GddTrackingScreen extends ConsumerWidget {
                 alignment: BarChartAlignment.spaceAround,
                 maxY: phases.fold<double>(
                   0.0,
-                  (max, p) => p.requiredGdd > max ? p.requiredGdd : max,
+                  (max, p) => (p.phaseDuration.toDouble()) > max
+                      ? p.phaseDuration.toDouble()
+                      : max,
                 ),
                 barGroups: phases.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -443,12 +443,14 @@ class GddTrackingScreen extends ConsumerWidget {
                     x: index,
                     barRods: [
                       BarChartRodData(
-                        toY: phase.currentGdd,
+                        toY: (phase.currentHst - phase.hstMin)
+                            .clamp(0, phase.phaseDuration)
+                            .toDouble(),
                         color: _getPhaseColor(phase.status),
                         width: 20,
                       ),
                       BarChartRodData(
-                        toY: phase.requiredGdd,
+                        toY: phase.phaseDuration.toDouble(),
                         color: Colors.grey[300]!,
                         width: 20,
                       ),
@@ -555,7 +557,7 @@ class GddTrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Detail GDD per Fase',
+                      'Detail Durasi per Fase',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -566,7 +568,7 @@ class GddTrackingScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Detailed GDD by Phase',
+                      'Detailed Duration by Phase',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -601,8 +603,8 @@ class GddTrackingScreen extends ConsumerWidget {
                   ),
                   children: [
                     _buildTableHeader(context, 'Fase'),
-                    _buildTableHeader(context, 'Saat Ini'),
-                    _buildTableHeader(context, 'Target'),
+                    _buildTableHeader(context, 'HST Kini'),
+                    _buildTableHeader(context, 'Durasi'),
                     _buildTableHeader(context, '%'),
                   ],
                 ),
@@ -612,15 +614,12 @@ class GddTrackingScreen extends ConsumerWidget {
                       _buildTableCell(context, phase.phaseName),
                       _buildTableCell(
                         context,
-                        phase.currentGdd.toStringAsFixed(0),
+                        '${(phase.currentHst - phase.hstMin).clamp(0, phase.phaseDuration)} HST',
                       ),
+                      _buildTableCell(context, '${phase.phaseDuration} HST'),
                       _buildTableCell(
                         context,
-                        phase.requiredGdd.toStringAsFixed(0),
-                      ),
-                      _buildTableCell(
-                        context,
-                        '${phase.gddProgressPercentage.toStringAsFixed(0)}%',
+                        '${phase.progressPercentage.toStringAsFixed(0)}%',
                       ),
                     ],
                   ),

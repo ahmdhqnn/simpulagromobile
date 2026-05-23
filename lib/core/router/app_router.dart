@@ -45,6 +45,16 @@ import '../../features/utilitas/presentation/screens/device_sensors/device_senso
 import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
+// Monitoring Devices
+import '../../features/device/presentation/screens/device_list_screen.dart' as monitoring_device_list;
+import '../../features/device/presentation/screens/device_detail_screen.dart' as monitoring_device_detail;
+import '../../features/device/presentation/screens/device_form_screen.dart' as monitoring_device_form;
+
+// Monitoring Sensors
+import '../../features/sensor/presentation/screens/sensor_list_screen.dart' as monitoring_sensor_list;
+import '../../features/sensor/presentation/screens/sensor_detail_screen.dart' as monitoring_sensor_detail;
+import '../../features/sensor/presentation/screens/sensor_form_screen.dart' as monitoring_sensor_form;
+
 /// GoRouter dibuat sekali dan tidak di-recreate.
 /// Perubahan auth state ditangani via `refreshListenable`.
 final routerProvider = Provider<GoRouter>((ref) {
@@ -211,6 +221,64 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forum/my-comments',
         builder: (_, __) => const MyCommentsScreen(),
+      ),
+
+      // Monitoring Devices
+      GoRoute(
+        path: '/site-devices/:siteId/:siteName',
+        builder: (_, state) => monitoring_device_list.DeviceListScreen(
+          siteId: state.pathParameters['siteId']!,
+          siteName: Uri.decodeComponent(state.pathParameters['siteName'] ?? ''),
+        ),
+      ),
+      GoRoute(
+        path: '/site-device/:siteId/:devId',
+        builder: (_, state) => monitoring_device_detail.DeviceDetailScreen(
+          siteId: state.pathParameters['siteId']!,
+          devId: state.pathParameters['devId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/site-device-create/:siteId',
+        builder: (_, state) => monitoring_device_form.DeviceFormScreen(
+          siteId: state.pathParameters['siteId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/site-device-edit/:siteId',
+        builder: (_, state) => monitoring_device_form.DeviceFormScreen(
+          siteId: state.pathParameters['siteId']!,
+          device: state.extra as dynamic,
+        ),
+      ),
+
+      // Monitoring Sensors
+      GoRoute(
+        path: '/site-sensors/:siteId/:siteName',
+        builder: (_, state) => monitoring_sensor_list.SensorListScreen(
+          siteId: state.pathParameters['siteId']!,
+          siteName: Uri.decodeComponent(state.pathParameters['siteName'] ?? ''),
+        ),
+      ),
+      GoRoute(
+        path: '/site-sensor/:siteId/:sensorId',
+        builder: (_, state) => monitoring_sensor_detail.SensorDetailScreen(
+          siteId: state.pathParameters['siteId']!,
+          sensorId: state.pathParameters['sensorId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/site-sensor-create/:siteId',
+        builder: (_, state) => monitoring_sensor_form.SensorFormScreen(
+          siteId: state.pathParameters['siteId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/site-sensor-edit/:siteId/:sensorId',
+        builder: (_, state) => monitoring_sensor_form.SensorFormScreen(
+          siteId: state.pathParameters['siteId']!,
+          sensorId: state.pathParameters['sensorId']!,
+        ),
       ),
 
       // Utilitas
