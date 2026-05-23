@@ -1,0 +1,49 @@
+{
+  "@@locale": "id",
+  "appTitle": "SimpulAgro",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "greetingMorning": "Selamat Pagi,",
+  "greetingAfternoon": "Selamat Siang,",
+  "greetingEvening": "Selamat Sore,",
+  "greetingNight": "Selamat Malam,",
+  "weatherLoading": "Memuat cuaca...",
+  "weatherError": "Gagal",
+  "dashboardTitle": "Dashboard",
+  "recentActivityTitle": "Aktivitas Terkini",
+  "recentActivityEmpty": "Tidak ada aktivitas hari ini.",
+  "sensorSectionTitle": "Status Sensor",
+  "activeSensors": "{count} Aktif",
+  "@activeSensors": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plantSectionTitle": "Tanaman",
+  "activePlants": "{count} Fase Aktif",
+  "@activePlants": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewAll": "Lihat Semua",
+  "errorLoadData": "Gagal memuat data",
+  "retry": "Coba Lagi",
+  "healthSectionTitle": "Kesehatan Lingkungan",
+  "summarySectionTitle": "Ringkasan",
+  "deviceTitle": "Device",
+  "sensorTitle": "Sensor",
+  "plantTitle": "Tanaman",
+  "errorLoadSite": "Gagal memuat site",
+  "errorLoadHealth": "Gagal memuat data kesehatan",
+  "emptySite": "Pilih site terlebih dahulu",
+  "emptySensor": "Belum ada data sensor",
+  "taskTitle": "Task",
+  "taskSummarySectionTitle": "Ringkasan Task",
+  "quickActionSectionTitle": "Aksi Cepat"
+}
