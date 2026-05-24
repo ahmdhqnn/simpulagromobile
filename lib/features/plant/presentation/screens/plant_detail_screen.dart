@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/plant_provider.dart';
 import '../widgets/plant_detail_content_widget.dart';
 
@@ -21,17 +24,20 @@ class PlantDetailScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: plantAsync.when(
-          loading: () => const DetailScreenSkeleton(infoRowCount: 4, hasDescription: false, headerHeight: 160),
+          loading: () => const DetailScreenSkeleton(
+            infoRowCount: 4,
+            hasDescription: false,
+            headerHeight: 160,
+          ),
           error: (error, _) => _buildErrorState(context, ref, error),
           data: (plant) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
-              ref.invalidate(plantDetailProvider(plantId));
-              await Future.delayed(const Duration(milliseconds: 500));
+              await refreshPlantCache(ref, plantId: plantId);
             },
             child: Column(
               children: [
-                _buildHeader(context, ref),
+                _buildHeader(context, ref, plant),
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -50,7 +56,8 @@ class PlantDetailScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.024)),
                         PlantActionButtonsWidget(
                           plant: plant,
-                          onHarvest: () => _showHarvestDialog(context, ref, plant),
+                          onHarvest: () =>
+                              _showHarvestDialog(context, ref, plant),
                         ),
                         SizedBox(height: context.rh(0.02)),
                       ],
@@ -65,7 +72,26 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, dynamic plant) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.015),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircularBackButtonWidget(onPressed: () => context.pop()),
+          CircularBackButtonWidget(
+            onPressed: () => _showMoreActions(context, ref, plant),
+            svgIconPath: 'assets/icons/more-icon.svg',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderLoading(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: context.rw(0.051),
@@ -84,7 +110,7 @@ class PlantDetailScreen extends ConsumerWidget {
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
     return Column(
       children: [
-        _buildHeader(context, ref),
+        _buildHeaderLoading(context, ref),
         Expanded(
           child: Center(
             child: Padding(
@@ -136,6 +162,107 @@ class PlantDetailScreen extends ConsumerWidget {
       ],
     );
   }
+
+  // ─── More Actions Bottom Sheet ────────────────────────────────────────────
+
+  void _showMoreActions(BuildContext context, WidgetRef ref, dynamic plant) {
+    final authState = ref.read(authProvider);
+    final isAdmin = authState.isAdmin;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  plant.displayName,
+                  style: const TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1D1D1D),
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Edit
+            ListTile(
+              leading: const Icon(
+                Icons.edit_outlined,
+                color: AppColors.primary,
+              ),
+              title: const Text(
+                'Edit Tanaman',
+                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+              ),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                context.push('/plant/${plant.plantId}/edit');
+              },
+            ),
+
+            // Harvest (only if currently planting)
+            if (plant.isCurrentPlanting)
+              ListTile(
+                leading: const Icon(Icons.agriculture, color: Colors.orange),
+                title: const Text(
+                  'Panen Tanaman',
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    color: Colors.orange,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _showHarvestDialog(context, ref, plant);
+                },
+              ),
+
+            // Delete (admin only)
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text(
+                  'Hapus Tanaman',
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    color: Colors.red,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _confirmDelete(context, ref, plant);
+                },
+              ),
+
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Harvest ─────────────────────────────────────────────────────────────
 
   void _showHarvestDialog(BuildContext context, WidgetRef ref, dynamic plant) {
     showDialog(
@@ -195,20 +322,19 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _doHarvest(BuildContext context, WidgetRef ref, dynamic plant) async {
+  Future<void> _doHarvest(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic plant,
+  ) async {
     final siteId = plant.siteId as String?;
-    final plantId = plant.plantId as String?;
-    
-    if (siteId == null || plantId == null) {
+    final currentPlantId = plant.plantId as String?;
+
+    if (siteId == null || currentPlantId == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Tidak dapat memproses panen: ID tidak valid',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-            backgroundColor: AppColors.error,
-          ),
+        SnackbarHelper.showError(
+          context,
+          'Tidak dapat memproses panen: ID tidak valid',
         );
       }
       return;
@@ -216,51 +342,102 @@ class PlantDetailScreen extends ConsumerWidget {
 
     try {
       final useCase = ref.read(harvestPlantUseCaseProvider);
-      final result = await useCase(siteId, plantId);
-      
+      final result = await useCase(siteId, currentPlantId);
+
       if (!context.mounted) return;
-      
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Gagal memproses panen: ${failure.message}',
-                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-              ),
-              backgroundColor: AppColors.error,
-            ),
+
+      await result.fold<Future<void>>(
+        (failure) async {
+          SnackbarHelper.showError(
+            context,
+            'Gagal memproses panen: ${failure.message}',
           );
         },
-        (success) {
-          ref.invalidate(plantDetailProvider(plantId));
-          ref.invalidate(plantsProvider);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Tanaman "${plant.displayName}" berhasil ditandai sudah panen',
-                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-              ),
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-            ),
+        (_) async {
+          await refreshPlantCache(ref, plantId: currentPlantId);
+          if (!context.mounted) return;
+          SnackbarHelper.showSuccess(
+            context,
+            'Tanaman "${plant.displayName}" berhasil ditandai sudah panen',
           );
         },
       );
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Terjadi kesalahan: $e',
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-            backgroundColor: AppColors.error,
-          ),
+        SnackbarHelper.showError(context, 'Terjadi kesalahan: $e');
+      }
+    }
+  }
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic plant,
+  ) async {
+    final confirmed = await showDeleteConfirmationDialog(
+      context,
+      itemName: 'Tanaman',
+      additionalMessage:
+          '"${plant.displayName}" akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await _doDelete(context, ref, plant);
+  }
+
+  Future<void> _doDelete(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic plant,
+  ) async {
+    final siteId = plant.siteId as String?;
+    final currentPlantId = plant.plantId as String?;
+
+    if (siteId == null || currentPlantId == null) {
+      if (context.mounted) {
+        SnackbarHelper.showError(
+          context,
+          'Tidak dapat menghapus: ID tidak valid',
         );
+      }
+      return;
+    }
+
+    try {
+      // Use utilitas plant provider for delete (it has deletePlant support)
+      // We call the repository directly via the plant feature's provider chain
+      final useCase = ref.read(deletePlantUseCaseProvider);
+      final result = await useCase(siteId, currentPlantId);
+
+      if (!context.mounted) return;
+
+      await result.fold<Future<void>>(
+        (failure) async {
+          SnackbarHelper.showError(
+            context,
+            'Gagal menghapus tanaman: ${failure.message}',
+          );
+        },
+        (_) async {
+          await refreshPlantCache(
+            ref,
+            plantId: currentPlantId,
+            refreshDetail: false,
+          );
+          if (!context.mounted) return;
+          SnackbarHelper.showSuccess(
+            context,
+            'Tanaman "${plant.displayName}" berhasil dihapus',
+          );
+          context.pop();
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showError(context, 'Terjadi kesalahan: $e');
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../plant/domain/plant_status_extension.dart';
 
 part 'plant.freezed.dart';
 
@@ -29,12 +30,17 @@ class Plant with _$Plant {
     DateTime? plantUpdate,
   }) = _Plant;
 
-  /// Tanaman aktif: plant_sts = 1
-  /// (plant_harvest tidak ada di API response, hanya plant_sts yang digunakan)
-  bool get isActive => plantSts == 1;
+  /// Tanaman aktif secara status record: plant_sts = 1.
+  bool get isActive => isActivePlantStatus(plantSts: plantSts);
 
-  /// Tanaman sudah panen: plant_sts = 0
-  bool get isHarvested => plantSts == 0;
+  /// Siklus tanam sudah selesai jika tanggal panen terisi.
+  bool get isHarvested => isHarvestedPlantLifecycle(plantHarvest: plantHarvest);
+
+  /// Siklus tanam yang sedang berjalan.
+  bool get isCurrentPlanting => isCurrentPlantingLifecycle(
+    plantSts: plantSts,
+    plantHarvest: plantHarvest,
+  );
 
   /// Get display name (fallback to ID if name is null)
   String get displayName => plantName ?? plantId;

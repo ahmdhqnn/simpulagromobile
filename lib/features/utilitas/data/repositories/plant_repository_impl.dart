@@ -5,12 +5,43 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../datasources/plant_remote_datasource.dart';
-import '../models/plant_model.dart';
 
 class PlantRepositoryImpl implements PlantRepository {
   final PlantRemoteDatasource remoteDatasource;
 
   PlantRepositoryImpl(this.remoteDatasource);
+
+  String? _formatPlantDate(DateTime? value) {
+    if (value == null) return null;
+
+    final year = value.year.toString().padLeft(4, '0');
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
+  String? _cropTypeToApi(CropType? value) {
+    return switch (value) {
+      CropType.padi => 'PADI',
+      CropType.jagung => 'JAGUNG',
+      CropType.kedelai => 'KEDELAI',
+      null => null,
+    };
+  }
+
+  Map<String, dynamic> _toMutationData(Plant plant) {
+    final data = <String, dynamic>{
+      'plant_name': plant.plantName?.trim(),
+      'varietas_id': plant.varietasId?.trim(),
+      'plant_type': _cropTypeToApi(plant.plantType),
+      'plant_date': _formatPlantDate(plant.plantDate),
+    };
+
+    data.removeWhere(
+      (_, value) => value == null || (value is String && value.trim().isEmpty),
+    );
+    return data;
+  }
 
   Failure _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
@@ -76,17 +107,7 @@ class PlantRepositoryImpl implements PlantRepository {
   @override
   Future<Either<Failure, Plant>> createPlant(String siteId, Plant plant) async {
     try {
-      final model = PlantModel.fromEntity(plant);
-      final data = model.toJson();
-
-      data.removeWhere(
-        (key, value) =>
-            value == null ||
-            key == 'plant_created' ||
-            key == 'plant_update' ||
-            key == 'plant_harvest',
-      );
-
+      final data = _toMutationData(plant);
       final createdModel = await remoteDatasource.createPlant(siteId, data);
       return Right(createdModel.toEntity());
     } on UnsupportedBackendEndpointException catch (e) {
@@ -105,18 +126,7 @@ class PlantRepositoryImpl implements PlantRepository {
     Plant plant,
   ) async {
     try {
-      final model = PlantModel.fromEntity(plant);
-      final data = model.toJson();
-
-      data.removeWhere(
-        (key, value) =>
-            value == null ||
-            key == 'plant_id' ||
-            key == 'plant_created' ||
-            key == 'plant_update' ||
-            key == 'plant_harvest',
-      );
-
+      final data = _toMutationData(plant);
       final updatedModel = await remoteDatasource.updatePlant(
         siteId,
         plantId,

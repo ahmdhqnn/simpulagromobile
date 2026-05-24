@@ -25,11 +25,10 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
 
   late final TextEditingController _idController;
   late final TextEditingController _nameController;
-  late final TextEditingController _speciesController;
+  late final TextEditingController _varietasIdController;
 
   CropType? _selectedCropType;
   DateTime? _plantDate;
-  int _status = 1;
   bool _isInitialized = false;
 
   @override
@@ -37,14 +36,14 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
     super.initState();
     _idController = TextEditingController();
     _nameController = TextEditingController();
-    _speciesController = TextEditingController();
+    _varietasIdController = TextEditingController();
   }
 
   @override
   void dispose() {
     _idController.dispose();
     _nameController.dispose();
-    _speciesController.dispose();
+    _varietasIdController.dispose();
     super.dispose();
   }
 
@@ -116,25 +115,17 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                 title: 'Informasi Tanaman',
                 child: Column(
                   children: [
-                    UtilitasFormFields.buildField(
-                      context,
-                      controller: _idController,
-                      label: 'Plant ID',
-                      hint: 'Contoh: PLANT001',
-                      icon: Icons.tag,
-                      enabled: !isEditMode,
-                      required: true,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Plant ID wajib diisi';
-                        }
-                        if (v.length < 3) {
-                          return 'Minimal 3 karakter';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: context.rh(0.016)),
+                    if (isEditMode) ...[
+                      UtilitasFormFields.buildField(
+                        context,
+                        controller: _idController,
+                        label: 'Plant ID',
+                        hint: 'ID dari server',
+                        icon: Icons.tag,
+                        enabled: false,
+                      ),
+                      SizedBox(height: context.rh(0.016)),
+                    ],
                     UtilitasFormFields.buildField(
                       context,
                       controller: _nameController,
@@ -180,10 +171,17 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                     SizedBox(height: context.rh(0.016)),
                     UtilitasFormFields.buildField(
                       context,
-                      controller: _speciesController,
-                      label: 'Varietas',
-                      hint: 'Contoh: IR64, Ciherang',
+                      controller: _varietasIdController,
+                      label: 'Varietas ID',
+                      hint: 'Contoh: VAR_001',
                       icon: Icons.science,
+                      required: true,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Varietas ID wajib diisi';
+                        }
+                        return null;
+                      },
                     ),
                   ],
                 ),
@@ -193,17 +191,6 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
               UtilitasSectionCard(
                 title: 'Tanggal Tanam',
                 child: _buildDatePicker(context),
-              ),
-              SizedBox(height: context.rh(0.02)),
-
-              UtilitasSectionCard(
-                title: 'Status',
-                child: UtilitasFormFields.buildStatusToggle(
-                  context,
-                  label: 'Status Tanaman',
-                  value: _status == 1,
-                  onChanged: (v) => setState(() => _status = v ? 1 : 0),
-                ),
               ),
               SizedBox(height: context.rh(0.03)),
 
@@ -222,10 +209,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
   void _initializeForm(Plant plant) {
     _idController.text = plant.plantId;
     _nameController.text = plant.plantName ?? '';
-    _speciesController.text = plant.plantSpecies ?? '';
+    _varietasIdController.text = plant.varietasId ?? '';
     _selectedCropType = plant.plantType;
     _plantDate = plant.plantDate;
-    _status = plant.plantSts ?? 1;
     _isInitialized = true;
   }
 
@@ -295,14 +281,11 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
     }
 
     final plant = Plant(
-      plantId: _idController.text.trim(),
+      plantId: widget.plantId ?? '',
       plantName: _nameController.text.trim(),
+      varietasId: _varietasIdController.text.trim(),
       plantType: _selectedCropType,
-      plantSpecies: _speciesController.text.trim().isEmpty
-          ? null
-          : _speciesController.text.trim(),
       plantDate: _plantDate,
-      plantSts: _status,
     );
 
     final success = isEditMode

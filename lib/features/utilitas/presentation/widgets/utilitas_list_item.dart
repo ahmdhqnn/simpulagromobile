@@ -11,6 +11,7 @@ class UtilitasListItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
   final List<Widget>? badges;
+  final Widget? trailing;
 
   const UtilitasListItem({
     super.key,
@@ -21,6 +22,7 @@ class UtilitasListItem extends StatelessWidget {
     this.isActive = true,
     required this.onTap,
     this.badges,
+    this.trailing,
   });
 
   @override
@@ -85,11 +87,12 @@ class UtilitasListItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-                    size: 20,
-                  ),
+                  trailing ??
+                      Icon(
+                        Icons.chevron_right,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+                        size: 20,
+                      ),
                 ],
               ),
               if (badges != null && badges!.isNotEmpty) ...[

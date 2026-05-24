@@ -76,12 +76,20 @@ class ExceptionMapper {
         if (data.containsKey('message')) {
           final msg = data['message'];
           if (msg is String) return msg;
+          if (msg is List && msg.isNotEmpty) return msg.join(', ');
         }
 
         if (data.containsKey('error')) {
           final err = data['error'];
           if (err is String) return err;
-          if (err is Map && err.containsKey('message')) return err['message'];
+          if (err is Map && err.containsKey('message')) {
+            final message = err['message'];
+            if (message is String) return message;
+            if (message is List && message.isNotEmpty) {
+              return message.join(', ');
+            }
+          }
+          if (err is List && err.isNotEmpty) return err.join(', ');
         }
 
         if (data.containsKey('errors')) {

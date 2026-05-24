@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../plant/domain/plant_status_extension.dart';
 import '../../domain/entities/plant.dart';
 
 part 'plant_model.freezed.dart';
@@ -24,8 +25,32 @@ class PlantModel with _$PlantModel {
     @JsonKey(name: 'plant_update') DateTime? plantUpdate,
   }) = _PlantModel;
 
-  factory PlantModel.fromJson(Map<String, dynamic> json) =>
-      _$PlantModelFromJson(json);
+  factory PlantModel.fromJson(Map<String, dynamic> json) {
+    CropType? parseCropType(dynamic value) {
+      if (value is! String) return null;
+      final normalized = value.trim().toUpperCase();
+      return switch (normalized) {
+        'PADI' => CropType.padi,
+        'JAGUNG' => CropType.jagung,
+        'KEDELAI' => CropType.kedelai,
+        _ => null,
+      };
+    }
+
+    return PlantModel(
+      plantId: (json['plant_id'] as String?) ?? '',
+      siteId: json['site_id'] as String?,
+      varietasId: json['varietas_id'] as String?,
+      plantName: json['plant_name'] as String?,
+      plantType: parseCropType(json['plant_type']),
+      plantSpecies: json['plant_species'] as String?,
+      plantDate: parsePlantDateValue(json['plant_date']),
+      plantHarvest: parsePlantDateValue(json['plant_harvest']),
+      plantSts: parsePlantStatusCode(json['plant_sts']),
+      plantCreated: parsePlantDateValue(json['plant_created']),
+      plantUpdate: parsePlantDateValue(json['plant_update']),
+    );
+  }
 
   /// Convert Model to Entity
   Plant toEntity() => Plant(

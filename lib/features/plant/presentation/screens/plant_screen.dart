@@ -5,21 +5,22 @@ import '../../../../core/utils/responsive.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../widgets/plant_detail_card.dart';
 import '../widgets/plant_empty_state.dart';
 import '../widgets/plant_input_form.dart';
-import '../widgets/plant_detail_card.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 
-class PlantScreen extends ConsumerStatefulWidget {
+/// Screen utama fitur tanaman di dashboard.
+/// Menampilkan salah satu dari 4 state:
+///   - [PlantScreenState.loading]  → skeleton
+///   - [PlantScreenState.empty]    → [PlantEmptyState]
+///   - [PlantScreenState.input]    → [PlantInputForm]
+///   - [PlantScreenState.hasData]  → [PlantDetailCard]
+class PlantScreen extends ConsumerWidget {
   const PlantScreen({super.key});
 
   @override
-  ConsumerState<PlantScreen> createState() => _PlantScreenState();
-}
-
-class _PlantScreenState extends ConsumerState<PlantScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final siteId = ref.watch(selectedSiteIdProvider);
     final plantsAsync = ref.watch(plantsProvider);
     final screenState = ref.watch(plantScreenStateProvider);
@@ -27,7 +28,11 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
     if (siteId == null) {
       return const Scaffold(
         body: Center(
-          child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
+          child: DetailScreenSkeleton(
+            infoRowCount: 3,
+            hasDescription: false,
+            headerHeight: 120,
+          ),
         ),
       );
     }
@@ -37,63 +42,95 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
       body: SafeArea(
         child: plantsAsync.when(
           loading: () => const Center(
-            child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
+            child: DetailScreenSkeleton(
+              infoRowCount: 3,
+              hasDescription: false,
+              headerHeight: 120,
+            ),
           ),
-          error: (error, stack) => _buildErrorState(context, error.toString()),
-          data: (plants) => _buildContent(context, plants, screenState, siteId),
+          error: (error, _) => _ErrorState(
+            error: error.toString(),
+            onRetry: () => ref.invalidate(plantsProvider),
+          ),
+          data: (plants) => _PlantContent(
+            plants: plants,
+            siteId: siteId,
+            screenState: screenState,
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildContent(
-    BuildContext context,
-    List<Plant> plants,
-    PlantScreenState screenState,
-    String siteId,
-  ) {
-    PlantScreenState actualState;
-    if (screenState != PlantScreenState.input) {
-      final hasActivePlant = plants.any((p) => p.isActive);
-      actualState = hasActivePlant
-          ? PlantScreenState.hasData
-          : PlantScreenState.empty;
-    } else {
-      actualState = PlantScreenState.input;
-    }
+// ─── Private sub-widgets ──────────────────────────────────────────────────────
+
+class _PlantContent extends ConsumerWidget {
+  final List<Plant> plants;
+  final String siteId;
+  final PlantScreenState screenState;
+
+  const _PlantContent({
+    required this.plants,
+    required this.siteId,
+    required this.screenState,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasActivePlant = plants.any((p) => p.isCurrentPlanting);
+
+    final actualState = _resolveState(screenState, hasActivePlant);
 
     switch (actualState) {
       case PlantScreenState.empty:
         return PlantEmptyState(
-          onAddPlant: () {
-            ref.read(plantScreenStateProvider.notifier).state =
-                PlantScreenState.input;
-          },
+          onAddPlant: () => ref.read(plantScreenStateProvider.notifier).state =
+              PlantScreenState.input,
         );
+
       case PlantScreenState.input:
         return PlantInputForm(
           siteId: siteId,
-          onCancel: () {
-            ref.read(plantScreenStateProvider.notifier).state = plants.any((p) => p.isActive)
-                ? PlantScreenState.hasData
-                : PlantScreenState.empty;
-          },
-          onSuccess: () {
-            ref.read(plantScreenStateProvider.notifier).state =
-                PlantScreenState.hasData;
-          },
+          onCancel: () =>
+              ref.read(plantScreenStateProvider.notifier).state = hasActivePlant
+              ? PlantScreenState.hasData
+              : PlantScreenState.empty,
+          onSuccess: () => ref.read(plantScreenStateProvider.notifier).state =
+              PlantScreenState.hasData,
         );
+
       case PlantScreenState.hasData:
-        final activePlant = plants.firstWhere((p) => p.isActive);
+        final activePlant = plants.firstWhere((p) => p.isCurrentPlanting);
         return PlantDetailCard(plant: activePlant);
+
       case PlantScreenState.loading:
         return const Center(
-          child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),
+          child: DetailScreenSkeleton(
+            infoRowCount: 3,
+            hasDescription: false,
+            headerHeight: 120,
+          ),
         );
     }
   }
 
-  Widget _buildErrorState(BuildContext context, String error) {
+  PlantScreenState _resolveState(PlantScreenState requested, bool hasActive) {
+    if (requested == PlantScreenState.input && !hasActive) {
+      return PlantScreenState.input;
+    }
+    return hasActive ? PlantScreenState.hasData : PlantScreenState.empty;
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.061)),
@@ -109,6 +146,7 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
             Text(
               'Terjadi kesalahan',
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -119,14 +157,32 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
               error,
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(14),
                 color: AppColors.textSecondary,
               ),
             ),
             SizedBox(height: context.rh(0.03)),
             ElevatedButton(
-              onPressed: () => ref.invalidate(plantsProvider),
-              child: const Text('Coba Lagi'),
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+              ),
+              child: Text(
+                'Coba Lagi',
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(14),
+                ),
+              ),
             ),
           ],
         ),

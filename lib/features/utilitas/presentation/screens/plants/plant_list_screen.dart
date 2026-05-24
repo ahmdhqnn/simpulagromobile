@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/providers/permission_guard_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/plant_provider.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_list_item.dart';
@@ -40,8 +41,7 @@ class PlantListScreen extends ConsumerWidget {
             return RefreshIndicator(
               color: const Color(0xFF1B5E20),
               onRefresh: () async {
-                ref.invalidate(utilitasPlantListProvider);
-                await Future.delayed(const Duration(milliseconds: 300));
+                await refreshUtilitasPlantCache(ref);
               },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -117,6 +117,12 @@ class _PlantCard extends ConsumerWidget {
       iconColor: iconColor,
       isActive: plant.isActive,
       onTap: () => _showOptions(context, ref),
+      trailing: IconButton(
+        tooltip: 'Aksi tanaman',
+        onPressed: () => _showOptions(context, ref),
+        icon: const Icon(Icons.more_vert),
+        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      ),
       badges: [
         UtilitasBadge(
           label: plant.cropTypeDisplay,
@@ -140,6 +146,8 @@ class _PlantCard extends ConsumerWidget {
   }
 
   void _showOptions(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.read(isAdminProvider);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -172,8 +180,24 @@ class _PlantCard extends ConsumerWidget {
               ),
             ),
             const Divider(height: 1),
-            if (!plant.isHarvested) ...[
-              const SizedBox.shrink(),
+            PermissionGuard(
+              permission: 'plant:update',
+              child: ListTile(
+                leading: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFF1B5E20),
+                ),
+                title: const Text(
+                  'Edit Tanaman',
+                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/utilitas/plants/${plant.plantId}/edit');
+                },
+              ),
+            ),
+            if (plant.isCurrentPlanting) ...[
               PermissionGuard(
                 permission: 'plant:update',
                 child: ListTile(
@@ -182,7 +206,7 @@ class _PlantCard extends ConsumerWidget {
                     color: Color(0xFFFFA726),
                   ),
                   title: const Text(
-                    'Panen',
+                    'Panen Tanaman',
                     style: TextStyle(
                       color: Color(0xFFFFA726),
                       fontFamily: 'Plus Jakarta Sans',
@@ -195,7 +219,22 @@ class _PlantCard extends ConsumerWidget {
                 ),
               ),
             ],
-            const SizedBox.shrink(),
+            // Delete: hanya Admin
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text(
+                  'Hapus Tanaman',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontFamily: 'Plus Jakarta Sans',
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDelete(context, ref);
+                },
+              ),
             const SizedBox(height: 8),
           ],
         ),
@@ -229,5 +268,27 @@ class _PlantCard extends ConsumerWidget {
     }
   }
 
-  // deletePlant is not supported by the backend, thus _confirmDelete has been deprecated and removed.
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDeleteConfirmationDialog(
+      context,
+      itemName: 'Tanaman',
+      additionalMessage:
+          '"${plant.displayName}" akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    final success = await ref
+        .read(plantFormProvider.notifier)
+        .deletePlant(plant.plantId);
+
+    if (!context.mounted) return;
+
+    if (success) {
+      SnackbarHelper.showSuccess(context, 'Tanaman berhasil dihapus');
+    } else {
+      final error = ref.read(plantFormProvider).error;
+      SnackbarHelper.showError(context, error ?? 'Gagal menghapus tanaman');
+    }
+  }
 }

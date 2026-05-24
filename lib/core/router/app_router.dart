@@ -19,6 +19,7 @@ import '../../features/site/presentation/screens/site_detail_screen.dart';
 import '../../features/site/presentation/screens/site_form_screen.dart';
 import '../../features/plant/presentation/screens/plant_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart';
+import '../../features/plant/presentation/screens/plant_form_screen.dart';
 import '../../features/forum/presentation/screens/forum_screen.dart';
 import '../../features/forum/presentation/screens/liked_posts_screen.dart';
 import '../../features/forum/presentation/screens/my_posts_screen.dart';
@@ -41,19 +42,26 @@ import '../../features/utilitas/presentation/screens/users/user_form_screen.dart
 import '../../features/utilitas/presentation/screens/roles/role_list_screen.dart';
 import '../../features/utilitas/presentation/screens/roles/role_form_screen.dart';
 import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_list_screen.dart';
-import '../../features/plant/presentation/screens/plant_detail_screen.dart' as utilitas_plant_detail;
+import '../../features/plant/presentation/screens/plant_detail_screen.dart'
+    as utilitas_plant_detail;
 import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 // Monitoring Devices
-import '../../features/device/presentation/screens/device_list_screen.dart' as monitoring_device_list;
-import '../../features/device/presentation/screens/device_detail_screen.dart' as monitoring_device_detail;
-import '../../features/device/presentation/screens/device_form_screen.dart' as monitoring_device_form;
+import '../../features/device/presentation/screens/device_list_screen.dart'
+    as monitoring_device_list;
+import '../../features/device/presentation/screens/device_detail_screen.dart'
+    as monitoring_device_detail;
+import '../../features/device/presentation/screens/device_form_screen.dart'
+    as monitoring_device_form;
 
 // Monitoring Sensors
-import '../../features/sensor/presentation/screens/sensor_list_screen.dart' as monitoring_sensor_list;
-import '../../features/sensor/presentation/screens/sensor_detail_screen.dart' as monitoring_sensor_detail;
-import '../../features/sensor/presentation/screens/sensor_form_screen.dart' as monitoring_sensor_form;
+import '../../features/sensor/presentation/screens/sensor_list_screen.dart'
+    as monitoring_sensor_list;
+import '../../features/sensor/presentation/screens/sensor_detail_screen.dart'
+    as monitoring_sensor_detail;
+import '../../features/sensor/presentation/screens/sensor_form_screen.dart'
+    as monitoring_sensor_form;
 
 /// GoRouter dibuat sekali dan tidak di-recreate.
 /// Perubahan auth state ditangani via `refreshListenable`.
@@ -122,14 +130,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/tasks', builder: (_, __) => const TaskListScreen()),
       GoRoute(path: '/task/create', builder: (_, __) => const TaskFormScreen()),
       GoRoute(
-        path: '/task/:id',
-        builder: (_, state) =>
-            TaskDetailScreen(taskId: state.pathParameters['id']!),
-      ),
-      GoRoute(
         path: '/task/:id/edit',
         builder: (_, state) =>
             TaskFormScreen(taskId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/task/:id',
+        builder: (_, state) =>
+            TaskDetailScreen(taskId: state.pathParameters['id']!),
       ),
 
       // Recommendation
@@ -174,20 +182,29 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
 
       // Site
-      GoRoute(
-        path: '/site/:id',
-        builder: (_, state) =>
-            SiteDetailScreen(siteId: state.pathParameters['id']!),
-      ),
       GoRoute(path: '/site/create', builder: (_, __) => const SiteFormScreen()),
       GoRoute(
         path: '/site/:id/edit',
         builder: (_, state) =>
             SiteFormScreen(siteId: state.pathParameters['id']),
       ),
+      GoRoute(
+        path: '/site/:id',
+        builder: (_, state) =>
+            SiteDetailScreen(siteId: state.pathParameters['id']!),
+      ),
 
       // Plant
       GoRoute(path: '/plants', builder: (_, __) => const PlantListScreen()),
+      GoRoute(
+        path: '/plant/create',
+        builder: (_, __) => const PlantFormScreen(),
+      ),
+      GoRoute(
+        path: '/plant/:id/edit',
+        builder: (_, state) =>
+            PlantFormScreen(plantId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/plant/:id',
         builder: (_, state) =>
@@ -329,6 +346,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/utilitas/plants/create',
         builder: (_, __) => const utilitas_plant_form.PlantFormScreen(),
+      ),
+      GoRoute(
+        path: '/utilitas/plants/:id/edit',
+        builder: (_, state) => utilitas_plant_form.PlantFormScreen(
+          plantId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/utilitas/plants/:id',
