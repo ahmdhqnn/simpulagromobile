@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
-import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
+import '../../../../core/error/failures.dart';
 import '../../data/datasources/plant_remote_datasource.dart';
+import '../../data/models/plant_model.dart';
 import '../../data/repositories/plant_repository_impl.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../../domain/entities/plant.dart';
@@ -57,53 +60,79 @@ final getVarietasUseCaseProvider = Provider<GetVarietasUseCase>((ref) {
   return GetVarietasUseCase(ref.watch(plantRepositoryProvider));
 });
 
-// ─── Data providers ───────────────────────────────────────────────────────────
+// ─── List plants (AsyncNotifier) ─────────────────────────────────────────────
 
-/// Semua tanaman untuk site yang dipilih.
-final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
+/// Mengelola daftar tanaman per site — non-autoDispose agar mutation tidak
+/// memicu "Notifier after dispose" saat form ditutup setelah submit.
+class PlantsNotifier extends AsyncNotifier<List<Plant>> {
+  @override
+  Future<List<Plant>> build() async {
+    ref.watch(selectedSiteIdProvider);
+    return _fetchPlants();
+  }
+
+  Future<List<Plant>> _fetchPlants({bool? isOnGoingPlant}) async {
+    final siteId = ref.read(selectedSiteIdProvider);
+    if (siteId == null) return [];
+
+    final useCase = ref.read(getPlantsUseCaseProvider);
+    final result = await useCase(siteId, isOnGoingPlant: isOnGoingPlant);
+    return result.fold(
+      (failure) => throw failure,
+      (plants) => plants,
+    );
+  }
+
+  /// Refresh daftar penuh (semua planting).
+  Future<void> refresh() async {
+    final previous = state.valueOrNull;
+    state = previous == null
+        ? const AsyncValue.loading()
+        : AsyncValue<List<Plant>>.loading().copyWithPrevious(AsyncData(previous));
+
+    state = await AsyncValue.guard(() => _fetchPlants());
+  }
+}
+
+final plantsProvider =
+    AsyncNotifierProvider<PlantsNotifier, List<Plant>>(PlantsNotifier.new);
+
+/// Tanaman aktif via query `isOnGoingPlant=true` (sesuai Swagger).
+final ongoingPlantProvider = FutureProvider<Plant?>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final useCase = ref.watch(getPlantsUseCaseProvider);
-  return ref.retryOnError(() async {
-    final result = await useCase(siteId);
-    return result.fold((f) => throw f, (plants) => plants);
-  });
+  if (siteId == null) return null;
+
+  final result = await ref.read(getPlantsUseCaseProvider)(
+    siteId,
+    isOnGoingPlant: true,
+  );
+  return result.fold((_) => null, (plants) => plants.firstOrNull);
 });
 
-/// Tanaman aktif pertama untuk site yang dipilih.
+/// Tanaman aktif pertama — untuk guard form create & banner.
 final currentPlantProvider = Provider<Plant?>((ref) {
-  return ref
-      .watch(plantsProvider)
-      .whenOrNull(
-        data: (plants) => plants.where((p) => p.isCurrentPlanting).firstOrNull,
-      );
+  return ref.watch(ongoingPlantProvider).valueOrNull;
 });
 
 /// Detail satu tanaman berdasarkan ID.
-/// Non-autoDispose agar bisa di-invalidate secara eksplisit dari notifier
-/// dan tidak throw saat provider masih aktif di screen lain.
 final plantDetailProvider = FutureProvider.family<Plant, String>((
   ref,
   plantId,
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) throw Exception('No site selected');
-  final useCase = ref.watch(getPlantByIdUseCaseProvider);
-  return ref.retryOnError(() async {
-    final result = await useCase(siteId, plantId);
-    return result.fold((f) => throw f, (plant) => plant);
-  });
+
+  final useCase = ref.read(getPlantByIdUseCaseProvider);
+  final result = await useCase(siteId, plantId);
+  return result.fold((failure) => throw failure, (plant) => plant);
 });
 
-/// Semua varietas untuk dropdown.
 final varietasProvider = FutureProvider.autoDispose<List<Varietas>>((
   ref,
 ) async {
   final useCase = ref.watch(getVarietasUseCaseProvider);
-  return ref.retryOnError(() async {
-    final result = await useCase();
-    return result.fold((f) => throw f, (v) => v);
-  });
+  final result = await useCase();
+  return result.fold((failure) => throw failure, (v) => v);
 });
 
 // ─── Plant screen state ───────────────────────────────────────────────────────
@@ -113,6 +142,23 @@ enum PlantScreenState { loading, empty, input, hasData }
 final plantScreenStateProvider = StateProvider<PlantScreenState>((ref) {
   return PlantScreenState.loading;
 });
+
+// ─── Mutation result ──────────────────────────────────────────────────────────
+
+@immutable
+class PlantMutationResult {
+  final bool success;
+  final String? errorMessage;
+  final Plant? plant;
+
+  const PlantMutationResult.success([this.plant])
+    : success = true,
+      errorMessage = null;
+
+  const PlantMutationResult.failure(this.errorMessage)
+    : success = false,
+      plant = null;
+}
 
 // ─── Create plant ─────────────────────────────────────────────────────────────
 
@@ -139,37 +185,56 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
   CreatePlantNotifier(this._useCase, this._ref)
     : super(const CreatePlantState());
 
-  Future<bool> createPlant({
+  Future<PlantMutationResult> createPlant({
     required String siteId,
     required String plantName,
     required String varietasId,
     required CropType plantType,
     required DateTime plantDate,
   }) async {
+    if (!mounted) {
+      return const PlantMutationResult.failure('Form sudah ditutup');
+    }
+
     state = state.copyWith(isLoading: true, error: null);
+
     try {
-      final data = {
-        'plant_name': plantName.trim(),
-        'varietas_id': varietasId.trim(),
-        'plant_type': plantType.name,
-        'plant_date': plantDate.toIso8601String().split('T').first,
-      };
-      debugPrint('📤 createPlant payload: $data (siteId: $siteId)');
-      final result = await _useCase(siteId, data);
-      return await result.fold<Future<bool>>(
-        (f) async {
-          state = state.copyWith(isLoading: false, error: f.message);
-          return false;
+      final payload = PlantWritePayload(
+        plantName: plantName,
+        varietasId: varietasId,
+        plantDate: plantDate,
+        plantType: plantType.name,
+      ).toJson();
+
+      final result = await _useCase(siteId, payload);
+
+      if (!mounted) {
+        return const PlantMutationResult.failure('Form sudah ditutup');
+      }
+
+      return result.fold(
+        (failure) {
+          if (!mounted) {
+            return PlantMutationResult.failure(failure.message);
+          }
+          state = state.copyWith(isLoading: false, error: failure.message);
+          return PlantMutationResult.failure(failure.message);
         },
-        (plant) async {
-          state = CreatePlantState(plant: plant);
-          await refreshPlantCache(_ref);
-          return true;
+        (plant) {
+          if (!mounted) {
+            return PlantMutationResult.success(plant);
+          }
+          state = state.copyWith(isLoading: false, plant: plant, error: null);
+          unawaited(refreshPlantLists(_ref));
+          return PlantMutationResult.success(plant);
         },
       );
     } catch (e) {
+      if (!mounted) {
+        return PlantMutationResult.failure(e.toString());
+      }
       state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+      return PlantMutationResult.failure(e.toString());
     }
   }
 
@@ -177,9 +242,7 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
 }
 
 final createPlantProvider =
-    StateNotifierProvider.autoDispose<CreatePlantNotifier, CreatePlantState>((
-      ref,
-    ) {
+    StateNotifierProvider<CreatePlantNotifier, CreatePlantState>((ref) {
       return CreatePlantNotifier(ref.watch(createPlantUseCaseProvider), ref);
     });
 
@@ -208,7 +271,7 @@ class UpdatePlantNotifier extends StateNotifier<UpdatePlantState> {
   UpdatePlantNotifier(this._useCase, this._ref)
     : super(const UpdatePlantState());
 
-  Future<bool> updatePlant({
+  Future<PlantMutationResult> updatePlant({
     required String siteId,
     required String plantId,
     required String plantName,
@@ -216,65 +279,104 @@ class UpdatePlantNotifier extends StateNotifier<UpdatePlantState> {
     required CropType plantType,
     required DateTime plantDate,
   }) async {
+    if (!mounted) {
+      return const PlantMutationResult.failure('Form sudah ditutup');
+    }
+
     state = state.copyWith(isLoading: true, error: null);
+
     try {
-      final data = {
-        'plant_name': plantName.trim(),
-        'varietas_id': varietasId.trim(),
-        'plant_type': plantType.name,
-        'plant_date': plantDate.toIso8601String().split('T').first,
-      };
-      debugPrint(
-        '📤 updatePlant payload: $data (siteId: $siteId, plantId: $plantId)',
+      final payload = PlantWritePayload(
+        plantName: plantName,
+        varietasId: varietasId,
+        plantDate: plantDate,
+        plantType: plantType.name,
+      ).toJson();
+
+      final result = await _useCase(
+        siteId.trim(),
+        plantId.trim(),
+        payload,
       );
-      final result = await _useCase(siteId, plantId, data);
-      return await result.fold<Future<bool>>(
-        (f) async {
-          state = state.copyWith(isLoading: false, error: f.message);
-          return false;
+
+      if (!mounted) {
+        return const PlantMutationResult.failure('Form sudah ditutup');
+      }
+
+      return result.fold(
+        (failure) {
+          final message = _mapUpdateFailureMessage(failure);
+          if (!mounted) {
+            return PlantMutationResult.failure(message);
+          }
+          state = state.copyWith(isLoading: false, error: message);
+          return PlantMutationResult.failure(message);
         },
-        (plant) async {
-          state = UpdatePlantState(plant: plant);
-          await refreshPlantCache(_ref, plantId: plantId);
-          return true;
+        (plant) {
+          if (!mounted) {
+            return PlantMutationResult.success(plant);
+          }
+          state = state.copyWith(isLoading: false, plant: plant, error: null);
+          unawaited(refreshPlantLists(_ref, plantId: plantId));
+          return PlantMutationResult.success(plant);
         },
       );
     } catch (e) {
+      if (!mounted) {
+        return PlantMutationResult.failure(e.toString());
+      }
       state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+      return PlantMutationResult.failure(e.toString());
     }
   }
 
   void reset() => state = const UpdatePlantState();
 }
 
+String _mapUpdateFailureMessage(Failure failure) {
+  if (failure is ServerFailure && failure.statusCode == 500) {
+    return 'Server gagal memproses update (HTTP 500). '
+        'Payload aplikasi sudah sesuai Swagger — mohon tim backend cek log handler '
+        'PUT /sites/{siteId}/plants/{plantId}.';
+  }
+  return failure.message;
+}
+
 final updatePlantFormProvider =
-    StateNotifierProvider.autoDispose<UpdatePlantNotifier, UpdatePlantState>((
-      ref,
-    ) {
+    StateNotifierProvider<UpdatePlantNotifier, UpdatePlantState>((ref) {
       return UpdatePlantNotifier(ref.watch(updatePlantUseCaseProvider), ref);
     });
 
-/// Refresh semua provider yang memegang data plant dan tunggu fetch baru selesai.
-///
-/// Dipakai setelah create/update/harvest/delete supaya screen yang sedang aktif
-/// tidak menampilkan cache lama saat kembali dari form atau action sheet.
+// ─── Cache refresh ────────────────────────────────────────────────────────────
+
+/// Refresh list + detail setelah create / update / harvest / delete.
 Future<void> refreshPlantCache(
   dynamic ref, {
   String? plantId,
   bool refreshDetail = true,
 }) async {
-  if (ref is Ref || ref is WidgetRef) {
-    ref.invalidate(plantsProvider);
-    if (plantId != null) {
-      ref.invalidate(plantDetailProvider(plantId));
-    }
-  } else {
+  await refreshPlantLists(ref, plantId: plantId, refreshDetail: refreshDetail);
+}
+
+Future<void> refreshPlantLists(
+  dynamic ref, {
+  String? plantId,
+  bool refreshDetail = true,
+}) async {
+  if (ref is! Ref && ref is! WidgetRef) {
     throw ArgumentError('ref must be either Ref or WidgetRef');
   }
 
+  ref.invalidate(ongoingPlantProvider);
+
+  if (plantId != null && refreshDetail) {
+    ref.invalidate(plantDetailProvider(plantId));
+  }
+
+  await ref.read(plantsProvider.notifier).refresh();
+
   final futures = <Future<Object?>>[
-    _safe(ref.read(plantsProvider.future)),
+    _safe(ref.read(ongoingPlantProvider.future)),
     if (plantId != null && refreshDetail)
       _safe(ref.read(plantDetailProvider(plantId).future)),
   ];

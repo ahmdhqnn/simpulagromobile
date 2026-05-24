@@ -185,6 +185,10 @@ class _RetryInterceptor extends Interceptor {
     // Don't retry if it was already handled by auth interceptor
     if (err.response?.statusCode == 401) return false;
 
+    // Jangan retry POST/PUT/PATCH/DELETE — bisa memicu duplikasi / 500 berulang
+    final method = err.requestOptions.method.toUpperCase();
+    if (method != 'GET' && method != 'HEAD') return false;
+
     switch (err.type) {
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:

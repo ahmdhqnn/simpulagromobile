@@ -16,7 +16,7 @@ import '../providers/plant_provider.dart';
 /// Setiap card memiliki tombol more (⋮) dengan aksi:
 ///   - Edit Tanaman
 ///   - Panen Tanaman (hanya jika isCurrentPlanting)
-///   - Hapus Tanaman (hanya Admin)
+///   - Delete Tanaman (hanya Admin)
 class PlantListScreen extends ConsumerWidget {
   const PlantListScreen({super.key});
 
@@ -519,7 +519,7 @@ class _PlantActionsSheet extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
               title: Text(
-                'Hapus Tanaman',
+                'Delete Tanaman',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(14),

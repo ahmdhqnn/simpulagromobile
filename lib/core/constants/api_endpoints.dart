@@ -89,12 +89,17 @@ class ApiEndpoints {
   // ═══════════════════════════════════════════════════════════
   // PLANT ENDPOINTS (Site-scoped)
   // ═══════════════════════════════════════════════════════════
+  /// GET    /sites/{siteId}/plants?isOnGoingPlant=
+  /// POST   /sites/{siteId}/plants
   static String plants(String siteId) => '/sites/$siteId/plants';
+
+  /// GET    /sites/{siteId}/plants/{plantId}
+  /// PUT    /sites/{siteId}/plants/{plantId}
+  /// DELETE /sites/{siteId}/plants/{plantId}
   static String plantById(String siteId, String plantId) =>
       '/sites/$siteId/plants/$plantId';
 
-  /// POST /sites/{siteId}/plants/{plantId} — harvest action
-  /// Sesuai dokumentasi: POST ke plantById adalah harvest operation
+  /// POST /sites/{siteId}/plants/{plantId}/harvest
   static String harvestPlant(String siteId, String plantId) =>
       '/sites/$siteId/plants/$plantId/harvest';
 

@@ -7,8 +7,11 @@ class GetPlantsUseCase {
   final PlantRepository repository;
   GetPlantsUseCase(this.repository);
 
-  Future<Either<Failure, List<Plant>>> call(String siteId) async {
-    return await repository.getPlants(siteId);
+  Future<Either<Failure, List<Plant>>> call(
+    String siteId, {
+    bool? isOnGoingPlant,
+  }) async {
+    return repository.getPlants(siteId, isOnGoingPlant: isOnGoingPlant);
   }
 }
 

@@ -38,7 +38,7 @@ void main() {
   group('getPlants', () {
     test('returns Right(List<Plant>) on success', () async {
       when(
-        () => mockDataSource.getPlants(siteId),
+        () => mockDataSource.getPlants(siteId, isOnGoingPlant: any(named: 'isOnGoingPlant')),
       ).thenAnswer((_) async => [plantModel]);
 
       final result = await repository.getPlants(siteId);
@@ -52,7 +52,12 @@ void main() {
     });
 
     test('returns Left(NetworkFailure) on connection error', () async {
-      when(() => mockDataSource.getPlants(siteId)).thenThrow(
+      when(
+        () => mockDataSource.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
+      ).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: ''),
           type: DioExceptionType.connectionError,
@@ -70,7 +75,7 @@ void main() {
 
     test('returns Left(UnknownFailure) on unexpected error', () async {
       when(
-        () => mockDataSource.getPlants(siteId),
+        () => mockDataSource.getPlants(siteId, isOnGoingPlant: any(named: 'isOnGoingPlant')),
       ).thenThrow(Exception('Unexpected'));
 
       final result = await repository.getPlants(siteId);
@@ -260,16 +265,16 @@ void main() {
   // ─── harvestPlant ─────────────────────────────────────────────────────────
 
   group('harvestPlant', () {
-    test('returns Right(null) on success', () async {
+    test('returns Right(Plant) on success', () async {
       when(
         () => mockDataSource.harvestPlant(siteId, plantId),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => plantModel);
 
       final result = await repository.harvestPlant(siteId, plantId);
 
       expect(result.isRight(), true);
-      result.fold((_) => fail('Expected Right'), (_) {
-        /* void — success */
+      result.fold((_) => fail('Expected Right'), (harvested) {
+        expect(harvested.plantId, plantId);
       });
     });
 
