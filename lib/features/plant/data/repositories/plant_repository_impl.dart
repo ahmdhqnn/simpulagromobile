@@ -14,9 +14,15 @@ class PlantRepositoryImpl implements PlantRepository {
   PlantRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<Failure, List<Plant>>> getPlants(String siteId) async {
+  Future<Either<Failure, List<Plant>>> getPlants(
+    String siteId, {
+    bool? isOnGoingPlant,
+  }) async {
     try {
-      final models = await remoteDataSource.getPlants(siteId);
+      final models = await remoteDataSource.getPlants(
+        siteId,
+        isOnGoingPlant: isOnGoingPlant,
+      );
       return Right(models.map((m) => m.toEntity()).toList());
     } on UnsupportedBackendEndpointException catch (e) {
       return Left(UnsupportedBackendEndpointFailure(e.message));
@@ -88,13 +94,13 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
-  Future<Either<Failure, void>> harvestPlant(
+  Future<Either<Failure, Plant>> harvestPlant(
     String siteId,
     String plantId,
   ) async {
     try {
-      await remoteDataSource.harvestPlant(siteId, plantId);
-      return const Right(null);
+      final model = await remoteDataSource.harvestPlant(siteId, plantId);
+      return Right(model.toEntity());
     } on UnsupportedBackendEndpointException catch (e) {
       return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {

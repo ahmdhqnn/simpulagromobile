@@ -8,6 +8,7 @@ import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/plant_provider.dart';
 import '../widgets/plant_detail_content_widget.dart';
 
@@ -243,7 +244,7 @@ class PlantDetailScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: const Text(
-                  'Hapus Tanaman',
+                  'Delete Tanaman',
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     color: Colors.red,
@@ -327,7 +328,8 @@ class PlantDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     dynamic plant,
   ) async {
-    final siteId = plant.siteId as String?;
+    final siteId =
+        (plant.siteId as String?) ?? ref.read(selectedSiteIdProvider);
     final currentPlantId = plant.plantId as String?;
 
     if (siteId == null || currentPlantId == null) {
@@ -393,7 +395,8 @@ class PlantDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     dynamic plant,
   ) async {
-    final siteId = plant.siteId as String?;
+    final siteId =
+        (plant.siteId as String?) ?? ref.read(selectedSiteIdProvider);
     final currentPlantId = plant.plantId as String?;
 
     if (siteId == null || currentPlantId == null) {

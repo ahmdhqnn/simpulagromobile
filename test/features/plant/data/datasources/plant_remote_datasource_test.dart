@@ -26,6 +26,11 @@ void main() {
     'plant_sts': 1,
   };
 
+  setUpAll(() {
+    registerFallbackValue(Options());
+    registerFallbackValue(RequestOptions(path: '/'));
+  });
+
   setUp(() {
     mockDio = MockDio();
     datasource = PlantRemoteDataSource(mockDio);
@@ -33,7 +38,13 @@ void main() {
 
   group('PlantRemoteDataSource.getPlants', () {
     test('returns list of PlantModel on success', () async {
-      when(() => mockDio.get(ApiEndpoints.plants(siteId))).thenAnswer(
+      when(
+        () => mockDio.get(
+          ApiEndpoints.plants(siteId),
+          queryParameters: any(named: 'queryParameters'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
         (_) async => Response(
           data: {
             'data': [plantJson],
@@ -51,7 +62,13 @@ void main() {
     });
 
     test('throws on DioException', () async {
-      when(() => mockDio.get(ApiEndpoints.plants(siteId))).thenThrow(
+      when(
+        () => mockDio.get(
+          ApiEndpoints.plants(siteId),
+          queryParameters: any(named: 'queryParameters'),
+          options: any(named: 'options'),
+        ),
+      ).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: ApiEndpoints.plants(siteId)),
           type: DioExceptionType.connectionError,
@@ -65,7 +82,10 @@ void main() {
   group('PlantRemoteDataSource.getPlantById', () {
     test('returns PlantModel on success', () async {
       when(
-        () => mockDio.get(ApiEndpoints.plantById(siteId, plantId)),
+        () => mockDio.get(
+          ApiEndpoints.plantById(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
           data: {'data': plantJson},
@@ -84,7 +104,10 @@ void main() {
 
     test('throws ServerFailure when data is null', () async {
       when(
-        () => mockDio.get(ApiEndpoints.plantById(siteId, plantId)),
+        () => mockDio.get(
+          ApiEndpoints.plantById(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
           data: {'data': null},
@@ -112,8 +135,11 @@ void main() {
 
     test('returns PlantModel on success', () async {
       when(
-        () =>
-            mockDio.post(ApiEndpoints.plants(siteId), data: any(named: 'data')),
+        () => mockDio.post(
+          ApiEndpoints.plants(siteId),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
           data: {'data': plantJson},
@@ -141,6 +167,7 @@ void main() {
         () => mockDio.put(
           ApiEndpoints.plantById(siteId, plantId),
           data: any(named: 'data'),
+          options: any(named: 'options'),
         ),
       ).thenAnswer(
         (_) async => Response(
@@ -161,12 +188,19 @@ void main() {
   });
 
   group('PlantRemoteDataSource.harvestPlant', () {
-    test('completes without error on success', () async {
+    test('returns PlantModel on success', () async {
       when(
-        () => mockDio.post(ApiEndpoints.harvestPlant(siteId, plantId)),
+        () => mockDio.post(
+          ApiEndpoints.harvestPlant(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
-          data: {'success': true, 'message': 'Plant harvested successfully'},
+          data: {
+            'success': true,
+            'message': 'Berhasil',
+            'data': plantJson,
+          },
           statusCode: 200,
           requestOptions: RequestOptions(
             path: ApiEndpoints.harvestPlant(siteId, plantId),
@@ -174,12 +208,17 @@ void main() {
         ),
       );
 
-      await expectLater(datasource.harvestPlant(siteId, plantId), completes);
+      final result = await datasource.harvestPlant(siteId, plantId);
+
+      expect(result.plantId, plantId);
     });
 
     test('throws ServerFailure when success is false', () async {
       when(
-        () => mockDio.post(ApiEndpoints.harvestPlant(siteId, plantId)),
+        () => mockDio.post(
+          ApiEndpoints.harvestPlant(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
           data: {'success': false, 'message': 'Already harvested'},
@@ -200,7 +239,10 @@ void main() {
   group('PlantRemoteDataSource.deletePlant', () {
     test('completes without error on success', () async {
       when(
-        () => mockDio.delete(ApiEndpoints.plantById(siteId, plantId)),
+        () => mockDio.delete(
+          ApiEndpoints.plantById(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenAnswer(
         (_) async => Response(
           data: {'success': true, 'message': 'Plant deleted successfully'},
@@ -216,7 +258,10 @@ void main() {
 
     test('throws DioException on 403 (non-admin)', () async {
       when(
-        () => mockDio.delete(ApiEndpoints.plantById(siteId, plantId)),
+        () => mockDio.delete(
+          ApiEndpoints.plantById(siteId, plantId),
+          options: any(named: 'options'),
+        ),
       ).thenThrow(
         DioException(
           requestOptions: RequestOptions(

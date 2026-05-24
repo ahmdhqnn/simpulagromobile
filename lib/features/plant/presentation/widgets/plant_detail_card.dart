@@ -19,7 +19,7 @@ import 'growth_phase_button.dart';
 /// Icon more (···) di pojok kanan atas membuka bottom sheet aksi:
 ///   - Edit Tanaman
 ///   - Panen Tanaman (hanya jika isCurrentPlanting)
-///   - Hapus Tanaman (hanya Admin)
+///   - Delete Tanaman (hanya Admin)
 class PlantDetailCard extends ConsumerWidget {
   final Plant plant;
 
@@ -123,11 +123,12 @@ class PlantDetailCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
 
-    result.fold(
-      (f) => SnackbarHelper.showError(context, 'Gagal panen: ${f.message}'),
-      (_) {
-        ref.invalidate(plantsProvider);
-        ref.invalidate(plantDetailProvider(plant.plantId));
+    await result.fold<Future<void>>(
+      (f) async =>
+          SnackbarHelper.showError(context, 'Gagal panen: ${f.message}'),
+      (_) async {
+        await refreshPlantCache(ref, plantId: plant.plantId);
+        if (!context.mounted) return;
         SnackbarHelper.showSuccess(
           context,
           '"${plant.displayName}" berhasil ditandai sudah panen',
@@ -159,10 +160,16 @@ class PlantDetailCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
 
-    result.fold(
-      (f) => SnackbarHelper.showError(context, 'Gagal hapus: ${f.message}'),
-      (_) {
-        ref.invalidate(plantsProvider);
+    await result.fold<Future<void>>(
+      (f) async =>
+          SnackbarHelper.showError(context, 'Gagal hapus: ${f.message}'),
+      (_) async {
+        await refreshPlantCache(
+          ref,
+          plantId: plant.plantId,
+          refreshDetail: false,
+        );
+        if (!context.mounted) return;
         SnackbarHelper.showSuccess(
           context,
           '"${plant.displayName}" berhasil dihapus',
@@ -354,7 +361,7 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-/// Bottom sheet aksi tanaman (Edit / Panen / Hapus)
+/// Bottom sheet aksi tanaman (Edit / Panen / Delete)
 class _PlantActionsSheet extends StatelessWidget {
   final Plant plant;
   final bool isAdmin;
@@ -429,12 +436,12 @@ class _PlantActionsSheet extends StatelessWidget {
               ),
               onTap: onHarvest,
             ),
-          // Hapus (hanya Admin)
+          // Delete (hanya Admin)
           if (onDelete != null)
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
               title: Text(
-                'Hapus Tanaman',
+                'Delete Tanaman',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(14),

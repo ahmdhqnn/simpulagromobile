@@ -41,7 +41,10 @@ void main() {
 
     test('delegates to repository.getPlants and returns result', () async {
       when(
-        () => mockRepository.getPlants(siteId),
+        () => mockRepository.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
       ).thenAnswer((_) async => Right([plant]));
 
       final result = await useCase(siteId);
@@ -51,12 +54,20 @@ void main() {
         (_) => fail('Expected Right'),
         (plants) => expect(plants.first.plantId, plantId),
       );
-      verify(() => mockRepository.getPlants(siteId)).called(1);
+      verify(
+        () => mockRepository.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
+      ).called(1);
     });
 
     test('propagates failure from repository', () async {
       when(
-        () => mockRepository.getPlants(siteId),
+        () => mockRepository.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
       ).thenAnswer((_) async => const Left(NetworkFailure('No connection')));
 
       final result = await useCase(siteId);
@@ -212,14 +223,18 @@ void main() {
 
     setUp(() => useCase = HarvestPlantUseCase(mockRepository));
 
-    test('delegates to repository.harvestPlant and returns void', () async {
+    test('delegates to repository.harvestPlant and returns plant', () async {
       when(
         () => mockRepository.harvestPlant(siteId, plantId),
-      ).thenAnswer((_) async => const Right(null));
+      ).thenAnswer((_) async => Right(plant));
 
       final result = await useCase(siteId, plantId);
 
       expect(result.isRight(), true);
+      result.fold(
+        (_) => fail('Expected Right'),
+        (harvested) => expect(harvested.plantId, plantId),
+      );
       verify(() => mockRepository.harvestPlant(siteId, plantId)).called(1);
     });
 

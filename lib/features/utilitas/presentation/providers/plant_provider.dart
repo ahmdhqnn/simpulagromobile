@@ -219,7 +219,7 @@ Future<void> refreshUtilitasPlantCache(
 }) async {
   if (ref is Ref || ref is WidgetRef) {
     ref.invalidate(utilitasPlantListProvider);
-    if (plantId != null) {
+    if (plantId != null && refreshDetail) {
       ref.invalidate(utilitasPlantDetailProvider(plantId));
     }
   } else {

@@ -166,6 +166,55 @@ void main() {
       });
     });
 
+    // ─── toJson / PlantWritePayload ───────────────────────────────────────────
+
+    group('toJson', () {
+      test('serializes plant_date as YYYY-MM-DD', () {
+        final model = PlantModel(
+          plantId: 'P1',
+          plantDate: DateTime(2026, 5, 1, 14, 30),
+        );
+
+        final json = model.toJson();
+
+        expect(json['plant_date'], '2026-05-01');
+      });
+    });
+
+    group('PlantWritePayload', () {
+      test('fromMap produces swagger-safe body', () {
+        final payload = PlantWritePayload.fromMap({
+          'plant_name': ' Padi Demo ',
+          'varietas_id': 'VAR_001',
+          'plant_type': 'padi',
+          'plant_date': '2026-05-01T00:00:00.000Z',
+        });
+
+        expect(payload.toJson(), {
+          'plant_name': 'Padi Demo',
+          'varietas_id': 'VAR_001',
+          'plant_type': 'PADI',
+          'plant_date': '2026-05-01',
+        });
+      });
+
+      test('strips read-only fields from raw map', () {
+        final payload = PlantWritePayload.fromMap({
+          'plant_id': 'SHOULD_NOT_SEND',
+          'site_id': 'SITE_001',
+          'plant_name': 'Padi',
+          'varietas_id': 'VAR_001',
+          'plant_date': '2026-05-01',
+          'plant_sts': 1,
+        });
+
+        final body = payload.toJson();
+        expect(body.containsKey('plant_id'), false);
+        expect(body.containsKey('site_id'), false);
+        expect(body.containsKey('plant_sts'), false);
+      });
+    });
+
     // ─── fromEntity ─────────────────────────────────────────────────────────
 
     group('fromEntity', () {

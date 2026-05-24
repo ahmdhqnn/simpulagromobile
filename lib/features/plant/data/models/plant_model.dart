@@ -10,6 +10,95 @@ import '../../domain/plant_type_validator.dart';
 part 'plant_model.freezed.dart';
 part 'plant_model.g.dart';
 
+/// Format tanggal untuk request API: `YYYY-MM-DD` (PlantCreateRequest).
+String formatPlantDateForApi(DateTime date) {
+  final normalized = DateTime(date.year, date.month, date.day);
+  final y = normalized.year.toString().padLeft(4, '0');
+  final m = normalized.month.toString().padLeft(2, '0');
+  final d = normalized.day.toString().padLeft(2, '0');
+  return '$y-$m-$d';
+}
+
+/// Body POST/PUT plant — hanya field yang diizinkan Swagger `PlantCreateRequest`.
+@immutable
+class PlantWritePayload {
+  const PlantWritePayload({
+    required this.plantName,
+    required this.varietasId,
+    required this.plantDate,
+    this.plantType,
+  });
+
+  final String plantName;
+  final String varietasId;
+  final DateTime plantDate;
+  final String? plantType;
+
+  /// Normalisasi map dari UI/provider ke payload aman sebelum dikirim ke API.
+  factory PlantWritePayload.fromMap(Map<String, dynamic> raw) {
+    final name = (raw['plant_name'] as String?)?.trim() ?? '';
+    final varietas = (raw['varietas_id'] as String?)?.trim() ?? '';
+    final type = (raw['plant_type'] as String?)?.trim();
+
+    final dateRaw = raw['plant_date'];
+    final DateTime? parsedDate = dateRaw is DateTime
+        ? dateRaw
+        : parsePlantDateValue(dateRaw);
+
+    if (name.isEmpty) {
+      throw const FormatException('plant_name wajib diisi');
+    }
+    if (varietas.isEmpty) {
+      throw const FormatException('varietas_id wajib diisi');
+    }
+    if (parsedDate == null) {
+      throw const FormatException('plant_date wajib dan harus valid (YYYY-MM-DD)');
+    }
+
+    return PlantWritePayload(
+      plantName: name,
+      varietasId: varietas,
+      plantDate: parsedDate,
+      plantType: type?.isNotEmpty == true ? type : null,
+    );
+  }
+
+  factory PlantWritePayload.fromEntity(Plant entity) {
+    final name = entity.plantName?.trim() ?? '';
+    final varietas = entity.varietasId?.trim() ?? '';
+    final date = entity.plantDate;
+
+    if (name.isEmpty || varietas.isEmpty || date == null) {
+      throw const FormatException(
+        'Plant entity tidak lengkap untuk request create/update',
+      );
+    }
+
+    return PlantWritePayload(
+      plantName: name,
+      varietasId: varietas,
+      plantDate: date,
+      plantType: entity.plantType?.name,
+    );
+  }
+
+  /// Hanya kirim field yang diterima backend; hindari `plant_id`, `site_id`, dll.
+  Map<String, dynamic> toJson() {
+    final body = <String, dynamic>{
+      'plant_name': plantName,
+      'varietas_id': varietasId,
+      'plant_date': formatPlantDateForApi(plantDate),
+    };
+
+    final type = plantType?.trim();
+    if (type != null && type.isNotEmpty) {
+      body['plant_type'] = type.toUpperCase();
+    }
+
+    return body;
+  }
+}
+
 @freezed
 class PlantModel with _$PlantModel {
   const PlantModel._();
@@ -26,6 +115,7 @@ class PlantModel with _$PlantModel {
     @JsonKey(name: 'plant_sts') int? plantSts,
   }) = _PlantModel;
 
+  /// Parse response backend — aman untuk ISO (`2026-05-01T00:00:00.000Z`) dan `YYYY-MM-DD`.
   factory PlantModel.fromJson(Map<String, dynamic> json) {
     var parsedSts = parsePlantStatusCode(json['plant_sts']);
     if (parsedSts == null && json.containsKey('status')) {
@@ -44,6 +134,24 @@ class PlantModel with _$PlantModel {
       plantSts: parsedSts,
     );
   }
+
+  /// Serialisasi model — `plant_date` / `plant_harvest` dikirim sebagai `YYYY-MM-DD`.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      if (plantId.isNotEmpty) 'plant_id': plantId,
+      if (siteId != null) 'site_id': siteId,
+      if (varietasId != null) 'varietas_id': varietasId,
+      if (plantName != null) 'plant_name': plantName,
+      if (plantType != null) 'plant_type': plantType,
+      if (plantSpecies != null) 'plant_species': plantSpecies,
+      if (plantDate != null) 'plant_date': formatPlantDateForApi(plantDate!),
+      if (plantHarvest != null) 'plant_harvest': formatPlantDateForApi(plantHarvest!),
+      if (plantSts != null) 'plant_sts': plantSts,
+    };
+  }
+
+  /// Payload create/update sesuai Swagger dari model ini.
+  PlantWritePayload toWritePayload() => PlantWritePayload.fromEntity(toEntity());
 
   /// Convert Model to Entity
   Plant toEntity() {

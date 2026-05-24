@@ -60,6 +60,11 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   @override
   Widget build(BuildContext context) {
     final activePlant = ref.watch(currentPlantProvider);
+    final createState = ref.watch(createPlantProvider);
+    final updateState = ref.watch(updatePlantFormProvider);
+    final isProviderSubmitting = _isEditMode
+        ? updateState.isLoading
+        : createState.isLoading;
     final hasActivePlant = !_isEditMode && activePlant != null;
     if (!_isEditMode) {
       _prefillVarietasFromHistory(ref.watch(plantsProvider).valueOrNull ?? []);
@@ -87,9 +92,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
               const SizedBox(height: 24),
 
-              const Text(
+              Text(
                 _isEditMode ? 'Edit Planting' : 'Add First Planting',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w400,
@@ -217,7 +222,10 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                           ),
                           _buildCircleButton(
                             svgPath: 'assets/icons/check-icon.svg',
-                            onTap: _isSubmitting || hasActivePlant
+                            onTap:
+                                _isSubmitting ||
+                                    isProviderSubmitting ||
+                                    hasActivePlant
                                 ? null
                                 : _submitForm,
                           ),
@@ -396,15 +404,15 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     if (!_isEditMode) {
       Plant? activePlant;
       try {
-        final plants = await ref.read(plantsProvider.future);
-        for (final plant in plants) {
-          if (plant.isCurrentPlanting) {
-            activePlant = plant;
-            break;
-          }
-        }
+        final result = await ref.read(getPlantsUseCaseProvider)(
+          widget.siteId,
+          isOnGoingPlant: true,
+        );
+        activePlant = result.fold((_) => null, (plants) => plants.firstOrNull);
       } catch (_) {
-        activePlant = ref.read(currentPlantProvider);
+        if (mounted) {
+          activePlant = ref.read(currentPlantProvider);
+        }
       }
 
       if (!mounted) return;
@@ -422,45 +430,55 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       }
     }
 
+    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
-    final success = _isEditMode
-        ? await ref
-              .read(updatePlantFormProvider.notifier)
-              .updatePlant(
-                siteId: widget.siteId,
-                plantId: widget.initialPlant!.plantId,
-                plantName: _plantNameController.text.trim(),
-                varietasId: _varietasIdController.text.trim(),
-                plantType: _selectedPlantType!,
-                plantDate: _plantDate,
-              )
-        : await ref
-              .read(createPlantProvider.notifier)
-              .createPlant(
-                siteId: widget.siteId,
-                plantName: _plantNameController.text.trim(),
-                varietasId: _varietasIdController.text.trim(),
-                plantType: _selectedPlantType!,
-                plantDate: _plantDate,
-              );
+    final PlantMutationResult result;
+    if (_isEditMode) {
+      final plant = widget.initialPlant!;
+      final siteId = (plant.siteId?.trim().isNotEmpty == true)
+          ? plant.siteId!.trim()
+          : widget.siteId;
+      result = await ref
+          .read(updatePlantFormProvider.notifier)
+          .updatePlant(
+            siteId: siteId,
+            plantId: plant.plantId.trim(),
+            plantName: _plantNameController.text.trim(),
+            varietasId: _varietasIdController.text.trim(),
+            plantType: _selectedPlantType!,
+            plantDate: _plantDate,
+          );
+    } else {
+      result = await ref.read(createPlantProvider.notifier).createPlant(
+        siteId: widget.siteId,
+        plantName: _plantNameController.text.trim(),
+        varietasId: _varietasIdController.text.trim(),
+        plantType: _selectedPlantType!,
+        plantDate: _plantDate,
+      );
+    }
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    if (success) {
+    if (result.success) {
+      if (!mounted) return;
       widget.onSuccess();
-    } else {
-      final errorMsg =
-          (_isEditMode
-              ? ref.read(updatePlantFormProvider).error
-              : ref.read(createPlantProvider).error) ??
-          (_isEditMode
-              ? 'Gagal memperbarui tanaman. Silakan coba lagi.'
-              : 'Gagal menambahkan tanaman. Silakan coba lagi.');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
-      );
+      return;
     }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.errorMessage ??
+              (_isEditMode
+                  ? 'Gagal memperbarui tanaman. Silakan coba lagi.'
+                  : 'Gagal menambahkan tanaman. Silakan coba lagi.'),
+        ),
+        backgroundColor: AppColors.error,
+      ),
+    );
   }
 }
