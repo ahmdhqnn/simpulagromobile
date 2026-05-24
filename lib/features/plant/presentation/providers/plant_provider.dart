@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
@@ -60,11 +61,15 @@ final plantsProvider = FutureProvider.autoDispose<List<Plant>>((ref) async {
   });
 });
 
-/// First plant for the selected site (most recent)
+/// First plant for the selected site (most recent active plant)
 final currentPlantProvider = Provider<Plant?>((ref) {
   final plantsAsync = ref.watch(plantsProvider);
   return plantsAsync.whenOrNull(
-    data: (plants) => plants.isNotEmpty ? plants.first : null,
+    data: (plants) {
+      if (plants.isEmpty) return null;
+      final activePlants = plants.where((p) => p.isActive).toList();
+      return activePlants.isNotEmpty ? activePlants.first : null;
+    },
   );
 });
 
@@ -115,19 +120,19 @@ class CreatePlantNotifier extends StateNotifier<CreatePlantState> {
     required String plantName,
     required String varietasId,
     required CropType plantType,
-    String? plantSpecies,
     required DateTime plantDate,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _useCase(siteId, {
+      final data = {
         'plant_name': plantName,
         'varietas_id': varietasId,
         'plant_type': plantType.name,
-        'plant_species': plantSpecies,
         'plant_date': plantDate.toIso8601String().split('T').first,
-      });
+      };
+      debugPrint('📤 createPlant payload: $data (siteId: $siteId)');
+      final result = await _useCase(siteId, data);
 
       return result.fold(
         (failure) {

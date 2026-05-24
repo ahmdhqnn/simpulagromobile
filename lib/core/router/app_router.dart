@@ -8,7 +8,7 @@ import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/task/presentation/screens/task_list_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
 import '../../features/task/presentation/screens/task_form_screen.dart';
-import '../../features/recommendation/presentation/screens/recommendation_list_screen.dart';
+import '../../features/recommendation/presentation/screens/recommendation_tabs_screen.dart';
 import '../../features/recommendation/presentation/screens/recommendation_detail_screen.dart';
 import '../../features/phase/presentation/screens/phase_list_screen.dart';
 import '../../features/phase/presentation/screens/phase_detail_screen.dart';
@@ -40,8 +40,8 @@ import '../../features/utilitas/presentation/screens/users/user_list_screen.dart
 import '../../features/utilitas/presentation/screens/users/user_form_screen.dart';
 import '../../features/utilitas/presentation/screens/roles/role_list_screen.dart';
 import '../../features/utilitas/presentation/screens/roles/role_form_screen.dart';
-import '../../features/utilitas/presentation/screens/permissions/permission_list_screen.dart';
 import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_list_screen.dart';
+import '../../features/plant/presentation/screens/plant_detail_screen.dart' as utilitas_plant_detail;
 import '../../features/utilitas/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
@@ -135,7 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Recommendation
       GoRoute(
         path: '/recommendations',
-        builder: (_, __) => const RecommendationListScreen(),
+        builder: (_, __) => const RecommendationTabsScreen(),
       ),
       GoRoute(
         path: '/recommendation/:id',
@@ -331,15 +331,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const utilitas_plant_form.PlantFormScreen(),
       ),
       GoRoute(
-        path: '/utilitas/plants/:id/edit',
-        builder: (_, state) => utilitas_plant_form.PlantFormScreen(
-          plantId: state.pathParameters['id'],
-        ),
-      ),
-      GoRoute(
         path: '/utilitas/plants/:id',
-        builder: (_, state) => utilitas_plant_form.PlantFormScreen(
-          plantId: state.pathParameters['id'],
+        builder: (_, state) => utilitas_plant_detail.PlantDetailScreen(
+          plantId: state.pathParameters['id']!,
         ),
       ),
       GoRoute(
@@ -349,16 +343,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/utilitas/units/create',
         builder: (_, __) => const UnitFormScreen(),
-      ),
-      GoRoute(
-        path: '/utilitas/units/:id/edit',
-        builder: (_, state) =>
-            UnitFormScreen(unitId: state.pathParameters['id']),
-      ),
-      GoRoute(
-        path: '/utilitas/units/:id',
-        builder: (_, state) =>
-            UnitFormScreen(unitId: state.pathParameters['id']),
       ),
       GoRoute(
         path: '/utilitas/users',
@@ -395,10 +379,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/utilitas/roles/:id',
         builder: (_, state) =>
             RoleFormScreen(roleId: state.pathParameters['id']),
-      ),
-      GoRoute(
-        path: '/utilitas/permissions',
-        builder: (_, __) => const PermissionListScreen(),
       ),
       GoRoute(
         path: '/utilitas/device-sensors',

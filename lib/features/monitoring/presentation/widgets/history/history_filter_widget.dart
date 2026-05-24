@@ -60,6 +60,10 @@ class _HistoryFilterWidgetState extends ConsumerState<HistoryFilterWidget> {
             },
           ),
         ],
+        if (filter == HistoryFilter.singleDate) ...[
+          SizedBox(height: context.rh(0.015)),
+          const _SingleDatePicker(),
+        ],
         if (filter == HistoryFilter.dateRange) ...[
           SizedBox(height: context.rh(0.015)),
           const _DateRangePicker(),
@@ -70,12 +74,16 @@ class _HistoryFilterWidgetState extends ConsumerState<HistoryFilterWidget> {
 
   String _getFilterLabel(HistoryFilter filter) {
     switch (filter) {
+      case HistoryFilter.today:
+        return 'Hari Ini';
+      case HistoryFilter.singleDate:
+        return 'Per Tanggal';
       case HistoryFilter.sevenDay:
         return '7 Hari';
       case HistoryFilter.dateRange:
         return 'Rentang Tanggal';
       case HistoryFilter.plantingDate:
-        return 'Sejak Tanam';
+        return 'Masa Tanam';
     }
   }
 }
@@ -121,9 +129,11 @@ class _FilterMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filters = [
+      (HistoryFilter.today, 'Hari Ini'),
+      (HistoryFilter.singleDate, 'Per Tanggal'),
       (HistoryFilter.sevenDay, '7 Hari'),
       (HistoryFilter.dateRange, 'Rentang Tanggal'),
-      (HistoryFilter.plantingDate, 'Sejak Tanam'),
+      (HistoryFilter.plantingDate, 'Masa Tanam'),
     ];
 
     return Container(
@@ -177,6 +187,39 @@ class _FilterMenu extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+}
+
+class _SingleDatePicker extends ConsumerWidget {
+  const _SingleDatePicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final date = ref.watch(historySingleDateProvider);
+    final fmt = DateFormat('dd MMM yyyy');
+
+    return _DateButton(
+      label: 'Tanggal',
+      date: fmt.format(date),
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: date,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+          builder: (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(primary: AppColors.primary),
+            ),
+            child: child!,
+          ),
+        );
+        if (picked != null) {
+          ref.read(historySingleDateProvider.notifier).state = picked;
+          ref.invalidate(historyReadsProvider);
+        }
+      },
     );
   }
 }

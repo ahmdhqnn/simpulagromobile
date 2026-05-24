@@ -385,6 +385,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   await ref.read(forumProvider.notifier).toggleLike(post.postId);
                   ref.invalidate(postDetailProvider(widget.postId));
                 },
+                onLongPress: () => _showReactionsSheet(context, ref, post.postId),
+              ),
+              const SizedBox(width: 16),
+              _buildStatItem(
+                context,
+                icon: Icons.thumb_down_outlined,
+                label: 'Dislike',
+                color: AppColors.textSecondary,
+                onTap: () async {
+                  await ref.read(forumProvider.notifier).toggleDislike(post.postId);
+                  ref.invalidate(postDetailProvider(widget.postId));
+                },
               ),
               const SizedBox(width: 24),
               _buildStatItem(
@@ -409,15 +421,65 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
+  void _showReactionsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String postId,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        final reactionsAsync = ref.watch(postReactionsProvider(postId));
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: reactionsAsync.when(
+              data: (reactions) {
+                if (reactions.isEmpty) {
+                  return const Text('Belum ada reaksi');
+                }
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Reaksi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...reactions.map(
+                      (r) => ListTile(
+                        dense: true,
+                        title: Text(r.userName),
+                        leading: const Icon(Icons.person_outline, size: 20),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildStatItem(
     BuildContext context, {
     required IconData icon,
     required String label,
     required Color color,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
   }) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(AppRadius.xs),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -580,8 +642,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
           ),
 
-          // Delete button (own comments only)
-          if (isOwn)
+          if (isOwn) ...[
+            IconButton(
+              icon: const Icon(
+                Icons.edit_outlined,
+                size: 16,
+                color: AppColors.textTertiary,
+              ),
+              onPressed: () => _editComment(context, comment),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 32,
+              ),
+            ),
             IconButton(
               icon: const Icon(
                 Icons.delete_outline,
@@ -598,6 +672,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 minHeight: 32,
               ),
             ),
+          ],
         ],
       ),
     );
@@ -742,6 +817,47 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _editComment(BuildContext context, Comment comment) async {
+    final controller = TextEditingController(text: comment.commentContent);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        title: Text(
+          'Edit Komentar',
+          style: AppTextStyles.cardTitle(context, 16),
+        ),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final content = controller.text.trim();
+    if (content.isEmpty) return;
+    await ref
+        .read(commentsProvider(widget.postId).notifier)
+        .updateComment(comment.commentId, content);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Komentar diperbarui')),
     );
   }
 

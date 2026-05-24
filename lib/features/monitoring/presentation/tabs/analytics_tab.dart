@@ -7,7 +7,6 @@ import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/analytics/action_required_card_widget.dart';
-import '../widgets/analytics/alarm_summary_card_widget.dart';
 import '../widgets/analytics/daily_sensor_chart_widget.dart';
 import '../widgets/analytics/device_sensor_overview_widget.dart';
 import '../widgets/analytics/environmental_health_card_widget.dart';
@@ -28,7 +27,6 @@ class AnalyticsTab extends ConsumerWidget {
     final dailyAsync = ref.watch(dailyReadsProvider);
     final devicesAsync = ref.watch(devicesProvider);
     final plant = ref.watch(currentPlantProvider);
-    final alarmAsync = ref.watch(alarmDataProvider);
     final monthlyAsync = ref.watch(monthlyReadsProvider);
 
     return RefreshIndicator(
@@ -38,7 +36,6 @@ class AnalyticsTab extends ConsumerWidget {
         ref.invalidate(plantRecommendationProvider);
         ref.invalidate(dailyReadsProvider);
         ref.invalidate(devicesProvider);
-        ref.invalidate(alarmDataProvider);
         ref.invalidate(monthlyReadsProvider);
       },
       child: SingleChildScrollView(
@@ -160,15 +157,6 @@ class AnalyticsTab extends ConsumerWidget {
               data: (monthly) => MonthlyTrendCardWidget(data: monthly),
             ),
             SizedBox(height: context.rh(0.025)),
-
-            // Alarm Summary
-            const SectionHeaderWidget(title: 'Ringkasan Alarm'),
-            SizedBox(height: context.rh(0.015)),
-            alarmAsync.when(
-              loading: () => const LoadingCardWidget(height: 120),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (alarms) => AlarmSummaryCardWidget(alarms: alarms),
-            ),
 
             SizedBox(height: context.rh(0.04)),
           ],

@@ -14,8 +14,24 @@ abstract class MonitoringRepository {
     required String startDate,
     required String endDate,
   });
+  Future<Either<Failure, List<SensorReadModel>>> getReadsByDate(
+    String siteId,
+    String date,
+  );
   Future<Either<Failure, List<SensorReadModel>>> getPlantingDateReads(String siteId);
   Future<Either<Failure, List<SensorDailyModel>>> getDailyReads(String siteId);
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyToday(String siteId);
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyByDay(
+    String siteId,
+    String day,
+  );
+  Future<Either<Failure, void>> triggerDailyRekap(String siteId, String day);
+  Future<Either<Failure, SensorReadModel>> updateRead(
+    String siteId,
+    String readId, {
+    double? readValue,
+    String? readSts,
+  });
 
   // Devices & Sensors
   Future<Either<Failure, List<DeviceModel>>> getDevices(String siteId);

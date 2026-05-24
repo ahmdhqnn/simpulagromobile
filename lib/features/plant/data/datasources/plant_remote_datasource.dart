@@ -97,6 +97,7 @@ class PlantRemoteDataSource {
       }
     } on DioException catch (e) {
       debugPrint('❌ Plant datasource error (createPlant): ${e.message}');
+      debugPrint('❌ Response data: ${e.response?.data}');
       rethrow;
     } on Failure {
       rethrow;

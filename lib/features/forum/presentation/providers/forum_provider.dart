@@ -6,6 +6,7 @@ import '../../data/repositories/forum_repository_impl.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/user_comment.dart';
+import '../../domain/entities/reaction.dart';
 import '../../domain/repositories/forum_repository.dart';
 
 // ═══════════════════════════════════════════════════════════
@@ -123,37 +124,46 @@ class ForumNotifier extends StateNotifier<ForumState> {
     await loadPosts(refresh: true);
   }
 
+  Future<void> toggleDislike(String postId) async {
+    final result = await _repository.toggleDislike(postId);
+    result.fold(
+      (failure) => state = state.copyWith(error: failure.message),
+      (data) => _applyLikeUpdate(postId, data.isLiked, data.likeCount),
+    );
+  }
+
+  void _applyLikeUpdate(String postId, bool isLiked, int likeCount) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.postId == postId) {
+        return Post(
+          postId: post.postId,
+          postTitle: post.postTitle,
+          userId: post.userId,
+          siteId: post.siteId,
+          postContent: post.postContent,
+          postImage: post.postImage,
+          likeCount: likeCount,
+          commentCount: post.commentCount,
+          shareCount: post.shareCount,
+          isLiked: isLiked,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          user: post.user,
+          site: post.site,
+        );
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: updatedPosts);
+  }
+
   Future<void> toggleLike(String postId) async {
     final result = await _repository.toggleLike(postId);
     result.fold(
       (failure) {
         state = state.copyWith(error: failure.message);
       },
-      (data) {
-        final updatedPosts = state.posts.map((post) {
-          if (post.postId == postId) {
-            return Post(
-              postId: post.postId,
-              postTitle: post.postTitle,
-              userId: post.userId,
-              siteId: post.siteId,
-              postContent: post.postContent,
-              postImage: post.postImage,
-              likeCount: data.likeCount,
-              commentCount: post.commentCount,
-              shareCount: post.shareCount,
-              isLiked: data.isLiked,
-              createdAt: post.createdAt,
-              updatedAt: post.updatedAt,
-              user: post.user,
-              site: post.site,
-            );
-          }
-          return post;
-        }).toList();
-
-        state = state.copyWith(posts: updatedPosts);
-      },
+      (data) => _applyLikeUpdate(postId, data.isLiked, data.likeCount),
     );
   }
 
@@ -341,6 +351,23 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     );
   }
 
+  Future<void> updateComment(String commentId, String content) async {
+    final result = await _repository.updateComment(
+      commentId: commentId,
+      content: content,
+    );
+    result.fold(
+      (failure) => state = state.copyWith(error: failure.message),
+      (updated) {
+        final list = state.comments
+            .map((c) => c.commentId == commentId ? updated : c)
+            .toList();
+        state = state.copyWith(comments: list);
+        _ref.invalidate(myCommentsProvider);
+      },
+    );
+  }
+
   Future<void> deleteComment(String commentId) async {
     final result = await _repository.deleteComment(postId: _postId, commentId: commentId);
     result.fold(
@@ -391,6 +418,15 @@ final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
       (failure) => throw failure,
       (posts) => posts,
     );
+  });
+});
+
+final postReactionsProvider =
+    FutureProvider.autoDispose.family<List<Reaction>, String>((ref, postId) async {
+  final repository = ref.watch(forumRepositoryProvider);
+  return ref.retryOnError(() async {
+    final result = await repository.getReactions(postId);
+    return result.fold((f) => throw f, (data) => data);
   });
 });
 

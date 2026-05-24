@@ -19,6 +19,23 @@ abstract class RecommendationRemoteDatasource {
   Future<RecommendationModel> applyRecommendation(String recommendationId);
   Future<RecommendationModel> dismissRecommendation(String recommendationId);
   Future<List<RecommendationModel>> generateRecommendations(String siteId);
+  Future<List<RecommendationModel>> getRecommendationHistory(String siteId);
+  Future<List<RecommendationModel>> getRecommendationsByPhase(
+    String siteId,
+    String phaseId,
+  );
+  Future<List<RecommendationModel>> postPlantRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  );
+  Future<Map<String, dynamic>> previewDummyRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  );
+  Future<Map<String, dynamic>> saveDummyRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  );
 }
 
 /// Recommendation remote datasource implementation
@@ -263,6 +280,81 @@ class RecommendationRemoteDatasourceImpl
       );
       rethrow;
     }
+  }
+
+  @override
+  Future<List<RecommendationModel>> getRecommendationHistory(String siteId) async {
+    final response = await _dio.get(ApiEndpoints.recHistory(siteId));
+    final data = response.data['data'] as List? ?? [];
+    return data
+        .map(
+          (json) => _parseHistoryItem(json as Map<String, dynamic>, siteId),
+        )
+        .toList();
+  }
+
+  @override
+  Future<List<RecommendationModel>> getRecommendationsByPhase(
+    String siteId,
+    String phaseId,
+  ) async {
+    final response = await _dio.get(ApiEndpoints.recByPhase(siteId, phaseId));
+    final data = response.data['data'];
+    if (data is Map<String, dynamic>) {
+      return _parseRecommendationResponse(data, siteId);
+    }
+    if (data is List) {
+      return data
+          .map(
+            (e) => _parseHistoryItem(e as Map<String, dynamic>, siteId),
+          )
+          .toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<List<RecommendationModel>> postPlantRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _dio.post(
+      ApiEndpoints.plantRecommendations(siteId),
+      data: payload,
+    );
+    final data = response.data['data'];
+    if (data is Map<String, dynamic>) {
+      return _parseRecommendationResponse(data, siteId);
+    }
+    return [];
+  }
+
+  @override
+  Future<Map<String, dynamic>> previewDummyRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _dio.post(
+      ApiEndpoints.recPreviewDummy(siteId),
+      data: payload,
+    );
+    final data = response.data['data'];
+    if (data is Map<String, dynamic>) return data;
+    return response.data as Map<String, dynamic>? ?? {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> saveDummyRecommendation(
+    String siteId,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _dio.post(
+      ApiEndpoints.recSaveDummy(siteId),
+      data: payload,
+    );
+    final data = response.data['data'];
+    if (data is Map<String, dynamic>) return data;
+    return response.data as Map<String, dynamic>? ?? {};
   }
 
   /// Parse response dari GET /recommendations menjadi list RecommendationModel

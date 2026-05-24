@@ -1,0 +1,81 @@
+import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../site/domain/entities/site.dart';
+
+class DashboardSiteCommandBanner extends StatelessWidget {
+  final Site? site;
+
+  const DashboardSiteCommandBanner({super.key, required this.site});
+
+  @override
+  Widget build(BuildContext context) {
+    if (site == null) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(context.rw(0.04)),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.location_on_outlined, color: AppColors.warning),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Pilih site untuk memuat data monitoring dan rekomendasi',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(13),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(context.rw(0.04)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            site!.displayName,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(16),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (site!.siteAddress != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              site!.siteAddress!,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(12),
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+          const SizedBox(height: 4),
+          Text(
+            'ID: ${site!.siteId} · ${site!.isActive ? 'Aktif' : 'Nonaktif'}',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(11),
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

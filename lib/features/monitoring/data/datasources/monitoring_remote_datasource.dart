@@ -23,9 +23,9 @@ class MonitoringRemoteDataSource {
 
   // ── History ─────────────────────────────────────────────────────────────────
 
-  /// GET /api/sites/:siteId/reads/today
+  /// GET /api/sites/:siteId/reads?today=true
   Future<List<SensorReadModel>> getTodayReads(String siteId) async {
-    throw const UnsupportedBackendEndpointException();
+    return _getRawReads(siteId, queryParameters: const {'today': 'true'});
   }
 
   /// GET /api/sites/:siteId/reads/seven-day
@@ -37,13 +37,38 @@ class MonitoringRemoteDataSource {
         .toList();
   }
 
-  /// GET /api/sites/:siteId/reads/date-range?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+  /// GET /api/sites/:siteId/reads?startDate=&endDate=
   Future<List<SensorReadModel>> getDateRangeReads(
     String siteId, {
     required String startDate,
     required String endDate,
   }) async {
-    throw const UnsupportedBackendEndpointException();
+    return _getRawReads(
+      siteId,
+      queryParameters: {'startDate': startDate, 'endDate': endDate},
+    );
+  }
+
+  /// GET /api/sites/:siteId/reads?date=YYYY-MM-DD
+  Future<List<SensorReadModel>> getReadsByDate(
+    String siteId,
+    String date,
+  ) async {
+    return _getRawReads(siteId, queryParameters: {'date': date});
+  }
+
+  Future<List<SensorReadModel>> _getRawReads(
+    String siteId, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final res = await _dio.get(
+      ApiEndpoints.reads(siteId),
+      queryParameters: queryParameters,
+    );
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorReadModel.fromJson)
+        .toList();
   }
 
   /// GET /api/sites/:siteId/reads/planting-date
@@ -124,5 +149,54 @@ class MonitoringRemoteDataSource {
         .whereType<Map<String, dynamic>>()
         .map(MonthlyRekapModel.fromJson)
         .toList();
+  }
+
+  // ── Daily recap (today / by-day) ─────────────────────────────────────────────
+
+  /// GET /sites/{siteId}/reads/daily/today
+  Future<List<SensorDailyModel>> getDailyToday(String siteId) async {
+    final res = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorDailyModel.fromJson)
+        .toList();
+  }
+
+  /// GET /sites/{siteId}/reads/daily/by-day?day=YYYY-MM-DD
+  Future<List<SensorDailyModel>> getDailyByDay(String siteId, String day) async {
+    final res = await _dio.get(
+      ApiEndpoints.readsDailyByDay(siteId),
+      queryParameters: {'day': day},
+    );
+    return ResponseParser.extractDataList(res.data)
+        .whereType<Map<String, dynamic>>()
+        .map(SensorDailyModel.fromJson)
+        .toList();
+  }
+
+  /// POST /sites/{siteId}/reads/daily/rekap  body: { "day": "YYYY-MM-DD" }
+  Future<void> triggerDailyRekap(String siteId, String day) async {
+    await _dio.post(
+      ApiEndpoints.readsRekapDaily(siteId),
+      data: {'day': day},
+    );
+  }
+
+  /// PUT /sites/{siteId}/reads/{id}
+  Future<SensorReadModel> updateRead(
+    String siteId,
+    String readId, {
+    double? readValue,
+    String? readSts,
+  }) async {
+    final body = <String, dynamic>{};
+    if (readValue != null) body['read_value'] = readValue;
+    if (readSts != null) body['read_sts'] = readSts;
+    final res = await _dio.put(
+      ApiEndpoints.updateRead(siteId, readId),
+      data: body,
+    );
+    final data = ResponseParser.extractDataMap(res.data);
+    return SensorReadModel.fromJson(data);
   }
 }

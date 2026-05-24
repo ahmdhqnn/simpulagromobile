@@ -41,6 +41,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
   @override
   Widget build(BuildContext context) {
+    final activePlant = ref.watch(currentPlantProvider);
+    final hasActivePlant = activePlant != null;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -74,6 +77,36 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
               ),
 
               const SizedBox(height: 24),
+
+              if (hasActivePlant) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Lokasi ini masih memiliki tanaman aktif ("${activePlant.displayName}"). Harap panen tanaman saat ini sebelum menambahkan yang baru.',
+                          style: const TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 12,
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               Container(
                 width: double.infinity,
@@ -158,7 +191,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                           ),
                           _buildCircleButton(
                             svgPath: 'assets/icons/check-icon.svg',
-                            onTap: _isSubmitting ? null : _submitForm,
+                            onTap: _isSubmitting || hasActivePlant ? null : _submitForm,
                           ),
                         ],
                       ),
@@ -293,6 +326,19 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   }
 
   Future<void> _submitForm() async {
+    final activePlant = ref.read(currentPlantProvider);
+    if (activePlant != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menambahkan: Masih ada tanaman aktif "${activePlant.displayName}".'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     if (_varietasIdController.text.isEmpty) {
@@ -323,8 +369,19 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
     setState(() => _isSubmitting = false);
 
-    if (success && mounted) {
-      widget.onSuccess();
+    if (mounted) {
+      if (success) {
+        widget.onSuccess();
+      } else {
+        final errorMsg = ref.read(createPlantProvider).error
+            ?? 'Gagal menambahkan tanaman. Silakan coba lagi.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 }
