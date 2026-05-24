@@ -15,10 +15,6 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-PlantModel _$PlantModelFromJson(Map<String, dynamic> json) {
-  return _PlantModel.fromJson(json);
-}
-
 /// @nodoc
 mixin _$PlantModel {
   @JsonKey(name: 'plant_id')
@@ -43,9 +39,6 @@ mixin _$PlantModel {
   DateTime? get plantCreated => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_update')
   DateTime? get plantUpdate => throw _privateConstructorUsedError;
-
-  /// Serializes this PlantModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of PlantModel
   /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +250,7 @@ class __$$PlantModelImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$PlantModelImpl extends _PlantModel {
   const _$PlantModelImpl({
     @JsonKey(name: 'plant_id') required this.plantId,
@@ -272,9 +265,6 @@ class _$PlantModelImpl extends _PlantModel {
     @JsonKey(name: 'plant_created') this.plantCreated,
     @JsonKey(name: 'plant_update') this.plantUpdate,
   }) : super._();
-
-  factory _$PlantModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PlantModelImplFromJson(json);
 
   @override
   @JsonKey(name: 'plant_id')
@@ -342,7 +332,6 @@ class _$PlantModelImpl extends _PlantModel {
                 other.plantUpdate == plantUpdate));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -366,11 +355,6 @@ class _$PlantModelImpl extends _PlantModel {
   @pragma('vm:prefer-inline')
   _$$PlantModelImplCopyWith<_$PlantModelImpl> get copyWith =>
       __$$PlantModelImplCopyWithImpl<_$PlantModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PlantModelImplToJson(this);
-  }
 }
 
 abstract class _PlantModel extends PlantModel {
@@ -388,9 +372,6 @@ abstract class _PlantModel extends PlantModel {
     @JsonKey(name: 'plant_update') final DateTime? plantUpdate,
   }) = _$PlantModelImpl;
   const _PlantModel._() : super._();
-
-  factory _PlantModel.fromJson(Map<String, dynamic> json) =
-      _$PlantModelImpl.fromJson;
 
   @override
   @JsonKey(name: 'plant_id')

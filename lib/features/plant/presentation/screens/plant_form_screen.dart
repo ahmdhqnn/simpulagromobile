@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/plant_provider.dart';
@@ -22,8 +24,11 @@ class PlantFormScreen extends ConsumerWidget {
     final siteId = ref.watch(selectedSiteIdProvider);
 
     if (siteId == null) {
-      return const Scaffold(
-        body: Center(child: Text('Pilih lokasi terlebih dahulu')),
+      return Scaffold(
+        backgroundColor: AppColors.surfaceVariant,
+        body: Center(
+          child: Text(AppLocalizations.of(context)!.emptySite),
+        ),
       );
     }
 
@@ -44,7 +49,7 @@ class PlantFormScreen extends ConsumerWidget {
 
     return plantAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: Color(0xFFF0F0F0),
+        backgroundColor: AppColors.surfaceVariant,
         body: Center(
           child: DetailScreenSkeleton(
             infoRowCount: 3,
@@ -54,7 +59,7 @@ class PlantFormScreen extends ConsumerWidget {
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: const Color(0xFFF0F0F0),
+        backgroundColor: AppColors.surfaceVariant,
         body: _EditLoadError(
           error: error.toString(),
           onRetry: () => ref.invalidate(plantDetailProvider(plantId!)),

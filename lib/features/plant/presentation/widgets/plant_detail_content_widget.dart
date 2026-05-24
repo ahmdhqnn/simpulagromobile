@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
+import '../../domain/entities/plant.dart';
 
 class PlantHeaderCardWidget extends StatelessWidget {
-  final dynamic plant;
+  final Plant plant;
   const PlantHeaderCardWidget({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AppCardWidget(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -35,16 +39,11 @@ class PlantHeaderCardWidget extends StatelessWidget {
               children: [
                 Text(
                   plant.displayName,
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(18),
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.cardTitle(context, context.sp(18)),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  plant.plantType?.displayName ?? 'Unknown',
+                  plant.plantType?.displayName ?? l10n.plantTypeHint,
                   style: AppTextStyles.hint(context, size: 14),
                 ),
                 const SizedBox(height: 8),
@@ -56,18 +55,17 @@ class PlantHeaderCardWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: plant.isCurrentPlanting
                         ? AppColors.success.withValues(alpha: 0.1)
-                        : Colors.grey.withValues(alpha: 0.1),
+                        : AppColors.textTertiary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: Text(
                     plant.statusText,
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.label(
+                      context,
+                      size: context.sp(12),
                       color: plant.isCurrentPlanting
                           ? AppColors.success
-                          : Colors.grey,
+                          : AppColors.textTertiary,
                     ),
                   ),
                 ),
@@ -81,13 +79,14 @@ class PlantHeaderCardWidget extends StatelessWidget {
 }
 
 class PlantGrowthCardWidget extends StatelessWidget {
-  final dynamic plant;
+  final Plant plant;
   const PlantGrowthCardWidget({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hst = plant.hst ?? 0;
-    final phase = plant.growthPhase ?? 'Unknown';
+    final phase = plant.growthPhase ?? '-';
 
     return AppCardWidget(
       width: double.infinity,
@@ -96,15 +95,15 @@ class PlantGrowthCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Pertumbuhan', style: AppTextStyles.cardTitle(context)),
+          Text(l10n.plantGrowthTitle, style: AppTextStyles.cardTitle(context)),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _GrowthStat(
-                  label: 'HST',
+                  label: l10n.plantHstLabel,
                   value: '$hst',
-                  subtitle: 'Hari Setelah Tanam',
+                  subtitle: l10n.plantHstSubtitle,
                   icon: Icons.calendar_today,
                   color: AppColors.primary,
                 ),
@@ -112,9 +111,9 @@ class PlantGrowthCardWidget extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _GrowthStat(
-                  label: 'Fase',
+                  label: l10n.plantPhaseLabel,
                   value: phase,
-                  subtitle: 'Fase Pertumbuhan',
+                  subtitle: l10n.plantPhaseSubtitle,
                   icon: Icons.eco,
                   color: AppColors.success,
                 ),
@@ -156,20 +155,11 @@ class _GrowthStat extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(20),
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: AppTextStyles.metric(context, size: context.sp(20), color: color),
           ),
           Text(
             label,
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(12),
-              color: color,
-            ),
+            style: AppTextStyles.label(context, size: context.sp(12), color: color),
           ),
           const SizedBox(height: 4),
           Text(
@@ -184,11 +174,13 @@ class _GrowthStat extends StatelessWidget {
 }
 
 class PlantInfoCardWidget extends StatelessWidget {
-  final dynamic plant;
+  final Plant plant;
   const PlantInfoCardWidget({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AppCardWidget(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -196,12 +188,12 @@ class PlantInfoCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Informasi Tanaman', style: AppTextStyles.cardTitle(context)),
+          Text(l10n.plantInfoTitle, style: AppTextStyles.cardTitle(context)),
           const SizedBox(height: 16),
           if (plant.plantSpecies != null) ...[
             _PlantInfoRow(
               icon: Icons.science,
-              label: 'Spesies',
+              label: l10n.plantSpeciesLabel,
               value: plant.plantSpecies!,
             ),
             const SizedBox(height: 12),
@@ -209,16 +201,18 @@ class PlantInfoCardWidget extends StatelessWidget {
           if (plant.plantDate != null) ...[
             _PlantInfoRow(
               icon: Icons.event,
-              label: 'Tanggal Tanam',
-              value: DateFormat('d/M/yyyy').format(plant.plantDate!),
+              label: l10n.plantPlantDateLabel,
+              value: DateFormatter.formatDate(plant.plantDate),
             ),
             const SizedBox(height: 12),
           ],
           if (plant.plantHarvest != null)
             _PlantInfoRow(
               icon: Icons.agriculture,
-              label: plant.isHarvested ? 'Tanggal Panen' : 'Target Panen',
-              value: DateFormat('d/M/yyyy').format(plant.plantHarvest!),
+              label: plant.isHarvested
+                  ? l10n.plantHarvestDateLabel
+                  : l10n.plantTargetHarvestLabel,
+              value: DateFormatter.formatDate(plant.plantHarvest),
             ),
         ],
       ),
@@ -253,12 +247,7 @@ class _PlantInfoRow extends StatelessWidget {
               Text(label, style: AppTextStyles.caption(context, size: 12)),
               Text(
                 value,
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                ),
+                style: AppTextStyles.label(context, size: context.sp(14)),
               ),
             ],
           ),
@@ -270,7 +259,7 @@ class _PlantInfoRow extends StatelessWidget {
 
 /// Action buttons for phase list, GDD tracking, and harvest.
 class PlantActionButtonsWidget extends StatelessWidget {
-  final dynamic plant;
+  final Plant plant;
   final VoidCallback onHarvest;
 
   const PlantActionButtonsWidget({
@@ -281,6 +270,8 @@ class PlantActionButtonsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         SizedBox(
@@ -291,11 +282,8 @@ class PlantActionButtonsWidget extends StatelessWidget {
             ),
             icon: const Icon(Icons.timeline),
             label: Text(
-              'Lihat Fase Pertumbuhan',
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(14),
-              ),
+              l10n.plantViewPhases,
+              style: AppTextStyles.label(context, size: context.sp(14)),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -316,11 +304,8 @@ class PlantActionButtonsWidget extends StatelessWidget {
             ),
             icon: const Icon(Icons.thermostat),
             label: Text(
-              'GDD Tracking',
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(14),
-              ),
+              l10n.plantGddTracking,
+              style: AppTextStyles.label(context, size: context.sp(14)),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
@@ -340,14 +325,11 @@ class PlantActionButtonsWidget extends StatelessWidget {
               onPressed: onHarvest,
               icon: const Icon(Icons.agriculture),
               label: Text(
-                'Tandai Sudah Panen',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                ),
+                l10n.plantMarkHarvested,
+                style: AppTextStyles.label(context, size: context.sp(14)),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: AppColors.warning,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(16),
                 shape: RoundedRectangleBorder(

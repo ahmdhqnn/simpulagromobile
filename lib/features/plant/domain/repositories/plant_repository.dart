@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
-import '../../domain/entities/varietas.dart';
 
 abstract class PlantRepository {
   Future<Either<Failure, List<Plant>>> getPlants(
@@ -20,6 +19,4 @@ abstract class PlantRepository {
   );
   Future<Either<Failure, Plant>> harvestPlant(String siteId, String plantId);
   Future<Either<Failure, void>> deletePlant(String siteId, String plantId);
-  Future<Either<Failure, List<Varietas>>> getVarietas();
-  Future<Either<Failure, Varietas>> getVarietasById(String varietasId);
 }

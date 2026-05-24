@@ -45,5 +45,89 @@
   "emptySensor": "Belum ada data sensor",
   "taskTitle": "Task",
   "taskSummarySectionTitle": "Ringkasan Task",
-  "quickActionSectionTitle": "Aksi Cepat"
+  "quickActionSectionTitle": "Aksi Cepat",
+  "plantOverviewTitle": "Ringkasan Tanaman",
+  "plantEmptyTitle": "Belum ada penanaman",
+  "plantEmptyMessage": "Mulai tambahkan tanaman pertama untuk memantau lokasi ini.",
+  "plantAddFirst": "Tambah penanaman pertama",
+  "plantAddTitle": "Tambah Penanaman Pertama",
+  "plantEditTitle": "Edit Penanaman",
+  "plantNameLabel": "Nama Tanaman",
+  "plantNameHint": "Contoh: Padi Cigentur",
+  "plantNameRequired": "Nama tanaman wajib diisi",
+  "plantVarietasIdLabel": "ID Varietas",
+  "plantVarietasIdHint": "Contoh: VARIETAS001",
+  "plantVarietasIdRequired": "ID varietas wajib diisi",
+  "plantTypeLabel": "Jenis Tanaman",
+  "plantTypeHint": "Contoh: PADI, JAGUNG, dll.",
+  "plantTypeRequired": "Pilih jenis tanaman terlebih dahulu",
+  "plantDateLabel": "Tanggal Tanam",
+  "plantActiveConflict": "Lokasi ini masih memiliki tanaman aktif \"{name}\". Panen terlebih dahulu sebelum menambah yang baru.",
+  "@plantActiveConflict": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantCreateSuccess": "Tanaman berhasil ditambahkan",
+  "plantUpdateSuccess": "Tanaman berhasil diperbarui",
+  "plantCreateFailed": "Gagal menambahkan tanaman. Silakan coba lagi.",
+  "plantUpdateFailed": "Gagal memperbarui tanaman. Silakan coba lagi.",
+  "plantListEmpty": "Belum ada tanaman",
+  "plantListEmptyHint": "Tambahkan tanaman pertama Anda",
+  "plantLoadFailed": "Gagal memuat data",
+  "plantHarvestDialogTitle": "Panen tanaman?",
+  "plantHarvestDialogMessage": "\"{name}\" akan ditandai sudah dipanen. Aksi ini tidak dapat dibatalkan.",
+  "@plantHarvestDialogMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantHarvestConfirm": "Ya, panen",
+  "plantHarvestSuccess": "\"{name}\" berhasil ditandai sudah panen",
+  "@plantHarvestSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantHarvestFailed": "Gagal memanen tanaman",
+  "plantDeleteDialogMessage": "\"{name}\" akan dihapus permanen. Aksi ini tidak dapat dibatalkan.",
+  "@plantDeleteDialogMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDeleteSuccess": "\"{name}\" berhasil dihapus",
+  "@plantDeleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDeleteFailed": "Gagal menghapus tanaman",
+  "plantInvalidSite": "Site tidak valid",
+  "plantActionEdit": "Edit tanaman",
+  "plantActionHarvest": "Panen tanaman",
+  "plantActionDelete": "Hapus tanaman",
+  "plantGrowthTitle": "Pertumbuhan",
+  "plantInfoTitle": "Informasi Tanaman",
+  "plantHstLabel": "HST",
+  "plantHstSubtitle": "Hari Setelah Tanam",
+  "plantPhaseLabel": "Fase",
+  "plantPhaseSubtitle": "Fase Pertumbuhan",
+  "plantSpeciesLabel": "Spesies",
+  "plantPlantDateLabel": "Tanggal Tanam",
+  "plantHarvestDateLabel": "Tanggal Panen",
+  "plantTargetHarvestLabel": "Target Panen",
+  "plantViewPhases": "Lihat Fase Pertumbuhan",
+  "plantGddTracking": "Pelacakan GDD",
+  "plantMarkHarvested": "Tandai Sudah Panen",
+  "plantDetailHarvestTitle": "Konfirmasi Panen",
+  "plantDetailHarvestMessage": "Tandai \"{name}\" sudah dipanen?",
+  "@plantDetailHarvestMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDetailHarvestConfirm": "Ya, Sudah Panen",
+  "plantDetailCancel": "Batal",
+  "plantErrorTitle": "Terjadi kesalahan"
 }

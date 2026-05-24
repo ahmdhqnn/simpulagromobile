@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../phase/presentation/screens/phase_list_screen.dart';
 
 class GrowthPhaseButton extends StatelessWidget {
@@ -26,7 +27,7 @@ class GrowthPhaseButton extends StatelessWidget {
         width: 130,
         height: 38,
         decoration: BoxDecoration(
-          color: const Color(0xFFF7F7F7),
+          color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(100),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12),

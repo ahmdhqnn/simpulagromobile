@@ -3,12 +3,17 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/plant_model.dart';
 
 class PlantRemoteDataSource {
   final Dio _dio;
 
   PlantRemoteDataSource(this._dio);
+
+  void _log(String message) {
+    if (kDebugMode) debugPrint(message);
+  }
 
   /// Header JSON eksplisit; token Bearer di-inject oleh [_AuthInterceptor] di [DioClient].
   static final Options _jsonOptions = Options(
@@ -37,27 +42,14 @@ class PlantRemoteDataSource {
         options: _jsonOptions,
       );
 
-      _ensureSuccessEnvelope(response.data);
-      final data = _extractListPayload(response.data);
-
-      try {
-        return data.map((json) {
-          if (json is! Map<String, dynamic>) {
-            throw const ServerFailure('Invalid plant item structure');
-          }
-          return PlantModel.fromJson(json);
-        }).toList();
-      } catch (e) {
-        if (e is Failure) rethrow;
-        throw ServerFailure('Failed to parse plants: $e');
-      }
+      return _mapPlantList(response.data);
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (getPlants): ${e.message}');
+      _log('❌ Plant datasource error (getPlants): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (getPlants): $e');
+      _log('❌ Unexpected error in plant datasource (getPlants): $e');
       rethrow;
     }
   }
@@ -70,21 +62,17 @@ class PlantRemoteDataSource {
         options: _jsonOptions,
       );
 
-      _ensureSuccessEnvelope(response.data);
-      final jsonData = _extractObjectPayload(response.data);
-
-      if (jsonData == null) {
-        throw const NotFoundFailure('Plant data not found');
-      }
-
-      return PlantModel.fromJson(jsonData);
+      return _mapPlantObject(
+        response.data,
+        notFoundMessage: 'Plant data not found',
+      );
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (getPlantById): ${e.message}');
+      _log('❌ Plant datasource error (getPlantById): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (getPlantById): $e');
+      _log('❌ Unexpected error in plant datasource (getPlantById): $e');
       rethrow;
     }
   }
@@ -96,7 +84,7 @@ class PlantRemoteDataSource {
   ) async {
     try {
       final payload = _normalizeWritePayload(data);
-      debugPrint('📤 POST plants payload: $payload (siteId: $siteId)');
+      _log('📤 POST plants payload: $payload (siteId: $siteId)');
 
       final response = await _dio.post(
         ApiEndpoints.plants(siteId),
@@ -104,28 +92,26 @@ class PlantRemoteDataSource {
         options: _jsonOptions,
       );
 
-      _ensureSuccessEnvelope(response.data);
-      final jsonData = _extractObjectPayload(response.data);
-      if (jsonData == null) {
-        throw const ServerFailure('No data returned from create plant');
-      }
-
-      return PlantModel.fromJson(jsonData);
+      return _mapPlantObject(
+        response.data,
+        notFoundMessage: 'No data returned from create plant',
+        useNotFoundFailure: false,
+      );
     } on FormatException catch (e) {
       throw ValidationFailure(e.message);
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (createPlant): ${e.message}');
-      debugPrint('❌ Response data: ${e.response?.data}');
+      _log('❌ Plant datasource error (createPlant): ${e.message}');
+      _log('❌ Response data: ${e.response?.data}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (createPlant): $e');
+      _log('❌ Unexpected error in plant datasource (createPlant): $e');
       rethrow;
     }
   }
 
-  /// PUT /sites/{siteId}/plants/{plantId} — body sama dengan POST
+  /// PUT /sites/{siteId}/plants/{plantId} — body sama dengan [PlantCreateRequest]
   Future<PlantModel> updatePlant(
     String siteId,
     String plantId,
@@ -137,9 +123,7 @@ class PlantRemoteDataSource {
     try {
       final payload = _normalizeWritePayload(data);
       final path = ApiEndpoints.plantById(normalizedSiteId, normalizedPlantId);
-      debugPrint(
-        '📤 PUT $path body: $payload',
-      );
+      _log('📤 PUT $path body: $payload');
 
       final response = await _dio.put(
         path,
@@ -147,21 +131,19 @@ class PlantRemoteDataSource {
         options: _jsonOptions,
       );
 
-      _ensureSuccessEnvelope(response.data);
-      final jsonData = _extractObjectPayload(response.data);
-      if (jsonData == null) {
-        throw const ServerFailure('No data returned from update plant');
-      }
-
-      return PlantModel.fromJson(jsonData);
+      return _mapPlantObject(
+        response.data,
+        notFoundMessage: 'No data returned from update plant',
+        useNotFoundFailure: false,
+      );
     } on FormatException catch (e) {
       throw ValidationFailure(e.message);
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (updatePlant): ${e.message}');
-      debugPrint('❌ Status: ${e.response?.statusCode}');
-      debugPrint('❌ Response data: ${e.response?.data}');
+      _log('❌ Plant datasource error (updatePlant): ${e.message}');
+      _log('❌ Status: ${e.response?.statusCode}');
+      _log('❌ Response data: ${e.response?.data}');
       if (e.response?.statusCode == 500) {
-        debugPrint(
+        _log(
           '⚠️ PUT plant HTTP 500: payload sudah sama format dengan POST create. '
           'Jika POST/harvest OK, kemungkinan besar bug di handler PUT backend.',
         );
@@ -170,7 +152,7 @@ class PlantRemoteDataSource {
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (updatePlant): $e');
+      _log('❌ Unexpected error in plant datasource (updatePlant): $e');
       rethrow;
     }
   }
@@ -183,20 +165,18 @@ class PlantRemoteDataSource {
         options: _jsonOptions,
       );
 
-      _ensureSuccessEnvelope(response.data);
-      final jsonData = _extractObjectPayload(response.data);
-      if (jsonData != null) {
-        return PlantModel.fromJson(jsonData);
-      }
-
-      throw const ServerFailure('No data returned from harvest plant');
+      return _mapPlantObject(
+        response.data,
+        notFoundMessage: 'No data returned from harvest plant',
+        useNotFoundFailure: false,
+      );
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (harvestPlant): ${e.message}');
+      _log('❌ Plant datasource error (harvestPlant): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (harvestPlant): $e');
+      _log('❌ Unexpected error in plant datasource (harvestPlant): $e');
       rethrow;
     }
   }
@@ -211,30 +191,75 @@ class PlantRemoteDataSource {
 
       _ensureSuccessEnvelope(response.data);
     } on DioException catch (e) {
-      debugPrint('❌ Plant datasource error (deletePlant): ${e.message}');
+      _log('❌ Plant datasource error (deletePlant): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in plant datasource (deletePlant): $e');
+      _log('❌ Unexpected error in plant datasource (deletePlant): $e');
       rethrow;
     }
   }
 
-  Future<List<VarietasModel>> getVarietas() async {
-    throw const UnsupportedBackendEndpointException(
-      'Daftar varietas belum didukung oleh server',
-    );
-  }
-
-  Future<VarietasModel> getVarietasById(String varietasId) async {
-    throw const UnsupportedBackendEndpointException(
-      'Detail varietas belum didukung oleh server',
-    );
-  }
-
   Map<String, dynamic> _normalizeWritePayload(Map<String, dynamic> raw) {
     return PlantWritePayload.fromMap(raw).toJson();
+  }
+
+  List<PlantModel> _mapPlantList(dynamic responseData) {
+    _ensureSuccessEnvelope(responseData);
+
+    try {
+      return ResponseParser.extractDataList(responseData)
+          .whereType<Map<String, dynamic>>()
+          .map(PlantModel.fromJson)
+          .toList();
+    } catch (e) {
+      if (e is Failure) rethrow;
+      throw ServerFailure('Failed to parse plants: $e');
+    }
+  }
+
+  PlantModel _mapPlantObject(
+    dynamic responseData, {
+    required String notFoundMessage,
+    bool useNotFoundFailure = true,
+  }) {
+    _ensureSuccessEnvelope(responseData);
+
+    final jsonData = _extractPlantObjectMap(responseData);
+    if (jsonData == null) {
+      if (useNotFoundFailure) {
+        throw NotFoundFailure(notFoundMessage);
+      }
+      throw ServerFailure(notFoundMessage);
+    }
+
+    try {
+      return PlantModel.fromJson(jsonData);
+    } catch (e) {
+      throw ServerFailure('Failed to parse plant: $e');
+    }
+  }
+
+  Map<String, dynamic>? _extractPlantObjectMap(dynamic responseData) {
+    if (responseData is! Map<String, dynamic>) return null;
+
+    if (responseData.containsKey('data')) {
+      final data = responseData['data'];
+      if (data == null) return null;
+      if (data is Map<String, dynamic>) return data;
+      throw const ServerFailure('Invalid plant response structure');
+    }
+
+    if (responseData.containsKey('plant_id')) {
+      return responseData;
+    }
+
+    try {
+      return ResponseParser.extractDataMap(responseData);
+    } on ServerException {
+      return null;
+    }
   }
 
   /// Validasi envelope `{ success, message, data }` dari backend.
@@ -244,29 +269,9 @@ class PlantRemoteDataSource {
 
     final success = responseData['success'];
     if (success == false) {
-      final message = responseData['message']?.toString();
-      throw ServerFailure(message ?? 'Permintaan gagal');
+      final message =
+          ResponseParser.extractMessage(responseData, 'Permintaan gagal');
+      throw ServerFailure(message);
     }
-  }
-
-  List<dynamic> _extractListPayload(dynamic responseData) {
-    if (responseData is List) return responseData;
-
-    if (responseData is Map<String, dynamic>) {
-      final data = responseData['data'];
-      if (data is List) return data;
-      if (data == null) return [];
-    }
-
-    throw const ServerFailure('Invalid plants list response structure');
-  }
-
-  Map<String, dynamic>? _extractObjectPayload(dynamic responseData) {
-    if (responseData is Map<String, dynamic>) {
-      final data = responseData['data'];
-      if (data is Map<String, dynamic>) return data;
-      if (!responseData.containsKey('data')) return responseData;
-    }
-    return null;
   }
 }

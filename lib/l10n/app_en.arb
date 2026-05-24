@@ -28,5 +28,89 @@
   "emptySensor": "No sensor data available",
   "taskTitle": "Task",
   "taskSummarySectionTitle": "Task Summary",
-  "quickActionSectionTitle": "Quick Actions"
+  "quickActionSectionTitle": "Quick Actions",
+  "plantOverviewTitle": "Plants Overview",
+  "plantEmptyTitle": "There is no planting yet",
+  "plantEmptyMessage": "Start adding your first crop to monitor plants on this site.",
+  "plantAddFirst": "Add first planting",
+  "plantAddTitle": "Add First Planting",
+  "plantEditTitle": "Edit Planting",
+  "plantNameLabel": "Plant Name",
+  "plantNameHint": "Ex. Padi Cigentur",
+  "plantNameRequired": "Please enter plant name",
+  "plantVarietasIdLabel": "Varietas ID",
+  "plantVarietasIdHint": "Ex. VARIETAS001",
+  "plantVarietasIdRequired": "Varietas ID is required",
+  "plantTypeLabel": "Planting Type",
+  "plantTypeHint": "Ex. PADI, JAGUNG, etc.",
+  "plantTypeRequired": "Please select a planting type",
+  "plantDateLabel": "Planting Date",
+  "plantActiveConflict": "This site still has an active plant \"{name}\". Harvest it before adding a new one.",
+  "@plantActiveConflict": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantCreateSuccess": "Plant added successfully",
+  "plantUpdateSuccess": "Plant updated successfully",
+  "plantCreateFailed": "Failed to add plant. Please try again.",
+  "plantUpdateFailed": "Failed to update plant. Please try again.",
+  "plantListEmpty": "No plants yet",
+  "plantListEmptyHint": "Add your first plant",
+  "plantLoadFailed": "Failed to load data",
+  "plantHarvestDialogTitle": "Harvest plant?",
+  "plantHarvestDialogMessage": "\"{name}\" will be marked as harvested. This cannot be undone.",
+  "@plantHarvestDialogMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantHarvestConfirm": "Yes, harvest",
+  "plantHarvestSuccess": "\"{name}\" marked as harvested",
+  "@plantHarvestSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantHarvestFailed": "Failed to harvest plant",
+  "plantDeleteDialogMessage": "\"{name}\" will be permanently deleted. This cannot be undone.",
+  "@plantDeleteDialogMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDeleteSuccess": "\"{name}\" deleted successfully",
+  "@plantDeleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDeleteFailed": "Failed to delete plant",
+  "plantInvalidSite": "Invalid site",
+  "plantActionEdit": "Edit plant",
+  "plantActionHarvest": "Harvest plant",
+  "plantActionDelete": "Delete plant",
+  "plantGrowthTitle": "Growth",
+  "plantInfoTitle": "Plant information",
+  "plantHstLabel": "DAP",
+  "plantHstSubtitle": "Days after planting",
+  "plantPhaseLabel": "Phase",
+  "plantPhaseSubtitle": "Growth phase",
+  "plantSpeciesLabel": "Species",
+  "plantPlantDateLabel": "Planting date",
+  "plantHarvestDateLabel": "Harvest date",
+  "plantTargetHarvestLabel": "Target harvest",
+  "plantViewPhases": "View growth phases",
+  "plantGddTracking": "GDD tracking",
+  "plantMarkHarvested": "Mark as harvested",
+  "plantDetailHarvestTitle": "Confirm harvest",
+  "plantDetailHarvestMessage": "Mark \"{name}\" as harvested?",
+  "@plantDetailHarvestMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "plantDetailHarvestConfirm": "Yes, harvested",
+  "plantDetailCancel": "Cancel",
+  "plantErrorTitle": "Something went wrong"
 }

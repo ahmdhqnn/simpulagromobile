@@ -10,13 +10,11 @@ import '../../data/models/plant_model.dart';
 import '../../data/repositories/plant_repository_impl.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../../domain/entities/plant.dart';
-import '../../domain/entities/varietas.dart';
 import '../../domain/usecases/get_plants_usecase.dart';
 import '../../domain/usecases/create_plant_usecase.dart';
 import '../../domain/usecases/update_plant_usecase.dart';
 import '../../domain/usecases/harvest_plant_usecase.dart';
 import '../../domain/usecases/delete_plant_usecase.dart';
-import '../../domain/usecases/get_varietas_usecase.dart';
 
 // ─── Infrastructure providers ─────────────────────────────────────────────────
 
@@ -54,10 +52,6 @@ final harvestPlantUseCaseProvider = Provider<HarvestPlantUseCase>((ref) {
 
 final deletePlantUseCaseProvider = Provider<DeletePlantUseCase>((ref) {
   return DeletePlantUseCase(ref.watch(plantRepositoryProvider));
-});
-
-final getVarietasUseCaseProvider = Provider<GetVarietasUseCase>((ref) {
-  return GetVarietasUseCase(ref.watch(plantRepositoryProvider));
 });
 
 // ─── List plants (AsyncNotifier) ─────────────────────────────────────────────
@@ -125,14 +119,6 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
   final useCase = ref.read(getPlantByIdUseCaseProvider);
   final result = await useCase(siteId, plantId);
   return result.fold((failure) => throw failure, (plant) => plant);
-});
-
-final varietasProvider = FutureProvider.autoDispose<List<Varietas>>((
-  ref,
-) async {
-  final useCase = ref.watch(getVarietasUseCaseProvider);
-  final result = await useCase();
-  return result.fold((failure) => throw failure, (v) => v);
 });
 
 // ─── Plant screen state ───────────────────────────────────────────────────────
@@ -347,6 +333,156 @@ final updatePlantFormProvider =
       return UpdatePlantNotifier(ref.watch(updatePlantUseCaseProvider), ref);
     });
 
+// ─── Harvest plant ────────────────────────────────────────────────────────────
+
+class HarvestPlantState {
+  final bool isLoading;
+  final String? error;
+
+  const HarvestPlantState({this.isLoading = false, this.error});
+
+  HarvestPlantState copyWith({bool? isLoading, String? error}) {
+    return HarvestPlantState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
+}
+
+class HarvestPlantNotifier extends StateNotifier<HarvestPlantState> {
+  final HarvestPlantUseCase _useCase;
+  final Ref _ref;
+
+  HarvestPlantNotifier(this._useCase, this._ref)
+    : super(const HarvestPlantState());
+
+  Future<PlantMutationResult> harvest({
+    required String siteId,
+    required String plantId,
+  }) async {
+    if (!mounted) {
+      return const PlantMutationResult.failure('Operasi dibatalkan');
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final result = await _useCase(siteId.trim(), plantId.trim());
+
+      if (!mounted) {
+        return const PlantMutationResult.failure('Operasi dibatalkan');
+      }
+
+      return result.fold(
+        (failure) {
+          if (mounted) {
+            state = state.copyWith(isLoading: false, error: failure.message);
+          }
+          return PlantMutationResult.failure(failure.message);
+        },
+        (plant) {
+          if (mounted) {
+            state = state.copyWith(isLoading: false, error: null);
+          }
+          unawaited(refreshPlantLists(_ref, plantId: plantId));
+          return PlantMutationResult.success(plant);
+        },
+      );
+    } catch (e) {
+      if (!mounted) {
+        return PlantMutationResult.failure(e.toString());
+      }
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return PlantMutationResult.failure(e.toString());
+    }
+  }
+
+  void reset() => state = const HarvestPlantState();
+}
+
+final harvestPlantProvider =
+    StateNotifierProvider<HarvestPlantNotifier, HarvestPlantState>((ref) {
+      return HarvestPlantNotifier(ref.watch(harvestPlantUseCaseProvider), ref);
+    });
+
+// ─── Delete plant ─────────────────────────────────────────────────────────────
+
+class DeletePlantState {
+  final bool isLoading;
+  final String? error;
+
+  const DeletePlantState({this.isLoading = false, this.error});
+
+  DeletePlantState copyWith({bool? isLoading, String? error}) {
+    return DeletePlantState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
+}
+
+class DeletePlantNotifier extends StateNotifier<DeletePlantState> {
+  final DeletePlantUseCase _useCase;
+  final Ref _ref;
+
+  DeletePlantNotifier(this._useCase, this._ref)
+    : super(const DeletePlantState());
+
+  Future<PlantMutationResult> delete({
+    required String siteId,
+    required String plantId,
+  }) async {
+    if (!mounted) {
+      return const PlantMutationResult.failure('Operasi dibatalkan');
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final result = await _useCase(siteId.trim(), plantId.trim());
+
+      if (!mounted) {
+        return const PlantMutationResult.failure('Operasi dibatalkan');
+      }
+
+      return result.fold(
+        (failure) {
+          if (mounted) {
+            state = state.copyWith(isLoading: false, error: failure.message);
+          }
+          return PlantMutationResult.failure(failure.message);
+        },
+        (_) {
+          if (mounted) {
+            state = state.copyWith(isLoading: false, error: null);
+          }
+          unawaited(
+            refreshPlantLists(
+              _ref,
+              plantId: plantId,
+              refreshDetail: false,
+            ),
+          );
+          return const PlantMutationResult.success();
+        },
+      );
+    } catch (e) {
+      if (!mounted) {
+        return PlantMutationResult.failure(e.toString());
+      }
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return PlantMutationResult.failure(e.toString());
+    }
+  }
+
+  void reset() => state = const DeletePlantState();
+}
+
+final deletePlantProvider =
+    StateNotifierProvider<DeletePlantNotifier, DeletePlantState>((ref) {
+      return DeletePlantNotifier(ref.watch(deletePlantUseCaseProvider), ref);
+    });
+
 // ─── Cache refresh ────────────────────────────────────────────────────────────
 
 /// Refresh list + detail setelah create / update / harvest / delete.
@@ -374,6 +510,16 @@ Future<void> refreshPlantLists(
   }
 
   await ref.read(plantsProvider.notifier).refresh();
+
+  // Sinkronkan state dashboard (tab Tanaman) setelah mutasi.
+  final plantsState = ref.read(plantsProvider);
+  final plants = plantsState is AsyncData<List<Plant>>
+      ? plantsState.value
+      : const <Plant>[];
+  final hasActive = plants.any((p) => p.isCurrentPlanting);
+  ref.read(plantScreenStateProvider.notifier).state = hasActive
+      ? PlantScreenState.hasData
+      : PlantScreenState.empty;
 
   final futures = <Future<Object?>>[
     _safe(ref.read(ongoingPlantProvider.future)),

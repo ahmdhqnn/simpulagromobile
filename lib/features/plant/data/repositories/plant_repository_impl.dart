@@ -4,7 +4,6 @@ import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/plant.dart';
-import '../../domain/entities/varietas.dart';
 import '../../domain/repositories/plant_repository.dart';
 import '../datasources/plant_remote_datasource.dart';
 
@@ -131,35 +130,4 @@ class PlantRepositoryImpl implements PlantRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<Varietas>>> getVarietas() async {
-    try {
-      final models = await remoteDataSource.getVarietas();
-      return Right(models.map((m) => m.toEntity()).toList());
-    } on UnsupportedBackendEndpointException catch (e) {
-      return Left(UnsupportedBackendEndpointFailure(e.message));
-    } on DioException catch (e) {
-      return Left(e.toFailure());
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Varietas>> getVarietasById(String varietasId) async {
-    try {
-      final model = await remoteDataSource.getVarietasById(varietasId);
-      return Right(model.toEntity());
-    } on UnsupportedBackendEndpointException catch (e) {
-      return Left(UnsupportedBackendEndpointFailure(e.message));
-    } on DioException catch (e) {
-      return Left(e.toFailure());
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
-    }
-  }
 }

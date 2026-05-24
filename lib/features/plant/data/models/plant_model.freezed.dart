@@ -26,7 +26,7 @@ mixin _$PlantModel {
   @JsonKey(name: 'plant_name')
   String? get plantName => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_type')
-  String? get plantType => throw _privateConstructorUsedError; // PADI, JAGUNG, KEDELAI
+  String? get plantType => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_species')
   String? get plantSpecies => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_date')
@@ -251,7 +251,6 @@ class _$PlantModelImpl extends _PlantModel with DiagnosticableTreeMixin {
   @override
   @JsonKey(name: 'plant_type')
   final String? plantType;
-  // PADI, JAGUNG, KEDELAI
   @override
   @JsonKey(name: 'plant_species')
   final String? plantSpecies;
@@ -360,7 +359,7 @@ abstract class _PlantModel extends PlantModel {
   String? get plantName;
   @override
   @JsonKey(name: 'plant_type')
-  String? get plantType; // PADI, JAGUNG, KEDELAI
+  String? get plantType;
   @override
   @JsonKey(name: 'plant_species')
   String? get plantSpecies;
@@ -379,262 +378,5 @@ abstract class _PlantModel extends PlantModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PlantModelImplCopyWith<_$PlantModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-VarietasModel _$VarietasModelFromJson(Map<String, dynamic> json) {
-  return _VarietasModel.fromJson(json);
-}
-
-/// @nodoc
-mixin _$VarietasModel {
-  @JsonKey(name: 'varietas_id')
-  String get varietasId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'varietas_name')
-  String? get varietasName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'varietas_desc')
-  String? get varietasDesc => throw _privateConstructorUsedError;
-  @JsonKey(name: 'varietas_sts')
-  int? get varietasSts => throw _privateConstructorUsedError;
-
-  /// Serializes this VarietasModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VarietasModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $VarietasModelCopyWith<VarietasModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $VarietasModelCopyWith<$Res> {
-  factory $VarietasModelCopyWith(
-    VarietasModel value,
-    $Res Function(VarietasModel) then,
-  ) = _$VarietasModelCopyWithImpl<$Res, VarietasModel>;
-  @useResult
-  $Res call({
-    @JsonKey(name: 'varietas_id') String varietasId,
-    @JsonKey(name: 'varietas_name') String? varietasName,
-    @JsonKey(name: 'varietas_desc') String? varietasDesc,
-    @JsonKey(name: 'varietas_sts') int? varietasSts,
-  });
-}
-
-/// @nodoc
-class _$VarietasModelCopyWithImpl<$Res, $Val extends VarietasModel>
-    implements $VarietasModelCopyWith<$Res> {
-  _$VarietasModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VarietasModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? varietasId = null,
-    Object? varietasName = freezed,
-    Object? varietasDesc = freezed,
-    Object? varietasSts = freezed,
-  }) {
-    return _then(
-      _value.copyWith(
-            varietasId: null == varietasId
-                ? _value.varietasId
-                : varietasId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            varietasName: freezed == varietasName
-                ? _value.varietasName
-                : varietasName // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            varietasDesc: freezed == varietasDesc
-                ? _value.varietasDesc
-                : varietasDesc // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            varietasSts: freezed == varietasSts
-                ? _value.varietasSts
-                : varietasSts // ignore: cast_nullable_to_non_nullable
-                      as int?,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$VarietasModelImplCopyWith<$Res>
-    implements $VarietasModelCopyWith<$Res> {
-  factory _$$VarietasModelImplCopyWith(
-    _$VarietasModelImpl value,
-    $Res Function(_$VarietasModelImpl) then,
-  ) = __$$VarietasModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    @JsonKey(name: 'varietas_id') String varietasId,
-    @JsonKey(name: 'varietas_name') String? varietasName,
-    @JsonKey(name: 'varietas_desc') String? varietasDesc,
-    @JsonKey(name: 'varietas_sts') int? varietasSts,
-  });
-}
-
-/// @nodoc
-class __$$VarietasModelImplCopyWithImpl<$Res>
-    extends _$VarietasModelCopyWithImpl<$Res, _$VarietasModelImpl>
-    implements _$$VarietasModelImplCopyWith<$Res> {
-  __$$VarietasModelImplCopyWithImpl(
-    _$VarietasModelImpl _value,
-    $Res Function(_$VarietasModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of VarietasModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? varietasId = null,
-    Object? varietasName = freezed,
-    Object? varietasDesc = freezed,
-    Object? varietasSts = freezed,
-  }) {
-    return _then(
-      _$VarietasModelImpl(
-        varietasId: null == varietasId
-            ? _value.varietasId
-            : varietasId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        varietasName: freezed == varietasName
-            ? _value.varietasName
-            : varietasName // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        varietasDesc: freezed == varietasDesc
-            ? _value.varietasDesc
-            : varietasDesc // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        varietasSts: freezed == varietasSts
-            ? _value.varietasSts
-            : varietasSts // ignore: cast_nullable_to_non_nullable
-                  as int?,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$VarietasModelImpl extends _VarietasModel with DiagnosticableTreeMixin {
-  const _$VarietasModelImpl({
-    @JsonKey(name: 'varietas_id') required this.varietasId,
-    @JsonKey(name: 'varietas_name') this.varietasName,
-    @JsonKey(name: 'varietas_desc') this.varietasDesc,
-    @JsonKey(name: 'varietas_sts') this.varietasSts,
-  }) : super._();
-
-  factory _$VarietasModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VarietasModelImplFromJson(json);
-
-  @override
-  @JsonKey(name: 'varietas_id')
-  final String varietasId;
-  @override
-  @JsonKey(name: 'varietas_name')
-  final String? varietasName;
-  @override
-  @JsonKey(name: 'varietas_desc')
-  final String? varietasDesc;
-  @override
-  @JsonKey(name: 'varietas_sts')
-  final int? varietasSts;
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'VarietasModel(varietasId: $varietasId, varietasName: $varietasName, varietasDesc: $varietasDesc, varietasSts: $varietasSts)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'VarietasModel'))
-      ..add(DiagnosticsProperty('varietasId', varietasId))
-      ..add(DiagnosticsProperty('varietasName', varietasName))
-      ..add(DiagnosticsProperty('varietasDesc', varietasDesc))
-      ..add(DiagnosticsProperty('varietasSts', varietasSts));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VarietasModelImpl &&
-            (identical(other.varietasId, varietasId) ||
-                other.varietasId == varietasId) &&
-            (identical(other.varietasName, varietasName) ||
-                other.varietasName == varietasName) &&
-            (identical(other.varietasDesc, varietasDesc) ||
-                other.varietasDesc == varietasDesc) &&
-            (identical(other.varietasSts, varietasSts) ||
-                other.varietasSts == varietasSts));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    varietasId,
-    varietasName,
-    varietasDesc,
-    varietasSts,
-  );
-
-  /// Create a copy of VarietasModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$VarietasModelImplCopyWith<_$VarietasModelImpl> get copyWith =>
-      __$$VarietasModelImplCopyWithImpl<_$VarietasModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VarietasModelImplToJson(this);
-  }
-}
-
-abstract class _VarietasModel extends VarietasModel {
-  const factory _VarietasModel({
-    @JsonKey(name: 'varietas_id') required final String varietasId,
-    @JsonKey(name: 'varietas_name') final String? varietasName,
-    @JsonKey(name: 'varietas_desc') final String? varietasDesc,
-    @JsonKey(name: 'varietas_sts') final int? varietasSts,
-  }) = _$VarietasModelImpl;
-  const _VarietasModel._() : super._();
-
-  factory _VarietasModel.fromJson(Map<String, dynamic> json) =
-      _$VarietasModelImpl.fromJson;
-
-  @override
-  @JsonKey(name: 'varietas_id')
-  String get varietasId;
-  @override
-  @JsonKey(name: 'varietas_name')
-  String? get varietasName;
-  @override
-  @JsonKey(name: 'varietas_desc')
-  String? get varietasDesc;
-  @override
-  @JsonKey(name: 'varietas_sts')
-  int? get varietasSts;
-
-  /// Create a copy of VarietasModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VarietasModelImplCopyWith<_$VarietasModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

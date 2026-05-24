@@ -4,15 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../../shared/widgets/confirmation_dialog.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
-import '../providers/plant_provider.dart';
+import '../utils/plant_mutation_actions.dart';
 import 'agro_indicator_button.dart';
 import 'growth_phase_button.dart';
+import 'plant_actions_sheet.dart';
 
 /// Card utama yang menampilkan gambar tanaman aktif beserta detail-nya.
 /// Ditampilkan di [PlantScreen] saat ada tanaman yang sedang tumbuh.
@@ -75,9 +74,8 @@ class PlantDetailCard extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (sheetCtx) => _PlantActionsSheet(
+      builder: (sheetCtx) => PlantActionsSheet(
         plant: plant,
-        isAdmin: isAdmin,
         onEdit: () {
           Navigator.pop(sheetCtx);
           context.push('/plant/${plant.plantId}/edit');
@@ -85,96 +83,24 @@ class PlantDetailCard extends ConsumerWidget {
         onHarvest: plant.isCurrentPlanting
             ? () {
                 Navigator.pop(sheetCtx);
-                _confirmHarvest(context, ref);
+                PlantMutationActions.confirmAndHarvest(
+                  context,
+                  ref,
+                  plant: plant,
+                );
               }
             : null,
         onDelete: isAdmin
             ? () {
                 Navigator.pop(sheetCtx);
-                _confirmDelete(context, ref);
+                PlantMutationActions.confirmAndDelete(
+                  context,
+                  ref,
+                  plant: plant,
+                );
               }
             : null,
       ),
-    );
-  }
-
-  // ─── Harvest ───────────────────────────────────────────────────────────────
-
-  Future<void> _confirmHarvest(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showConfirmationDialog(
-      context,
-      title: 'Panen Tanaman?',
-      message:
-          '"${plant.displayName}" akan ditandai sebagai sudah dipanen. Aksi ini tidak dapat dibatalkan.',
-      confirmText: 'Ya, Panen',
-      confirmColor: Colors.orange,
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final siteId = plant.siteId ?? ref.read(selectedSiteIdProvider);
-    if (siteId == null) {
-      SnackbarHelper.showError(context, 'Site tidak valid');
-      return;
-    }
-
-    final result = await ref.read(harvestPlantUseCaseProvider)(
-      siteId,
-      plant.plantId,
-    );
-    if (!context.mounted) return;
-
-    await result.fold<Future<void>>(
-      (f) async =>
-          SnackbarHelper.showError(context, 'Gagal panen: ${f.message}'),
-      (_) async {
-        await refreshPlantCache(ref, plantId: plant.plantId);
-        if (!context.mounted) return;
-        SnackbarHelper.showSuccess(
-          context,
-          '"${plant.displayName}" berhasil ditandai sudah panen',
-        );
-      },
-    );
-  }
-
-  // ─── Delete ────────────────────────────────────────────────────────────────
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'Tanaman',
-      additionalMessage:
-          '"${plant.displayName}" akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final siteId = plant.siteId ?? ref.read(selectedSiteIdProvider);
-    if (siteId == null) {
-      SnackbarHelper.showError(context, 'Site tidak valid');
-      return;
-    }
-
-    final result = await ref.read(deletePlantUseCaseProvider)(
-      siteId,
-      plant.plantId,
-    );
-    if (!context.mounted) return;
-
-    await result.fold<Future<void>>(
-      (f) async =>
-          SnackbarHelper.showError(context, 'Gagal hapus: ${f.message}'),
-      (_) async {
-        await refreshPlantCache(
-          ref,
-          plantId: plant.plantId,
-          refreshDetail: false,
-        );
-        if (!context.mounted) return;
-        SnackbarHelper.showSuccess(
-          context,
-          '"${plant.displayName}" berhasil dihapus',
-        );
-      },
     );
   }
 }
@@ -193,7 +119,7 @@ class _PlantCardHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Tanaman',
+          AppLocalizations.of(context)!.plantTitle,
           style: TextStyle(
             fontFamily: AppTextStyles.fontFamily,
             fontSize: context.sp(28),
@@ -247,17 +173,17 @@ class _PlantInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = plant.isHarvested
-        ? Colors.orange
+        ? AppColors.warning
         : plant.isCurrentPlanting
-        ? Colors.green
-        : Colors.grey;
+        ? AppColors.success
+        : AppColors.textTertiary;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F7),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -355,102 +281,6 @@ class _DetailRow extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bottom sheet aksi tanaman (Edit / Panen / Delete)
-class _PlantActionsSheet extends StatelessWidget {
-  final Plant plant;
-  final bool isAdmin;
-  final VoidCallback onEdit;
-  final VoidCallback? onHarvest;
-  final VoidCallback? onDelete;
-
-  const _PlantActionsSheet({
-    required this.plant,
-    required this.isAdmin,
-    required this.onEdit,
-    this.onHarvest,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          // Drag handle
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          // Title
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                plant.displayName,
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(16),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          const Divider(height: 1),
-          // Edit
-          ListTile(
-            leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
-            title: Text(
-              'Edit Tanaman',
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(14),
-              ),
-            ),
-            onTap: onEdit,
-          ),
-          // Panen (hanya jika sedang tumbuh)
-          if (onHarvest != null)
-            ListTile(
-              leading: const Icon(Icons.agriculture, color: Colors.orange),
-              title: Text(
-                'Panen Tanaman',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                  color: Colors.orange,
-                ),
-              ),
-              onTap: onHarvest,
-            ),
-          // Delete (hanya Admin)
-          if (onDelete != null)
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: Text(
-                'Delete Tanaman',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                  color: Colors.red,
-                ),
-              ),
-              onTap: onDelete,
-            ),
-          const SizedBox(height: 8),
         ],
       ),
     );
