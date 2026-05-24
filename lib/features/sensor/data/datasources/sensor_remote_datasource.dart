@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/sensor_model.dart';
 
 class SensorRemoteDataSource {
@@ -20,9 +21,9 @@ class SensorRemoteDataSource {
         .toList();
   }
 
-  /// GET /api/sites/:siteId/sensors/:sensId
+  /// GET /api/sites/:siteId/sensors/detail/:sensId
   Future<SensorModel> getSensorById(String siteId, String sensId) async {
-    final response = await _dio.get(ApiEndpoints.sensorById(siteId, sensId));
+    final response = await _dio.get(ApiEndpoints.sensorDetail(siteId, sensId));
     final data = response.data['data'] as Map<String, dynamic>? ?? {};
     return SensorModel.fromJson(_normalizeSensor(data));
   }
@@ -53,7 +54,7 @@ class SensorRemoteDataSource {
 
   /// DELETE /api/sites/:siteId/sensors/:sensId
   Future<void> deleteSensor(String siteId, String sensId) async {
-    await _dio.delete(ApiEndpoints.sensorById(siteId, sensId));
+    throw const UnsupportedBackendEndpointException('Hapus sensor belum didukung oleh server');
   }
 
   /// Normalize sensor JSON — handle type mismatches from API

@@ -203,6 +203,58 @@ class _DeviceSensorFormScreenState
       return;
     }
 
+    final minNorm = _parseDouble(_minNormController.text);
+    final maxNorm = _parseDouble(_maxNormController.text);
+    final minValue = _parseDouble(_minValueController.text);
+    final maxValue = _parseDouble(_maxValueController.text);
+    final minWarn = _parseDouble(_minWarnController.text);
+    final maxWarn = _parseDouble(_maxWarnController.text);
+
+    if (minNorm != null && maxNorm != null && minNorm > maxNorm) {
+      SnackbarHelper.showError(context, 'Min Normal tidak boleh lebih besar dari Max Normal');
+      return;
+    }
+    if (minValue != null && maxValue != null && minValue > maxValue) {
+      SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Max Absolut');
+      return;
+    }
+    if (minWarn != null && maxWarn != null && minWarn > maxWarn) {
+      SnackbarHelper.showError(context, 'Min Warning tidak boleh lebih besar dari Max Warning');
+      return;
+    }
+
+    if (minValue != null) {
+      if (minNorm != null && minValue > minNorm) {
+        SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Min Normal');
+        return;
+      }
+      if (minWarn != null && minValue > minWarn) {
+        SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Min Warning');
+        return;
+      }
+    }
+
+    if (maxValue != null) {
+      if (maxNorm != null && maxValue < maxNorm) {
+        SnackbarHelper.showError(context, 'Max Absolut tidak boleh lebih kecil dari Max Normal');
+        return;
+      }
+      if (maxWarn != null && maxValue < maxWarn) {
+        SnackbarHelper.showError(context, 'Max Absolut tidak boleh lebih kecil dari Max Warning');
+        return;
+      }
+    }
+
+    if (minWarn != null && minNorm != null && minWarn > minNorm) {
+      SnackbarHelper.showError(context, 'Min Warning tidak boleh lebih besar dari Min Normal');
+      return;
+    }
+
+    if (maxWarn != null && maxNorm != null && maxWarn < maxNorm) {
+      SnackbarHelper.showError(context, 'Max Warning tidak boleh lebih kecil dari Max Normal');
+      return;
+    }
+
     final ds = DeviceSensor(
       dsId: _idController.text.trim(),
       devId: _selectedDeviceId!,

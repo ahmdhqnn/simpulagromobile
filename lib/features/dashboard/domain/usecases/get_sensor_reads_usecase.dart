@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../entities/dashboard_entity.dart';
 import '../repositories/dashboard_repository.dart';
 
 /// UseCase untuk mendapatkan sensor readings (pembacaan sensor)
@@ -17,10 +18,10 @@ class GetSensorReadsUseCase {
   ///
   /// [siteId] - ID dari site
   ///
-  /// Returns [Either<Failure, List<Map<String, dynamic>>>] yang berisi:
+  /// Returns [Either<Failure, List<SensorReadEntity>>] yang berisi:
   /// - Left: Failure jika terjadi error
-  /// - Right: List of latest sensor readings dengan struktur yang diberikan backend
-  Future<Either<Failure, List<Map<String, dynamic>>>> getLatestReads(
+  /// - Right: List of latest sensor readings
+  Future<Either<Failure, List<SensorReadEntity>>> getLatestReads(
     String siteId,
   ) async {
     try {
@@ -36,10 +37,10 @@ class GetSensorReadsUseCase {
   ///
   /// [siteId] - ID dari site
   ///
-  /// Returns [Either<Failure, List<Map<String, dynamic>>>] yang berisi:
+  /// Returns [Either<Failure, List<SensorReadEntity>>] yang berisi:
   /// - Left: Failure jika terjadi error
   /// - Right: List of sensor readings untuk hari ini
-  Future<Either<Failure, List<Map<String, dynamic>>>> getTodayReads(
+  Future<Either<Failure, List<SensorReadEntity>>> getTodayReads(
     String siteId,
   ) async {
     try {
@@ -55,14 +56,14 @@ class GetSensorReadsUseCase {
   ///
   /// [siteId] - ID dari site
   ///
-  /// Returns [Either<Failure, List<Map<String, dynamic>>>] yang berisi:
+  /// Returns [Either<Failure, List<SensorReadEntity>>] yang berisi:
   /// - Left: Failure jika terjadi error
-  /// - Right: List of sensor readings untuk 7 hari terakhir
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSevenDayReads(
+  /// - Right: List of sensor readings untuk 7 hari terakhir (menggunakan daily reads)
+  Future<Either<Failure, List<SensorReadEntity>>> getSevenDayReads(
     String siteId,
   ) async {
     try {
-      return await repository.getSevenDayReads(siteId);
+      return await repository.getDailyReads(siteId);
     } catch (e) {
       return Left(
         UnknownFailure('Failed to get seven day sensor reads: ${e.toString()}'),

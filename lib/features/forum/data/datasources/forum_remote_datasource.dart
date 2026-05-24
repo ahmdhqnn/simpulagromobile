@@ -132,7 +132,15 @@ class ForumRemoteDataSource {
       });
 
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        formData.fields.add(MapEntry('forum_image_url', imageUrl));
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          formData.fields.add(MapEntry('forum_image_url', imageUrl));
+          formData.fields.add(MapEntry('image', imageUrl));
+        } else {
+          formData.files.add(MapEntry(
+            'image',
+            await MultipartFile.fromFile(imageUrl),
+          ));
+        }
       }
 
       final response = await _dio.post(ApiEndpoints.forumPosts, data: formData);
@@ -163,7 +171,15 @@ class ForumRemoteDataSource {
       });
 
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        formData.fields.add(MapEntry('forum_image_url', imageUrl));
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          formData.fields.add(MapEntry('forum_image_url', imageUrl));
+          formData.fields.add(MapEntry('image', imageUrl));
+        } else {
+          formData.files.add(MapEntry(
+            'image',
+            await MultipartFile.fromFile(imageUrl),
+          ));
+        }
       }
 
       final response = await _dio.put(ApiEndpoints.forumPostById(postId), data: formData);
@@ -249,7 +265,10 @@ class ForumRemoteDataSource {
 
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
     try {
-      final response = await _dio.post(ApiEndpoints.forumPostLike(postId));
+      final response = await _dio.post(
+        ApiEndpoints.forumPostLike(postId),
+        data: {'action': 'LIKE'},
+      );
       final data = _extractResponseData(response.data);
       final map = JsonParser.parseMap(data);
       return (

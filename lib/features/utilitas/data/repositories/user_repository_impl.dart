@@ -33,7 +33,7 @@ class UserRepositoryImpl implements UserRepository {
         'user_name': user.userName,
         'user_email': user.userEmail,
         'user_phone': user.userPhone,
-        'user_password': password,
+        'user_pass': password,
         'role_id': user.roleId,
       };
 

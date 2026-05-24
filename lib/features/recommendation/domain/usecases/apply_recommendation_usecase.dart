@@ -35,7 +35,7 @@ class ApplyRecommendationUseCase {
   ///   - recommendationId: The ID of the recommendation to apply
   ///
   /// Returns:
-  ///   Either<Failure, Recommendation> - Success with updated recommendation or Failure
+  ///   Either[Failure, Recommendation] - Success with updated recommendation or Failure
   ///
   /// Throws:
   ///   - ServerFailure if the endpoint returns an error

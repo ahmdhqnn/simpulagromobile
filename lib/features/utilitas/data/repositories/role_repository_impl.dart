@@ -43,21 +43,7 @@ class RoleRepositoryImpl implements RoleRepository {
       );
 
       final createdModel = await remoteDatasource.createRole(data);
-      final createdRole = createdModel.toEntity();
-
-      // Assign permissions if provided
-      if (permissionIds.isNotEmpty) {
-        await remoteDatasource.assignPermissions(
-          createdRole.roleId,
-          permissionIds,
-        );
-      }
-
-      // Fetch updated role with permissions
-      final updatedModel = await remoteDatasource.getRoleById(
-        createdRole.roleId,
-      );
-      return updatedModel.toEntity();
+      return createdModel.toEntity();
     } catch (e) {
       rethrow;
     }
@@ -82,23 +68,7 @@ class RoleRepositoryImpl implements RoleRepository {
             key == 'list_permission',
       );
 
-      await remoteDatasource.updateRole(roleId, data);
-
-      // Update permissions if provided
-      if (permissionIds != null) {
-        // Remove existing permissions
-        for (final perm in role.permissions) {
-          await remoteDatasource.removePermission(perm.permId, roleId);
-        }
-
-        // Assign new permissions
-        if (permissionIds.isNotEmpty) {
-          await remoteDatasource.assignPermissions(roleId, permissionIds);
-        }
-      }
-
-      // Fetch updated role with permissions
-      final updatedModel = await remoteDatasource.getRoleById(roleId);
+      final updatedModel = await remoteDatasource.updateRole(roleId, data);
       return updatedModel.toEntity();
     } catch (e) {
       rethrow;

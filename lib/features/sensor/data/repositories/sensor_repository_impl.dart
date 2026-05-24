@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/sensor.dart';
 import '../../domain/repositories/sensor_repository.dart';
 import '../datasources/sensor_remote_datasource.dart';
@@ -102,6 +103,8 @@ class SensorRepositoryImpl implements SensorRepository {
     try {
       await _remoteDataSource.deleteSensor(siteId, sensId);
       return const Right(null);
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {

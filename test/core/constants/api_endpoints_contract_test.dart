@@ -30,6 +30,7 @@ void main() {
 
     test('Sensor Endpoints', () {
       expect(ApiEndpoints.sensors('SITE001'), equals('/sites/SITE001/sensors'));
+      expect(ApiEndpoints.sensorDetail('SITE001', 'SENS002'), equals('/sites/SITE001/sensors/detail/SENS002'));
       expect(ApiEndpoints.sensorById('SITE001', 'SENS002'), equals('/sites/SITE001/sensors/SENS002'));
     });
 

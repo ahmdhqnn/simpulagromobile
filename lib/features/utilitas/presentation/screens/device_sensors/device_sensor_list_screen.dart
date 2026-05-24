@@ -7,8 +7,6 @@ import 'package:simpulagromobile/features/utilitas/presentation/widgets/permissi
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_list_item.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/device_sensor.dart';
-import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
-import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
 class DeviceSensorListScreen extends ConsumerWidget {
   const DeviceSensorListScreen({super.key});
@@ -171,49 +169,12 @@ class _DeviceSensorCard extends ConsumerWidget {
                 },
               ),
             ),
-            PermissionGuard(
-              permission: 'ds:delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            ),
+            // Delete option hidden as it is unsupported on the backend
+            const SizedBox.shrink(),
             const SizedBox(height: 8),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'Mapping "${deviceSensor.displayName}"',
-    );
-
-    if (!confirmed || !context.mounted) return;
-
-    final success = await ref
-        .read(deviceSensorFormProvider.notifier)
-        .deleteDeviceSensor(deviceSensor.dsId);
-
-    if (!context.mounted) return;
-
-    if (success) {
-      SnackbarHelper.showSuccess(context, 'Mapping berhasil dihapus');
-    } else {
-      final error = ref.read(deviceSensorFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus mapping');
-    }
   }
 }

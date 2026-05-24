@@ -7,8 +7,6 @@ import 'package:simpulagromobile/features/utilitas/presentation/widgets/permissi
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_list_item.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/unit.dart';
-import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
-import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
 class UnitListScreen extends ConsumerWidget {
   const UnitListScreen({super.key});
@@ -137,9 +135,9 @@ class _UnitCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 unit.displayNameWithSymbol,
                 style: const TextStyle(
@@ -149,64 +147,23 @@ class _UnitCard extends ConsumerWidget {
                 ),
               ),
             ),
-            const Divider(height: 1),
-            PermissionGuard(
-              permission: 'unit:update',
-              child: ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Text(
+                'Data Unit bersifat read-only. Perubahan dan penghapusan unit tidak didukung oleh sistem backend saat ini.',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 13,
+                  color: Colors.grey[600],
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/utilitas/units/${unit.unitId}/edit');
-                },
+                textAlign: TextAlign.center,
               ),
             ),
-            PermissionGuard(
-              permission: 'unit:delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'Unit "${unit.displayNameWithSymbol}"',
-    );
-
-    if (!confirmed || !context.mounted) return;
-
-    final success = await ref
-        .read(unitFormProvider.notifier)
-        .deleteUnit(unit.unitId);
-
-    if (!context.mounted) return;
-
-    if (success) {
-      SnackbarHelper.showSuccess(context, 'Unit berhasil dihapus');
-    } else {
-      final error = ref.read(unitFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus unit');
-    }
   }
 }

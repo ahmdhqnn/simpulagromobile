@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../domain/entities/recommendation.dart';
 import '../providers/recommendation_provider.dart';
-import '../widgets/recommendation_action_buttons_widget.dart';
 import '../widgets/recommendation_action_items_card_widget.dart';
 import '../widgets/recommendation_detail_header_widget.dart';
 import '../widgets/recommendation_error_state_widget.dart';
@@ -112,14 +110,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
                             reason: recommendation.reason!,
                           ),
                         ],
-                        if (recommendation.isActionable) ...[
-                          SizedBox(height: context.rh(0.02)),
-                          RecommendationActionButtonsWidget(
-                            onDismiss: () =>
-                                _dismiss(context, ref, recommendation),
-                            onApply: () => _apply(context, ref, recommendation),
-                          ),
-                        ],
+                        const SizedBox.shrink(),
                         SizedBox(height: context.rh(0.02)),
                       ],
                     ),
@@ -129,162 +120,6 @@ class RecommendationDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Future<void> _apply(
-    BuildContext context,
-    WidgetRef ref,
-    Recommendation recommendation,
-  ) async {
-    final confirmed = await _showConfirmDialog(
-      context,
-      title: 'Terapkan Rekomendasi',
-      message: 'Apakah Anda yakin ingin menerapkan rekomendasi ini?',
-      confirmLabel: 'Terapkan',
-      confirmColor: AppColors.primary,
-    );
-    if (confirmed != true || !context.mounted) return;
-
-    try {
-      final useCase = ref.read(applyRecommendationUseCaseProvider);
-      final result = await useCase(recommendation.recommendationId);
-
-      if (!context.mounted) return;
-      
-      result.fold(
-        (failure) {
-          _showSnack(
-            context,
-            'Gagal menerapkan: ${failure.message}',
-            backgroundColor: AppColors.error,
-          );
-        },
-        (_) {
-          ref.invalidate(recommendationListProvider);
-          ref.invalidate(recommendationDetailProvider(recommendation.recommendationId));
-          _showSnack(
-            context,
-            'Rekomendasi berhasil diterapkan',
-            backgroundColor: AppColors.success,
-          );
-        },
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      _showSnack(
-        context,
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  Future<void> _dismiss(
-    BuildContext context,
-    WidgetRef ref,
-    Recommendation recommendation,
-  ) async {
-    final confirmed = await _showConfirmDialog(
-      context,
-      title: 'Abaikan Rekomendasi',
-      message: 'Apakah Anda yakin ingin mengabaikan rekomendasi ini?',
-      confirmLabel: 'Abaikan',
-      confirmColor: AppColors.error,
-    );
-    if (confirmed != true || !context.mounted) return;
-
-    try {
-      final useCase = ref.read(dismissRecommendationUseCaseProvider);
-      final result = await useCase(recommendation.recommendationId);
-
-      if (!context.mounted) return;
-      
-      result.fold(
-        (failure) {
-          _showSnack(
-            context,
-            'Gagal mengabaikan: ${failure.message}',
-            backgroundColor: AppColors.error,
-          );
-        },
-        (_) {
-          ref.invalidate(recommendationListProvider);
-          _showSnack(context, 'Rekomendasi diabaikan');
-          context.pop();
-        },
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      _showSnack(
-        context,
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  Future<bool?> _showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String confirmLabel,
-    required Color confirmColor,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx, false),
-            child: const Text(
-              'Batal',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogCtx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: confirmColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-            ),
-            child: Text(
-              confirmLabel,
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSnack(
-    BuildContext context,
-    String message, {
-    Color? backgroundColor,
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        backgroundColor: backgroundColor,
       ),
     );
   }

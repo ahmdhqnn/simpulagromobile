@@ -75,12 +75,7 @@ class PlantDetailScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
-          CircularIconActionWidget(
-            onPressed: () {
-              /* Navigate to edit */
-            },
-            icon: Icons.more_horiz,
-          ),
+          const SizedBox.shrink(),
         ],
       ),
     );

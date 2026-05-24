@@ -183,26 +183,8 @@ class SensorDetailScreen extends ConsumerWidget {
 
                 SizedBox(height: context.rh(0.02)),
 
-                // Delete Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showDeleteDialog(context, ref),
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text(
-                      'Hapus Sensor',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                    ),
-                  ),
-                ),
+                // Delete Button - Hidden as it is unsupported on the backend
+                const SizedBox.shrink(),
               ],
             ),
           ),
@@ -323,66 +305,5 @@ class SensorDetailScreen extends ConsumerWidget {
     context.push('/site-sensor-edit/$siteId/$sensorId').then((_) {
       ref.invalidate(sensorDetailProvider((siteId: siteId, sensId: sensorId)));
     });
-  }
-
-  void _showDeleteDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Hapus Sensor',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-        ),
-        content: const Text(
-          'Apakah Anda yakin ingin menghapus sensor ini? Tindakan ini tidak dapat dibatalkan.',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteSensor(context, ref);
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deleteSensor(BuildContext context, WidgetRef ref) async {
-    final formNotifier = ref.read(sensorFormProvider.notifier);
-    final success = await formNotifier.deleteSensor(siteId, sensorId);
-
-    if (!context.mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Sensor berhasil dihapus',
-            style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      Navigator.pop(context);
-    } else {
-      final state = ref.read(sensorFormProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            state.error ?? 'Gagal menghapus sensor',
-            style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-          ),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
   }
 }

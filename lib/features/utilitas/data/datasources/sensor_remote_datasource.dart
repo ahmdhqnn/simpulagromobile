@@ -91,7 +91,7 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
   @override
   Future<SensorModel> getSensorById(String siteId, String sensorId) async {
     try {
-      final response = await dio.get(ApiEndpoints.sensorById(siteId, sensorId));
+      final response = await dio.get(ApiEndpoints.sensorDetail(siteId, sensorId));
 
       final data = response.data;
       if (data == null) {

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/agro_model.dart';
+import '../entities/agro_entity.dart';
 import '../repositories/agro_repository.dart';
 
 /// UseCase for retrieving Vapor Pressure Deficit (VDP) data
@@ -19,9 +19,9 @@ class GetVdpUseCase {
   ///   - siteId: The unique identifier of the site
   /// 
   /// Returns:
-  ///   - [Right<VdpModel>] if successful
+  ///   - [Right<VdpEntity>] if successful
   ///   - [Left<Failure>] if an error occurs (data not available or network error)
-  Future<Either<Failure, VdpModel>> call(String siteId) async {
+  Future<Either<Failure, VdpEntity>> call(String siteId) async {
     return repository.getVdpData(siteId);
   }
 }

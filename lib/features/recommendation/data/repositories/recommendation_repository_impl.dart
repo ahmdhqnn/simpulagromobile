@@ -44,10 +44,11 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
 
   @override
   Future<Either<Failure, List<Recommendation>>> getRecommendationsByPlant(
+    String siteId,
     String plantId,
   ) async {
     try {
-      final models = await _remoteDatasource.getRecommendationsByPlant(plantId);
+      final models = await _remoteDatasource.getRecommendationsByPlant(siteId, plantId);
       return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());

@@ -89,9 +89,11 @@ final recommendationsBySiteProvider =
 // ─── Recommendations by Plant ─────────────────────────────
 final recommendationsByPlantProvider =
     FutureProvider.family<List<Recommendation>, String>((ref, plantId) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
       final useCase = ref.watch(getRecommendationsByPlantUseCaseProvider);
       return await ref.retryOnError(() async {
-        final result = await useCase(plantId);
+        final result = await useCase(siteId, plantId);
         return result.fold(
           (failure) => throw failure,
           (recommendations) => List<Recommendation>.from(recommendations),
@@ -121,6 +123,18 @@ final recommendationDetailProvider =
       ref,
       recommendationId,
     ) async {
+      final listAsync = ref.read(recommendationListProvider);
+      final cachedRec = listAsync.whenOrNull(
+        data: (list) {
+          try {
+            return list.firstWhere((r) => r.recommendationId == recommendationId);
+          } catch (_) {
+            return null;
+          }
+        },
+      );
+      if (cachedRec != null) return cachedRec;
+
       final useCase = ref.watch(getRecommendationByIdUseCaseProvider);
       return await ref.retryOnError(() async {
         final result = await useCase(recommendationId);

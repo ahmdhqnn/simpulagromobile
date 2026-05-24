@@ -25,8 +25,8 @@ class GetRecommendationsByPlantUseCase {
   final RecommendationRepository repository;
   GetRecommendationsByPlantUseCase(this.repository);
 
-  Future<Either<Failure, List<Recommendation>>> call(String plantId) async {
-    return await repository.getRecommendationsByPlant(plantId);
+  Future<Either<Failure, List<Recommendation>>> call(String siteId, String plantId) async {
+    return await repository.getRecommendationsByPlant(siteId, plantId);
   }
 }
 
