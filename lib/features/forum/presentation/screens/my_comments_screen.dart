@@ -49,12 +49,7 @@ class MyCommentsScreen extends ConsumerWidget {
               itemCount: comments.length,
               itemBuilder: (context, index) {
                 final comment = comments[index];
-                return _CommentCard(
-                  comment: comment,
-                  onTap: () {
-                    context.push('/forum/post/${comment.forumId}');
-                  },
-                );
+                return _CommentCard(comment: comment);
               },
             ),
           );
@@ -110,16 +105,16 @@ class MyCommentsScreen extends ConsumerWidget {
   }
 }
 
-class _CommentCard extends StatelessWidget {
+class _CommentCard extends ConsumerWidget {
   final UserComment comment;
-  final VoidCallback? onTap;
 
-  const _CommentCard({required this.comment, this.onTap});
+  const _CommentCard({required this.comment});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => context.push('/forum/post/${comment.forumId}'),
+      onLongPress: () => _showActions(context, ref),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -130,7 +125,6 @@ class _CommentCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Post title reference
             Row(
               children: [
                 Icon(
@@ -154,11 +148,13 @@ class _CommentCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                IconButton(
+                  icon: const Icon(Icons.more_vert, size: 18),
+                  onPressed: () => _showActions(context, ref),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-
-            // Comment content
             Text(
               comment.commentContent,
               style: AppTextStyles.label(
@@ -167,12 +163,10 @@ class _CommentCard extends StatelessWidget {
                 weight: FontWeight.w400,
                 height: 1.5,
               ),
-              maxLines: 3,
+              maxLines: 5,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-
-            // Time ago
             Text(
               comment.timeAgo,
               style: AppTextStyles.hint(context, size: 10),
@@ -180,6 +174,119 @@ class _CommentCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showActions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Edit Komentar'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _editComment(context, ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: AppColors.error),
+              title: const Text(
+                'Hapus Komentar',
+                style: TextStyle(color: AppColors.error),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                _deleteComment(context, ref);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editComment(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: comment.commentContent);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Komentar'),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    final repo = ref.read(forumRepositoryProvider);
+    final result = await repo.updateComment(
+      commentId: comment.commentId,
+      content: controller.text.trim(),
+    );
+    if (!context.mounted) return;
+    result.fold(
+      (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(f.message)),
+      ),
+      (_) {
+        ref.invalidate(myCommentsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Komentar diperbarui')),
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteComment(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Komentar?'),
+        content: const Text('Komentar akan dihapus permanen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    final repo = ref.read(forumRepositoryProvider);
+    final result = await repo.deleteCommentGlobal(comment.commentId);
+    if (!context.mounted) return;
+    result.fold(
+      (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(f.message)),
+      ),
+      (_) {
+        ref.invalidate(myCommentsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Komentar dihapus')),
+        );
+      },
     );
   }
 }

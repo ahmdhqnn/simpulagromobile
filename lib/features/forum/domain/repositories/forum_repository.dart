@@ -28,6 +28,7 @@ abstract class ForumRepository {
 
   // ─── Interactions ──────────────────────────────────
   Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleLike(String postId);
+  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleDislike(String postId);
   Future<Either<Failure, int>> sharePost(String postId);
 
   // ─── Comments ──────────────────────────────────────
@@ -44,6 +45,11 @@ abstract class ForumRepository {
     required String postId,
     required String commentId,
   });
+  Future<Either<Failure, Comment>> updateComment({
+    required String commentId,
+    required String content,
+  });
+  Future<Either<Failure, void>> deleteCommentGlobal(String commentId);
 
   // ─── Reactions ─────────────────────────────────────
   Future<Either<Failure, List<Reaction>>> getReactions(String postId);

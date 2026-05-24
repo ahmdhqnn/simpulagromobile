@@ -89,4 +89,16 @@ class SiteRepositoryImpl implements SiteRepository {
       return Left(ServerFailure('Failed to update site: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> inviteMember(String siteId, String userId) async {
+    try {
+      await _remoteDataSource.inviteMember(siteId, userId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure('Failed to invite member: $e'));
+    }
+  }
 }

@@ -178,6 +178,20 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
+  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleDislike(
+    String postId,
+  ) async {
+    try {
+      final result = await _remoteDataSource.toggleDislike(postId);
+      return Right(result);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, int>> sharePost(String postId) async {
     try {
       final result = await _remoteDataSource.sharePost(postId);
@@ -237,6 +251,36 @@ class ForumRepositoryImpl implements ForumRepository {
         postId: postId,
         commentId: commentId,
       );
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Comment>> updateComment({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final comment = await _remoteDataSource.updateComment(
+        commentId: commentId,
+        content: content,
+      );
+      return Right(comment);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteCommentGlobal(String commentId) async {
+    try {
+      await _remoteDataSource.deleteCommentGlobal(commentId);
       return const Right(null);
     } on DioException catch (e) {
       return Left(_handleDioError(e));

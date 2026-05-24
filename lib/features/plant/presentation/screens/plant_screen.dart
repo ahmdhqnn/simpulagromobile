@@ -54,9 +54,10 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
   ) {
     PlantScreenState actualState;
     if (screenState != PlantScreenState.input) {
-      actualState = plants.isEmpty
-          ? PlantScreenState.empty
-          : PlantScreenState.hasData;
+      final hasActivePlant = plants.any((p) => p.isActive);
+      actualState = hasActivePlant
+          ? PlantScreenState.hasData
+          : PlantScreenState.empty;
     } else {
       actualState = PlantScreenState.input;
     }
@@ -73,9 +74,9 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
         return PlantInputForm(
           siteId: siteId,
           onCancel: () {
-            ref.read(plantScreenStateProvider.notifier).state = plants.isEmpty
-                ? PlantScreenState.empty
-                : PlantScreenState.hasData;
+            ref.read(plantScreenStateProvider.notifier).state = plants.any((p) => p.isActive)
+                ? PlantScreenState.hasData
+                : PlantScreenState.empty;
           },
           onSuccess: () {
             ref.read(plantScreenStateProvider.notifier).state =
@@ -83,7 +84,8 @@ class _PlantScreenState extends ConsumerState<PlantScreen> {
           },
         );
       case PlantScreenState.hasData:
-        return PlantDetailCard(plant: plants.first);
+        final activePlant = plants.firstWhere((p) => p.isActive);
+        return PlantDetailCard(plant: activePlant);
       case PlantScreenState.loading:
         return const Center(
           child: DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 120),

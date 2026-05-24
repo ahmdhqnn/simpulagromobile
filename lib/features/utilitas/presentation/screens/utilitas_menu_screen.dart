@@ -61,12 +61,6 @@ class UtilitasMenuScreen extends ConsumerWidget {
         onTap: () => context.push('/utilitas/roles'),
         color: const Color(0xFF66BB6A),
       ),
-      UtilitasMenuItem(
-        title: 'Permission',
-        iconPath: 'assets/icons/permission-outline-icon.svg',
-        onTap: () => context.push('/utilitas/permissions'),
-        color: const Color(0xFFEF5350),
-      ),
     ];
 
     return Scaffold(

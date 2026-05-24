@@ -19,6 +19,11 @@ void main() {
     test('Site Endpoints', () {
       expect(ApiEndpoints.sites, equals('/sites'));
       expect(ApiEndpoints.siteById('SITE001'), equals('/sites/SITE001'));
+      expect(
+        ApiEndpoints.siteMemberInvite('SITE001'),
+        equals('/sites/SITE001/members/invite'),
+      );
+      expect(ApiEndpoints.siteNotes('SITE001'), equals('/sites/SITE001/notes'));
     });
 
     test('Device Endpoints', () {
@@ -65,6 +70,13 @@ void main() {
       expect(ApiEndpoints.plantRecBySite('SITE001'), equals('/sites/SITE001/recommendations/plant-by-site'));
       expect(ApiEndpoints.recHistory('SITE001'), equals('/sites/SITE001/recommendations/history'));
       expect(ApiEndpoints.recByPhase('SITE001', 'PHASE002'), equals('/sites/SITE001/recommendations/by-phase/PHASE002'));
+      expect(ApiEndpoints.recPreviewDummy('SITE001'), equals('/sites/SITE001/recommendations/preview-dummy'));
+      expect(ApiEndpoints.recSaveDummy('SITE001'), equals('/sites/SITE001/recommendations/save-dummy'));
+    });
+
+    test('Comment Endpoints', () {
+      expect(ApiEndpoints.updateComment, equals('/comments'));
+      expect(ApiEndpoints.deleteComment('COM001'), equals('/comments/COM001'));
     });
 
     test('Agro Endpoints', () {

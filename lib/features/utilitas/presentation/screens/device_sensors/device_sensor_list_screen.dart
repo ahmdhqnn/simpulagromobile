@@ -3,18 +3,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/providers/device_sensor_provider.dart';
+import 'package:simpulagromobile/features/utilitas/presentation/widgets/device_sensor_threshold_tab.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_list_item.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/device_sensor.dart';
 
-class DeviceSensorListScreen extends ConsumerWidget {
+class DeviceSensorListScreen extends ConsumerStatefulWidget {
   const DeviceSensorListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dsListAsync = ref.watch(utilitasDeviceSensorListProvider);
+  ConsumerState<DeviceSensorListScreen> createState() =>
+      _DeviceSensorListScreenState();
+}
 
+class _DeviceSensorListScreenState extends ConsumerState<DeviceSensorListScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return PermissionGuardScreen(
       permission: 'ds:read',
       child: UtilitasScaffold(
@@ -25,60 +45,72 @@ class DeviceSensorListScreen extends ConsumerWidget {
             onTap: () => context.push('/utilitas/device-sensors/create'),
           ),
         ),
-        body: dsListAsync.when(
-          data: (deviceSensors) {
-            if (deviceSensors.isEmpty) {
-              return const UtilitasEmptyState(
-                icon: Icons.cable_outlined,
-                title: 'Belum ada mapping',
-                message: 'Tambahkan mapping device-sensor untuk monitoring',
-              );
-            }
-
-            return RefreshIndicator(
-              color: const Color(0xFF1B5E20),
-              onRefresh: () async {
-                ref.invalidate(utilitasDeviceSensorListProvider);
-                await Future.delayed(const Duration(milliseconds: 300));
-              },
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.rw(0.051),
-                  vertical: context.rh(0.01),
-                ),
-                itemCount: deviceSensors.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        'Device Sensor',
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final ds = deviceSensors[index - 1];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                    child: _DeviceSensorCard(deviceSensor: ds),
-                  );
-                },
+        body: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Mapping'),
+                Tab(text: 'Nilai Ambang'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _MappingTab(),
+                  const DeviceSensorThresholdTab(),
+                ],
               ),
-            );
-          },
-          loading: () => const UtilitasLoadingState(),
-          error: (error, _) => UtilitasErrorState(
-            error: error,
-            onRetry: () => ref.invalidate(utilitasDeviceSensorListProvider),
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _MappingTab extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dsListAsync = ref.watch(utilitasDeviceSensorListProvider);
+
+    return dsListAsync.when(
+      data: (deviceSensors) {
+        if (deviceSensors.isEmpty) {
+          return const UtilitasEmptyState(
+            icon: Icons.cable_outlined,
+            title: 'Belum ada mapping',
+            message: 'Tambahkan mapping device-sensor untuk monitoring',
+          );
+        }
+
+        return RefreshIndicator(
+          color: const Color(0xFF1B5E20),
+          onRefresh: () async {
+            ref.invalidate(utilitasDeviceSensorListProvider);
+          },
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(
+              horizontal: context.rw(0.051),
+              vertical: context.rh(0.01),
+            ),
+            itemCount: deviceSensors.length,
+            itemBuilder: (context, index) {
+              final ds = deviceSensors[index];
+              return Padding(
+                padding: EdgeInsets.only(bottom: context.rh(0.014)),
+                child: _DeviceSensorCard(deviceSensor: ds),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const UtilitasLoadingState(),
+      error: (error, _) => UtilitasErrorState(
+        error: error,
+        onRetry: () => ref.invalidate(utilitasDeviceSensorListProvider),
       ),
     );
   }
@@ -93,26 +125,21 @@ class _DeviceSensorCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return UtilitasListItem(
       title: deviceSensor.displayName,
-      subtitle: 'ID: ${deviceSensor.dsId}',
+      subtitle: 'ds_id: ${deviceSensor.dsId} · dev_id: ${deviceSensor.devId}',
       icon: Icons.cable,
       iconColor: deviceSensor.isActive ? const Color(0xFF26C6DA) : Colors.grey,
       isActive: deviceSensor.isActive,
       onTap: () => _showOptions(context, ref),
       badges: [
-        UtilitasBadge(
-          label: 'Device: ${deviceSensor.devId}',
-          color: const Color(0xFF42A5F5),
-          icon: Icons.device_hub,
-        ),
         if (deviceSensor.sensId != null)
           UtilitasBadge(
-            label: 'Sensor: ${deviceSensor.sensId}',
+            label: 'sens_id: ${deviceSensor.sensId}',
             color: Colors.purple,
             icon: Icons.sensors,
           ),
         if (deviceSensor.unitId != null)
           UtilitasBadge(
-            label: 'Unit: ${deviceSensor.unitId}',
+            label: 'unit: ${deviceSensor.unitId}',
             color: Colors.teal,
             icon: Icons.straighten,
           ),
@@ -132,15 +159,6 @@ class _DeviceSensorCard extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Text(
@@ -152,15 +170,11 @@ class _DeviceSensorCard extends ConsumerWidget {
                 ),
               ),
             ),
-            const Divider(height: 1),
             PermissionGuard(
               permission: 'ds:update',
               child: ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                ),
+                title: const Text('Edit Mapping'),
                 onTap: () {
                   Navigator.pop(context);
                   context.push(
@@ -169,8 +183,6 @@ class _DeviceSensorCard extends ConsumerWidget {
                 },
               ),
             ),
-            // Delete option hidden as it is unsupported on the backend
-            const SizedBox.shrink(),
             const SizedBox(height: 8),
           ],
         ),

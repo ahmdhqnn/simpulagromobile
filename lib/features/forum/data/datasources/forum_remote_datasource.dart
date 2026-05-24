@@ -264,10 +264,21 @@ class ForumRemoteDataSource {
   // ═══════════════════════════════════════════════════════════
 
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
+    return _toggleReaction(postId, 'LIKE');
+  }
+
+  Future<({bool isLiked, int likeCount})> toggleDislike(String postId) async {
+    return _toggleReaction(postId, 'DISLIKE');
+  }
+
+  Future<({bool isLiked, int likeCount})> _toggleReaction(
+    String postId,
+    String action,
+  ) async {
     try {
       final response = await _dio.post(
         ApiEndpoints.forumPostLike(postId),
-        data: {'action': 'LIKE'},
+        data: {'action': action},
       );
       final data = _extractResponseData(response.data);
       final map = JsonParser.parseMap(data);
@@ -347,6 +358,37 @@ class ForumRemoteDataSource {
   }) async {
     try {
       await _dio.delete(ApiEndpoints.forumDeleteComment(postId, commentId));
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// PUT /comments — update komentar global
+  Future<CommentModel> updateComment({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final response = await _dio.put(
+        ApiEndpoints.updateComment,
+        data: {
+          'comment_id': commentId,
+          'cf_content': content,
+        },
+      );
+      final data = _extractResponseData(response.data);
+      final obj = _extractObject(data, requiredFieldsAny: ['comment_id', 'id']);
+      if (obj == null) throw Exception('Format response tidak valid');
+      return CommentModel.fromJson(obj);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// DELETE /comments/{commentId}
+  Future<void> deleteCommentGlobal(String commentId) async {
+    try {
+      await _dio.delete(ApiEndpoints.deleteComment(commentId));
     } catch (e) {
       throw _handleError(e);
     }

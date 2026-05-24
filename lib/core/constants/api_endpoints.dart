@@ -23,6 +23,13 @@ class ApiEndpoints {
   // ═══════════════════════════════════════════════════════════
   static const String sites = '/sites';
   static String siteById(String id) => '/sites/$id';
+  static String siteMemberInvite(String siteId) =>
+      '/sites/$siteId/members/invite';
+
+  // ═══════════════════════════════════════════════════════════
+  // NOTES ENDPOINTS (Site-scoped)
+  // ═══════════════════════════════════════════════════════════
+  static String siteNotes(String siteId) => '/sites/$siteId/notes';
 
   // ═══════════════════════════════════════════════════════════
   // DEVICE ENDPOINTS (Site-scoped)
@@ -104,6 +111,10 @@ class ApiEndpoints {
       '/sites/$siteId/recommendations/history';
   static String recByPhase(String siteId, String phaseId) =>
       '/sites/$siteId/recommendations/by-phase/$phaseId';
+  static String recPreviewDummy(String siteId) =>
+      '/sites/$siteId/recommendations/preview-dummy';
+  static String recSaveDummy(String siteId) =>
+      '/sites/$siteId/recommendations/save-dummy';
 
   // ═══════════════════════════════════════════════════════════
   // AGRO DATA ENDPOINTS (Site-scoped)
@@ -161,6 +172,12 @@ class ApiEndpoints {
   static const String forumMyPosts = '/forum/posts/my-posts';
   static const String forumLikedPosts = '/forum/posts/liked-posts';
   static const String forumMyComments = '/forum/my-comments';
+
+  // ═══════════════════════════════════════════════════════════
+  // GLOBAL COMMENT ENDPOINTS
+  // ═══════════════════════════════════════════════════════════
+  static const String updateComment = '/comments';
+  static String deleteComment(String commentId) => '/comments/$commentId';
 
   // Removed LOG ENDPOINTS as they are not in swagger live
 

@@ -32,6 +32,15 @@ final utilitasDeviceSensorListProvider = FutureProvider<List<DeviceSensor>>((
   return repository.getAllDeviceSensors(siteId);
 });
 
+/// GET /sites/{siteId}/device-sensors/values
+final deviceSensorThresholdValuesProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final ds = ref.watch(deviceSensorRemoteDatasourceProvider);
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) return [];
+  return ds.getThresholdValues(siteId);
+});
+
 // ═══════════════════════════════════════════════════════════
 // DEVICE SENSOR DETAIL PROVIDER
 // ═══════════════════════════════════════════════════════════

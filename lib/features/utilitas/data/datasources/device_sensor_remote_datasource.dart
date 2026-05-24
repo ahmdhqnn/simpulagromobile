@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/device_sensor_model.dart';
 
 abstract class DeviceSensorRemoteDatasource {
   Future<List<DeviceSensorModel>> getAllDeviceSensors(String siteId);
+  Future<List<Map<String, dynamic>>> getThresholdValues(String siteId);
   Future<DeviceSensorModel> getDeviceSensorById(String siteId, String dsId);
   Future<DeviceSensorModel> createDeviceSensor(String siteId, Map<String, dynamic> data);
   Future<DeviceSensorModel> updateDeviceSensor(
@@ -44,6 +46,18 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
       throw _handleDioError(e);
     } catch (e) {
       throw Exception('Failed to get device sensors: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getThresholdValues(String siteId) async {
+    try {
+      final response = await dio.get(ApiEndpoints.deviceSensorValues(siteId));
+      return ResponseParser.extractDataList(response.data)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 

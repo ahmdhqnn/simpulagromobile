@@ -1,18 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../../../shared/widgets/skeleton_loaders.dart';
-import '../providers/site_provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../notes/presentation/widgets/site_notes_section_widget.dart';
+import '../../domain/entities/site.dart';
+import '../providers/site_provider.dart';
 
-class SiteDetailScreen extends ConsumerWidget {
+class SiteDetailScreen extends ConsumerStatefulWidget {
   final String siteId;
 
   const SiteDetailScreen({super.key, required this.siteId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final siteAsync = ref.watch(siteDetailProvider(siteId));
+  ConsumerState<SiteDetailScreen> createState() => _SiteDetailScreenState();
+}
+
+class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final siteAsync = ref.watch(siteDetailProvider(widget.siteId));
 
     return Scaffold(
       appBar: AppBar(
@@ -20,33 +42,39 @@ class SiteDetailScreen extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_add_outlined),
+            tooltip: 'Invite Member',
+            onPressed: () => _showInviteDialog(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () {
-              context.push('/site/$siteId/edit');
-            },
+            onPressed: () => context.push('/site/${widget.siteId}/edit'),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Overview'),
+            Tab(text: 'Catatan'),
+          ],
+        ),
       ),
       body: siteAsync.when(
-        data: (site) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(siteDetailProvider(siteId));
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeaderCard(context, site),
-                const Gap(16),
-                _buildLocationCard(context, site),
-                const Gap(16),
-                _buildInfoCard(context, site),
-              ],
+        data: (site) => TabBarView(
+          controller: _tabController,
+          children: [
+            _OverviewTab(site: site, siteId: widget.siteId),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SiteNotesSectionWidget(siteId: widget.siteId),
             ),
-          ),
+          ],
         ),
-        loading: () => const DetailScreenSkeleton(infoRowCount: 3, hasDescription: false, headerHeight: 160),
+        loading: () => const DetailScreenSkeleton(
+          infoRowCount: 3,
+          hasDescription: false,
+          headerHeight: 160,
+        ),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -56,7 +84,8 @@ class SiteDetailScreen extends ConsumerWidget {
               Text('Error: $error'),
               const Gap(16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(siteDetailProvider(siteId)),
+                onPressed: () =>
+                    ref.invalidate(siteDetailProvider(widget.siteId)),
                 child: const Text('Retry'),
               ),
             ],
@@ -66,7 +95,119 @@ class SiteDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderCard(BuildContext context, site) {
+  Future<void> _showInviteDialog(BuildContext context) async {
+    final userIdController = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Invite Member'),
+        content: TextField(
+          controller: userIdController,
+          decoration: const InputDecoration(
+            labelText: 'User ID',
+            hintText: 'USR_001',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Kirim'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    final repo = ref.read(siteRepositoryProvider);
+    final result = await repo.inviteMember(
+      widget.siteId,
+      userIdController.text.trim(),
+    );
+    if (!context.mounted) return;
+
+    result.fold(
+      (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(f.message)),
+      ),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Undangan member terkirim')),
+      ),
+    );
+  }
+}
+
+class _OverviewTab extends ConsumerWidget {
+  final Site site;
+  final String siteId;
+
+  const _OverviewTab({required this.site, required this.siteId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(siteDetailProvider(siteId));
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeaderCard(context, site),
+            const Gap(16),
+            _buildFieldsCard(context, site),
+            const Gap(16),
+            _buildLocationCard(context, site),
+            const Gap(16),
+            _buildInfoCard(context, site),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldsCard(BuildContext context, Site site) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Data Site',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const Gap(12),
+            _buildInfoRow(context, Icons.tag, 'Site ID', site.siteId),
+            const Gap(8),
+            _buildInfoRow(
+              context,
+              Icons.badge_outlined,
+              'Nama',
+              site.siteName ?? site.displayName,
+            ),
+            const Gap(8),
+            _buildInfoRow(
+              context,
+              Icons.toggle_on,
+              'Status',
+              site.isActive ? 'Aktif (1)' : 'Tidak Aktif (0)',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(BuildContext context, Site site) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -94,8 +235,8 @@ class SiteDetailScreen extends ConsumerWidget {
                   Text(
                     site.displayName,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const Gap(4),
                   Container(
@@ -127,7 +268,7 @@ class SiteDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLocationCard(BuildContext context, site) {
+  Widget _buildLocationCard(BuildContext context, Site site) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -136,9 +277,9 @@ class SiteDetailScreen extends ConsumerWidget {
           children: [
             Text(
               'Informasi Lokasi',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const Gap(16),
             if (site.siteAddress != null) ...[
@@ -172,7 +313,7 @@ class SiteDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, site) {
+  Widget _buildInfoCard(BuildContext context, Site site) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -181,9 +322,9 @@ class SiteDetailScreen extends ConsumerWidget {
           children: [
             Text(
               'Informasi Tambahan',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const Gap(16),
             if (site.siteCreated != null) ...[
@@ -225,16 +366,16 @@ class SiteDetailScreen extends ConsumerWidget {
             children: [
               Text(
                 label,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
               ),
               const Gap(2),
               Text(
                 value,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),

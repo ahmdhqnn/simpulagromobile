@@ -17,6 +17,13 @@ import '../widgets/site_selector_widget.dart';
 import '../widgets/summary_card_widget.dart';
 import '../widgets/task_overview_widget.dart';
 import '../widgets/latest_sensor_reads_widget.dart';
+import '../widgets/dashboard_site_command_banner.dart';
+import '../widgets/dashboard_daily_recap_card.dart';
+import '../widgets/dashboard_recommendation_card.dart';
+import '../../../notes/presentation/widgets/latest_notes_card_widget.dart';
+import '../../../monitoring/presentation/providers/monitoring_provider.dart';
+import '../../../notes/presentation/providers/notes_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -48,6 +55,9 @@ class DashboardScreen extends ConsumerWidget {
             ref.invalidate(latestSensorReadsProvider);
             ref.invalidate(sitesProvider);
             ref.invalidate(taskListProvider);
+            ref.invalidate(latestNotesProvider);
+            ref.invalidate(dailyTodayProvider);
+            ref.invalidate(recommendationListProvider);
             await Future.delayed(const Duration(milliseconds: 500));
           },
           child: SingleChildScrollView(
@@ -84,8 +94,17 @@ class DashboardScreen extends ConsumerWidget {
                           onRetry: () => ref.invalidate(sitesProvider),
                         ),
                       ),
+                      SizedBox(height: context.rh(0.016)),
+                      DashboardSiteCommandBanner(site: selectedSite),
                       SizedBox(height: context.rh(0.024)),
 
+                      if (selectedSite == null)
+                        InfoStateWidget.icon(
+                          icon: Icons.agriculture_outlined,
+                          message: l10n.emptySite,
+                          height: 120,
+                        )
+                      else ...[
                       SectionHeaderWidget(title: l10n.healthSectionTitle),
                       SizedBox(height: context.rh(0.014)),
                       healthAsync.when(
@@ -134,6 +153,16 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: context.rh(0.024)),
 
+                      const SectionHeaderWidget(title: 'Rekap Harian Hari Ini'),
+                      SizedBox(height: context.rh(0.014)),
+                      const DashboardDailyRecapCard(),
+                      SizedBox(height: context.rh(0.024)),
+
+                      const SectionHeaderWidget(title: 'Rekomendasi Terbaru'),
+                      SizedBox(height: context.rh(0.014)),
+                      const DashboardRecommendationCard(),
+                      SizedBox(height: context.rh(0.024)),
+
                       const SectionHeaderWidget(title: 'Aktivitas Terbaru'),
                       SizedBox(height: context.rh(0.014)),
                       latestReadsAsync.when(
@@ -146,6 +175,11 @@ class DashboardScreen extends ConsumerWidget {
                           onRetry: () => ref.invalidate(latestSensorReadsProvider),
                         ),
                       ),
+                      SizedBox(height: context.rh(0.024)),
+
+                      const SectionHeaderWidget(title: 'Catatan Terbaru'),
+                      SizedBox(height: context.rh(0.014)),
+                      const LatestNotesCardWidget(),
                       SizedBox(height: context.rh(0.024)),
 
                       SectionHeaderWidget(title: l10n.summarySectionTitle),
@@ -222,6 +256,7 @@ class DashboardScreen extends ConsumerWidget {
                       SizedBox(height: context.rh(0.014)),
                       const QuickActionsWidget(),
                       SizedBox(height: context.rh(0.04)),
+                      ],
                     ],
                   ),
                 ),

@@ -16,7 +16,6 @@ import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../recommendation/presentation/providers/recommendation_provider.dart';
-import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 
 class AgroIndicatorScreen extends ConsumerWidget {
@@ -24,16 +23,37 @@ class AgroIndicatorScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final agroAsync = ref.watch(agroDataProvider);
-    final healthAsync = ref.watch(environmentalHealthProvider);
     final siteId = ref.watch(selectedSiteIdProvider);
 
-    final phaseAsync = siteId != null
-        ? ref.watch(currentPhaseProvider(siteId))
-        : const AsyncValue.data(null);
-    final recommendationsAsync = siteId != null
-        ? ref.watch(recommendationsBySiteProvider(siteId))
-        : const AsyncValue.data(<Recommendation>[]);
+    if (siteId == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF0F0F0),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context, ref),
+              const Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final agroAsync = ref.watch(agroDataProvider);
+    final healthAsync = ref.watch(environmentalHealthProvider);
+
+    final phaseAsync = ref.watch(currentPhaseProvider(siteId));
+    final recommendationsAsync = ref.watch(recommendationsBySiteProvider(siteId));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
@@ -57,9 +77,10 @@ class AgroIndicatorScreen extends ConsumerWidget {
             onRefresh: () async {
               ref.invalidate(agroDataProvider);
               ref.invalidate(environmentalHealthProvider);
-              if (siteId != null) {
-                ref.invalidate(currentPhaseProvider(siteId));
-                ref.invalidate(recommendationsBySiteProvider(siteId));
+              final sid = ref.read(selectedSiteIdProvider);
+              if (sid != null) {
+                ref.invalidate(currentPhaseProvider(sid));
+                ref.invalidate(recommendationsBySiteProvider(sid));
               }
               await Future.delayed(const Duration(milliseconds: 500));
             },
@@ -178,10 +199,10 @@ class AgroIndicatorScreen extends ConsumerWidget {
             onPressed: () {
               ref.invalidate(agroDataProvider);
               ref.invalidate(environmentalHealthProvider);
-              final siteId = ref.read(selectedSiteIdProvider);
-              if (siteId != null) {
-                ref.invalidate(currentPhaseProvider(siteId));
-                ref.invalidate(recommendationsBySiteProvider(siteId));
+              final sid = ref.read(selectedSiteIdProvider);
+              if (sid != null) {
+                ref.invalidate(currentPhaseProvider(sid));
+                ref.invalidate(recommendationsBySiteProvider(sid));
               }
             },
             icon: Icons.refresh,

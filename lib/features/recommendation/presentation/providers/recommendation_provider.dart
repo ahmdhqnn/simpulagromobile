@@ -2,12 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
+import '../../../plant/presentation/providers/plant_provider.dart';
 import '../../data/datasources/recommendation_remote_datasource.dart';
 import '../../data/repositories/recommendation_repository_impl.dart';
 import '../../domain/entities/recommendation.dart';
 import '../../domain/repositories/recommendation_repository.dart';
 import '../../domain/usecases/get_recommendations_usecase.dart';
 import '../../domain/usecases/generate_recommendation_usecase.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/usecases/manage_recommendation_usecase.dart';
 
 // ─── DataSource Provider ─────────────────────────────────
@@ -55,6 +57,32 @@ final dismissRecommendationUseCaseProvider = Provider<DismissRecommendationUseCa
   return DismissRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
 });
 
+/// History rekomendasi site
+final recommendationHistoryProvider =
+    FutureProvider.autoDispose<List<Recommendation>>((ref) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) return [];
+  final ds = ref.watch(recommendationDatasourceProvider);
+  return ref.retryOnError(() async {
+    final models = await ds.getRecommendationHistory(siteId);
+    return models.map((m) => m.toEntity()).toList();
+  });
+});
+
+final selectedPhaseIdForRecProvider = StateProvider<String?>((ref) => null);
+
+final recommendationByPhaseProvider =
+    FutureProvider.autoDispose<List<Recommendation>>((ref) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  final phaseId = ref.watch(selectedPhaseIdForRecProvider);
+  if (siteId == null || phaseId == null) return [];
+  final ds = ref.watch(recommendationDatasourceProvider);
+  return ref.retryOnError(() async {
+    final models = await ds.getRecommendationsByPhase(siteId, phaseId);
+    return models.map((m) => m.toEntity()).toList();
+  });
+});
+
 // ─── Recommendation List for Selected Site ────────────────
 /// Mengambil rekomendasi untuk site yang sedang dipilih
 final recommendationListProvider = FutureProvider<List<Recommendation>>((
@@ -62,6 +90,10 @@ final recommendationListProvider = FutureProvider<List<Recommendation>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
+
+  // Halt recommendations if there is no active plant
+  final activePlant = ref.watch(currentPlantProvider);
+  if (activePlant == null) return [];
 
   final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
   return await ref.retryOnError(() async {
@@ -117,32 +149,37 @@ final recommendationsByTypeProvider =
       });
     });
 
-// ─── Recommendation Detail ────────────────────────────────
+// ─── Recommendation Detail (cache-only, no GET /recommendations/{id}) ───
 final recommendationDetailProvider =
     FutureProvider.family<Recommendation, String>((
       ref,
       recommendationId,
     ) async {
-      final listAsync = ref.read(recommendationListProvider);
-      final cachedRec = listAsync.whenOrNull(
-        data: (list) {
-          try {
-            return list.firstWhere((r) => r.recommendationId == recommendationId);
-          } catch (_) {
-            return null;
-          }
-        },
-      );
-      if (cachedRec != null) return cachedRec;
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) {
+        throw const ServerFailure('Pilih site terlebih dahulu');
+      }
 
-      final useCase = ref.watch(getRecommendationByIdUseCaseProvider);
-      return await ref.retryOnError(() async {
-        final result = await useCase(recommendationId);
-        return result.fold(
-          (failure) => throw failure,
-          (recommendation) => recommendation,
-        );
-      });
+      Recommendation? findInList(List<Recommendation> list) {
+        for (final r in list) {
+          if (r.recommendationId == recommendationId) return r;
+        }
+        return null;
+      }
+
+      final listAsync = ref.read(recommendationListProvider);
+      final cached = listAsync.whenOrNull(data: findInList);
+      if (cached != null) return cached;
+
+      // Reload list site-scoped lalu cari lokal
+      ref.invalidate(recommendationListProvider);
+      final refreshed = await ref.read(recommendationListProvider.future);
+      final fromRefresh = findInList(refreshed);
+      if (fromRefresh != null) return fromRefresh;
+
+      throw const NotFoundFailure(
+        'Data rekomendasi tidak tersedia. Buka daftar rekomendasi terlebih dahulu.',
+      );
     });
 
 // ─── Recommendation Filter ────────────────────────────────

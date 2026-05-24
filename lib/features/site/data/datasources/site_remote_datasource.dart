@@ -57,4 +57,12 @@ class SiteRemoteDataSource {
     );
     return SiteModel.fromJson(response.data['data']);
   }
+
+  /// POST /sites/{siteId}/members/invite
+  Future<void> inviteMember(String siteId, String userId) async {
+    await _dio.post(
+      ApiEndpoints.siteMemberInvite(siteId),
+      data: {'user_id': userId},
+    );
+  }
 }

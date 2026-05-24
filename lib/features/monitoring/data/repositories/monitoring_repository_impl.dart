@@ -109,9 +109,85 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
+  Future<Either<Failure, List<SensorReadModel>>> getReadsByDate(
+    String siteId,
+    String date,
+  ) async {
+    try {
+      final res = await remoteDataSource.getReadsByDate(siteId, date);
+      return Right(res);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<SensorDailyModel>>> getDailyReads(String siteId) async {
     try {
       final res = await remoteDataSource.getDailyReads(siteId);
+      return Right(res);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyToday(String siteId) async {
+    try {
+      final res = await remoteDataSource.getDailyToday(siteId);
+      return Right(res);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyByDay(
+    String siteId,
+    String day,
+  ) async {
+    try {
+      final res = await remoteDataSource.getDailyByDay(siteId, day);
+      return Right(res);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> triggerDailyRekap(String siteId, String day) async {
+    try {
+      await remoteDataSource.triggerDailyRekap(siteId, day);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SensorReadModel>> updateRead(
+    String siteId,
+    String readId, {
+    double? readValue,
+    String? readSts,
+  }) async {
+    try {
+      final res = await remoteDataSource.updateRead(
+        siteId,
+        readId,
+        readValue: readValue,
+        readSts: readSts,
+      );
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
