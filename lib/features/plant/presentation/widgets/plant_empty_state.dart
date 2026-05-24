@@ -5,8 +5,20 @@ import '../../../../shared/widgets/circular_back_button_widget.dart';
 
 class PlantEmptyState extends StatelessWidget {
   final VoidCallback onAddPlant;
+  final String title;
+  final String message;
+  final String actionLabel;
+  final bool actionEnabled;
 
-  const PlantEmptyState({super.key, required this.onAddPlant});
+  const PlantEmptyState({
+    super.key,
+    required this.onAddPlant,
+    this.title = 'There is no planting yet',
+    this.message =
+        'Start adding your first experience to start monitoring plants on this site.',
+    this.actionLabel = 'Add first planting',
+    this.actionEnabled = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +87,10 @@ class PlantEmptyState extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    const Text(
-                      'There is no planting yet',
+                    Text(
+                      title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Plus Jakarta Sans',
@@ -89,10 +101,10 @@ class PlantEmptyState extends StatelessWidget {
 
                     const SizedBox(height: 6),
 
-                    const Text(
-                      'Start adding your first experience to start monitoring plants on this site.',
+                    Text(
+                      message,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Plus Jakarta Sans',
@@ -107,25 +119,29 @@ class PlantEmptyState extends StatelessWidget {
               const SizedBox(height: 20),
 
               GestureDetector(
-                onTap: onAddPlant,
+                onTap: actionEnabled ? onAddPlant : null,
                 child: Container(
                   width: double.infinity,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: actionEnabled
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        'Add first planting',
+                        actionLabel,
                         style: TextStyle(
                           fontSize: 18,
                           fontFamily: 'Plus Jakarta Sans',
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF1D1D1D),
+                          color: actionEnabled
+                              ? const Color(0xFF1D1D1D)
+                              : const Color(0xFF1D1D1D).withValues(alpha: 0.45),
                         ),
                       ),
                     ],

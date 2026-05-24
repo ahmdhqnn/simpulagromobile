@@ -54,7 +54,7 @@ class PlantHeaderCardWidget extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: plant.isActive
+                    color: plant.isCurrentPlanting
                         ? AppColors.success.withValues(alpha: 0.1)
                         : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -65,7 +65,9 @@ class PlantHeaderCardWidget extends StatelessWidget {
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(12),
                       fontWeight: FontWeight.bold,
-                      color: plant.isActive ? AppColors.success : Colors.grey,
+                      color: plant.isCurrentPlanting
+                          ? AppColors.success
+                          : Colors.grey,
                     ),
                   ),
                 ),
@@ -330,7 +332,7 @@ class PlantActionButtonsWidget extends StatelessWidget {
             ),
           ),
         ),
-        if (plant.isActive && !plant.isHarvested) ...[
+        if (plant.isCurrentPlanting) ...[
           SizedBox(height: context.rh(0.014)),
           SizedBox(
             width: double.infinity,

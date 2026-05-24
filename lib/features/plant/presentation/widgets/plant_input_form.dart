@@ -9,12 +9,14 @@ import '../providers/plant_provider.dart';
 
 class PlantInputForm extends ConsumerStatefulWidget {
   final String siteId;
+  final Plant? initialPlant;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
 
   const PlantInputForm({
     super.key,
     required this.siteId,
+    this.initialPlant,
     required this.onCancel,
     required this.onSuccess,
   });
@@ -31,6 +33,22 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   CropType? _selectedPlantType;
   DateTime _plantDate = DateTime.now();
   bool _isSubmitting = false;
+  bool _didPrefillVarietas = false;
+
+  bool get _isEditMode => widget.initialPlant != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final plant = widget.initialPlant;
+    if (plant != null) {
+      _plantNameController.text = plant.plantName ?? '';
+      _varietasIdController.text = plant.varietasId ?? '';
+      _selectedPlantType = plant.plantType;
+      _plantDate = plant.plantDate ?? DateTime.now();
+      _didPrefillVarietas = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -42,7 +60,10 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   @override
   Widget build(BuildContext context) {
     final activePlant = ref.watch(currentPlantProvider);
-    final hasActivePlant = activePlant != null;
+    final hasActivePlant = !_isEditMode && activePlant != null;
+    if (!_isEditMode) {
+      _prefillVarietasFromHistory(ref.watch(plantsProvider).valueOrNull ?? []);
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -67,7 +88,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
               const SizedBox(height: 24),
 
               const Text(
-                'Add First Planting',
+                _isEditMode ? 'Edit Planting' : 'Add First Planting',
                 style: TextStyle(
                   fontSize: 22,
                   fontFamily: 'Plus Jakarta Sans',
@@ -85,11 +106,16 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: AppColors.error,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -139,9 +165,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                         'Varietas ID',
                         _buildTextField(
                           controller: _varietasIdController,
-                          hintText: 'Ex. VAR001',
+                          hintText: 'Ex. VARIETAS001',
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter varietas ID';
                             }
                             return null;
@@ -191,7 +217,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                           ),
                           _buildCircleButton(
                             svgPath: 'assets/icons/check-icon.svg',
-                            onTap: _isSubmitting || hasActivePlant ? null : _submitForm,
+                            onTap: _isSubmitting || hasActivePlant
+                                ? null
+                                : _submitForm,
                           ),
                         ],
                       ),
@@ -325,23 +353,33 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     }
   }
 
-  Future<void> _submitForm() async {
-    final activePlant = ref.read(currentPlantProvider);
-    if (activePlant != null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal menambahkan: Masih ada tanaman aktif "${activePlant.displayName}".'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+  void _prefillVarietasFromHistory(List<Plant> plants) {
+    if (_didPrefillVarietas || _varietasIdController.text.trim().isNotEmpty) {
       return;
     }
 
+    String? previousVarietasId;
+    for (final plant in plants) {
+      final varietasId = plant.varietasId?.trim();
+      if (varietasId != null && varietasId.isNotEmpty) {
+        previousVarietasId = varietasId;
+        break;
+      }
+    }
+
+    final candidateVarietasId = previousVarietasId;
+    if (candidateVarietasId == null) return;
+    _didPrefillVarietas = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _varietasIdController.text.trim().isNotEmpty) return;
+      _varietasIdController.text = candidateVarietasId;
+    });
+  }
+
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_varietasIdController.text.isEmpty) {
+    if (_varietasIdController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please enter varietas ID')));
@@ -355,33 +393,74 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       return;
     }
 
-    setState(() => _isSubmitting = true);
+    if (!_isEditMode) {
+      Plant? activePlant;
+      try {
+        final plants = await ref.read(plantsProvider.future);
+        for (final plant in plants) {
+          if (plant.isCurrentPlanting) {
+            activePlant = plant;
+            break;
+          }
+        }
+      } catch (_) {
+        activePlant = ref.read(currentPlantProvider);
+      }
 
-    final success = await ref
-        .read(createPlantProvider.notifier)
-        .createPlant(
-          siteId: widget.siteId,
-          plantName: _plantNameController.text,
-          varietasId: _varietasIdController.text,
-          plantType: _selectedPlantType!,
-          plantDate: _plantDate,
-        );
+      if (!mounted) return;
 
-    setState(() => _isSubmitting = false);
-
-    if (mounted) {
-      if (success) {
-        widget.onSuccess();
-      } else {
-        final errorMsg = ref.read(createPlantProvider).error
-            ?? 'Gagal menambahkan tanaman. Silakan coba lagi.';
+      if (activePlant != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMsg),
+            content: Text(
+              'Gagal menambahkan: Masih ada tanaman aktif "${activePlant.displayName}".',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
+        return;
       }
+    }
+
+    setState(() => _isSubmitting = true);
+
+    final success = _isEditMode
+        ? await ref
+              .read(updatePlantFormProvider.notifier)
+              .updatePlant(
+                siteId: widget.siteId,
+                plantId: widget.initialPlant!.plantId,
+                plantName: _plantNameController.text.trim(),
+                varietasId: _varietasIdController.text.trim(),
+                plantType: _selectedPlantType!,
+                plantDate: _plantDate,
+              )
+        : await ref
+              .read(createPlantProvider.notifier)
+              .createPlant(
+                siteId: widget.siteId,
+                plantName: _plantNameController.text.trim(),
+                varietasId: _varietasIdController.text.trim(),
+                plantType: _selectedPlantType!,
+                plantDate: _plantDate,
+              );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (success) {
+      widget.onSuccess();
+    } else {
+      final errorMsg =
+          (_isEditMode
+              ? ref.read(updatePlantFormProvider).error
+              : ref.read(createPlantProvider).error) ??
+          (_isEditMode
+              ? 'Gagal memperbarui tanaman. Silakan coba lagi.'
+              : 'Gagal menambahkan tanaman. Silakan coba lagi.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
+      );
     }
   }
 }

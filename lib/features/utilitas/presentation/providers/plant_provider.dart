@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../site/presentation/providers/site_provider.dart';
+import '../../../plant/presentation/providers/plant_provider.dart'
+    as plant_feature;
 import '../../data/datasources/plant_remote_datasource.dart';
 import '../../data/repositories/plant_repository_impl.dart';
 import '../../domain/entities/plant.dart';
@@ -99,14 +101,14 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
 
     final result = await _repository.createPlant(selectedSite.siteId, plant);
 
-    return result.fold(
-      (failure) {
+    return await result.fold<Future<bool>>(
+      (failure) async {
         state = PlantFormState(error: failure.message);
         return false;
       },
-      (savedPlant) {
+      (savedPlant) async {
         state = PlantFormState(savedPlant: savedPlant);
-        _ref.invalidate(utilitasPlantListProvider);
+        await refreshUtilitasPlantCache(_ref);
         return true;
       },
     );
@@ -128,15 +130,14 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
       plant,
     );
 
-    return result.fold(
-      (failure) {
+    return await result.fold<Future<bool>>(
+      (failure) async {
         state = PlantFormState(error: failure.message);
         return false;
       },
-      (savedPlant) {
+      (savedPlant) async {
         state = PlantFormState(savedPlant: savedPlant);
-        _ref.invalidate(utilitasPlantListProvider);
-        _ref.invalidate(utilitasPlantDetailProvider(plantId));
+        await refreshUtilitasPlantCache(_ref, plantId: plantId);
         return true;
       },
     );
@@ -154,15 +155,14 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
 
     final result = await _repository.harvestPlant(selectedSite.siteId, plantId);
 
-    return result.fold(
-      (failure) {
+    return await result.fold<Future<bool>>(
+      (failure) async {
         state = PlantFormState(error: failure.message);
         return false;
       },
-      (harvestedPlant) {
+      (harvestedPlant) async {
         state = PlantFormState(savedPlant: harvestedPlant);
-        _ref.invalidate(utilitasPlantListProvider);
-        _ref.invalidate(utilitasPlantDetailProvider(plantId));
+        await refreshUtilitasPlantCache(_ref, plantId: plantId);
         return true;
       },
     );
@@ -180,14 +180,18 @@ class PlantFormNotifier extends StateNotifier<PlantFormState> {
 
     final result = await _repository.deletePlant(selectedSite.siteId, plantId);
 
-    return result.fold(
-      (failure) {
+    return await result.fold<Future<bool>>(
+      (failure) async {
         state = PlantFormState(error: failure.message);
         return false;
       },
-      (_) {
+      (_) async {
         state = const PlantFormState();
-        _ref.invalidate(utilitasPlantListProvider);
+        await refreshUtilitasPlantCache(
+          _ref,
+          plantId: plantId,
+          refreshDetail: false,
+        );
         return true;
       },
     );
@@ -207,3 +211,39 @@ final plantFormProvider =
       final repository = ref.watch(plantRepositoryProvider);
       return PlantFormNotifier(repository, ref);
     });
+
+Future<void> refreshUtilitasPlantCache(
+  dynamic ref, {
+  String? plantId,
+  bool refreshDetail = true,
+}) async {
+  if (ref is Ref || ref is WidgetRef) {
+    ref.invalidate(utilitasPlantListProvider);
+    if (plantId != null) {
+      ref.invalidate(utilitasPlantDetailProvider(plantId));
+    }
+  } else {
+    throw ArgumentError('ref must be either Ref or WidgetRef');
+  }
+
+  await plant_feature.refreshPlantCache(
+    ref,
+    plantId: plantId,
+    refreshDetail: refreshDetail,
+  );
+
+  final futures = <Future<Object?>>[
+    _safe(ref.read(utilitasPlantListProvider.future)),
+    if (plantId != null && refreshDetail)
+      _safe(ref.read(utilitasPlantDetailProvider(plantId).future)),
+  ];
+  await Future.wait(futures);
+}
+
+Future<Object?> _safe(Future<Object?> future) async {
+  try {
+    return await future;
+  } catch (_) {
+    return null;
+  }
+}

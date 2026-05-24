@@ -107,6 +107,25 @@ class PlantRepositoryImpl implements PlantRepository {
   }
 
   @override
+  Future<Either<Failure, void>> deletePlant(
+    String siteId,
+    String plantId,
+  ) async {
+    try {
+      await remoteDataSource.deletePlant(siteId, plantId);
+      return const Right(null);
+    } on UnsupportedBackendEndpointException catch (e) {
+      return Left(UnsupportedBackendEndpointFailure(e.message));
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Varietas>>> getVarietas() async {
     try {
       final models = await remoteDataSource.getVarietas();
