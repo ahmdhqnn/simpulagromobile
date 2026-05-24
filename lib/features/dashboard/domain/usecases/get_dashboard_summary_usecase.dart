@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/dashboard_summary_model.dart';
+import '../entities/dashboard_entity.dart';
 import '../repositories/dashboard_repository.dart';
 
 /// UseCase untuk mengagregasi ringkasan dashboard
@@ -61,9 +61,9 @@ class GetDashboardSummaryUseCase {
 /// Combines summary from device, sensor, and plant
 /// to be displayed in dashboard screen.
 class DashboardSummary {
-  final DashboardDeviceSummary deviceSummary;
-  final DashboardSensorSummary sensorSummary;
-  final DashboardPlantSummary plantSummary;
+  final DeviceSummaryEntity deviceSummary;
+  final SensorSummaryEntity sensorSummary;
+  final PlantSummaryEntity plantSummary;
 
   const DashboardSummary({
     required this.deviceSummary,

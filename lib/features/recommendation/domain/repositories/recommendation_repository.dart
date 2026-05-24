@@ -14,6 +14,7 @@ abstract class RecommendationRepository {
 
   /// Get recommendations by plant
   Future<Either<Failure, List<Recommendation>>> getRecommendationsByPlant(
+    String siteId,
     String plantId,
   );
 

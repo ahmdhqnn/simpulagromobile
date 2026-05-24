@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/models/agro_model.dart';
+import '../entities/agro_entity.dart';
 import '../repositories/agro_repository.dart';
 
 /// UseCase for retrieving Growing Degree Days (GDD) data
@@ -19,9 +19,9 @@ class GetGddUseCase {
   ///   - siteId: The unique identifier of the site
   /// 
   /// Returns:
-  ///   - [Right<GddModel>] if successful containing total GDD and daily breakdown
+  ///   - [Right<GddEntity>] if successful containing total GDD and daily breakdown
   ///   - [Left<Failure>] if an error occurs (data not available or network error)
-  Future<Either<Failure, GddModel>> call(String siteId) async {
+  Future<Either<Failure, GddEntity>> call(String siteId) async {
     return repository.getGddData(siteId);
   }
 }

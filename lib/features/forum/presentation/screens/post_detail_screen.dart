@@ -145,7 +145,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final comment = commentsState.comments[index];
-                            final isOwn = comment.userId == currentUserId;
+                            final isOwn = comment.userId == currentUserId || post.userId == currentUserId;
                             return _buildCommentItem(
                               context,
                               comment,

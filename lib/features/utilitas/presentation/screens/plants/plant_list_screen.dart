@@ -173,20 +173,7 @@ class _PlantCard extends ConsumerWidget {
             ),
             const Divider(height: 1),
             if (!plant.isHarvested) ...[
-              PermissionGuard(
-                permission: 'plant:update',
-                child: ListTile(
-                  leading: const Icon(Icons.edit_outlined),
-                  title: const Text(
-                    'Edit',
-                    style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/utilitas/plants/${plant.plantId}/edit');
-                  },
-                ),
-              ),
+              const SizedBox.shrink(),
               PermissionGuard(
                 permission: 'plant:update',
                 child: ListTile(
@@ -208,23 +195,7 @@ class _PlantCard extends ConsumerWidget {
                 ),
               ),
             ],
-            PermissionGuard(
-              permission: 'plant:delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            ),
+            const SizedBox.shrink(),
             const SizedBox(height: 8),
           ],
         ),
@@ -258,25 +229,5 @@ class _PlantCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'Tanaman "${plant.displayName}"',
-    );
-
-    if (!confirmed || !context.mounted) return;
-
-    final success = await ref
-        .read(plantFormProvider.notifier)
-        .deletePlant(plant.plantId);
-
-    if (!context.mounted) return;
-
-    if (success) {
-      SnackbarHelper.showSuccess(context, 'Tanaman berhasil dihapus');
-    } else {
-      final error = ref.read(plantFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus tanaman');
-    }
-  }
+  // deletePlant is not supported by the backend, thus _confirmDelete has been deprecated and removed.
 }

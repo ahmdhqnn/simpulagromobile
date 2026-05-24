@@ -39,6 +39,8 @@ class ApiEndpoints {
   // ═══════════════════════════════════════════════════════════
   static String sensors(String siteId) => '/sites/$siteId/sensors';
   static String unsupportedSensorsAll(String siteId) => '/sites/$siteId/sensors/all';
+  static String sensorDetail(String siteId, String sensId) =>
+      '/sites/$siteId/sensors/detail/$sensId';
   static String sensorById(String siteId, String sensId) =>
       '/sites/$siteId/sensors/$sensId';
 

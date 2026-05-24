@@ -8,7 +8,6 @@ import 'package:simpulagromobile/features/utilitas/presentation/providers/role_p
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_scaffold.dart';
 import 'package:simpulagromobile/features/utilitas/presentation/widgets/utilitas_form_fields.dart';
-import 'package:simpulagromobile/features/utilitas/presentation/widgets/permission_checkbox_group.dart';
 import 'package:simpulagromobile/features/utilitas/domain/entities/role.dart';
 
 class RoleFormScreen extends ConsumerStatefulWidget {
@@ -174,71 +173,6 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               ),
               SizedBox(height: context.rh(0.02)),
 
-              // ── Permissions ──────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Permissions',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(16),
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1D1D1D),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.info.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${_selectedPermissionIds.length} dipilih',
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: context.sp(11),
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.info,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: context.rh(0.006)),
-                    Text(
-                      'Pilih permissions yang dapat diakses oleh role ini',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                      ),
-                    ),
-                    SizedBox(height: context.rh(0.016)),
-                    PermissionCheckboxGroup(
-                      selectedPermissionIds: _selectedPermissionIds,
-                      onChanged: (newSelected) {
-                        setState(() => _selectedPermissionIds = newSelected);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: context.rh(0.03)),
 
               UtilitasSubmitButton(
                 label: isEditMode ? 'Simpan Perubahan' : 'Tambah Role',

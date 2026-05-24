@@ -35,7 +35,7 @@ class DismissRecommendationUseCase {
   ///   - recommendationId: The ID of the recommendation to dismiss
   ///
   /// Returns:
-  ///   Either<Failure, Recommendation> - Success with dismissed recommendation or Failure
+  ///   Either[Failure, Recommendation] - Success with dismissed recommendation or Failure
   ///
   /// Throws:
   ///   - ServerFailure if the endpoint returns an error

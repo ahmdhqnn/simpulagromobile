@@ -10,7 +10,10 @@ import '../models/recommendation_bundle_model.dart';
 abstract class RecommendationRemoteDatasource {
   Future<List<RecommendationModel>> getRecommendations();
   Future<List<RecommendationModel>> getRecommendationsBySite(String siteId);
-  Future<List<RecommendationModel>> getRecommendationsByPlant(String plantId);
+  Future<List<RecommendationModel>> getRecommendationsByPlant(
+    String siteId,
+    String plantId,
+  );
   Future<List<RecommendationModel>> getRecommendationsByType(String type);
   Future<RecommendationModel> getRecommendationById(String recommendationId);
   Future<RecommendationModel> applyRecommendation(String recommendationId);
@@ -77,15 +80,16 @@ class RecommendationRemoteDatasourceImpl
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendationsByPlant(
+    String siteId,
     String plantId,
   ) async {
     try {
       // API tidak memiliki endpoint per-plant, gunakan history
-      final response = await _dio.get(ApiEndpoints.recHistory(plantId));
+      final response = await _dio.get(ApiEndpoints.recHistory(siteId));
       final data = response.data['data'] as List? ?? [];
       return data
           .map(
-            (json) => _parseHistoryItem(json as Map<String, dynamic>, plantId),
+            (json) => _parseHistoryItem(json as Map<String, dynamic>, siteId),
           )
           .toList();
     } on DioException catch (e) {

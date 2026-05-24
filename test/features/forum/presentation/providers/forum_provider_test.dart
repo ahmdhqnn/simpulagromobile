@@ -1,0 +1,82 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:simpulagromobile/features/forum/domain/repositories/forum_repository.dart';
+import 'package:simpulagromobile/features/forum/presentation/providers/forum_provider.dart';
+import 'package:simpulagromobile/features/forum/domain/entities/post.dart';
+import 'package:dartz/dartz.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class MockForumRepository extends Mock implements ForumRepository {}
+
+void main() {
+  late MockForumRepository mockRepository;
+  late ProviderContainer container;
+
+  setUp(() {
+    mockRepository = MockForumRepository();
+    container = ProviderContainer(
+      overrides: [
+        forumRepositoryProvider.overrideWithValue(mockRepository),
+      ],
+    );
+  });
+
+  tearDown(() {
+    container.dispose();
+  });
+
+  group('ForumNotifier Provider Tests', () {
+    final dummyPost = Post(
+      postId: 'POST_123',
+      postTitle: 'Test Title',
+      userId: 'USR_001',
+      postContent: 'Test Content',
+      likeCount: 5,
+      commentCount: 2,
+      shareCount: 1,
+      isLiked: false,
+      createdAt: DateTime.now(),
+      user: const PostUser(userId: 'USR_001', userName: 'Test User'),
+    );
+
+    test('toggleLike updates state with new like properties on success', () async {
+      when(() => mockRepository.toggleLike('POST_123'))
+          .thenAnswer((_) async => const Right((isLiked: true, likeCount: 6)));
+
+      // Initialize state with a post
+      final notifier = container.read(forumProvider.notifier);
+      notifier.state = ForumState(posts: [dummyPost]);
+
+      await notifier.toggleLike('POST_123');
+
+      final updatedPost = container.read(forumProvider).posts.first;
+      expect(updatedPost.isLiked, isTrue);
+      expect(updatedPost.likeCount, equals(6));
+    });
+
+    test('deletePost removes post from state on success', () async {
+      when(() => mockRepository.deletePost('POST_123'))
+          .thenAnswer((_) async => const Right(null));
+
+      final notifier = container.read(forumProvider.notifier);
+      notifier.state = ForumState(posts: [dummyPost]);
+
+      await notifier.deletePost('POST_123');
+
+      expect(container.read(forumProvider).posts, isEmpty);
+    });
+
+    test('sharePost updates shareCount on success', () async {
+      when(() => mockRepository.sharePost('POST_123'))
+          .thenAnswer((_) async => const Right(10));
+
+      final notifier = container.read(forumProvider.notifier);
+      notifier.state = ForumState(posts: [dummyPost]);
+
+      await notifier.sharePost('POST_123');
+
+      final updatedPost = container.read(forumProvider).posts.first;
+      expect(updatedPost.shareCount, equals(10));
+    });
+  });
+}

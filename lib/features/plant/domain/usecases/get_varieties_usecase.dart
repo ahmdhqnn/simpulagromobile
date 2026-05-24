@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../repositories/plant_repository.dart';
-import '../../data/models/plant_model.dart';
+import '../entities/varietas.dart';
 
 /// UseCase for fetching all plant varieties
 /// 
@@ -13,7 +13,7 @@ class GetVarietiesUseCase {
 
   GetVarietiesUseCase(this.repository);
 
-  Future<Either<Failure, List<VarietasModel>>> call() async {
+  Future<Either<Failure, List<Varietas>>> call() async {
     return repository.getVarietas();
   }
 }

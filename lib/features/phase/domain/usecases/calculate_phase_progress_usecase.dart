@@ -47,8 +47,8 @@ class CalculatePhaseProgressUseCase {
   Future<Either<Failure, PhaseProgress>> call(Phase phase) async {
     try {
       final hstProgress = phase.progressPercentage;
-      final gddProgress = phase.gddProgressPercentage;
-      final overallProgress = (hstProgress + gddProgress) / 2;
+      const gddProgress = 0.0;
+      final overallProgress = hstProgress;
       final remainingDays = phase.remainingDays;
 
       final result = PhaseProgress(
