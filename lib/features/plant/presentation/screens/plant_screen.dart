@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
@@ -38,7 +39,7 @@ class PlantScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.surfaceVariant,
       body: SafeArea(
         child: plantsAsync.when(
           loading: () => const Center(
@@ -144,7 +145,7 @@ class _ErrorState extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Terjadi kesalahan',
+              AppLocalizations.of(context)!.plantErrorTitle,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
@@ -177,7 +178,7 @@ class _ErrorState extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Coba Lagi',
+                AppLocalizations.of(context)!.retry,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(14),

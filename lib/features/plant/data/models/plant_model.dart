@@ -2,21 +2,18 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/plant.dart';
-import '../../domain/entities/varietas.dart';
 import '../../domain/plant_status_extension.dart';
 import '../../domain/plant_type_validator.dart';
 
 part 'plant_model.freezed.dart';
-part 'plant_model.g.dart';
 
 /// Format tanggal untuk request API: `YYYY-MM-DD` (PlantCreateRequest).
 String formatPlantDateForApi(DateTime date) {
-  final normalized = DateTime(date.year, date.month, date.day);
-  final y = normalized.year.toString().padLeft(4, '0');
-  final m = normalized.month.toString().padLeft(2, '0');
-  final d = normalized.day.toString().padLeft(2, '0');
-  return '$y-$m-$d';
+  return DateFormatter.formatApiDate(
+    DateTime(date.year, date.month, date.day),
+  );
 }
 
 /// Body POST/PUT plant — hanya field yang diizinkan Swagger `PlantCreateRequest`.
@@ -161,10 +158,12 @@ class PlantModel with _$PlantModel {
     if (plantType != null) {
       final result = validator.validatePlantType(plantType);
       cropType = result.fold((failure) {
-        debugPrint(
-          '[PlantModel] Warning: Invalid plant type "$plantType". '
-          'Using default PADI. Error: ${failure.message}',
-        );
+        if (kDebugMode) {
+          debugPrint(
+            '[PlantModel] Invalid plant type "$plantType" → default PADI: '
+            '${failure.message}',
+          );
+        }
         return CropType.PADI;
       }, (type) => type);
     }
@@ -219,32 +218,4 @@ class PlantModel with _$PlantModel {
     if (isActive) return PlantStatusEnum.active;
     return PlantStatusEnum.unknown;
   }
-}
-
-@freezed
-class VarietasModel with _$VarietasModel {
-  const VarietasModel._();
-
-  const factory VarietasModel({
-    @JsonKey(name: 'varietas_id') required String varietasId,
-    @JsonKey(name: 'varietas_name') String? varietasName,
-    @JsonKey(name: 'varietas_desc') String? varietasDesc,
-    @JsonKey(name: 'varietas_sts') int? varietasSts,
-  }) = _VarietasModel;
-
-  factory VarietasModel.fromJson(Map<String, dynamic> json) =>
-      _$VarietasModelFromJson(json);
-
-  /// Convert Model to Entity
-  Varietas toEntity() {
-    return Varietas(
-      varietasId: varietasId,
-      varietasName: varietasName,
-      varietasDesc: varietasDesc,
-      varietasStatus: varietasSts ?? 0,
-    );
-  }
-
-  bool get isActive => varietasSts == 1;
-  String get displayName => varietasName ?? varietasId;
 }

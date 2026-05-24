@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../../shared/widgets/confirmation_dialog.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../utils/plant_mutation_actions.dart';
+import '../widgets/plant_actions_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
@@ -26,14 +27,19 @@ class PlantListScreen extends ConsumerWidget {
     final plantsAsync = ref.watch(plantsProvider);
 
     if (siteId == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF0F0F0),
-        body: Center(child: Text('Pilih lokasi terlebih dahulu')),
+      return Scaffold(
+        backgroundColor: AppColors.surfaceVariant,
+        body: Center(
+          child: Text(
+            AppLocalizations.of(context)!.emptySite,
+            style: AppTextStyles.caption(context, size: 14),
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.surfaceVariant,
       body: SafeArea(
         child: plantsAsync.when(
           loading: () => Column(
@@ -131,8 +137,8 @@ class _PlantCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: InkWell(
         onTap: () => context.push('/plant/${plant.plantId}'),
@@ -157,9 +163,9 @@ class _PlantCard extends ConsumerWidget {
   }
 
   Color _statusColor(Plant p) {
-    if (p.isHarvested) return Colors.orange;
-    if (p.isCurrentPlanting) return Colors.green;
-    return Colors.grey;
+    if (p.isHarvested) return AppColors.warning;
+    if (p.isCurrentPlanting) return AppColors.success;
+    return AppColors.textTertiary;
   }
 
   // ─── Actions bottom sheet ──────────────────────────────────────────────────
@@ -173,7 +179,7 @@ class _PlantCard extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (sheetCtx) => _PlantActionsSheet(
+      builder: (sheetCtx) => PlantActionsSheet(
         plant: plant,
         onEdit: () {
           Navigator.pop(sheetCtx);
@@ -182,92 +188,24 @@ class _PlantCard extends ConsumerWidget {
         onHarvest: plant.isCurrentPlanting
             ? () {
                 Navigator.pop(sheetCtx);
-                _confirmHarvest(context, ref);
+                PlantMutationActions.confirmAndHarvest(
+                  context,
+                  ref,
+                  plant: plant,
+                );
               }
             : null,
         onDelete: isAdmin
             ? () {
                 Navigator.pop(sheetCtx);
-                _confirmDelete(context, ref);
+                PlantMutationActions.confirmAndDelete(
+                  context,
+                  ref,
+                  plant: plant,
+                );
               }
             : null,
       ),
-    );
-  }
-
-  Future<void> _confirmHarvest(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showConfirmationDialog(
-      context,
-      title: 'Panen Tanaman?',
-      message:
-          '"${plant.displayName}" akan ditandai sebagai sudah dipanen. Aksi ini tidak dapat dibatalkan.',
-      confirmText: 'Ya, Panen',
-      confirmColor: Colors.orange,
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final siteId = plant.siteId ?? ref.read(selectedSiteIdProvider);
-    if (siteId == null) {
-      SnackbarHelper.showError(context, 'Site tidak valid');
-      return;
-    }
-
-    final result = await ref.read(harvestPlantUseCaseProvider)(
-      siteId,
-      plant.plantId,
-    );
-    if (!context.mounted) return;
-
-    await result.fold<Future<void>>(
-      (f) async =>
-          SnackbarHelper.showError(context, 'Gagal panen: ${f.message}'),
-      (_) async {
-        await refreshPlantCache(ref, plantId: plant.plantId);
-        if (!context.mounted) return;
-        SnackbarHelper.showSuccess(
-          context,
-          '"${plant.displayName}" berhasil ditandai sudah panen',
-        );
-      },
-    );
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'Tanaman',
-      additionalMessage:
-          '"${plant.displayName}" akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final siteId = plant.siteId ?? ref.read(selectedSiteIdProvider);
-    if (siteId == null) {
-      SnackbarHelper.showError(context, 'Site tidak valid');
-      return;
-    }
-
-    final result = await ref.read(deletePlantUseCaseProvider)(
-      siteId,
-      plant.plantId,
-    );
-    if (!context.mounted) return;
-
-    await result.fold<Future<void>>(
-      (f) async =>
-          SnackbarHelper.showError(context, 'Gagal hapus: ${f.message}'),
-      (_) async {
-        await refreshPlantCache(
-          ref,
-          plantId: plant.plantId,
-          refreshDetail: false,
-        );
-        if (!context.mounted) return;
-        SnackbarHelper.showSuccess(
-          context,
-          '"${plant.displayName}" berhasil dihapus',
-        );
-      },
     );
   }
 }
@@ -402,8 +340,8 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Row(
         children: [
@@ -444,97 +382,6 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-// ─── Actions sheet (shared) ───────────────────────────────────────────────────
-
-/// Bottom sheet aksi tanaman — digunakan di [_PlantCard] dan [PlantDetailCard].
-class _PlantActionsSheet extends StatelessWidget {
-  final Plant plant;
-  final VoidCallback onEdit;
-  final VoidCallback? onHarvest;
-  final VoidCallback? onDelete;
-
-  const _PlantActionsSheet({
-    required this.plant,
-    required this.onEdit,
-    this.onHarvest,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                plant.displayName,
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(16),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
-            title: Text(
-              'Edit Tanaman',
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(14),
-              ),
-            ),
-            onTap: onEdit,
-          ),
-          if (onHarvest != null)
-            ListTile(
-              leading: const Icon(Icons.agriculture, color: Colors.orange),
-              title: Text(
-                'Panen Tanaman',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                  color: Colors.orange,
-                ),
-              ),
-              onTap: onHarvest,
-            ),
-          if (onDelete != null)
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: Text(
-                'Delete Tanaman',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                  color: Colors.red,
-                ),
-              ),
-              onTap: onDelete,
-            ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-}
-
 // ─── Empty & Error states ─────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
@@ -542,6 +389,8 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -553,22 +402,13 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: context.rh(0.02)),
           Text(
-            'Belum ada tanaman',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(16),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary.withValues(alpha: 0.6),
-            ),
+            l10n.plantListEmpty,
+            style: AppTextStyles.cardTitle(context, context.sp(16)),
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            'Tambahkan tanaman pertama Anda',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(14),
-              color: AppColors.textPrimary.withValues(alpha: 0.5),
-            ),
+            l10n.plantListEmptyHint,
+            style: AppTextStyles.caption(context, size: context.sp(14)),
           ),
         ],
       ),
@@ -583,6 +423,8 @@ class _ListErrorState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         const _ListHeader(),
@@ -600,23 +442,14 @@ class _ListErrorState extends ConsumerWidget {
                   ),
                   SizedBox(height: context.rh(0.02)),
                   Text(
-                    'Gagal memuat data',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(18),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    l10n.plantLoadFailed,
+                    style: AppTextStyles.cardTitle(context, context.sp(18)),
                   ),
                   SizedBox(height: context.rh(0.01)),
                   Text(
                     error.toString(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(14),
-                      color: AppColors.textPrimary.withValues(alpha: 0.6),
-                    ),
+                    style: AppTextStyles.caption(context, size: context.sp(14)),
                   ),
                   SizedBox(height: context.rh(0.03)),
                   ElevatedButton(
@@ -633,11 +466,8 @@ class _ListErrorState extends ConsumerWidget {
                       ),
                     ),
                     child: Text(
-                      'Coba Lagi',
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(14),
-                      ),
+                      l10n.retry,
+                      style: AppTextStyles.label(context, size: context.sp(14)),
                     ),
                   ),
                 ],

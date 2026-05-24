@@ -1,3 +1,5 @@
+import '../../../core/utils/date_formatter.dart';
+
 // Plant Status Extension
 //
 // Standardizes plant status code comparisons across the application.
@@ -49,6 +51,12 @@ DateTime? parsePlantDateValue(dynamic value) {
 
   final isoParsed = DateTime.tryParse(raw);
   if (isoParsed != null) return isoParsed;
+
+  final apiDate = DateFormatter.parseApiDate(raw);
+  if (apiDate != null) return apiDate;
+
+  final apiDateTime = DateFormatter.parseApiDateTime(raw);
+  if (apiDateTime != null) return apiDateTime;
 
   final match = RegExp(
     r'^(\d{1,2})/(\d{1,2})/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$',
