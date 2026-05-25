@@ -29,6 +29,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF6B6E6B);
   static const Color textTertiary = Color(0xFF9E9E9E);
   static const Color divider = Color(0xFFE0E0E0);
+  static const Color pill = Color(0xFFF7F7F7);
 
   // Shimmer
   static const Color shimmerBase = Color(0xFFE0E0E0);
@@ -116,6 +117,14 @@ class AppTextStyles {
     double size = 11,
     Color color = AppColors.textSecondary,
     FontWeight weight = FontWeight.w400,
+  }) => _scaled(context, size: size, weight: weight, color: color);
+
+  /// Body secondary (smaller).
+  static TextStyle caption2(
+    BuildContext context, {
+    double size = 11,
+    Color color = AppColors.textSecondary,
+    FontWeight weight = FontWeight.w300,
   }) => _scaled(context, size: size, weight: weight, color: color);
 
   /// Hint / muted small text.

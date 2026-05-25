@@ -129,5 +129,8 @@
   },
   "plantDetailHarvestConfirm": "Ya, Sudah Panen",
   "plantDetailCancel": "Batal",
-  "plantErrorTitle": "Terjadi kesalahan"
+  "plantErrorTitle": "Terjadi kesalahan",
+  "plantDetailTitle": "Detail Tanaman",
+  "plantHstUnit": "Hari",
+  "plantStatusLabel": "Status"
 }

@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/plant_provider.dart';
-import '../widgets/plant_input_form.dart';
+import '../widgets/plant_input_form_widget.dart';
 
-/// Screen wrapper untuk form tambah/edit tanaman.
-///
-/// Mode create : [plantId] == null
-/// Mode edit   : [plantId] != null → load data dulu via [plantDetailProvider]
 class PlantFormScreen extends ConsumerWidget {
   final String? plantId;
 
@@ -25,61 +22,69 @@ class PlantFormScreen extends ConsumerWidget {
 
     if (siteId == null) {
       return Scaffold(
-        backgroundColor: AppColors.surfaceVariant,
-        body: Center(
-          child: Text(AppLocalizations.of(context)!.emptySite),
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Center(
+            child: Text(
+              AppLocalizations.of(context)!.emptySite,
+              style: AppTextStyles.caption(context),
+            ),
+          ),
         ),
       );
     }
 
-    // ── Mode create ──────────────────────────────────────────────────────────
     if (!_isEditMode) {
-      return PlantInputForm(
-        siteId: siteId,
-        onCancel: () => context.pop(),
-        onSuccess: () {
-          // plantsProvider sudah di-invalidate di dalam CreatePlantNotifier
-          context.pop();
-        },
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: PlantInputForm(
+            siteId: siteId,
+            onCancel: () => context.pop(),
+            onSuccess: () => context.pop(),
+          ),
+        ),
       );
     }
 
-    // ── Mode edit — load data terlebih dahulu ────────────────────────────────
     final plantAsync = ref.watch(plantDetailProvider(plantId!));
 
     return plantAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: AppColors.surfaceVariant,
-        body: Center(
-          child: DetailScreenSkeleton(
-            infoRowCount: 3,
-            hasDescription: false,
-            headerHeight: 120,
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Center(
+            child: DetailScreenSkeleton(
+              infoRowCount: 3,
+              hasDescription: false,
+              headerHeight: 120,
+            ),
           ),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: AppColors.surfaceVariant,
-        body: _EditLoadError(
-          error: error.toString(),
-          onRetry: () => ref.invalidate(plantDetailProvider(plantId!)),
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: _EditLoadError(
+            error: error.toString(),
+            onRetry: () => ref.invalidate(plantDetailProvider(plantId!)),
+          ),
         ),
       ),
-      data: (plant) => PlantInputForm(
-        siteId: siteId,
-        initialPlant: plant,
-        onCancel: () => context.pop(),
-        onSuccess: () {
-          // plantsProvider & plantDetailProvider sudah di-invalidate
-          // di dalam UpdatePlantNotifier — cukup pop
-          context.pop();
-        },
+      data: (plant) => Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: PlantInputForm(
+            siteId: siteId,
+            initialPlant: plant,
+            onCancel: () => context.pop(),
+            onSuccess: () => context.pop(),
+          ),
+        ),
       ),
     );
   }
 }
-
-// ─── Error state saat load data edit ─────────────────────────────────────────
 
 class _EditLoadError extends StatelessWidget {
   final String error;
@@ -89,45 +94,75 @@ class _EditLoadError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    final l10n = AppLocalizations.of(context)!;
+
+    return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(context.rw(0.061)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'Gagal memuat data tanaman',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+            Icon(
+              Icons.error_outline,
+              size: context.rw(0.123).clamp(44.0, 56.0),
+              color: AppColors.error,
+            ),
+            SizedBox(height: context.rh(0.02)),
+            Text(
+              l10n.plantLoadFailed,
+              style: AppTextStyles.cardTitle(context, context.sp(16)),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.rh(0.01)),
             Text(
               error,
-              style: const TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 13,
-                color: Colors.grey,
-              ),
+              style: AppTextStyles.caption(context, size: context.sp(13)),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: context.rh(0.03)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Kembali'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.divider),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    l10n.plantDetailCancel,
+                    style: AppTextStyles.label(context, size: context.sp(14)),
+                  ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: context.rw(0.031)),
                 ElevatedButton(
                   onPressed: onRetry,
-                  child: const Text('Coba Lagi'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.surface,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    l10n.retry,
+                    style: AppTextStyles.label(
+                      context,
+                      size: context.sp(14),
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
             ),

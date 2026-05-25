@@ -275,4 +275,13 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get plantErrorTitle => 'Terjadi kesalahan';
+
+  @override
+  String get plantDetailTitle => 'Detail Tanaman';
+
+  @override
+  String get plantHstUnit => 'Hari';
+
+  @override
+  String get plantStatusLabel => 'Status';
 }

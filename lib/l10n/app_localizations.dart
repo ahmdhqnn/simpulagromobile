@@ -595,6 +595,24 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Terjadi kesalahan'**
   String get plantErrorTitle;
+
+  /// No description provided for @plantDetailTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Detail Tanaman'**
+  String get plantDetailTitle;
+
+  /// No description provided for @plantHstUnit.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari'**
+  String get plantHstUnit;
+
+  /// No description provided for @plantStatusLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Status'**
+  String get plantStatusLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -7,17 +7,12 @@ import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../utils/plant_mutation_actions.dart';
-import '../widgets/plant_actions_sheet.dart';
+import '../widgets/plant_actions_sheet_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 
-/// Daftar semua tanaman untuk site yang dipilih.
-/// Setiap card memiliki tombol more (⋮) dengan aksi:
-///   - Edit Tanaman
-///   - Panen Tanaman (hanya jika isCurrentPlanting)
-///   - Delete Tanaman (hanya Admin)
 class PlantListScreen extends ConsumerWidget {
   const PlantListScreen({super.key});
 
@@ -63,8 +58,6 @@ class PlantListScreen extends ConsumerWidget {
   }
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-
 class _ListHeader extends StatelessWidget {
   const _ListHeader();
 
@@ -88,8 +81,6 @@ class _ListHeader extends StatelessWidget {
     );
   }
 }
-
-// ─── List ─────────────────────────────────────────────────────────────────────
 
 class _PlantList extends ConsumerWidget {
   final List<Plant> plants;
@@ -123,8 +114,6 @@ class _PlantList extends ConsumerWidget {
     );
   }
 }
-
-// ─── Plant card ───────────────────────────────────────────────────────────────
 
 class _PlantCard extends ConsumerWidget {
   final Plant plant;
@@ -168,8 +157,6 @@ class _PlantCard extends ConsumerWidget {
     return AppColors.textTertiary;
   }
 
-  // ─── Actions bottom sheet ──────────────────────────────────────────────────
-
   void _showActions(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.read(authProvider).isAdmin;
 
@@ -210,8 +197,6 @@ class _PlantCard extends ConsumerWidget {
   }
 }
 
-// ─── Card sub-widgets ─────────────────────────────────────────────────────────
-
 class _CardTopRow extends StatelessWidget {
   final Plant plant;
   final Color statusColor;
@@ -227,7 +212,6 @@ class _CardTopRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Icon crop type
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -240,7 +224,7 @@ class _CardTopRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        // Nama & tipe
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,14 +250,14 @@ class _CardTopRow extends StatelessWidget {
             ],
           ),
         ),
-        // More button
+
         IconButton(
           tooltip: 'Aksi tanaman',
           onPressed: onMoreTap,
           icon: const Icon(Icons.more_vert),
           color: AppColors.textPrimary.withValues(alpha: 0.7),
         ),
-        // Status badge
+
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -381,8 +365,6 @@ class _InfoChip extends StatelessWidget {
     );
   }
 }
-
-// ─── Empty & Error states ─────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();

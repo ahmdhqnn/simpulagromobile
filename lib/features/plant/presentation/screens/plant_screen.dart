@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
-import '../widgets/plant_detail_card.dart';
-import '../widgets/plant_empty_state.dart';
-import '../widgets/plant_input_form.dart';
+import '../widgets/plant_detail_card_widget.dart';
+import '../widgets/plant_empty_state_widget.dart';
+import '../widgets/plant_input_form_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 
-/// Screen utama fitur tanaman di dashboard.
-/// Menampilkan salah satu dari 4 state:
-///   - [PlantScreenState.loading]  → skeleton
-///   - [PlantScreenState.empty]    → [PlantEmptyState]
-///   - [PlantScreenState.input]    → [PlantInputForm]
-///   - [PlantScreenState.hasData]  → [PlantDetailCard]
 class PlantScreen extends ConsumerWidget {
   const PlantScreen({super.key});
 
@@ -28,18 +22,21 @@ class PlantScreen extends ConsumerWidget {
 
     if (siteId == null) {
       return const Scaffold(
-        body: Center(
-          child: DetailScreenSkeleton(
-            infoRowCount: 3,
-            hasDescription: false,
-            headerHeight: 120,
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Center(
+            child: DetailScreenSkeleton(
+              infoRowCount: 3,
+              hasDescription: false,
+              headerHeight: 120,
+            ),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceVariant,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: plantsAsync.when(
           loading: () => const Center(
@@ -49,22 +46,24 @@ class PlantScreen extends ConsumerWidget {
               headerHeight: 120,
             ),
           ),
-          error: (error, _) => _ErrorState(
+          error: (error, _) => _PlantErrorState(
             error: error.toString(),
-            onRetry: () => ref.invalidate(plantsProvider),
+            onRetry: () => ref.read(plantsProvider.notifier).refresh(),
           ),
-          data: (plants) => _PlantContent(
-            plants: plants,
-            siteId: siteId,
-            screenState: screenState,
+          data: (plants) => RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () => ref.read(plantsProvider.notifier).refresh(),
+            child: _PlantContent(
+              plants: plants,
+              siteId: siteId,
+              screenState: screenState,
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-// ─── Private sub-widgets ──────────────────────────────────────────────────────
 
 class _PlantContent extends ConsumerWidget {
   final List<Plant> plants;
@@ -80,14 +79,26 @@ class _PlantContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasActivePlant = plants.any((p) => p.isCurrentPlanting);
-
     final actualState = _resolveState(screenState, hasActivePlant);
 
     switch (actualState) {
+      case PlantScreenState.loading:
+        return const Center(
+          child: DetailScreenSkeleton(
+            infoRowCount: 3,
+            hasDescription: false,
+            headerHeight: 120,
+          ),
+        );
+
       case PlantScreenState.empty:
-        return PlantEmptyState(
-          onAddPlant: () => ref.read(plantScreenStateProvider.notifier).state =
-              PlantScreenState.input,
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: PlantEmptyState(
+            onAddPlant: () =>
+                ref.read(plantScreenStateProvider.notifier).state =
+                    PlantScreenState.input,
+          ),
         );
 
       case PlantScreenState.input:
@@ -104,34 +115,26 @@ class _PlantContent extends ConsumerWidget {
       case PlantScreenState.hasData:
         final activePlant = plants.firstWhere((p) => p.isCurrentPlanting);
         return PlantDetailCard(plant: activePlant);
-
-      case PlantScreenState.loading:
-        return const Center(
-          child: DetailScreenSkeleton(
-            infoRowCount: 3,
-            hasDescription: false,
-            headerHeight: 120,
-          ),
-        );
     }
   }
 
   PlantScreenState _resolveState(PlantScreenState requested, bool hasActive) {
-    if (requested == PlantScreenState.input && !hasActive) {
-      return PlantScreenState.input;
-    }
+    if (requested == PlantScreenState.input) return PlantScreenState.input;
+
     return hasActive ? PlantScreenState.hasData : PlantScreenState.empty;
   }
 }
 
-class _ErrorState extends StatelessWidget {
+class _PlantErrorState extends StatelessWidget {
   final String error;
   final VoidCallback onRetry;
 
-  const _ErrorState({required this.error, required this.onRetry});
+  const _PlantErrorState({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.061)),
@@ -145,23 +148,14 @@ class _ErrorState extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              AppLocalizations.of(context)!.plantErrorTitle,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(18),
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              l10n.plantErrorTitle,
+              style: AppTextStyles.cardTitle(context, context.sp(18)),
             ),
             SizedBox(height: context.rh(0.01)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(14),
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.caption(context, size: context.sp(14)),
             ),
             SizedBox(height: context.rh(0.03)),
             ElevatedButton(
@@ -178,11 +172,8 @@ class _ErrorState extends StatelessWidget {
                 ),
               ),
               child: Text(
-                AppLocalizations.of(context)!.retry,
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(14),
-                ),
+                l10n.retry,
+                style: AppTextStyles.label(context, size: context.sp(14)),
               ),
             ),
           ],
