@@ -273,4 +273,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get plantErrorTitle => 'Something went wrong';
+
+  @override
+  String get plantDetailTitle => 'Plant\'s Detail';
+
+  @override
+  String get plantHstUnit => 'Day';
+
+  @override
+  String get plantStatusLabel => 'Status';
 }

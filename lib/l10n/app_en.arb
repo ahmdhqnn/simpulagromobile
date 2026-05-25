@@ -112,5 +112,8 @@
   },
   "plantDetailHarvestConfirm": "Yes, harvested",
   "plantDetailCancel": "Cancel",
-  "plantErrorTitle": "Something went wrong"
+  "plantErrorTitle": "Something went wrong",
+  "plantDetailTitle": "Plant's Detail",
+  "plantHstUnit": "Day",
+  "plantStatusLabel": "Status"
 }

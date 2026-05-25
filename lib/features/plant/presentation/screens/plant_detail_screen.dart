@@ -10,7 +10,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../utils/plant_mutation_actions.dart';
-import '../widgets/plant_actions_sheet.dart';
+import '../widgets/plant_actions_sheet_widget.dart';
 import '../widgets/plant_detail_content_widget.dart';
 
 class PlantDetailScreen extends ConsumerWidget {
@@ -58,11 +58,12 @@ class PlantDetailScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.024)),
                         PlantActionButtonsWidget(
                           plant: plant,
-                          onHarvest: () => PlantMutationActions.confirmAndHarvest(
-                            context,
-                            ref,
-                            plant: plant,
-                          ),
+                          onHarvest: () =>
+                              PlantMutationActions.confirmAndHarvest(
+                                context,
+                                ref,
+                                plant: plant,
+                              ),
                         ),
                         SizedBox(height: context.rh(0.02)),
                       ],
@@ -158,7 +159,9 @@ class PlantDetailScreen extends ConsumerWidget {
                     ),
                     child: Text(
                       l10n.retry,
-                      style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+                      style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                      ),
                     ),
                   ),
                 ],
@@ -169,8 +172,6 @@ class PlantDetailScreen extends ConsumerWidget {
       ],
     );
   }
-
-  // ─── More Actions Bottom Sheet ────────────────────────────────────────────
 
   void _showMoreActions(BuildContext context, WidgetRef ref, Plant plant) {
     final isAdmin = ref.read(authProvider).isAdmin;

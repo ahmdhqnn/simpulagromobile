@@ -1,69 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../utils/plant_mutation_actions.dart';
-import 'agro_indicator_button.dart';
-import 'growth_phase_button.dart';
-import 'plant_actions_sheet.dart';
+import 'agro_indicator_button_widget.dart';
+import 'growth_phase_button_widget.dart';
+import 'plant_actions_sheet_widget.dart';
 
-/// Card utama yang menampilkan gambar tanaman aktif beserta detail-nya.
-/// Ditampilkan di [PlantScreen] saat ada tanaman yang sedang tumbuh.
-/// Icon more (···) di pojok kanan atas membuka bottom sheet aksi:
-///   - Edit Tanaman
-///   - Panen Tanaman (hanya jika isCurrentPlanting)
-///   - Delete Tanaman (hanya Admin)
 class PlantDetailCard extends ConsumerWidget {
   final Plant plant;
 
   const PlantDetailCard({super.key, required this.plant});
 
-  // ─── Plant image per crop type ─────────────────────────────────────────────
-
   String get _plantImage {
-    // Semua tipe saat ini menggunakan aset yang sama.
-    // Ganti per-case saat aset spesifik tersedia.
     return 'assets/images/padi-perkecambahan-image.png';
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.015),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _PlantCardHeader(onMoreTap: () => _showMoreActions(context, ref)),
-          SizedBox(height: context.rh(0.03)),
-          Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  child: _PlantImageSection(plant: plant, image: _plantImage),
-                ),
-                SizedBox(height: context.rh(0.02)),
-                _PlantInfoSection(plant: plant),
-                SizedBox(height: context.rh(0.02)),
-              ],
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: context.rh(0.015)),
+
+            _PlantCardHeader(onMoreTap: () => _showMoreActions(context, ref)),
+
+            SizedBox(height: context.rh(0.03)),
+
+            Text(
+              AppLocalizations.of(context)!.plantOverviewTitle,
+              style: AppTextStyles.sectionTitle(context),
             ),
-          ),
-        ],
+
+            SizedBox(height: context.rh(0.025)),
+
+            _PlantImageSection(plant: plant, image: _plantImage),
+
+            SizedBox(height: context.rh(0.02)),
+
+            _PlantInfoSection(plant: plant),
+
+            SizedBox(height: context.rh(0.02)),
+          ],
+        ),
       ),
     );
   }
-
-  // ─── More actions bottom sheet ─────────────────────────────────────────────
 
   void _showMoreActions(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.read(authProvider).isAdmin;
@@ -105,9 +97,6 @@ class PlantDetailCard extends ConsumerWidget {
   }
 }
 
-// ─── Sub-widgets ──────────────────────────────────────────────────────────────
-
-/// Header row: judul "Tanaman" + tombol more (···)
 class _PlantCardHeader extends StatelessWidget {
   final VoidCallback onMoreTap;
 
@@ -116,18 +105,8 @@ class _PlantCardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(
-          AppLocalizations.of(context)!.plantTitle,
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(28),
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-            height: 1.0,
-          ),
-        ),
         CircularBackButtonWidget(
           onPressed: onMoreTap,
           svgIconPath: 'assets/icons/more-icon.svg',
@@ -137,7 +116,6 @@ class _PlantCardHeader extends StatelessWidget {
   }
 }
 
-/// Area gambar tanaman dengan tombol Growth Phase & Agro Indicator
 class _PlantImageSection extends StatelessWidget {
   final Plant plant;
   final String image;
@@ -146,25 +124,46 @@ class _PlantImageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    final imageAreaHeight = context.rh(0.355).clamp(220.0, 320.0);
+
+    return Column(
       children: [
-        Center(child: Image.asset(image, fit: BoxFit.contain)),
-        Positioned(right: 0, bottom: 0, child: const AgroIndicatorButton()),
-        Positioned(
-          left: 0,
-          bottom: 0,
-          child: GrowthPhaseButton(
-            siteId: plant.siteId ?? '',
-            plantName:
-                plant.plantType?.displayName ?? plant.plantName ?? 'Tanaman',
+        SizedBox(
+          width: double.infinity,
+          height: imageAreaHeight,
+          child: Transform.scale(
+            scale: 1.2,
+            child: Image.asset(
+              image,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Center(
+                child: Text(
+                  plant.plantType?.icon ?? '🌱',
+                  style: TextStyle(fontSize: context.sp(80)),
+                ),
+              ),
+            ),
           ),
+        ),
+
+        SizedBox(height: context.rh(0.015)),
+
+        Row(
+          children: [
+            GrowthPhaseButton(
+              siteId: plant.siteId ?? '',
+              plantName:
+                  plant.plantType?.displayName ?? plant.plantName ?? 'Tanaman',
+            ),
+            const Spacer(),
+            const AgroIndicatorButton(),
+          ],
         ),
       ],
     );
   }
 }
 
-/// Card info detail tanaman di bagian bawah
 class _PlantInfoSection extends StatelessWidget {
   final Plant plant;
 
@@ -180,9 +179,9 @@ class _PlantInfoSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.rw(0.038)),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
@@ -199,41 +198,45 @@ class _PlantInfoSection extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: context.rh(0.005)),
           Text(
             plant.growthPhase ?? '-',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(12),
-              height: 1.8,
-              color: AppColors.textPrimary.withValues(alpha: 0.6),
+            style: AppTextStyles.caption2(
+              context,
+              size: context.sp(12),
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+
+          SizedBox(height: context.rh(0.018)),
+
           _DetailRow(
-            label: 'Jenis Tanaman',
+            label: AppLocalizations.of(context)!.plantTypeLabel,
             value: plant.plantType?.displayName ?? '-',
           ),
           _DetailRow(
-            label: 'Tanggal Tanam',
-            value: plant.plantDate != null
-                ? DateFormat('dd MMM yyyy').format(plant.plantDate!)
+            label: AppLocalizations.of(context)!.plantDateLabel,
+            value: DateFormatter.formatDate(plant.plantDate),
+          ),
+          _DetailRow(
+            label: AppLocalizations.of(context)!.plantHstLabel,
+            value: plant.hst != null
+                ? '${plant.hst} ${AppLocalizations.of(context)!.plantHstUnit}'
                 : '-',
           ),
           _DetailRow(
-            label: 'HST',
-            value: plant.hst != null ? '${plant.hst} Hari' : '-',
+            label: AppLocalizations.of(context)!.plantPhaseLabel,
+            value: plant.growthPhase ?? '-',
           ),
-          _DetailRow(label: 'Fase Tumbuh', value: plant.growthPhase ?? '-'),
           _DetailRow(
-            label: 'Status',
+            label: AppLocalizations.of(context)!.plantStatusLabel,
             value: plant.statusText,
             valueColor: statusColor,
           ),
           if (plant.isHarvested && plant.plantHarvest != null)
             _DetailRow(
-              label: 'Tanggal Panen',
-              value: DateFormat('dd MMM yyyy').format(plant.plantHarvest!),
+              label: AppLocalizations.of(context)!.plantHarvestDateLabel,
+              value: DateFormatter.formatDate(plant.plantHarvest),
             ),
         ],
       ),
@@ -241,7 +244,6 @@ class _PlantInfoSection extends StatelessWidget {
   }
 }
 
-/// Satu baris label–value di info card
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
@@ -252,31 +254,31 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: (context.sw * 0.38).clamp(100.0, 140.0),
             child: Text(
               label,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(12),
-                fontWeight: FontWeight.w500,
-                height: 1.8,
-                color: AppColors.textPrimary.withValues(alpha: 0.7),
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(12),
+                weight: FontWeight.w500,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
+
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(12),
-                fontWeight: FontWeight.w300,
-                height: 1.8,
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(12),
+                weight: FontWeight.w300,
                 color: valueColor ?? AppColors.textPrimary,
               ),
             ),

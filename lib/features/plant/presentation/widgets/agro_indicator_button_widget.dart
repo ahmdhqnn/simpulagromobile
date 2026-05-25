@@ -1,33 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../phase/presentation/screens/phase_list_screen.dart';
+import '../../../agro/presentation/screens/agro_indicator_screen.dart';
 
-class GrowthPhaseButton extends StatelessWidget {
-  // siteId digunakan karena endpoint /fase/phases-by-hst/:siteId butuh siteId
-  final String siteId;
-  final String plantName;
-
-  const GrowthPhaseButton({
-    super.key,
-    required this.siteId,
-    required this.plantName,
-  });
+class AgroIndicatorButton extends StatelessWidget {
+  const AgroIndicatorButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              PhaseListScreen(plantId: siteId, plantName: plantName),
-        ),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const AgroIndicatorScreen())),
       child: Container(
         width: 130,
         height: 38,
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(100),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -35,10 +24,12 @@ class GrowthPhaseButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Growth Phase',
+              'Agro Indicator',
               style: TextStyle(
-                fontSize: 12,
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 13,
                 fontWeight: FontWeight.w400,
+                color: Color(0xFF1D1D1D),
                 height: 1.8,
               ),
             ),
@@ -46,6 +37,10 @@ class GrowthPhaseButton extends StatelessWidget {
             SvgPicture.asset(
               'assets/icons/arrow-up-right-long-outline-icon.svg',
               width: 16,
+              colorFilter: const ColorFilter.mode(
+                Color(0xFF1D1D1D),
+                BlendMode.srcIn,
+              ),
             ),
           ],
         ),
