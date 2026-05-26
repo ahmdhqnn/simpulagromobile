@@ -16,22 +16,37 @@ class ForumScreen extends ConsumerStatefulWidget {
   ConsumerState<ForumScreen> createState() => _ForumScreenState();
 }
 
-class _ForumScreenState extends ConsumerState<ForumScreen> {
+class _ForumScreenState extends ConsumerState<ForumScreen>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(forumProvider.notifier).loadPosts(refresh: true),
-    );
+    WidgetsBinding.instance.addObserver(this);
+    Future.microtask(() {
+      ref.read(forumProvider.notifier).loadPosts(refresh: true);
+      ref.read(forumProvider.notifier).startRealtime();
+    });
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ref.read(forumProvider.notifier).stopRealtime();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(forumProvider.notifier).refreshPosts();
+      ref.read(forumProvider.notifier).startRealtime();
+    } else if (state == AppLifecycleState.paused) {
+      ref.read(forumProvider.notifier).stopRealtime();
+    }
   }
 
   void _onScroll() {
@@ -155,12 +170,10 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
     ForumState forumState,
     String? currentUserId,
   ) {
-    // Error state with no data
     if (forumState.error != null && forumState.posts.isEmpty) {
       return _buildErrorState(context, forumState.error!);
     }
 
-    // Empty state
     if (forumState.posts.isEmpty && !forumState.isLoading) {
       return EmptyStateWidget(
         icon: Icons.forum_outlined,
@@ -184,7 +197,6 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
       );
     }
 
-    // Initial loading
     if (forumState.posts.isEmpty && forumState.isLoading) {
       return ListView.builder(
         padding: EdgeInsets.all(context.rw(0.051)),
@@ -193,7 +205,6 @@ class _ForumScreenState extends ConsumerState<ForumScreen> {
       );
     }
 
-    // Posts list
     return ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.all(context.rw(0.051)),
