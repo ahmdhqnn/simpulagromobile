@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
@@ -9,10 +10,6 @@ import '../../domain/entities/user_comment.dart';
 import '../../domain/entities/reaction.dart';
 import '../../domain/repositories/forum_repository.dart';
 
-// ═══════════════════════════════════════════════════════════
-// DATA SOURCE & REPOSITORY PROVIDERS
-// ═══════════════════════════════════════════════════════════
-
 final forumRemoteDataSourceProvider = Provider<ForumRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   return ForumRemoteDataSource(dioClient.dio);
@@ -22,10 +19,6 @@ final forumRepositoryProvider = Provider<ForumRepository>((ref) {
   final remoteDataSource = ref.watch(forumRemoteDataSourceProvider);
   return ForumRepositoryImpl(remoteDataSource);
 });
-
-// ═══════════════════════════════════════════════════════════
-// FORUM POSTS STATE & NOTIFIER
-// ═══════════════════════════════════════════════════════════
 
 class ForumState {
   final List<Post> posts;
@@ -61,8 +54,59 @@ class ForumState {
 
 class ForumNotifier extends StateNotifier<ForumState> {
   final ForumRepository _repository;
+  Timer? _pollingTimer;
+
+  static const _pollingInterval = Duration(seconds: 30);
 
   ForumNotifier(this._repository) : super(const ForumState());
+
+  void startRealtime() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(_pollingInterval, (_) {
+      _silentRefresh();
+    });
+  }
+
+  void stopRealtime() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  Future<void> _silentRefresh() async {
+    if (state.isLoading) return;
+    final result = await _repository.getPosts(page: 1, limit: 20);
+    result.fold((_) {}, (newPosts) {
+      if (mounted) {
+        final existingIds = state.posts.map((p) => p.postId).toSet();
+        final newIds = newPosts.map((p) => p.postId).toSet();
+
+        final addedPosts = newPosts
+            .where((p) => !existingIds.contains(p.postId))
+            .toList();
+
+        final updatedExisting = state.posts.map((existing) {
+          final updated = newPosts.firstWhere(
+            (p) => p.postId == existing.postId,
+            orElse: () => existing,
+          );
+          return updated;
+        }).toList();
+
+        final filteredExisting = updatedExisting
+            .where((p) => newIds.contains(p.postId))
+            .toList();
+
+        final mergedPosts = [...addedPosts, ...filteredExisting];
+        state = state.copyWith(posts: mergedPosts);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> loadPosts({bool refresh = false}) async {
     if (state.isLoading) return;
@@ -85,11 +129,8 @@ class ForumNotifier extends StateNotifier<ForumState> {
     result.fold(
       (failure) {
         if (mounted) {
-          state = state.copyWith(
-            isLoading: false,
-            error: failure.message,
-          );
-          // Auto retry after 5 seconds if error persists
+          state = state.copyWith(isLoading: false, error: failure.message);
+
           Future.delayed(const Duration(seconds: 5), () {
             if (mounted && state.error != null && !state.isLoading) {
               loadPosts(refresh: refresh);
@@ -104,7 +145,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
               posts: newPosts,
               isLoading: false,
               hasMore: newPosts.length >= 20,
-              currentPage: 2, // Next page to fetch
+              currentPage: 2,
             );
           } else {
             state = ForumState(
@@ -159,12 +200,9 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
   Future<void> toggleLike(String postId) async {
     final result = await _repository.toggleLike(postId);
-    result.fold(
-      (failure) {
-        state = state.copyWith(error: failure.message);
-      },
-      (data) => _applyLikeUpdate(postId, data.isLiked, data.likeCount),
-    );
+    result.fold((failure) {
+      state = state.copyWith(error: failure.message);
+    }, (data) => _applyLikeUpdate(postId, data.isLiked, data.likeCount));
   }
 
   Future<void> deletePost(String postId) async {
@@ -253,10 +291,6 @@ final forumProvider = StateNotifierProvider<ForumNotifier, ForumState>((ref) {
   return ForumNotifier(repository);
 });
 
-// ═══════════════════════════════════════════════════════════
-// POST DETAIL PROVIDER
-// ═══════════════════════════════════════════════════════════
-
 final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   ref,
   postId,
@@ -264,16 +298,9 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getPostById(postId);
-    return result.fold(
-      (failure) => throw failure,
-      (post) => post,
-    );
+    return result.fold((failure) => throw failure, (post) => post);
   });
 });
-
-// ═══════════════════════════════════════════════════════════
-// COMMENTS PROVIDER
-// ═══════════════════════════════════════════════════════════
 
 class CommentsState {
   final List<Comment> comments;
@@ -313,11 +340,8 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     result.fold(
       (failure) {
         if (mounted) {
-          state = state.copyWith(
-            isLoading: false,
-            error: failure.message,
-          );
-          // Auto retry after 5 seconds if error persists
+          state = state.copyWith(isLoading: false, error: failure.message);
+
           Future.delayed(const Duration(seconds: 5), () {
             if (mounted && state.error != null && !state.isLoading) {
               loadComments();
@@ -344,7 +368,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       },
       (newComment) {
         state = state.copyWith(comments: [newComment, ...state.comments]);
-        // Sync comment count ke forum list & post detail
+
         _ref.read(forumProvider.notifier).updateCommentCount(_postId, 1);
         _ref.invalidate(postDetailProvider(_postId));
       },
@@ -356,20 +380,22 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       commentId: commentId,
       content: content,
     );
-    result.fold(
-      (failure) => state = state.copyWith(error: failure.message),
-      (updated) {
-        final list = state.comments
-            .map((c) => c.commentId == commentId ? updated : c)
-            .toList();
-        state = state.copyWith(comments: list);
-        _ref.invalidate(myCommentsProvider);
-      },
-    );
+    result.fold((failure) => state = state.copyWith(error: failure.message), (
+      updated,
+    ) {
+      final list = state.comments
+          .map((c) => c.commentId == commentId ? updated : c)
+          .toList();
+      state = state.copyWith(comments: list);
+      _ref.invalidate(myCommentsProvider);
+    });
   }
 
   Future<void> deleteComment(String commentId) async {
-    final result = await _repository.deleteComment(postId: _postId, commentId: commentId);
+    final result = await _repository.deleteComment(
+      postId: _postId,
+      commentId: commentId,
+    );
     result.fold(
       (failure) {
         state = state.copyWith(error: failure.message);
@@ -379,7 +405,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
             .where((c) => c.commentId != commentId)
             .toList();
         state = state.copyWith(comments: updatedComments);
-        // Sync comment count ke forum list & post detail
+
         _ref.read(forumProvider.notifier).updateCommentCount(_postId, -1);
         _ref.invalidate(postDetailProvider(_postId));
 
@@ -395,18 +421,11 @@ final commentsProvider = StateNotifierProvider.autoDispose
       return CommentsNotifier(repository, postId, ref);
     });
 
-// ═══════════════════════════════════════════════════════════
-// MY POSTS PROVIDER
-// ═══════════════════════════════════════════════════════════
-
 final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getMyPosts();
-    return result.fold(
-      (failure) => throw failure,
-      (posts) => posts,
-    );
+    return result.fold((failure) => throw failure, (posts) => posts);
   });
 });
 
@@ -414,21 +433,18 @@ final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getLikedPosts();
-    return result.fold(
-      (failure) => throw failure,
-      (posts) => posts,
-    );
+    return result.fold((failure) => throw failure, (posts) => posts);
   });
 });
 
-final postReactionsProvider =
-    FutureProvider.autoDispose.family<List<Reaction>, String>((ref, postId) async {
-  final repository = ref.watch(forumRepositoryProvider);
-  return ref.retryOnError(() async {
-    final result = await repository.getReactions(postId);
-    return result.fold((f) => throw f, (data) => data);
-  });
-});
+final postReactionsProvider = FutureProvider.autoDispose
+    .family<List<Reaction>, String>((ref, postId) async {
+      final repository = ref.watch(forumRepositoryProvider);
+      return ref.retryOnError(() async {
+        final result = await repository.getReactions(postId);
+        return result.fold((f) => throw f, (data) => data);
+      });
+    });
 
 final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
   ref,
@@ -436,9 +452,6 @@ final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getMyComments();
-    return result.fold(
-      (failure) => throw failure,
-      (comments) => comments,
-    );
+    return result.fold((failure) => throw failure, (comments) => comments);
   });
 });

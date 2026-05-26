@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/loading_widget.dart';
@@ -20,12 +22,27 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  final _imageUrlController = TextEditingController();
 
   bool _isLoading = false;
   bool _isLoadingData = false;
 
+  XFile? _selectedImage;
+
+  String? _existingImageUrl;
+
+  bool _removeExistingImage = false;
+
+  final ImagePicker _imagePicker = ImagePicker();
+
   bool get _isEditMode => widget.postId != null;
+
+  String? get _imageToSubmit {
+    if (_selectedImage != null) return _selectedImage!.path;
+    if (!_removeExistingImage && _existingImageUrl != null) {
+      return _existingImageUrl;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -39,7 +56,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -67,7 +83,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           if (mounted) {
             _titleController.text = post.postTitle;
             _contentController.text = post.postContent;
-            _imageUrlController.text = post.postImage ?? '';
+            _existingImageUrl = post.postImage?.isNotEmpty == true
+                ? post.postImage
+                : null;
             setState(() => _isLoadingData = false);
           }
         },
@@ -88,10 +106,157 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     }
   }
 
+  void _showImageSourceSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text('Pilih Gambar', style: AppTextStyles.cardTitle(context, 15)),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.softGreen,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: const Icon(
+                    Icons.photo_library_outlined,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  'Pilih dari Galeri',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 14,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.softGreen,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_outlined,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  'Ambil Foto',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 14,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              if (_selectedImage != null || _existingImageUrl != null) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.softOrange,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.error,
+                      size: 22,
+                    ),
+                  ),
+                  title: Text(
+                    'Hapus Gambar',
+                    style: AppTextStyles.label(
+                      context,
+                      size: 14,
+                      weight: FontWeight.w500,
+                      color: AppColors.error,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _selectedImage = null;
+                      _removeExistingImage = true;
+                    });
+                  },
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedImage = picked;
+          _removeExistingImage = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Gagal memilih gambar: ${e.toString().replaceAll('Exception: ', '')}',
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validasi site terlebih dahulu untuk mode create
     if (!_isEditMode) {
       final siteId = ref.read(selectedSiteIdProvider);
       if (siteId == null) {
@@ -119,9 +284,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           postId: widget.postId!,
           title: _titleController.text.trim(),
           content: _contentController.text.trim(),
-          imageUrl: _imageUrlController.text.trim().isEmpty
-              ? null
-              : _imageUrlController.text.trim(),
+          imageUrl: _imageToSubmit,
         );
       } else {
         final siteId = ref.read(selectedSiteIdProvider)!;
@@ -129,13 +292,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           title: _titleController.text.trim(),
           siteId: siteId,
           content: _contentController.text.trim(),
-          imageUrl: _imageUrlController.text.trim().isEmpty
-              ? null
-              : _imageUrlController.text.trim(),
+          imageUrl: _imageToSubmit,
         );
       }
 
-      // Refresh forum list agar postingan baru muncul
       await ref.read(forumProvider.notifier).refreshPosts();
       ref.invalidate(myPostsProvider);
 
@@ -235,7 +395,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               child: ListView(
                 padding: EdgeInsets.all(context.rw(0.051)),
                 children: [
-                  // Title field
                   _buildInputCard(
                     child: TextFormField(
                       controller: _titleController,
@@ -263,7 +422,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Content field
                   _buildInputCard(
                     child: TextFormField(
                       controller: _contentController,
@@ -293,84 +451,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Image URL field
-                  _buildInputCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.image_outlined,
-                              size: 18,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'URL Gambar (Opsional)',
-                              style: AppTextStyles.label(
-                                context,
-                                size: 13,
-                                weight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                          controller: _imageUrlController,
-                          decoration: InputDecoration(
-                            hintText: 'https://example.com/image.jpg',
-                            hintStyle: AppTextStyles.hint(context, size: 12),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.sm),
-                              borderSide: const BorderSide(
-                                color: AppColors.divider,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.sm),
-                              borderSide: const BorderSide(
-                                color: AppColors.divider,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.sm),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                          style: AppTextStyles.label(
-                            context,
-                            size: 12,
-                            weight: FontWeight.w400,
-                          ),
-                          validator: (value) {
-                            if (value != null && value.trim().isNotEmpty) {
-                              final uri = Uri.tryParse(value.trim());
-                              if (uri == null ||
-                                  (!uri.scheme.startsWith('http'))) {
-                                return 'URL gambar tidak valid';
-                              }
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildImageSection(context),
 
                   const SizedBox(height: 16),
 
-                  // Info banner
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -401,6 +485,249 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildImageSection(BuildContext context) {
+    if (_selectedImage != null) {
+      return _buildInputCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.image_outlined,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Gambar',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 13,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: _showImageSourceSheet,
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(
+                    'Ganti',
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(12),
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: Image.file(
+                    File(_selectedImage!.path),
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _selectedImage = null;
+                      _removeExistingImage = true;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_existingImageUrl != null && !_removeExistingImage) {
+      return _buildInputCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.image_outlined,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Gambar',
+                  style: AppTextStyles.label(
+                    context,
+                    size: 13,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: _showImageSourceSheet,
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(
+                    'Ganti',
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(12),
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: Image.network(
+                    _existingImageUrl!,
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: double.infinity,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: const Icon(
+                        Icons.broken_image_outlined,
+                        size: 40,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _removeExistingImage = true;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildInputCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.image_outlined,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Gambar (Opsional)',
+                style: AppTextStyles.label(
+                  context,
+                  size: 13,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: _showImageSourceSheet,
+            child: Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(
+                  color: AppColors.divider,
+                  width: 1.5,
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 36,
+                    color: AppColors.textTertiary,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Ketuk untuk menambah gambar',
+                    style: AppTextStyles.caption(context, size: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Galeri atau Kamera',
+                    style: AppTextStyles.hint(context, size: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

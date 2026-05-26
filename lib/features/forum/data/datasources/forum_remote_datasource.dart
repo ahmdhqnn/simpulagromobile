@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../models/post_model.dart';
@@ -10,10 +11,6 @@ class ForumRemoteDataSource {
   final Dio _dio;
 
   ForumRemoteDataSource(this._dio);
-
-  // ═══════════════════════════════════════════════════════════
-  // HELPER: Response data extraction
-  // ═══════════════════════════════════════════════════════════
 
   dynamic _extractResponseData(dynamic responseData) {
     if (responseData is Map) {
@@ -71,10 +68,6 @@ class ForumRemoteDataSource {
 
     return map;
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // POSTS
-  // ═══════════════════════════════════════════════════════════
 
   Future<List<PostModel>> getPosts({
     int page = 1,
@@ -136,10 +129,22 @@ class ForumRemoteDataSource {
           formData.fields.add(MapEntry('forum_image_url', imageUrl));
           formData.fields.add(MapEntry('image', imageUrl));
         } else {
-          formData.files.add(MapEntry(
-            'image',
-            await MultipartFile.fromFile(imageUrl),
-          ));
+          // File lokal dari device
+          final file = File(imageUrl);
+          if (await file.exists()) {
+            final fileName = imageUrl.split('/').last.split('\\').last;
+            final mimeType = _getMimeType(fileName);
+            formData.files.add(
+              MapEntry(
+                'image',
+                await MultipartFile.fromFile(
+                  imageUrl,
+                  filename: fileName,
+                  contentType: DioMediaType.parse(mimeType),
+                ),
+              ),
+            );
+          }
         }
       }
 
@@ -175,14 +180,28 @@ class ForumRemoteDataSource {
           formData.fields.add(MapEntry('forum_image_url', imageUrl));
           formData.fields.add(MapEntry('image', imageUrl));
         } else {
-          formData.files.add(MapEntry(
-            'image',
-            await MultipartFile.fromFile(imageUrl),
-          ));
+          final file = File(imageUrl);
+          if (await file.exists()) {
+            final fileName = imageUrl.split('/').last.split('\\').last;
+            final mimeType = _getMimeType(fileName);
+            formData.files.add(
+              MapEntry(
+                'image',
+                await MultipartFile.fromFile(
+                  imageUrl,
+                  filename: fileName,
+                  contentType: DioMediaType.parse(mimeType),
+                ),
+              ),
+            );
+          }
         }
       }
 
-      final response = await _dio.put(ApiEndpoints.forumPostById(postId), data: formData);
+      final response = await _dio.put(
+        ApiEndpoints.forumPostById(postId),
+        data: formData,
+      );
       final data = _extractResponseData(response.data);
       final obj = _extractObject(
         data,
@@ -259,10 +278,6 @@ class ForumRemoteDataSource {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // INTERACTIONS
-  // ═══════════════════════════════════════════════════════════
-
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {
     return _toggleReaction(postId, 'LIKE');
   }
@@ -306,10 +321,6 @@ class ForumRemoteDataSource {
       throw _handleError(e);
     }
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // COMMENTS
-  // ═══════════════════════════════════════════════════════════
 
   Future<List<CommentModel>> getComments({
     required String postId,
@@ -363,7 +374,6 @@ class ForumRemoteDataSource {
     }
   }
 
-  /// PUT /comments — update komentar global
   Future<CommentModel> updateComment({
     required String commentId,
     required String content,
@@ -371,10 +381,7 @@ class ForumRemoteDataSource {
     try {
       final response = await _dio.put(
         ApiEndpoints.updateComment,
-        data: {
-          'comment_id': commentId,
-          'cf_content': content,
-        },
+        data: {'comment_id': commentId, 'cf_content': content},
       );
       final data = _extractResponseData(response.data);
       final obj = _extractObject(data, requiredFieldsAny: ['comment_id', 'id']);
@@ -385,7 +392,6 @@ class ForumRemoteDataSource {
     }
   }
 
-  /// DELETE /comments/{commentId}
   Future<void> deleteCommentGlobal(String commentId) async {
     try {
       await _dio.delete(ApiEndpoints.deleteComment(commentId));
@@ -393,10 +399,6 @@ class ForumRemoteDataSource {
       throw _handleError(e);
     }
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // REACTIONS
-  // ═══════════════════════════════════════════════════════════
 
   Future<List<ReactionModel>> getReactions(String postId) async {
     try {
@@ -411,9 +413,24 @@ class ForumRemoteDataSource {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ERROR HANDLING
-  // ═══════════════════════════════════════════════════════════
+  String _getMimeType(String fileName) {
+    final ext = fileName.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      case 'heic':
+        return 'image/heic';
+      default:
+        return 'image/jpeg';
+    }
+  }
 
   Exception _handleError(dynamic error) {
     if (error is DioException) {
