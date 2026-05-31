@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../utilitas/presentation/providers/permission_guard_provider.dart';
+import '../../../admin/presentation/providers/permission_guard_provider.dart';
 import '../../domain/entities/recommendation.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../providers/recommendation_provider.dart';
@@ -91,10 +91,7 @@ class _RecommendationTabsScreenState
               tabs: tabs,
             ),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: views,
-              ),
+              child: TabBarView(controller: _tabController, children: views),
             ),
           ],
         ),
@@ -110,6 +107,9 @@ class _LiveTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final listAsync = ref.watch(recommendationListProvider);
     return listAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('$e')),
@@ -124,6 +124,9 @@ class _HistoryTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(recommendationHistoryProvider);
     return historyAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('$e')),
@@ -143,6 +146,9 @@ class _ByPhaseTab extends ConsumerWidget {
     return Column(
       children: [
         phasesAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (phases) => Padding(
             padding: const EdgeInsets.all(12),
             child: DropdownButtonFormField<String>(
@@ -153,10 +159,8 @@ class _ByPhaseTab extends ConsumerWidget {
               ),
               items: phases
                   .map(
-                    (p) => DropdownMenuItem(
-                      value: p.id,
-                      child: Text(p.phaseName),
-                    ),
+                    (p) =>
+                        DropdownMenuItem(value: p.id, child: Text(p.phaseName)),
                   )
                   .toList(),
               onChanged: (v) {
@@ -172,6 +176,9 @@ class _ByPhaseTab extends ConsumerWidget {
           child: selectedPhase == null
               ? const Center(child: Text('Pilih fase terlebih dahulu'))
               : recAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   data: (list) =>
                       _RecommendationSimpleList(recommendations: list),
                   loading: () =>
@@ -201,10 +208,7 @@ class _RecommendationSimpleList extends StatelessWidget {
         final r = recommendations[i];
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            title: Text(r.title),
-            subtitle: Text(r.description),
-          ),
+          child: ListTile(title: Text(r.title), subtitle: Text(r.description)),
         );
       },
     );

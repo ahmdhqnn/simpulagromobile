@@ -90,11 +90,11 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Daily Reads ──────────────────────────────────────
-  /// GET /sites/{siteId}/reads/daily
+  /// GET /sites/{siteId}/reads/seven-day
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<List<SensorReadModel>> getDailyReads(String siteId) async {
-    final response = await _dio.get(ApiEndpoints.readsDaily(siteId));
+    final response = await _dio.get(ApiEndpoints.readsSevenDay(siteId));
     final data = ResponseParser.extractDataList(response.data);
     return data
         .whereType<Map<String, dynamic>>()
@@ -103,11 +103,14 @@ class DashboardRemoteDataSource {
   }
 
   // ─── Today Reads ──────────────────────────────────────
-  /// GET /sites/{siteId}/reads/daily/today
+  /// GET /sites/{siteId}/reads?today=true
   ///
   /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   Future<List<SensorReadModel>> getTodayReads(String siteId) async {
-    final response = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
+    final response = await _dio.get(
+      ApiEndpoints.reads(siteId),
+      queryParameters: const {'today': 'true'},
+    );
     final data = ResponseParser.extractDataList(response.data);
     return data
         .whereType<Map<String, dynamic>>()

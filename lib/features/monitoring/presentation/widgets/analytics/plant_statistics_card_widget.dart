@@ -23,6 +23,9 @@ class PlantStatisticsCardWidget extends ConsumerWidget {
     final plantsAsync = ref.watch(plantsProvider);
 
     return plantsAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       loading: () => Container(
         height: 74,
         decoration: BoxDecoration(

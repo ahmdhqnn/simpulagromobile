@@ -29,20 +29,14 @@ class AppCardWidget extends StatelessWidget {
   const AppCardWidget.elevated({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = AppSpacing.card,
     this.radius = AppRadius.xl,
     this.color,
     this.border,
     this.height,
     this.width,
     this.onTap,
-  }) : boxShadow = const [
-         BoxShadow(
-           color: Color(0x0A000000),
-           blurRadius: 8,
-           offset: Offset(0, 2),
-         ),
-       ];
+  }) : boxShadow = AppShadows.card;
 
   @override
   Widget build(BuildContext context) {

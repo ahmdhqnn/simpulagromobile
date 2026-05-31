@@ -48,7 +48,7 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.024)),
                   ProfileAccountInfoWidget(profile: profile),
                   SizedBox(height: context.rh(0.024)),
-                  _buildUtilitasSection(context, ref),
+                  _buildAdminSection(context, ref),
                   SizedBox(height: context.rh(0.024)),
                   _buildForumSection(context),
                   SizedBox(height: context.rh(0.024)),
@@ -131,7 +131,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUtilitasSection(BuildContext context, WidgetRef ref) {
+  Widget _buildAdminSection(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     if (!authState.isAdmin) return const SizedBox.shrink();
 
@@ -140,10 +140,10 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeaderWidget(title: 'Utilitas'),
+          const SectionHeaderWidget(title: 'Admin'),
           SizedBox(height: context.rh(0.014)),
           InkWell(
-            onTap: () => context.push('/utilitas'),
+            onTap: () => context.push('/admin'),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -177,7 +177,7 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Utilitas',
+                          'Admin',
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(22),
@@ -188,7 +188,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          'Kelola master data sistem',
+                          'Kelola data dan akses sistem',
                           style: AppTextStyles.hint(context),
                         ),
                       ],

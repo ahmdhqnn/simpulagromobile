@@ -48,6 +48,9 @@ class SensorDetailScreen extends ConsumerWidget {
         ],
       ),
       body: sensorAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (sensor) => RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
@@ -189,7 +192,11 @@ class SensorDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        loading: () => const DetailScreenSkeleton(infoRowCount: 5, hasDescription: true, headerHeight: 0),
+        loading: () => const DetailScreenSkeleton(
+          infoRowCount: 5,
+          hasDescription: true,
+          headerHeight: 0,
+        ),
         error: (error, stack) => Center(
           child: Padding(
             padding: EdgeInsets.all(context.rw(0.061)),

@@ -4,10 +4,16 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class HistoryDataTableWidget extends StatefulWidget {
   final List<SensorReadModel> reads;
-  const HistoryDataTableWidget({super.key, required this.reads});
+  final SensorMetadataAdapter metadataAdapter;
+  const HistoryDataTableWidget({
+    super.key,
+    required this.reads,
+    required this.metadataAdapter,
+  });
 
   @override
   State<HistoryDataTableWidget> createState() => _HistoryDataTableWidgetState();
@@ -64,7 +70,7 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
                       ),
                     ),
                     Text(
-                      '${r.readValue ?? '-'}${SensorMeta.unit(r.dsId ?? '')}',
+                      '${r.readValue ?? '-'}${widget.metadataAdapter.unitFor(r.dsId ?? '')}',
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(12),

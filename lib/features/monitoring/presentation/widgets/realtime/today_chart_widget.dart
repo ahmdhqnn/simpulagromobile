@@ -1,16 +1,24 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../../utils/monitoring_display_utils.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class TodayChartWidget extends StatefulWidget {
   final List<SensorReadModel> reads;
-  const TodayChartWidget({super.key, required this.reads});
+  final SensorMetadataAdapter metadataAdapter;
+  const TodayChartWidget({
+    super.key,
+    required this.reads,
+    required this.metadataAdapter,
+  });
 
   @override
   State<TodayChartWidget> createState() => _TodayChartWidgetState();
@@ -19,15 +27,26 @@ class TodayChartWidget extends StatefulWidget {
 class _TodayChartWidgetState extends State<TodayChartWidget> {
   String _selected = 'env_temp';
 
-  List<String> get _availableParams => widget.reads
-      .map((r) => r.dsId ?? '')
-      .where((id) => id.isNotEmpty)
-      .toSet()
-      .toList();
+  List<String> get _availableParams =>
+      widget.reads
+          .map((r) => r.dsId ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
 
   @override
   void initState() {
     super.initState();
+    final params = _availableParams;
+    if (params.isNotEmpty && !params.contains(_selected)) {
+      _selected = params.first;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TodayChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
     final params = _availableParams;
     if (params.isNotEmpty && !params.contains(_selected)) {
       _selected = params.first;
@@ -42,28 +61,27 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
         (a, b) =>
             (a.readDate ?? DateTime(0)).compareTo(b.readDate ?? DateTime(0)),
       );
+    final chartReads = sampleForChart(filtered, maxPoints: 96);
 
-    final spots = filtered
+    final spots = chartReads
         .asMap()
         .entries
-        .where((e) => e.value.numericValue > 0)
+        .where((e) => e.value.hasNumericValue)
         .map((e) => FlSpot(e.key.toDouble(), e.value.numericValue))
         .toList();
 
-    final color = SensorMeta.color(_selected);
-    final unit = SensorMeta.unit(_selected);
-    final values = filtered
-        .map((r) => r.numericValue)
-        .where((v) => v > 0)
-        .toList();
-    final minVal = values.isNotEmpty
-        ? values.reduce((a, b) => a < b ? a : b)
+    final color = widget.metadataAdapter.colorFor(_selected);
+    final unit = widget.metadataAdapter.unitFor(_selected);
+    final values = filtered.map((r) => r.parsedValue).whereType<double>();
+    final valuesList = values.toList();
+    final minVal = valuesList.isNotEmpty
+        ? valuesList.reduce((a, b) => a < b ? a : b)
         : 0.0;
-    final maxVal = values.isNotEmpty
-        ? values.reduce((a, b) => a > b ? a : b)
+    final maxVal = valuesList.isNotEmpty
+        ? valuesList.reduce((a, b) => a > b ? a : b)
         : 0.0;
-    final avgVal = values.isNotEmpty
-        ? values.reduce((a, b) => a + b) / values.length
+    final avgVal = valuesList.isNotEmpty
+        ? valuesList.reduce((a, b) => a + b) / valuesList.length
         : 0.0;
 
     return AppCardWidget.elevated(
@@ -76,7 +94,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
           const SizedBox(height: 12),
           _buildStatsBar(context, minVal, avgVal, maxVal, color, unit),
           const SizedBox(height: 12),
-          _buildChartArea(context, spots, filtered, color, unit),
+          _buildChartArea(context, spots, chartReads, color, unit),
           const SizedBox(height: 10),
           _buildLegend(context, color),
         ],
@@ -85,12 +103,13 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         const IconBadgeWidget.icon(
           icon: Icons.show_chart,
-          background: Color(0xFFE3F2FD),
-          tint: Color(0xFF2196F3),
+          background: AppColors.softBlue,
+          tint: AppColors.info,
           radius: 10,
         ),
         SizedBox(width: context.rw(0.03)),
@@ -99,12 +118,12 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Data Sensor Hari Ini',
+                l10n.monitoringTodayCardTitle,
                 style: AppTextStyles.sectionTitle(context, 20),
               ),
               const SizedBox(height: 4),
               Text(
-                'Pemantauan harian sensor realtime',
+                l10n.monitoringTodayCardSubtitle,
                 style: AppTextStyles.hint(context),
               ),
             ],
@@ -124,7 +143,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
       child: Row(
         children: params.map((p) {
           final isSelected = p == _selected;
-          final c = SensorMeta.color(p);
+          final c = widget.metadataAdapter.colorFor(p);
           return GestureDetector(
             onTap: () => setState(() => _selected = p),
             child: AnimatedContainer(
@@ -136,7 +155,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                SensorMeta.label(p),
+                widget.metadataAdapter.labelFor(p),
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(11),
@@ -159,6 +178,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
     Color color,
     String unit,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
@@ -169,19 +189,19 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _StatColumn(
-            label: 'Min',
+            label: l10n.commonMin,
             value: '${min.toStringAsFixed(1)}$unit',
             color: AppColors.info,
           ),
           Container(width: 1, height: 28, color: AppColors.divider),
           _StatColumn(
-            label: 'Rata-rata',
+            label: l10n.commonAverage,
             value: '${avg.toStringAsFixed(1)}$unit',
             color: color,
           ),
           Container(width: 1, height: 28, color: AppColors.divider),
           _StatColumn(
-            label: 'Max',
+            label: l10n.commonMax,
             value: '${max.toStringAsFixed(1)}$unit',
             color: AppColors.temperature,
           ),
@@ -197,6 +217,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
     Color color,
     String unit,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     if (spots.isEmpty) {
       return SizedBox(
         height: 230,
@@ -215,7 +236,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Belum ada data untuk sensor ini',
+                l10n.monitoringChartNoDataForSensor,
                 style: AppTextStyles.hint(context),
               ),
             ],
@@ -272,7 +293,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      d != null ? DateFormat('HH:mm').format(d) : '',
+                      d != null ? context.dateFormat('HH:mm').format(d) : '',
                       style: TextStyle(
                         fontSize: context.sp(9),
                         color: AppColors.textPrimary.withValues(alpha: 0.5),
@@ -347,7 +368,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
         ),
         const SizedBox(width: 6),
         Text(
-          SensorMeta.label(_selected),
+          widget.metadataAdapter.labelFor(_selected),
           style: AppTextStyles.caption(context, size: 10),
         ),
       ],

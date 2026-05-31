@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
-import '../../../plant/presentation/providers/plant_provider.dart';
 import '../../data/datasources/recommendation_remote_datasource.dart';
 import '../../data/repositories/recommendation_repository_impl.dart';
 import '../../domain/entities/recommendation.dart';
@@ -10,7 +10,14 @@ import '../../domain/repositories/recommendation_repository.dart';
 import '../../domain/usecases/get_recommendations_usecase.dart';
 import '../../domain/usecases/generate_recommendation_usecase.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/recommendation_request.dart';
 import '../../domain/usecases/manage_recommendation_usecase.dart';
+
+Future<void> _watchRecommendationRefresh(Ref ref, int slot) async {
+  ref.watch(realtimeRefreshTickProvider);
+  if (slot <= 0) return;
+  await Future<void>.delayed(Duration(milliseconds: 600 * slot));
+}
 
 // ─── DataSource Provider ─────────────────────────────────
 final recommendationDatasourceProvider =
@@ -20,95 +27,153 @@ final recommendationDatasourceProvider =
     });
 
 // ─── Repository Provider ─────────────────────────────────
-final recommendationRepositoryProvider = Provider<RecommendationRepository>((ref) {
+final recommendationRepositoryProvider = Provider<RecommendationRepository>((
+  ref,
+) {
   final datasource = ref.watch(recommendationDatasourceProvider);
   return RecommendationRepositoryImpl(datasource);
 });
 
-final getRecommendationsUseCaseProvider = Provider<GetRecommendationsUseCase>((ref) {
+final getRecommendationsUseCaseProvider = Provider<GetRecommendationsUseCase>((
+  ref,
+) {
   return GetRecommendationsUseCase(ref.watch(recommendationRepositoryProvider));
 });
 
-final getRecommendationsBySiteUseCaseProvider = Provider<GetRecommendationsBySiteUseCase>((ref) {
-  return GetRecommendationsBySiteUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationsBySiteUseCaseProvider =
+    Provider<GetRecommendationsBySiteUseCase>((ref) {
+      return GetRecommendationsBySiteUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final getRecommendationsByPlantUseCaseProvider = Provider<GetRecommendationsByPlantUseCase>((ref) {
-  return GetRecommendationsByPlantUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationsByPlantUseCaseProvider =
+    Provider<GetRecommendationsByPlantUseCase>((ref) {
+      return GetRecommendationsByPlantUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final getRecommendationsByTypeUseCaseProvider = Provider<GetRecommendationsByTypeUseCase>((ref) {
-  return GetRecommendationsByTypeUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationsByTypeUseCaseProvider =
+    Provider<GetRecommendationsByTypeUseCase>((ref) {
+      return GetRecommendationsByTypeUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final getRecommendationByIdUseCaseProvider = Provider<GetRecommendationByIdUseCase>((ref) {
-  return GetRecommendationByIdUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationByIdUseCaseProvider =
+    Provider<GetRecommendationByIdUseCase>((ref) {
+      return GetRecommendationByIdUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final generateRecommendationUseCaseProvider = Provider<GenerateRecommendationUseCase>((ref) {
-  return GenerateRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final generateRecommendationUseCaseProvider =
+    Provider<GenerateRecommendationUseCase>((ref) {
+      return GenerateRecommendationUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final applyRecommendationUseCaseProvider = Provider<ApplyRecommendationUseCase>((ref) {
-  return ApplyRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationHistoryUseCaseProvider =
+    Provider<GetRecommendationHistoryUseCase>((ref) {
+      return GetRecommendationHistoryUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
-final dismissRecommendationUseCaseProvider = Provider<DismissRecommendationUseCase>((ref) {
-  return DismissRecommendationUseCase(ref.watch(recommendationRepositoryProvider));
-});
+final getRecommendationsByPhaseUseCaseProvider =
+    Provider<GetRecommendationsByPhaseUseCase>((ref) {
+      return GetRecommendationsByPhaseUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final createPlantRecommendationUseCaseProvider =
+    Provider<CreatePlantRecommendationUseCase>((ref) {
+      return CreatePlantRecommendationUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final previewLabRecommendationUseCaseProvider =
+    Provider<PreviewLabRecommendationUseCase>((ref) {
+      return PreviewLabRecommendationUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final saveLabRecommendationUseCaseProvider =
+    Provider<SaveLabRecommendationUseCase>((ref) {
+      return SaveLabRecommendationUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final applyRecommendationUseCaseProvider = Provider<ApplyRecommendationUseCase>(
+  (ref) {
+    return ApplyRecommendationUseCase(
+      ref.watch(recommendationRepositoryProvider),
+    );
+  },
+);
+
+final dismissRecommendationUseCaseProvider =
+    Provider<DismissRecommendationUseCase>((ref) {
+      return DismissRecommendationUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
 
 /// History rekomendasi site
 final recommendationHistoryProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final ds = ref.watch(recommendationDatasourceProvider);
-  return ref.retryOnError(() async {
-    final models = await ds.getRecommendationHistory(siteId);
-    return models.map((m) => m.toEntity()).toList();
-  });
-});
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+      final useCase = ref.watch(getRecommendationHistoryUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId);
+        return result.fold((failure) => throw failure, (items) => items);
+      });
+    });
 
 final selectedPhaseIdForRecProvider = StateProvider<String?>((ref) => null);
 
 final recommendationByPhaseProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  final phaseId = ref.watch(selectedPhaseIdForRecProvider);
-  if (siteId == null || phaseId == null) return [];
-  final ds = ref.watch(recommendationDatasourceProvider);
-  return ref.retryOnError(() async {
-    final models = await ds.getRecommendationsByPhase(siteId, phaseId);
-    return models.map((m) => m.toEntity()).toList();
-  });
-});
+      final siteId = ref.watch(selectedSiteIdProvider);
+      final phaseId = ref.watch(selectedPhaseIdForRecProvider);
+      if (siteId == null || phaseId == null) return [];
+      final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId, phaseId);
+        return result.fold((failure) => throw failure, (items) => items);
+      });
+    });
 
 // ─── Recommendation List for Selected Site ────────────────
 /// Mengambil rekomendasi untuk site yang sedang dipilih
-final recommendationListProvider = FutureProvider<List<Recommendation>>((
-  ref,
-) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
+final recommendationListProvider =
+    FutureProvider.autoDispose<List<Recommendation>>((ref) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
 
-  // Halt recommendations if there is no active plant
-  final activePlant = ref.watch(currentPlantProvider);
-  if (activePlant == null) return [];
-
-  final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
-  return await ref.retryOnError(() async {
-    final result = await useCase(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (recommendations) => List<Recommendation>.from(recommendations),
-    );
-  });
-});
+      final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
+      await _watchRecommendationRefresh(ref, 4);
+      return await ref.retryOnError(() async {
+        final result = await useCase(siteId);
+        return result.fold(
+          (failure) => throw failure,
+          (recommendations) => List<Recommendation>.from(recommendations),
+        );
+      });
+    });
 
 // ─── Recommendations by Site ─────────────────────────────
-final recommendationsBySiteProvider =
-    FutureProvider.family<List<Recommendation>, String>((ref, siteId) async {
+final recommendationsBySiteProvider = FutureProvider.autoDispose
+    .family<List<Recommendation>, String>((ref, siteId) async {
       final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
+      await _watchRecommendationRefresh(ref, 5);
       return await ref.retryOnError(() async {
         final result = await useCase(siteId);
         return result.fold(
@@ -150,37 +215,36 @@ final recommendationsByTypeProvider =
     });
 
 // ─── Recommendation Detail (cache-only, no GET /recommendations/{id}) ───
-final recommendationDetailProvider =
-    FutureProvider.family<Recommendation, String>((
-      ref,
-      recommendationId,
-    ) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) {
-        throw const ServerFailure('Pilih site terlebih dahulu');
-      }
+final recommendationDetailProvider = FutureProvider.family<Recommendation, String>((
+  ref,
+  recommendationId,
+) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) {
+    throw const ServerFailure('Pilih site terlebih dahulu');
+  }
 
-      Recommendation? findInList(List<Recommendation> list) {
-        for (final r in list) {
-          if (r.recommendationId == recommendationId) return r;
-        }
-        return null;
-      }
+  Recommendation? findInList(List<Recommendation> list) {
+    for (final r in list) {
+      if (r.recommendationId == recommendationId) return r;
+    }
+    return null;
+  }
 
-      final listAsync = ref.read(recommendationListProvider);
-      final cached = listAsync.whenOrNull(data: findInList);
-      if (cached != null) return cached;
+  final listAsync = ref.read(recommendationListProvider);
+  final cached = listAsync.whenOrNull(data: findInList);
+  if (cached != null) return cached;
 
-      // Reload list site-scoped lalu cari lokal
-      ref.invalidate(recommendationListProvider);
-      final refreshed = await ref.read(recommendationListProvider.future);
-      final fromRefresh = findInList(refreshed);
-      if (fromRefresh != null) return fromRefresh;
+  // Reload list site-scoped lalu cari lokal
+  ref.invalidate(recommendationListProvider);
+  final refreshed = await ref.read(recommendationListProvider.future);
+  final fromRefresh = findInList(refreshed);
+  if (fromRefresh != null) return fromRefresh;
 
-      throw const NotFoundFailure(
-        'Data rekomendasi tidak tersedia. Buka daftar rekomendasi terlebih dahulu.',
-      );
-    });
+  throw const NotFoundFailure(
+    'Data rekomendasi tidak tersedia. Buka daftar rekomendasi terlebih dahulu.',
+  );
+});
 
 // ─── Recommendation Filter ────────────────────────────────
 final recommendationFilterProvider = StateProvider<RecommendationFilter>(
@@ -224,6 +288,9 @@ final recommendationStatsProvider = Provider<RecommendationStats>((ref) {
   final recommendationsAsync = ref.watch(recommendationListProvider);
 
   return recommendationsAsync.when(
+    skipLoadingOnReload: true,
+    skipLoadingOnRefresh: true,
+    skipError: true,
     data: (recommendations) {
       final total = recommendations.length;
       final pending = recommendations
@@ -327,6 +394,123 @@ final generateRecommendationProvider =
     });
 
 // ─── Enums & Models ───────────────────────────────────────
+class RecommendationMutationState {
+  const RecommendationMutationState({
+    this.isLoading = false,
+    this.message,
+    this.preview,
+    this.error,
+  });
+
+  final bool isLoading;
+  final String? message;
+  final RecommendationPreviewResult? preview;
+  final String? error;
+}
+
+class PlantRecommendationNotifier
+    extends StateNotifier<RecommendationMutationState> {
+  PlantRecommendationNotifier(this._useCase, this._ref)
+    : super(const RecommendationMutationState());
+
+  final CreatePlantRecommendationUseCase _useCase;
+  final Ref _ref;
+
+  Future<bool> submit(String siteId, PlantRecommendationInput input) async {
+    state = const RecommendationMutationState(isLoading: true);
+    final result = await _useCase(siteId, input);
+    return result.fold(
+      (failure) {
+        state = RecommendationMutationState(error: failure.message);
+        return false;
+      },
+      (recommendations) {
+        _ref.invalidate(recommendationListProvider);
+        state = RecommendationMutationState(
+          message: recommendations.isEmpty
+              ? 'Tidak ada rekomendasi dikembalikan'
+              : '${recommendations.length} rekomendasi dihasilkan',
+        );
+        return true;
+      },
+    );
+  }
+}
+
+final plantRecommendationProvider =
+    StateNotifierProvider<
+      PlantRecommendationNotifier,
+      RecommendationMutationState
+    >((ref) {
+      return PlantRecommendationNotifier(
+        ref.watch(createPlantRecommendationUseCaseProvider),
+        ref,
+      );
+    });
+
+class RecommendationLabNotifier
+    extends StateNotifier<RecommendationMutationState> {
+  RecommendationLabNotifier(this._previewUseCase, this._saveUseCase, this._ref)
+    : super(const RecommendationMutationState());
+
+  final PreviewLabRecommendationUseCase _previewUseCase;
+  final SaveLabRecommendationUseCase _saveUseCase;
+  final Ref _ref;
+
+  Future<bool> preview(String siteId, RecommendationLabInput input) async {
+    state = const RecommendationMutationState(isLoading: true);
+    final result = await _previewUseCase(siteId, input);
+    return result.fold(
+      (failure) {
+        state = RecommendationMutationState(error: failure.message);
+        return false;
+      },
+      (preview) {
+        state = RecommendationMutationState(preview: preview);
+        return true;
+      },
+    );
+  }
+
+  Future<bool> save(String siteId, RecommendationLabInput input) async {
+    state = RecommendationMutationState(
+      isLoading: true,
+      preview: state.preview,
+    );
+    final result = await _saveUseCase(siteId, input);
+    return result.fold(
+      (failure) {
+        state = RecommendationMutationState(
+          preview: state.preview,
+          error: failure.message,
+        );
+        return false;
+      },
+      (preview) {
+        _ref.invalidate(recommendationListProvider);
+        _ref.invalidate(recommendationHistoryProvider);
+        state = RecommendationMutationState(
+          preview: preview,
+          message: 'Rekomendasi dummy tersimpan',
+        );
+        return true;
+      },
+    );
+  }
+}
+
+final recommendationLabProvider =
+    StateNotifierProvider<
+      RecommendationLabNotifier,
+      RecommendationMutationState
+    >((ref) {
+      return RecommendationLabNotifier(
+        ref.watch(previewLabRecommendationUseCaseProvider),
+        ref.watch(saveLabRecommendationUseCaseProvider),
+        ref,
+      );
+    });
+
 enum RecommendationFilter {
   all,
   pending,

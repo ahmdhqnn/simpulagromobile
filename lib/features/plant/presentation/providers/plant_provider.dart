@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../../core/error/failures.dart';
 import '../../data/datasources/plant_remote_datasource.dart';
@@ -56,51 +57,45 @@ final deletePlantUseCaseProvider = Provider<DeletePlantUseCase>((ref) {
 
 // ─── List plants (AsyncNotifier) ─────────────────────────────────────────────
 
-/// Interval polling background untuk sinkronisasi data dari server.
-const _kPollingInterval = Duration(seconds: 30);
-
 /// Mengelola daftar tanaman per site dengan polling otomatis.
 ///
-/// - Polling setiap [_kPollingInterval] selama provider aktif.
+/// - Polling follows the configured realtime refresh interval.
 /// - Polling berhenti otomatis saat provider di-dispose (navigasi keluar).
 /// - Saat polling, data lama tetap tampil (tidak ada loading flicker).
 /// - non-autoDispose agar mutation tidak memicu "Notifier after dispose".
 class PlantsNotifier extends AsyncNotifier<List<Plant>> {
-  Timer? _pollingTimer;
+  bool _disposed = false;
+  bool _polling = false;
 
   @override
   Future<List<Plant>> build() async {
     ref.watch(selectedSiteIdProvider);
+    ref.listen<AsyncValue<int>>(realtimeRefreshTickProvider, (previous, next) {
+      next.whenData((_) => unawaited(_pollSilently()));
+    });
 
-    // Batalkan timer lama saat site berubah atau provider di-rebuild
-    ref.onDispose(_stopPolling);
+    // Centralized tick keeps polling aligned with app-level refresh settings.
+    ref.onDispose(() => _disposed = true);
 
     final plants = await _fetchPlants();
-    _startPolling();
+    _syncScreenState(plants);
     return plants;
-  }
-
-  void _startPolling() {
-    _stopPolling();
-    _pollingTimer = Timer.periodic(_kPollingInterval, (_) => _pollSilently());
-  }
-
-  void _stopPolling() {
-    _pollingTimer?.cancel();
-    _pollingTimer = null;
   }
 
   /// Poll tanpa menampilkan loading — data lama tetap tampil sampai data baru tiba.
   Future<void> _pollSilently() async {
+    if (_disposed || _polling) return;
+
     // Jangan poll saat user sedang di form input
     final screenState = ref.read(plantScreenStateProvider);
     if (screenState == PlantScreenState.input) return;
 
+    _polling = true;
     try {
       final fresh = await _fetchPlants();
 
       // Timer sudah di-cancel (provider disposed) — hentikan
-      if (_pollingTimer == null) return;
+      if (_disposed) return;
 
       // Update state hanya jika data berubah
       final current = state.valueOrNull;
@@ -110,6 +105,8 @@ class PlantsNotifier extends AsyncNotifier<List<Plant>> {
       }
     } catch (_) {
       // Polling gagal — abaikan, data lama tetap tampil
+    } finally {
+      _polling = false;
     }
   }
 
@@ -131,17 +128,20 @@ class PlantsNotifier extends AsyncNotifier<List<Plant>> {
             AsyncData(previous),
           );
 
-    state = await AsyncValue.guard(() => _fetchPlants());
-
-    // Restart polling setelah manual refresh
-    _startPolling();
+    final next = await AsyncValue.guard(() => _fetchPlants());
+    state = next.hasError && previous != null
+        ? AsyncValue<List<Plant>>.error(
+            next.error!,
+            next.stackTrace ?? StackTrace.current,
+          ).copyWithPrevious(AsyncData(previous))
+        : next;
 
     if (state.hasValue) _syncScreenState(state.value!);
   }
 
   /// Sinkronkan [plantScreenStateProvider] berdasarkan data terbaru.
   void _syncScreenState(List<Plant> plants) {
-    if (_pollingTimer == null) return; // provider sudah disposed
+    if (_disposed) return;
     final screenState = ref.read(plantScreenStateProvider);
     // Jangan override saat user sedang di form input
     if (screenState == PlantScreenState.input) return;
@@ -200,10 +200,6 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) throw Exception('No site selected');
-
-  // Polling: invalidate diri sendiri setiap 30 detik
-  final timer = Timer(_kPollingInterval, () => ref.invalidateSelf());
-  ref.onDispose(timer.cancel);
 
   final useCase = ref.read(getPlantByIdUseCaseProvider);
   final result = await useCase(siteId, plantId);

@@ -44,7 +44,7 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
           IconButton(
             icon: const Icon(Icons.person_add_outlined),
             tooltip: 'Invite Member',
-            onPressed: () => _showInviteDialog(context),
+            onPressed: () => context.push('/site/${widget.siteId}/invite'),
           ),
           IconButton(
             icon: const Icon(Icons.edit),
@@ -94,51 +94,6 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
       ),
     );
   }
-
-  Future<void> _showInviteDialog(BuildContext context) async {
-    final userIdController = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Invite Member'),
-        content: TextField(
-          controller: userIdController,
-          decoration: const InputDecoration(
-            labelText: 'User ID',
-            hintText: 'USR_001',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Kirim'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !context.mounted) return;
-
-    final repo = ref.read(siteRepositoryProvider);
-    final result = await repo.inviteMember(
-      widget.siteId,
-      userIdController.text.trim(),
-    );
-    if (!context.mounted) return;
-
-    result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(f.message)),
-      ),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Undangan member terkirim')),
-      ),
-    );
-  }
 }
 
 class _OverviewTab extends ConsumerWidget {
@@ -181,9 +136,9 @@ class _OverviewTab extends ConsumerWidget {
           children: [
             Text(
               'Data Site',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Gap(12),
             _buildInfoRow(context, Icons.tag, 'Site ID', site.siteId),
@@ -235,8 +190,8 @@ class _OverviewTab extends ConsumerWidget {
                   Text(
                     site.displayName,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const Gap(4),
                   Container(
@@ -277,9 +232,9 @@ class _OverviewTab extends ConsumerWidget {
           children: [
             Text(
               'Informasi Lokasi',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Gap(16),
             if (site.siteAddress != null) ...[
@@ -322,9 +277,9 @@ class _OverviewTab extends ConsumerWidget {
           children: [
             Text(
               'Informasi Tambahan',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Gap(16),
             if (site.siteCreated != null) ...[
@@ -366,16 +321,16 @@ class _OverviewTab extends ConsumerWidget {
             children: [
               Text(
                 label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
               const Gap(2),
               Text(
                 value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ],
           ),

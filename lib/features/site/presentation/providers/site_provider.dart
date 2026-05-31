@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/providers/core_providers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../../../../core/error/failures.dart';
 import '../../../../core/providers/app_startup_provider.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/site_remote_datasource.dart';
@@ -8,52 +11,58 @@ import '../../data/repositories/site_repository_impl.dart';
 import '../../domain/entities/site.dart';
 import '../../domain/repositories/site_repository.dart';
 
-// ─── DataSource ──────────────────────────────────────────
+part 'site_provider.g.dart';
+
 final siteRemoteDataSourceProvider = Provider<SiteRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   return SiteRemoteDataSource(dioClient.dio);
 });
 
-// ─── Repository ──────────────────────────────────────────
 final siteRepositoryProvider = Provider<SiteRepository>((ref) {
   final remoteDataSource = ref.watch(siteRemoteDataSourceProvider);
   return SiteRepositoryImpl(remoteDataSource);
 });
 
-// ─── Site List ───────────────────────────────────────────
 final siteListProvider = FutureProvider.autoDispose<List<Site>>((ref) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await ref.retryOnError(() async {
+  return ref.retryOnError(() async {
     final result = await repository.getSites();
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((failure) => throw failure, (sites) => sites);
   });
 });
 
-// Alias untuk backward compatibility
 final sitesProvider = siteListProvider;
 
-// ─── Site Detail ─────────────────────────────────────────
 final siteDetailProvider = FutureProvider.autoDispose.family<Site, String>((
   ref,
   siteId,
 ) async {
   final repository = ref.watch(siteRepositoryProvider);
-  return await ref.retryOnError(() async {
+  return ref.retryOnError(() async {
     final result = await repository.getSiteById(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((failure) => throw failure, (site) => site);
   });
 });
 
-// ─── Selected Site (dengan persistensi) ──────────────────
-/// StateNotifier yang menyimpan site terpilih ke SecureStorage.
-/// Nilai awal diambil dari AppStartupData (preloaded di main())
-/// sehingga tidak ada I/O di constructor.
-class SelectedSiteNotifier extends StateNotifier<Site?> {
-  final SecureStorage _storage;
+@Riverpod(keepAlive: true)
+class SelectedSite extends _$SelectedSite {
+  SecureStorage get _storage => ref.read(secureStorageProvider);
 
-  SelectedSiteNotifier(this._storage) : super(null);
+  @override
+  Site? build() {
+    final startupData = ref.read(appStartupDataProvider);
 
-  /// Set site terpilih dan simpan ke storage
+    ref.listen<AsyncValue<List<Site>>>(siteListProvider, (previous, next) {
+      next.whenOrNull(
+        data: (sites) {
+          updateFromSiteList(sites, startupData.selectedSiteId);
+        },
+      );
+    }, fireImmediately: true);
+
+    return null;
+  }
+
   Future<void> selectSite(Site? site) async {
     state = site;
     if (site != null) {
@@ -63,67 +72,53 @@ class SelectedSiteNotifier extends StateNotifier<Site?> {
     }
   }
 
-  /// Auto-select site pertama jika belum ada yang dipilih
   Future<void> autoSelectFirstSite(List<Site> sites) async {
     if (state != null || sites.isEmpty) return;
     await selectSite(sites.first);
   }
 
-  /// Update selected site from the updated site list and preloaded ID
-  Future<void> updateFromSiteList(List<Site> sites, String? preloadedSiteId) async {
+  Future<void> updateFromSiteList(
+    List<Site> sites,
+    String? preloadedSiteId,
+  ) async {
     final current = state;
     if (current != null) {
-      final matching = sites.where((s) => s.siteId == current.siteId).firstOrNull;
+      final matching = _findSite(sites, current.siteId);
       if (matching != null) {
         await selectSite(matching);
-      } else {
-        // Current site is no longer in the list (deleted), try to fall back
-        final preloadedSite = preloadedSiteId != null ? sites.where((s) => s.siteId == preloadedSiteId).firstOrNull : null;
-        if (preloadedSite != null) {
-          await selectSite(preloadedSite);
-        } else if (sites.isNotEmpty) {
-          await selectSite(sites.first);
-        } else {
-          await selectSite(null);
-        }
+        return;
       }
-    } else {
-      // State is currently null
-      final preloadedSite = preloadedSiteId != null ? sites.where((s) => s.siteId == preloadedSiteId).firstOrNull : null;
+
+      final preloadedSite = _findSite(sites, preloadedSiteId);
       if (preloadedSite != null) {
         await selectSite(preloadedSite);
       } else if (sites.isNotEmpty) {
         await selectSite(sites.first);
+      } else {
+        await selectSite(null);
       }
+      return;
     }
+
+    final preloadedSite = _findSite(sites, preloadedSiteId);
+    if (preloadedSite != null) {
+      await selectSite(preloadedSite);
+    } else if (sites.isNotEmpty) {
+      await selectSite(sites.first);
+    }
+  }
+
+  Site? _findSite(List<Site> sites, String? siteId) {
+    if (siteId == null) return null;
+    return sites.where((site) => site.siteId == siteId).firstOrNull;
   }
 }
 
-final selectedSiteProvider = StateNotifierProvider<SelectedSiteNotifier, Site?>(
-  (ref) {
-    final storage = ref.watch(secureStorageProvider);
-    // Ambil siteId dari data preloaded — tidak ada I/O
-    final startupData = ref.read(appStartupDataProvider);
-    final notifier = SelectedSiteNotifier(storage);
-
-    ref.listen<AsyncValue<List<Site>>>(siteListProvider, (previous, next) {
-      next.whenOrNull(
-        data: (sites) {
-          notifier.updateFromSiteList(sites, startupData.selectedSiteId);
-        },
-      );
-    }, fireImmediately: true);
-
-    return notifier;
-  },
-);
-
-// Helper provider untuk mendapatkan siteId saja
-final selectedSiteIdProvider = Provider<String?>((ref) {
+@Riverpod(keepAlive: true)
+String? selectedSiteId(Ref ref) {
   return ref.watch(selectedSiteProvider)?.siteId;
-});
+}
 
-// ─── Site Form ───────────────────────────────────────────
 class SiteFormState {
   final bool isLoading;
   final String? error;
@@ -184,9 +179,99 @@ class SiteFormNotifier extends StateNotifier<SiteFormState> {
   }
 }
 
-final siteFormProvider = StateNotifierProvider.autoDispose<SiteFormNotifier, SiteFormState>(
-  (ref) {
-    final repository = ref.watch(siteRepositoryProvider);
-    return SiteFormNotifier(repository, ref);
-  },
-);
+final siteFormProvider =
+    StateNotifierProvider.autoDispose<SiteFormNotifier, SiteFormState>((ref) {
+      final repository = ref.watch(siteRepositoryProvider);
+      return SiteFormNotifier(repository, ref);
+    });
+
+enum SiteMemberInviteErrorType {
+  badRequest,
+  forbidden,
+  conflict,
+  noSiteSelected,
+  unknown,
+}
+
+class SiteMemberInviteState {
+  final bool isLoading;
+  final bool success;
+  final String? message;
+  final SiteMemberInviteErrorType? errorType;
+
+  const SiteMemberInviteState({
+    this.isLoading = false,
+    this.success = false,
+    this.message,
+    this.errorType,
+  });
+}
+
+class SiteMemberInviteNotifier extends StateNotifier<SiteMemberInviteState> {
+  SiteMemberInviteNotifier(this._repository, this._ref)
+    : super(const SiteMemberInviteState());
+
+  final SiteRepository _repository;
+  final Ref _ref;
+
+  Future<bool> inviteMember({required String userId, String? siteId}) async {
+    final resolvedSiteId =
+        siteId ?? _ref.read(selectedSiteProvider)?.siteId ?? '';
+    if (resolvedSiteId.trim().isEmpty) {
+      state = const SiteMemberInviteState(
+        isLoading: false,
+        success: false,
+        errorType: SiteMemberInviteErrorType.noSiteSelected,
+      );
+      return false;
+    }
+
+    state = const SiteMemberInviteState(isLoading: true);
+
+    final result = await _repository.inviteMember(
+      resolvedSiteId,
+      userId.trim(),
+    );
+    return result.fold(
+      (failure) {
+        state = SiteMemberInviteState(
+          isLoading: false,
+          success: false,
+          message: failure.message,
+          errorType: _mapFailure(failure),
+        );
+        return false;
+      },
+      (_) {
+        state = const SiteMemberInviteState(isLoading: false, success: true);
+        return true;
+      },
+    );
+  }
+
+  SiteMemberInviteErrorType _mapFailure(Failure failure) {
+    if (failure is PermissionFailure || failure.message == 'INVITE_FORBIDDEN') {
+      return SiteMemberInviteErrorType.forbidden;
+    }
+    if (failure is ValidationFailure) {
+      if (failure.message == 'INVITE_CONFLICT') {
+        return SiteMemberInviteErrorType.conflict;
+      }
+      return SiteMemberInviteErrorType.badRequest;
+    }
+    return SiteMemberInviteErrorType.unknown;
+  }
+
+  void reset() {
+    state = const SiteMemberInviteState();
+  }
+}
+
+final siteMemberInviteProvider =
+    StateNotifierProvider.autoDispose<
+      SiteMemberInviteNotifier,
+      SiteMemberInviteState
+    >((ref) {
+      final repository = ref.watch(siteRepositoryProvider);
+      return SiteMemberInviteNotifier(repository, ref);
+    });

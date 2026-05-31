@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../site/presentation/providers/site_provider.dart';
+import '../../../plant/presentation/providers/plant_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../tabs/admin_read_tab.dart';
 import '../tabs/analytics_tab.dart';
@@ -22,22 +24,13 @@ class MonitoringScreen extends ConsumerStatefulWidget {
 
 class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     with SingleTickerProviderStateMixin {
+  static const _tabCount = 7;
   late final TabController _tabController;
-
-  static const _tabs = [
-    'Realtime',
-    'Raw Reads',
-    'Rekap Harian',
-    'Rekap Bulan',
-    'Maps',
-    'Analytics',
-    'Admin',
-  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: _tabCount, vsync: this);
   }
 
   @override
@@ -57,13 +50,25 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     ref.invalidate(dailyTodayProvider);
     ref.invalidate(dailyByDayProvider);
     ref.invalidate(monthlyReadsProvider);
-    ref.invalidate(siteListProvider);
+    ref.invalidate(ongoingPlantProvider);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final syncStatus = ref.watch(monitoringSyncStatusProvider);
+    final tabs = [
+      l10n.monitoringTabRealtime,
+      l10n.monitoringTabRawReads,
+      l10n.monitoringTabDailyRecap,
+      l10n.monitoringTabMonthlyRecap,
+      l10n.monitoringTabMaps,
+      l10n.monitoringTabAnalytics,
+      l10n.monitoringTabAdmin,
+    ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -76,7 +81,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Monitoring',
+                    l10n.monitoringTitle,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(28),
@@ -92,6 +97,15 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
                 ],
               ),
             ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                context.rw(0.051),
+                0,
+                context.rw(0.051),
+                context.rh(0.012),
+              ),
+              child: _MonitoringSyncStatusBar(status: syncStatus),
+            ),
             TabBar(
               controller: _tabController,
               isScrollable: true,
@@ -99,7 +113,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
               labelColor: AppColors.primary,
               unselectedLabelColor: AppColors.textSecondary,
               indicatorColor: AppColors.primary,
-              tabs: _tabs.map((t) => Tab(text: t)).toList(),
+              tabs: tabs.map((t) => Tab(text: t)).toList(),
             ),
             SizedBox(height: context.rh(0.01)),
             Expanded(
@@ -118,6 +132,75 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MonitoringSyncStatusBar extends StatelessWidget {
+  const _MonitoringSyncStatusBar({required this.status});
+
+  final MonitoringSyncStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final stale = status.isStale;
+    final enabled = status.autoRefreshEnabled;
+    final color = stale
+        ? AppColors.warning
+        : enabled
+        ? AppColors.primary
+        : AppColors.textSecondary;
+    final icon = stale
+        ? Icons.sync_problem_rounded
+        : enabled
+        ? Icons.cloud_done_outlined
+        : Icons.cloud_off_outlined;
+    final title = status.lastUpdated == null
+        ? l10n.monitoringSyncWaiting
+        : l10n.monitoringSyncAt(
+            context.dateFormat('HH:mm:ss').format(status.lastUpdated!),
+          );
+    final subtitle = enabled
+        ? l10n.monitoringAutoRefreshEvery(status.refreshInterval.inSeconds)
+        : l10n.monitoringAutoRefreshOff;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              stale ? '$title - ${l10n.monitoringSyncStale}' : title,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption(
+                context,
+                size: 11,
+                color: AppColors.textPrimary,
+                weight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            subtitle,
+            style: AppTextStyles.caption(
+              context,
+              size: 10,
+              color: AppColors.textSecondary,
+              weight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -22,7 +22,7 @@ class AppColors {
   static const Color info = Color(0xFF42A5F5);
 
   // Neutral
-  static const Color background = Color(0xFFF5F7F5);
+  static const Color background = Color(0xFFF0F0F0);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF0F4F0);
   static const Color textPrimary = Color(0xFF1D1D1D);
@@ -60,6 +60,41 @@ class AppRadius {
   static const double lg = 18;
   static const double xl = 20;
   static const double pill = 100;
+}
+
+class AppSpacing {
+  AppSpacing._();
+
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 20;
+  static const double xl = 24;
+  static const double xxl = 32;
+
+  static const EdgeInsets card = EdgeInsets.all(md);
+  static const EdgeInsets cardCompact = EdgeInsets.all(sm);
+  static const EdgeInsets input = EdgeInsets.symmetric(
+    horizontal: md,
+    vertical: 14,
+  );
+  static const EdgeInsets button = EdgeInsets.symmetric(
+    horizontal: xl,
+    vertical: 14,
+  );
+}
+
+class AppShadows {
+  AppShadows._();
+
+  static const List<BoxShadow> card = [
+    BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+  ];
+
+  static const List<BoxShadow> menu = [
+    BoxShadow(color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 2)),
+  ];
 }
 
 /// Centralized typography. The font family is set globally on [ThemeData],
@@ -142,17 +177,15 @@ class AppTextStyles {
   );
 
   static TextStyle _scaled(
-    BuildContext context, {
+    BuildContext _, {
     required double size,
     required FontWeight weight,
     required Color color,
     double? height,
   }) {
-    final scaledSize =
-        size * (MediaQuery.sizeOf(context).width / 390).clamp(0.8, 1.3);
     return TextStyle(
       fontFamily: fontFamily,
-      fontSize: scaledSize,
+      fontSize: size,
       fontWeight: weight,
       color: color,
       height: height,
@@ -199,7 +232,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: AppSpacing.button,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
@@ -229,15 +262,102 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        contentPadding: AppSpacing.input,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textTertiary,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    const surface = Color(0xFF151A17);
+    const background = Color(0xFF0F1411);
+    const surfaceVariant = Color(0xFF202820);
+    const textPrimary = Color(0xFFE8EFE9);
+    const textSecondary = Color(0xFFB8C4BA);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primaryLight,
+        brightness: Brightness.dark,
+        primary: AppColors.primaryLight,
+        secondary: AppColors.secondaryLight,
+        surface: surface,
+        error: AppColors.error,
+      ),
+      scaffoldBackgroundColor: background,
+      fontFamily: AppTextStyles.fontFamily,
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: background,
+        foregroundColor: textPrimary,
+        titleTextStyle: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: textPrimary,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        color: surface,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryLight,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: AppSpacing.button,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          textStyle: const TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        contentPadding: AppSpacing.input,
+      ),
+      listTileTheme: const ListTileThemeData(
+        textColor: textPrimary,
+        iconColor: textSecondary,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: surface,
+        selectedItemColor: AppColors.primaryLight,
+        unselectedItemColor: textSecondary,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),

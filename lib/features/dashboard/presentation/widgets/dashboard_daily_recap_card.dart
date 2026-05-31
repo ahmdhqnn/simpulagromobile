@@ -14,6 +14,9 @@ class DashboardDailyRecapCard extends ConsumerWidget {
     final dailyAsync = ref.watch(dailyTodayProvider);
 
     return dailyAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (items) {
         if (items.isEmpty) {
           return const InfoStateWidget.icon(

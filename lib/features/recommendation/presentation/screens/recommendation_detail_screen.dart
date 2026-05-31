@@ -28,6 +28,9 @@ class RecommendationDetailScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: recommendationAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               RecommendationDetailHeaderWidget(
@@ -37,7 +40,11 @@ class RecommendationDetailScreen extends ConsumerWidget {
                 ),
               ),
               const Expanded(
-                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: true, headerHeight: 120),
+                child: DetailScreenSkeleton(
+                  infoRowCount: 4,
+                  hasDescription: true,
+                  headerHeight: 120,
+                ),
               ),
             ],
           ),

@@ -29,6 +29,9 @@ class RecommendationListScreen extends ConsumerWidget {
             _buildFilterChips(context, ref, filter),
             Expanded(
               child: filteredAsync.when(
+                skipLoadingOnReload: true,
+                skipLoadingOnRefresh: true,
+                skipError: true,
                 data: (recommendations) {
                   if (recommendations.isEmpty) {
                     return _buildEmptyState(context, ref, filter, siteId);

@@ -26,6 +26,9 @@ class PlantDetailScreen extends ConsumerWidget {
       backgroundColor: AppColors.surfaceVariant,
       body: SafeArea(
         child: plantAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => const DetailScreenSkeleton(
             infoRowCount: 4,
             hasDescription: false,

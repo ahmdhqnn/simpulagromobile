@@ -4,6 +4,25 @@ library;
 
 import '../../domain/entities/dashboard_entity.dart';
 
+double _toDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    return double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+  }
+  return 0.0;
+}
+
+int _toInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) {
+    return int.tryParse(value) ?? 0;
+  }
+  return 0;
+}
+
 class SensorHealthModel {
   final String devId;
   final String dsId;
@@ -19,10 +38,23 @@ class SensorHealthModel {
 
   factory SensorHealthModel.fromJson(Map<String, dynamic> json) {
     return SensorHealthModel(
-      devId: (json['dev_id'] ?? '').toString(),
-      dsId: (json['ds_id'] ?? '').toString(),
-      readUpdateValue: (json['read_update_value'] ?? '0').toString(),
-      persentase: (json['persentase'] as num?)?.toDouble() ?? 0.0,
+      devId: (json['dev_id'] ?? json['devId'] ?? '').toString(),
+      dsId: (json['ds_id'] ?? json['dsId'] ?? json['sensor_id'] ?? '')
+          .toString(),
+      readUpdateValue:
+          (json['read_update_value'] ??
+                  json['readUpdateValue'] ??
+                  json['read_value'] ??
+                  json['value'] ??
+                  '0')
+              .toString(),
+      persentase: _toDouble(
+        json['persentase'] ??
+            json['percentage'] ??
+            json['health_percentage'] ??
+            json['healthPercentage'] ??
+            json['score'],
+      ),
     );
   }
 
@@ -54,23 +86,19 @@ class EnvironmentalHealthModel {
   }
 
   factory EnvironmentalHealthModel.fromJson(Map<String, dynamic> json) {
-    final health =
-        (json['overall_health'] as num?)?.toDouble() ??
-        (json['overallHealth'] as num?)?.toDouble() ??
-        0.0;
+    final health = _toDouble(json['overall_health'] ?? json['overallHealth']);
+    final total = _toInt(json['total_sensors'] ?? json['totalSensors']);
 
-    final total =
-        (json['total_sensors'] as num?)?.toInt() ??
-        (json['totalSensors'] as num?)?.toInt() ??
-        0;
-
-    final sensorList = (json['sensors'] as List? ?? [])
-        .map((s) => SensorHealthModel.fromJson(s as Map<String, dynamic>))
+    final sensorList = ((json['sensors'] ?? json['sensor']) as List? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(SensorHealthModel.fromJson)
         .toList();
 
     return EnvironmentalHealthModel(
       overallHealth: health,
-      totalSensors: total,
+      totalSensors: total == 0 && sensorList.isNotEmpty
+          ? sensorList.length
+          : total,
       sensors: sensorList,
     );
   }

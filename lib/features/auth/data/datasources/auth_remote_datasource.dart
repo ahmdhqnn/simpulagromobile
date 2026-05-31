@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/user_model.dart';
 
 class AuthRemoteDataSource {
@@ -49,5 +50,25 @@ class AuthRemoteDataSource {
       return data.map((p) => p['perm_name']?.toString() ?? '').toList();
     }
     return [];
+  }
+
+  /// POST /api/auth/change-password
+  Future<String> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final response = await _dio.post(
+      ApiEndpoints.authChangePassword,
+      data: {
+        'old_password': oldPassword,
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      },
+    );
+    return ResponseParser.extractMessage(
+      response.data,
+      'Password berhasil diubah',
+    );
   }
 }

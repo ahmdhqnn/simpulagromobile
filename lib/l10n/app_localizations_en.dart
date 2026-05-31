@@ -64,6 +64,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAccountSection => 'Account';
+
+  @override
+  String get settingsAboutSection => 'About';
+
+  @override
+  String get settingsChangePassword => 'Change Password';
+
+  @override
+  String get settingsChangePasswordSubtitle => 'Update your account password';
+
+  @override
+  String get changePasswordTitle => 'Change Password';
+
+  @override
+  String get changePasswordCurrentLabel => 'Current Password';
+
+  @override
+  String get changePasswordCurrentHint => 'Enter current password';
+
+  @override
+  String get changePasswordCurrentRequired => 'Current password is required';
+
+  @override
+  String get changePasswordNewLabel => 'New Password';
+
+  @override
+  String get changePasswordNewHint => 'Enter new password';
+
+  @override
+  String get changePasswordNewRequired => 'New password is required';
+
+  @override
+  String get changePasswordConfirmLabel => 'Confirm New Password';
+
+  @override
+  String get changePasswordConfirmHint => 'Repeat new password';
+
+  @override
+  String get changePasswordConfirmRequired =>
+      'Password confirmation is required';
+
+  @override
+  String get changePasswordConfirmMismatch =>
+      'Password confirmation does not match';
+
+  @override
+  String get changePasswordSubmit => 'Save New Password';
+
+  @override
+  String get changePasswordSuccess => 'Password updated successfully';
+
+  @override
+  String get changePasswordFailed =>
+      'Failed to update password. Please try again.';
+
+  @override
+  String get changePasswordErrorConfirmMismatch =>
+      'Password confirmation does not match.';
+
+  @override
+  String get changePasswordErrorUnauthorized =>
+      'Current password is incorrect or session expired.';
+
+  @override
+  String get changePasswordErrorUserNotFound => 'User not found.';
+
+  @override
+  String get siteInviteTitle => 'Invite Site Member';
+
+  @override
+  String siteInviteSiteIdLabel(String siteId) {
+    return 'Site ID: $siteId';
+  }
+
+  @override
+  String get siteInviteUserIdLabel => 'User ID';
+
+  @override
+  String get siteInviteUserIdHint => 'Example: USR_001';
+
+  @override
+  String get siteInviteUserIdRequired => 'User ID is required';
+
+  @override
+  String get siteInviteSubmit => 'Send Invite';
+
+  @override
+  String get siteInviteSuccess => 'Member invitation sent successfully';
+
+  @override
+  String get siteInviteErrorBadRequest => 'Invalid invitation payload.';
+
+  @override
+  String get siteInviteErrorForbidden =>
+      'Only admin/site leader can invite members.';
+
+  @override
+  String get siteInviteErrorConflict =>
+      'User is already a member of this site.';
+
+  @override
+  String get siteInviteErrorNoSiteSelected => 'No site selected.';
+
+  @override
+  String get siteInviteErrorUnknown => 'Failed to send member invitation.';
+
+  @override
   String get healthSectionTitle => 'Environmental Health';
 
   @override
@@ -135,6 +246,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get plantVarietasIdRequired => 'Varietas ID is required';
+
+  @override
+  String get plantVarietasUseManual => 'Manual input';
+
+  @override
+  String get plantVarietasUseList => 'Select from list';
+
+  @override
+  String get plantVarietasEmptyFallback =>
+      'Varietas list is empty. Please enter varietas ID manually.';
+
+  @override
+  String get plantVarietasLoadFailedFallback =>
+      'Failed to load varietas. Use manual ID input.';
 
   @override
   String get plantTypeLabel => 'Planting Type';
@@ -282,4 +407,195 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get plantStatusLabel => 'Status';
+
+  @override
+  String get monitoringTitle => 'Monitoring';
+
+  @override
+  String get monitoringTabRealtime => 'Realtime';
+
+  @override
+  String get monitoringTabRawReads => 'Raw Reads';
+
+  @override
+  String get monitoringTabDailyRecap => 'Daily Recap';
+
+  @override
+  String get monitoringTabMonthlyRecap => 'Monthly Recap';
+
+  @override
+  String get monitoringTabMaps => 'Maps';
+
+  @override
+  String get monitoringTabAnalytics => 'Analytics';
+
+  @override
+  String get monitoringTabAdmin => 'Admin';
+
+  @override
+  String get monitoringSyncWaiting => 'Waiting for sync';
+
+  @override
+  String monitoringSyncAt(String time) {
+    return 'Synced $time';
+  }
+
+  @override
+  String get monitoringSyncStale => 'data needs refresh';
+
+  @override
+  String monitoringAutoRefreshEvery(int seconds) {
+    return 'Auto-refresh every ${seconds}s';
+  }
+
+  @override
+  String get monitoringAutoRefreshOff => 'Auto-refresh off';
+
+  @override
+  String get monitoringNoActivePlantTitle => 'No active plant';
+
+  @override
+  String get monitoringNoActivePlantMessage =>
+      'Sensor data still updates. Add a plant so monitoring recommendations can follow the planting cycle.';
+
+  @override
+  String get monitoringAddPlant => 'Add Plant';
+
+  @override
+  String get monitoringViewPlantList => 'View plant list';
+
+  @override
+  String get monitoringLatestStatusTitle => 'Latest Sensor Status';
+
+  @override
+  String get monitoringTodayChartSection => 'Today\'s Chart';
+
+  @override
+  String get monitoringSensorDetailSection => 'Sensor Status Detail';
+
+  @override
+  String get monitoringEmptySensor => 'No sensor data yet';
+
+  @override
+  String get monitoringEmptyTodayChart => 'No chart data for today yet';
+
+  @override
+  String get monitoringHistoryChartSection => 'History Chart';
+
+  @override
+  String get monitoringEmptyHistory => 'No history data yet';
+
+  @override
+  String get monitoringSelectSensor => 'Select a sensor parameter';
+
+  @override
+  String get monitoringHistoryDataSection => 'History Data';
+
+  @override
+  String get monitoringChartNoSensorData => 'No data for this sensor yet';
+
+  @override
+  String get monitoringChartDailyAggregation => 'Daily Aggregation';
+
+  @override
+  String get monitoringChartNoDailyAggregation =>
+      'No daily aggregation data yet';
+
+  @override
+  String get monitoringChartLast7DaysAggregation => 'Last 7 Days Aggregation';
+
+  @override
+  String get monitoringMonthlyRecapSection => 'Monthly Recap';
+
+  @override
+  String get monitoringDailyTodaySection => 'Today\'s Recap';
+
+  @override
+  String get monitoringDailyByDateSection => 'Recap by Date';
+
+  @override
+  String get monitoringDailyNoRecap => 'No recap data available';
+
+  @override
+  String get monitoringSelectSiteFirst => 'Select a site first';
+
+  @override
+  String get monitoringFilterToday => 'Today';
+
+  @override
+  String get monitoringFilterSingleDate => 'By Date';
+
+  @override
+  String get monitoringFilterSevenDay => '7 Days';
+
+  @override
+  String get monitoringFilterDateRange => 'Date Range';
+
+  @override
+  String get monitoringFilterPlantingDate => 'Planting Cycle';
+
+  @override
+  String get commonDateLabel => 'Date';
+
+  @override
+  String get commonFromLabel => 'From';
+
+  @override
+  String get commonToLabel => 'To';
+
+  @override
+  String get monitoringTodayCardTitle => 'Today\'s Sensor Data';
+
+  @override
+  String get monitoringTodayCardSubtitle => 'Realtime daily sensor monitoring';
+
+  @override
+  String get monitoringChartNoDataForSensor => 'No data for this sensor yet';
+
+  @override
+  String get commonMin => 'Min';
+
+  @override
+  String get commonMax => 'Max';
+
+  @override
+  String get commonAverage => 'Average';
+
+  @override
+  String monitoringHistoryCardSubtitle(int count) {
+    return '$count points - sensor history';
+  }
+
+  @override
+  String get monitoringInvalidSensorData => 'Invalid sensor data';
+
+  @override
+  String get monitoringDailyAnalyticsTitle => 'Daily Sensor Analysis';
+
+  @override
+  String get monitoringDailyAnalyticsSubtitle => 'Today\'s Sensor Statistics';
+
+  @override
+  String get monitoringDailyEmpty => 'No daily data yet';
+
+  @override
+  String get monitoringDailyUnavailableToday =>
+      'No sensor data available for today';
+
+  @override
+  String get monitoringMonthlyCardEmpty => 'No monthly recap data yet';
+
+  @override
+  String get monitoringMonthlyCardNoSensorData => 'No data for this sensor yet';
+
+  @override
+  String get monitoringMonthlyCardTitle => 'Monthly Recap';
+
+  @override
+  String get monitoringMonthlyCardSubtitle => 'Monthly averages';
+
+  @override
+  String monitoringMonthlyLegendAverage(String sensor) {
+    return 'Average $sensor';
+  }
 }

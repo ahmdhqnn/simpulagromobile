@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/paginated_result.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import '../models/reaction_model.dart';
@@ -74,6 +76,19 @@ class ForumRemoteDataSource {
     int limit = 20,
     String? siteId,
   }) async {
+    final result = await getPaginatedPosts(
+      page: page,
+      limit: limit,
+      siteId: siteId,
+    );
+    return result.items;
+  }
+
+  Future<PaginatedResult<PostModel>> getPaginatedPosts({
+    int page = 1,
+    int limit = 20,
+    String? siteId,
+  }) async {
     try {
       final response = await _dio.get(
         ApiEndpoints.forumPosts,
@@ -86,9 +101,15 @@ class ForumRemoteDataSource {
 
       final rawData = _extractResponseData(response.data);
       final list = _extractList(rawData);
-      return list
+      final posts = list
           .map((json) => PostModel.fromJson(JsonParser.parseMap(json)))
           .toList();
+      return PaginatedResult.fromItems(
+        posts,
+        page: page,
+        limit: limit,
+        meta: ResponseParser.extractPaginationMeta(response.data),
+      );
     } catch (e) {
       throw _handleError(e);
     }
@@ -327,6 +348,19 @@ class ForumRemoteDataSource {
     int page = 1,
     int limit = 50,
   }) async {
+    final result = await getPaginatedComments(
+      postId: postId,
+      page: page,
+      limit: limit,
+    );
+    return result.items;
+  }
+
+  Future<PaginatedResult<CommentModel>> getPaginatedComments({
+    required String postId,
+    int page = 1,
+    int limit = 50,
+  }) async {
     try {
       final response = await _dio.get(
         ApiEndpoints.forumPostComments(postId),
@@ -335,9 +369,15 @@ class ForumRemoteDataSource {
 
       final rawData = _extractResponseData(response.data);
       final list = _extractList(rawData);
-      return list
+      final comments = list
           .map((json) => CommentModel.fromJson(JsonParser.parseMap(json)))
           .toList();
+      return PaginatedResult.fromItems(
+        comments,
+        page: page,
+        limit: limit,
+        meta: ResponseParser.extractPaginationMeta(response.data),
+      );
     } catch (e) {
       throw _handleError(e);
     }

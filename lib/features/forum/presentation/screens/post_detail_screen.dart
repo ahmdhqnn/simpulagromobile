@@ -22,6 +22,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
+  final _scrollController = ScrollController();
   bool _isSendingComment = false;
 
   @override
@@ -30,13 +31,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Future.microtask(() {
       ref.read(commentsProvider(widget.postId).notifier).loadComments();
     });
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _commentController.dispose();
     _commentFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent * 0.9) {
+      ref.read(commentsProvider(widget.postId).notifier).loadMoreComments();
+    }
   }
 
   Future<void> _submitComment() async {
@@ -101,6 +112,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       .loadComments();
                 },
                 child: CustomScrollView(
+                  controller: _scrollController,
                   slivers: [
                     // Post Content
                     SliverToBoxAdapter(
@@ -137,22 +149,28 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                       )
                     else if (commentsState.comments.isEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildEmptyComments(context),
-                      )
+                      SliverToBoxAdapter(child: _buildEmptyComments(context))
                     else
                       SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final comment = commentsState.comments[index];
-                            final isOwn = comment.userId == currentUserId || post.userId == currentUserId;
-                            return _buildCommentItem(
-                              context,
-                              comment,
-                              isOwn,
-                            );
-                          },
-                          childCount: commentsState.comments.length,
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final comment = commentsState.comments[index];
+                          final isOwn =
+                              comment.userId == currentUserId ||
+                              post.userId == currentUserId;
+                          return _buildCommentItem(context, comment, isOwn);
+                        }, childCount: commentsState.comments.length),
+                      ),
+
+                    if (commentsState.isLoading &&
+                        commentsState.comments.isNotEmpty)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ),
                       ),
 
@@ -167,7 +185,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             _buildCommentInput(context),
           ],
         ),
-        loading: () => const DetailScreenSkeleton(infoRowCount: 3, hasDescription: true, headerHeight: 0),
+        loading: () => const DetailScreenSkeleton(
+          infoRowCount: 3,
+          hasDescription: true,
+          headerHeight: 0,
+        ),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -324,10 +346,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
           // Title
           if (post.postTitle.trim().isNotEmpty) ...[
-            Text(
-              post.postTitle,
-              style: AppTextStyles.cardTitle(context, 16),
-            ),
+            Text(post.postTitle, style: AppTextStyles.cardTitle(context, 16)),
             const SizedBox(height: 8),
           ],
 
@@ -376,16 +395,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             children: [
               _buildStatItem(
                 context,
-                icon: post.isLiked
-                    ? Icons.favorite
-                    : Icons.favorite_border,
+                icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
                 label: '${post.likeCount}',
                 color: post.isLiked ? AppColors.error : AppColors.textSecondary,
                 onTap: () async {
-                  await ref.read(forumProvider.notifier).toggleLike(post.postId);
+                  await ref
+                      .read(forumProvider.notifier)
+                      .toggleLike(post.postId);
                   ref.invalidate(postDetailProvider(widget.postId));
                 },
-                onLongPress: () => _showReactionsSheet(context, ref, post.postId),
+                onLongPress: () =>
+                    _showReactionsSheet(context, ref, post.postId),
               ),
               const SizedBox(width: 16),
               _buildStatItem(
@@ -394,7 +414,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 label: 'Dislike',
                 color: AppColors.textSecondary,
                 onTap: () async {
-                  await ref.read(forumProvider.notifier).toggleDislike(post.postId);
+                  await ref
+                      .read(forumProvider.notifier)
+                      .toggleDislike(post.postId);
                   ref.invalidate(postDetailProvider(widget.postId));
                 },
               ),
@@ -402,7 +424,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               _buildStatItem(
                 context,
                 icon: Icons.chat_bubble_outline,
-                label: '${ref.watch(commentsProvider(widget.postId)).comments.length}',
+                label:
+                    '${ref.watch(commentsProvider(widget.postId)).comments.length}',
                 color: AppColors.textSecondary,
                 onTap: () => _commentFocusNode.requestFocus(),
               ),
@@ -421,11 +444,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
-  void _showReactionsSheet(
-    BuildContext context,
-    WidgetRef ref,
-    String postId,
-  ) {
+  void _showReactionsSheet(BuildContext context, WidgetRef ref, String postId) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
@@ -511,10 +530,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ),
       child: Row(
         children: [
-          Text(
-            'Komentar',
-            style: AppTextStyles.cardTitle(context, 14),
-          ),
+          Text('Komentar', style: AppTextStyles.cardTitle(context, 14)),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -568,11 +584,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
-  Widget _buildCommentItem(
-    BuildContext context,
-    Comment comment,
-    bool isOwn,
-  ) {
+  Widget _buildCommentItem(BuildContext context, Comment comment, bool isOwn) {
     return Container(
       color: AppColors.surface,
       padding: EdgeInsets.symmetric(
@@ -651,10 +663,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
               onPressed: () => _editComment(context, comment),
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             ),
             IconButton(
               icon: const Icon(
@@ -662,15 +671,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 size: 16,
                 color: AppColors.textTertiary,
               ),
-              onPressed: () => _confirmDeleteComment(
-                context,
-                comment.commentId,
-              ),
+              onPressed: () =>
+                  _confirmDeleteComment(context, comment.commentId),
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             ),
           ],
         ],
@@ -686,9 +690,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
@@ -856,9 +858,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         .read(commentsProvider(widget.postId).notifier)
         .updateComment(comment.commentId, content);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Komentar diperbarui')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Komentar diperbarui')));
   }
 
   void _confirmDeleteComment(BuildContext context, String commentId) {

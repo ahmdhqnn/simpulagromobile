@@ -1,5 +1,6 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -12,15 +13,16 @@ class PlantRemoteDataSource {
   PlantRemoteDataSource(this._dio);
 
   void _log(String message) {
-    if (kDebugMode) debugPrint(message);
+    assert(() {
+      developer.log(message, name: 'PlantRemoteDataSource');
+      return true;
+    }());
   }
 
   /// Header JSON eksplisit; token Bearer di-inject oleh [_AuthInterceptor] di [DioClient].
   static final Options _jsonOptions = Options(
     contentType: Headers.jsonContentType,
-    headers: <String, dynamic>{
-      'Accept': 'application/json',
-    },
+    headers: <String, dynamic>{'Accept': 'application/json'},
   );
 
   /// GET /sites/{siteId}/plants
@@ -210,8 +212,11 @@ class PlantRemoteDataSource {
 
     try {
       return ResponseParser.extractDataList(responseData)
-          .whereType<Map<String, dynamic>>()
-          .map(PlantModel.fromJson)
+          .whereType<Map>()
+          .map((json) {
+            return PlantModel.fromJson(Map<String, dynamic>.from(json));
+          })
+          .where((plant) => plant.plantId.isNotEmpty)
           .toList();
     } catch (e) {
       if (e is Failure) rethrow;
@@ -247,19 +252,36 @@ class PlantRemoteDataSource {
     if (responseData.containsKey('data')) {
       final data = responseData['data'];
       if (data == null) return null;
-      if (data is Map<String, dynamic>) return data;
+      if (data is Map<String, dynamic>) {
+        final nestedPlant = _extractPlantFromWrapper(data);
+        return nestedPlant ?? data;
+      }
+      if (data is Map) {
+        final map = Map<String, dynamic>.from(data);
+        final nestedPlant = _extractPlantFromWrapper(map);
+        return nestedPlant ?? map;
+      }
       throw const ServerFailure('Invalid plant response structure');
     }
 
     if (responseData.containsKey('plant_id')) {
       return responseData;
     }
+    final wrappedPlant = _extractPlantFromWrapper(responseData);
+    if (wrappedPlant != null) return wrappedPlant;
 
     try {
       return ResponseParser.extractDataMap(responseData);
     } on ServerException {
       return null;
     }
+  }
+
+  Map<String, dynamic>? _extractPlantFromWrapper(Map<String, dynamic> data) {
+    final plant = data['plant'] ?? data['item'] ?? data['result'];
+    if (plant is Map<String, dynamic>) return plant;
+    if (plant is Map) return Map<String, dynamic>.from(plant);
+    return null;
   }
 
   /// Validasi envelope `{ success, message, data }` dari backend.
@@ -269,8 +291,10 @@ class PlantRemoteDataSource {
 
     final success = responseData['success'];
     if (success == false) {
-      final message =
-          ResponseParser.extractMessage(responseData, 'Permintaan gagal');
+      final message = ResponseParser.extractMessage(
+        responseData,
+        'Permintaan gagal',
+      );
       throw ServerFailure(message);
     }
   }

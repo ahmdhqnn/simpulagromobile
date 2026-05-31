@@ -37,6 +37,9 @@ class PlantListScreen extends ConsumerWidget {
       backgroundColor: AppColors.surfaceVariant,
       body: SafeArea(
         child: plantsAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               const _ListHeader(),

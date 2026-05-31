@@ -16,6 +16,7 @@ import '../widgets/analytics/plant_distribution_card_widget.dart';
 import '../widgets/analytics/plant_recommendation_card_widget.dart';
 import '../widgets/analytics/plant_statistics_card_widget.dart';
 import '../widgets/analytics/sensor_by_type_card_widget.dart';
+import '../widgets/no_active_plant_card_widget.dart';
 
 class AnalyticsTab extends ConsumerWidget {
   const AnalyticsTab({super.key});
@@ -26,8 +27,10 @@ class AnalyticsTab extends ConsumerWidget {
     final plantRecAsync = ref.watch(plantRecommendationProvider);
     final dailyAsync = ref.watch(dailyReadsProvider);
     final devicesAsync = ref.watch(devicesProvider);
-    final plant = ref.watch(currentPlantProvider);
+    final activePlantAsync = ref.watch(ongoingPlantProvider);
+    final plant = activePlantAsync.valueOrNull;
     final monthlyAsync = ref.watch(monthlyReadsProvider);
+    final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -37,6 +40,7 @@ class AnalyticsTab extends ConsumerWidget {
         ref.invalidate(dailyReadsProvider);
         ref.invalidate(devicesProvider);
         ref.invalidate(monthlyReadsProvider);
+        ref.invalidate(ongoingPlantProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -49,6 +53,9 @@ class AnalyticsTab extends ConsumerWidget {
 
             // Environmental Health
             envAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 166),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
@@ -74,6 +81,22 @@ class AnalyticsTab extends ConsumerWidget {
                 ) ??
                 const SizedBox.shrink(),
 
+            activePlantAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (activePlant) => activePlant == null
+                  ? Column(
+                      children: [
+                        const NoActivePlantCardWidget(),
+                        SizedBox(height: context.rh(0.025)),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+
             // Plant Statistics
             const SectionHeaderWidget(title: 'Statistik Tanaman'),
             SizedBox(height: context.rh(0.015)),
@@ -91,12 +114,18 @@ class AnalyticsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Rekomendasi Tanaman'),
             SizedBox(height: context.rh(0.015)),
             plantRecAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 195),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(plantRecommendationProvider),
               ),
-              data: (rec) => PlantRecommendationCardWidget(data: rec),
+              data: (rec) => PlantRecommendationCardWidget(
+                data: rec,
+                metadataAdapter: metadataAdapter,
+              ),
             ),
             SizedBox(height: context.rh(0.025)),
 
@@ -104,6 +133,9 @@ class AnalyticsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Perangkat & Sensor Overview'),
             SizedBox(height: context.rh(0.015)),
             devicesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 74),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) {
@@ -111,6 +143,9 @@ class AnalyticsTab extends ConsumerWidget {
                   monitoringSensorCountProvider,
                 );
                 final sensorCount = sensorCountAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   data: (c) => c,
                   loading: () =>
                       devices.fold<int>(0, (s, d) => s + d.sensors.length),
@@ -126,6 +161,9 @@ class AnalyticsTab extends ConsumerWidget {
             SizedBox(height: context.rh(0.015)),
 
             devicesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 98),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => SensorByTypeCardWidget(devices: devices),
@@ -136,12 +174,18 @@ class AnalyticsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Analisis Sensor Harian'),
             SizedBox(height: context.rh(0.015)),
             dailyAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 290),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(dailyReadsProvider),
               ),
-              data: (daily) => DailySensorChartWidget(data: daily),
+              data: (daily) => DailySensorChartWidget(
+                data: daily,
+                metadataAdapter: metadataAdapter,
+              ),
             ),
             SizedBox(height: context.rh(0.025)),
 
@@ -149,12 +193,18 @@ class AnalyticsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Rekap Bulanan Sensor'),
             SizedBox(height: context.rh(0.015)),
             monthlyAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 260),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(monthlyReadsProvider),
               ),
-              data: (monthly) => MonthlyTrendCardWidget(data: monthly),
+              data: (monthly) => MonthlyTrendCardWidget(
+                data: monthly,
+                metadataAdapter: metadataAdapter,
+              ),
             ),
             SizedBox(height: context.rh(0.025)),
 

@@ -186,7 +186,7 @@ class __$$VdpModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$VdpModelImpl extends _VdpModel with DiagnosticableTreeMixin {
+class _$VdpModelImpl extends _VdpModel {
   const _$VdpModelImpl({
     this.vdp,
     this.status,
@@ -213,22 +213,8 @@ class _$VdpModelImpl extends _VdpModel with DiagnosticableTreeMixin {
   final String? description;
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'VdpModel(vdp: $vdp, status: $status, temperature: $temperature, humidity: $humidity, es: $es, ea: $ea, description: $description)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'VdpModel'))
-      ..add(DiagnosticsProperty('vdp', vdp))
-      ..add(DiagnosticsProperty('status', status))
-      ..add(DiagnosticsProperty('temperature', temperature))
-      ..add(DiagnosticsProperty('humidity', humidity))
-      ..add(DiagnosticsProperty('es', es))
-      ..add(DiagnosticsProperty('ea', ea))
-      ..add(DiagnosticsProperty('description', description));
   }
 
   @override
@@ -428,7 +414,7 @@ class __$$GddDailyModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$GddDailyModelImpl extends _GddDailyModel with DiagnosticableTreeMixin {
+class _$GddDailyModelImpl extends _GddDailyModel {
   const _$GddDailyModelImpl({this.day, this.tempMin, this.tempMax, this.gdd})
     : super._();
 
@@ -442,19 +428,8 @@ class _$GddDailyModelImpl extends _GddDailyModel with DiagnosticableTreeMixin {
   final double? gdd;
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'GddDailyModel(day: $day, tempMin: $tempMin, tempMax: $tempMax, gdd: $gdd)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'GddDailyModel'))
-      ..add(DiagnosticsProperty('day', day))
-      ..add(DiagnosticsProperty('tempMin', tempMin))
-      ..add(DiagnosticsProperty('tempMax', tempMax))
-      ..add(DiagnosticsProperty('gdd', gdd));
   }
 
   @override
@@ -600,7 +575,7 @@ class __$$GddModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$GddModelImpl extends _GddModel with DiagnosticableTreeMixin {
+class _$GddModelImpl extends _GddModel {
   const _$GddModelImpl({
     this.totalGDD,
     final List<GddDailyModel> daily = const [],
@@ -619,17 +594,8 @@ class _$GddModelImpl extends _GddModel with DiagnosticableTreeMixin {
   }
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'GddModel(totalGDD: $totalGDD, daily: $daily)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'GddModel'))
-      ..add(DiagnosticsProperty('totalGDD', totalGDD))
-      ..add(DiagnosticsProperty('daily', daily));
   }
 
   @override
@@ -864,7 +830,7 @@ class __$$EtcDailyModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$EtcDailyModelImpl extends _EtcDailyModel with DiagnosticableTreeMixin {
+class _$EtcDailyModelImpl extends _EtcDailyModel {
   const _$EtcDailyModelImpl({
     this.day,
     this.tempMin,
@@ -894,23 +860,8 @@ class _$EtcDailyModelImpl extends _EtcDailyModel with DiagnosticableTreeMixin {
   final double? waterNeeds;
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'EtcDailyModel(day: $day, tempMin: $tempMin, tempMax: $tempMax, rhMin: $rhMin, rhMax: $rhMax, etc: $etc, kc: $kc, waterNeeds: $waterNeeds)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'EtcDailyModel'))
-      ..add(DiagnosticsProperty('day', day))
-      ..add(DiagnosticsProperty('tempMin', tempMin))
-      ..add(DiagnosticsProperty('tempMax', tempMax))
-      ..add(DiagnosticsProperty('rhMin', rhMin))
-      ..add(DiagnosticsProperty('rhMax', rhMax))
-      ..add(DiagnosticsProperty('etc', etc))
-      ..add(DiagnosticsProperty('kc', kc))
-      ..add(DiagnosticsProperty('waterNeeds', waterNeeds));
   }
 
   @override
@@ -1136,7 +1087,7 @@ class __$$AgroModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$AgroModelImpl extends _AgroModel with DiagnosticableTreeMixin {
+class _$AgroModelImpl extends _AgroModel {
   const _$AgroModelImpl({
     this.vdp,
     this.gdd,
@@ -1158,18 +1109,8 @@ class _$AgroModelImpl extends _AgroModel with DiagnosticableTreeMixin {
   }
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'AgroModel(vdp: $vdp, gdd: $gdd, etc: $etc)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'AgroModel'))
-      ..add(DiagnosticsProperty('vdp', vdp))
-      ..add(DiagnosticsProperty('gdd', gdd))
-      ..add(DiagnosticsProperty('etc', etc));
   }
 
   @override

@@ -1,10 +1,18 @@
 // ignore_for_file: invalid_annotation_target, unused_element
 
-import 'package:flutter/foundation.dart';
+import 'dart:developer' as developer;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/agro_entity.dart';
 
 part 'agro_model.freezed.dart';
+
+void _debugLog(String message) {
+  assert(() {
+    developer.log(message, name: 'AgroModel');
+    return true;
+  }());
+}
 
 @freezed
 class VdpModel with _$VdpModel {
@@ -27,7 +35,7 @@ class VdpModel with _$VdpModel {
       if (v is String) return double.tryParse(v);
       return null;
     }
-    
+
     return VdpModel(
       vdp: parseD(json['vdp']) ?? parseD(json['v']),
       status: json['status'] as String?,
@@ -51,17 +59,15 @@ class VdpModel with _$VdpModel {
 
   bool isValid() {
     if (vdp != null && (vdp! < 0 || vdp! > 100)) {
-      if (kDebugMode) debugPrint('VdpModel: vdp=$vdp out of range [0, 100]');
+      _debugLog('VdpModel: vdp=$vdp out of range [0, 100]');
       return false;
     }
     if (temperature != null && (temperature! < -50 || temperature! > 60)) {
-      if (kDebugMode) {
-        debugPrint('VdpModel: temperature=$temperature out of range');
-      }
+      _debugLog('VdpModel: temperature=$temperature out of range');
       return false;
     }
     if (humidity != null && (humidity! < 0 || humidity! > 100)) {
-      if (kDebugMode) debugPrint('VdpModel: humidity=$humidity out of range');
+      _debugLog('VdpModel: humidity=$humidity out of range');
       return false;
     }
     return true;
@@ -86,7 +92,7 @@ class GddDailyModel with _$GddDailyModel {
       if (v is String) return double.tryParse(v);
       return null;
     }
-    
+
     double? readGdd() {
       if (json['gdd'] is num) return (json['gdd'] as num).toDouble();
       if (json['gdd'] is Map) return parseD((json['gdd'] as Map)['gdd']);
@@ -101,23 +107,20 @@ class GddDailyModel with _$GddDailyModel {
     );
   }
 
-  GddDailyEntity toEntity() => GddDailyEntity(day: day, tempMin: tempMin, tempMax: tempMax, gdd: gdd);
+  GddDailyEntity toEntity() =>
+      GddDailyEntity(day: day, tempMin: tempMin, tempMax: tempMax, gdd: gdd);
 
   bool isValid() {
     if (gdd != null && gdd! < 0) {
-      if (kDebugMode) debugPrint('GddDailyModel: gdd=$gdd is negative');
+      _debugLog('GddDailyModel: gdd=$gdd is negative');
       return false;
     }
     if (tempMin != null && (tempMin! < -50 || tempMin! > 60)) {
-      if (kDebugMode) {
-        debugPrint('GddDailyModel: tempMin=$tempMin out of range');
-      }
+      _debugLog('GddDailyModel: tempMin=$tempMin out of range');
       return false;
     }
     if (tempMax != null && (tempMax! < -50 || tempMax! > 60)) {
-      if (kDebugMode) {
-        debugPrint('GddDailyModel: tempMax=$tempMax out of range');
-      }
+      _debugLog('GddDailyModel: tempMax=$tempMax out of range');
       return false;
     }
     return true;
@@ -140,10 +143,14 @@ class GddModel with _$GddModel {
       if (v is String) return double.tryParse(v);
       return null;
     }
-    
+
     return GddModel(
       totalGDD: parseD(json['totalGDD']),
-      daily: (json['daily'] as List?)?.map((e) => GddDailyModel.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      daily:
+          (json['daily'] as List?)
+              ?.map((e) => GddDailyModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -156,11 +163,11 @@ class GddModel with _$GddModel {
 
   bool isValid() {
     if (totalGDD != null && totalGDD! < 0) {
-      if (kDebugMode) debugPrint('GddModel: totalGDD=$totalGDD is negative');
+      _debugLog('GddModel: totalGDD=$totalGDD is negative');
       return false;
     }
     if (daily.isEmpty) {
-      if (kDebugMode) debugPrint('GddModel: daily list is empty');
+      _debugLog('GddModel: daily list is empty');
       return false;
     }
     for (final item in daily) {
@@ -192,22 +199,26 @@ class EtcDailyModel with _$EtcDailyModel {
       if (v is String) return double.tryParse(v);
       return null;
     }
-    
+
     double? readEtc() {
       final etcField = json['etc'];
       if (etcField is Map) return parseD(etcField['etc']);
       return parseD(etcField);
     }
-    
+
     double? readKc() {
       final etcField = json['etc'];
-      if (etcField is Map && etcField['kc'] != null) return parseD(etcField['kc']);
+      if (etcField is Map && etcField['kc'] != null) {
+        return parseD(etcField['kc']);
+      }
       return parseD(json['kc']);
     }
-    
+
     double? readWaterNeeds() {
       final etcField = json['etc'];
-      if (etcField is Map && etcField['waterNeeds'] != null) return parseD(etcField['waterNeeds']);
+      if (etcField is Map && etcField['waterNeeds'] != null) {
+        return parseD(etcField['waterNeeds']);
+      }
       return parseD(json['waterNeeds']);
     }
 
@@ -238,11 +249,11 @@ class EtcDailyModel with _$EtcDailyModel {
 
   bool isValid() {
     if (etc != null && etc! < 0) {
-      if (kDebugMode) debugPrint('EtcDailyModel: etc=$etc is negative');
+      _debugLog('EtcDailyModel: etc=$etc is negative');
       return false;
     }
     if (kc != null && (kc! < 0 || kc! > 3)) {
-      if (kDebugMode) debugPrint('EtcDailyModel: kc=$kc out of range [0, 3]');
+      _debugLog('EtcDailyModel: kc=$kc out of range [0, 3]');
       return false;
     }
     return true;
@@ -276,7 +287,9 @@ class AgroModel with _$AgroModel {
 
     List<EtcDailyModel> etc = [];
     if (json['etc'] is List) {
-      etc = (json['etc'] as List).map((e) => EtcDailyModel.fromJson(e as Map<String, dynamic>)).toList();
+      etc = (json['etc'] as List)
+          .map((e) => EtcDailyModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } else if (json['etc'] is Map<String, dynamic>) {
       etc = [EtcDailyModel.fromJson(json['etc'] as Map<String, dynamic>)];
     } else if (json['etc'] is num) {
@@ -296,22 +309,20 @@ class AgroModel with _$AgroModel {
 
   bool isValid() {
     if (isEmpty) {
-      if (kDebugMode) debugPrint('AgroModel: all fields empty');
+      _debugLog('AgroModel: all fields empty');
       return false;
     }
     if (vdp != null && !vdp!.isValid()) {
-      if (kDebugMode) debugPrint('AgroModel: vdp validation failed');
+      _debugLog('AgroModel: vdp validation failed');
       return false;
     }
     if (gdd != null && !gdd!.isValid()) {
-      if (kDebugMode) debugPrint('AgroModel: gdd validation failed');
+      _debugLog('AgroModel: gdd validation failed');
       return false;
     }
     for (final etcItem in etc) {
       if (!etcItem.isValid()) {
-        if (kDebugMode) {
-          debugPrint('AgroModel: EtcDailyModel failed for day=${etcItem.day}');
-        }
+        _debugLog('AgroModel: EtcDailyModel failed for day=${etcItem.day}');
         return false;
       }
     }

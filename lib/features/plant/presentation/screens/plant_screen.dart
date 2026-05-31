@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
@@ -17,18 +18,40 @@ class PlantScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final siteId = ref.watch(selectedSiteIdProvider);
+    final sitesAsync = ref.watch(sitesProvider);
     final plantsAsync = ref.watch(plantsProvider);
     final screenState = ref.watch(plantScreenStateProvider);
 
     if (siteId == null) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Center(
-            child: DetailScreenSkeleton(
-              infoRowCount: 3,
-              hasDescription: false,
-              headerHeight: 120,
+          child: Padding(
+            padding: EdgeInsets.all(context.rw(0.061)),
+            child: sitesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
+              loading: () => const Center(
+                child: DetailScreenSkeleton(
+                  infoRowCount: 3,
+                  hasDescription: false,
+                  headerHeight: 120,
+                ),
+              ),
+              error: (error, _) => Center(
+                child: ErrorStateCardWidget(
+                  message: 'Gagal memuat site. ${error.toString()}',
+                  onRetry: () => ref.invalidate(sitesProvider),
+                ),
+              ),
+              data: (_) => Center(
+                child: InfoStateWidget.icon(
+                  icon: Icons.location_on_outlined,
+                  message: AppLocalizations.of(context)!.emptySite,
+                  height: 120,
+                ),
+              ),
             ),
           ),
         ),
@@ -39,6 +62,9 @@ class PlantScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: plantsAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => const Center(
             child: DetailScreenSkeleton(
               infoRowCount: 3,

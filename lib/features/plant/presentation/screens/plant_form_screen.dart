@@ -50,6 +50,9 @@ class PlantFormScreen extends ConsumerWidget {
     final plantAsync = ref.watch(plantDetailProvider(plantId!));
 
     return plantAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       loading: () => const Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(

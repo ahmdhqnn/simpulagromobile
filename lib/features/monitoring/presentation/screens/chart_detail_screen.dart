@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../providers/monitoring_provider.dart';
@@ -32,11 +33,13 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final historyAsync = ref.watch(historyReadsProvider);
     final dailyAsync = ref.watch(dailyReadsProvider);
+    final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -73,6 +76,9 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
 
                       // Main Chart
                       historyAsync.when(
+                        skipLoadingOnReload: true,
+                        skipLoadingOnRefresh: true,
+                        skipError: true,
                         loading: () => const LoadingCardWidget(height: 250),
                         error: (e, _) => ErrorStateCardWidget(
                           message: e.toString(),
@@ -86,9 +92,9 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                               .where((r) => r.dsId == widget.sensorId)
                               .toList();
                           if (filtered.isEmpty) {
-                            return const InfoStateWidget.icon(
+                            return InfoStateWidget.icon(
                               icon: Icons.bar_chart_outlined,
-                              message: 'Belum ada data untuk sensor ini',
+                              message: l10n.monitoringChartNoSensorData,
                               height: 120,
                             );
                           }
@@ -101,11 +107,16 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                       ),
 
                       SizedBox(height: context.rh(0.024)),
-                      const SectionHeaderWidget(title: 'Agregasi Harian'),
+                      SectionHeaderWidget(
+                        title: l10n.monitoringChartDailyAggregation,
+                      ),
                       SizedBox(height: context.rh(0.014)),
 
                       // Daily Aggregation
                       dailyAsync.when(
+                        skipLoadingOnReload: true,
+                        skipLoadingOnRefresh: true,
+                        skipError: true,
                         loading: () => const LoadingCardWidget(height: 200),
                         error: (e, _) => ErrorStateCardWidget(
                           message: e.toString(),
@@ -119,15 +130,16 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                               .where((d) => d.dsId == widget.sensorId)
                               .toList();
                           if (filtered.isEmpty) {
-                            return const InfoStateWidget.icon(
+                            return InfoStateWidget.icon(
                               icon: Icons.bar_chart_outlined,
-                              message: 'Belum ada data agregasi harian',
+                              message: l10n.monitoringChartNoDailyAggregation,
                               height: 120,
                             );
                           }
                           return DailyAggregationWidget(
                             data: filtered,
-                            title: 'Agregasi 7 Hari Terakhir',
+                            metadataAdapter: metadataAdapter,
+                            title: l10n.monitoringChartLast7DaysAggregation,
                             dateRange: _selectedDateRange,
                           );
                         },
@@ -174,6 +186,5 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
             HistoryFilter.dateRange;
         break;
     }
-    ref.invalidate(historyReadsProvider);
   }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Temporary HTTP allowance for the deployed backend until HTTPS is available. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">202.10.37.32</domain>
+    </domain-config>
+</network-security-config>

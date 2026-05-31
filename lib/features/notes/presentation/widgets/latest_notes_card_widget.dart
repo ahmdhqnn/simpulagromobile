@@ -14,6 +14,9 @@ class LatestNotesCardWidget extends ConsumerWidget {
     final notesAsync = ref.watch(latestNotesProvider);
 
     return notesAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (notes) {
         if (notes.isEmpty) {
           return InfoStateWidget.icon(
@@ -22,9 +25,7 @@ class LatestNotesCardWidget extends ConsumerWidget {
             height: 80,
           );
         }
-        return Column(
-          children: notes.map((n) => _NoteTile(note: n)).toList(),
-        );
+        return Column(children: notes.map((n) => _NoteTile(note: n)).toList());
       },
       loading: () => const Center(
         child: Padding(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/recommendation_request.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/recommendation_provider.dart';
 
@@ -17,8 +19,6 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
   final _nitro = TextEditingController(text: '50');
   final _phos = TextEditingController(text: '10');
   final _pot = TextEditingController(text: '95');
-  bool _loading = false;
-  Map<String, dynamic>? _previewData;
 
   static const _phases = [
     'Perkecambahan',
@@ -39,62 +39,47 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
     super.dispose();
   }
 
-  Map<String, dynamic> _payload(String siteId) => {
-        'phase': _phase,
-        'sensorData': {
-          'soil_nitro': double.parse(_nitro.text),
-          'soil_phos': double.parse(_phos.text),
-          'soil_pot': double.parse(_pot.text),
-        },
-        'siteId': siteId,
-      };
+  RecommendationLabInput _input() => RecommendationLabInput(
+    phase: _phase,
+    soilNitro: double.tryParse(_nitro.text) ?? 0,
+    soilPhos: double.tryParse(_phos.text) ?? 0,
+    soilPot: double.tryParse(_pot.text) ?? 0,
+  );
 
   Future<void> _runPreview() async {
     final siteId = ref.read(selectedSiteIdProvider);
     if (siteId == null) return;
-    setState(() => _loading = true);
-    try {
-      final ds = ref.read(recommendationDatasourceProvider);
-      final data = await ds.previewDummyRecommendation(
-        siteId,
-        {'phase': _phase, 'sensorData': _payload(siteId)['sensorData']},
-      );
-      setState(() => _previewData = data);
-    } catch (e) {
-      setState(() => _previewData = {'error': e.toString()});
-    } finally {
-      setState(() => _loading = false);
-    }
+    await ref
+        .read(recommendationLabProvider.notifier)
+        .preview(siteId, _input());
   }
 
   Future<void> _save() async {
     final siteId = ref.read(selectedSiteIdProvider);
     if (siteId == null) return;
-    setState(() => _loading = true);
-    try {
-      final ds = ref.read(recommendationDatasourceProvider);
-      await ds.saveDummyRecommendation(siteId, _payload(siteId));
-      ref.invalidate(recommendationListProvider);
-      ref.invalidate(recommendationHistoryProvider);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Rekomendasi dummy tersimpan')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal: $e')),
-        );
-      }
-    } finally {
-      setState(() => _loading = false);
-    }
+    final success = await ref
+        .read(recommendationLabProvider.notifier)
+        .save(siteId, _input());
+    final state = ref.read(recommendationLabProvider);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? state.message ?? 'Rekomendasi tersimpan'
+              : 'Gagal: ${state.error ?? 'Unknown error'}',
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final siteId = ref.watch(selectedSiteIdProvider);
+    final state = ref.watch(recommendationLabProvider);
+    final previewData = state.preview?.data;
+
     if (siteId == null) {
       return const Center(child: Text('Pilih site terlebih dahulu'));
     }
@@ -105,7 +90,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            '[TEST] Rekomendasi dummy — admin only',
+            '[TEST] Rekomendasi dummy - admin only',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontWeight: FontWeight.w600,
@@ -119,50 +104,31 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
               border: OutlineInputBorder(),
             ),
             items: _phases
-                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                .map(
+                  (phase) => DropdownMenuItem(value: phase, child: Text(phase)),
+                )
                 .toList(),
-            onChanged: (v) => setState(() => _phase = v ?? _phase),
+            onChanged: (value) => setState(() => _phase = value ?? _phase),
           ),
           const SizedBox(height: 8),
-          TextField(
-            controller: _nitro,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'soil_nitro',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          _numberField(_nitro, 'soil_nitro'),
           const SizedBox(height: 8),
-          TextField(
-            controller: _phos,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'soil_phos',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          _numberField(_phos, 'soil_phos'),
           const SizedBox(height: 8),
-          TextField(
-            controller: _pot,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'soil_pot',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          _numberField(_pot, 'soil_pot'),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _loading ? null : _runPreview,
+                  onPressed: state.isLoading ? null : _runPreview,
                   child: const Text('Preview'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
-                  onPressed: _loading ? null : _save,
+                  onPressed: state.isLoading ? null : _save,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                   ),
@@ -171,14 +137,33 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
               ),
             ],
           ),
-          if (_previewData != null) ...[
+          if (state.isLoading) ...[
+            const SizedBox(height: 16),
+            const Center(child: CircularProgressIndicator()),
+          ],
+          if (state.error != null) ...[
+            const SizedBox(height: 16),
+            Text(state.error!, style: const TextStyle(color: Colors.red)),
+          ],
+          if (previewData != null) ...[
             const SizedBox(height: 16),
             Text(
-              _previewData.toString(),
+              previewData.toString(),
               style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _numberField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
       ),
     );
   }

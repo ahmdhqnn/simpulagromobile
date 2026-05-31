@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
-import 'package:flutter/foundation.dart';
+import 'dart:developer' as developer;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/plant.dart';
@@ -9,15 +10,19 @@ import '../../domain/plant_type_validator.dart';
 
 part 'plant_model.freezed.dart';
 
+void _debugLog(String message) {
+  assert(() {
+    developer.log(message, name: 'PlantModel');
+    return true;
+  }());
+}
+
 /// Format tanggal untuk request API: `YYYY-MM-DD` (PlantCreateRequest).
 String formatPlantDateForApi(DateTime date) {
-  return DateFormatter.formatApiDate(
-    DateTime(date.year, date.month, date.day),
-  );
+  return DateFormatter.formatApiDate(DateTime(date.year, date.month, date.day));
 }
 
 /// Body POST/PUT plant — hanya field yang diizinkan Swagger `PlantCreateRequest`.
-@immutable
 class PlantWritePayload {
   const PlantWritePayload({
     required this.plantName,
@@ -49,7 +54,9 @@ class PlantWritePayload {
       throw const FormatException('varietas_id wajib diisi');
     }
     if (parsedDate == null) {
-      throw const FormatException('plant_date wajib dan harus valid (YYYY-MM-DD)');
+      throw const FormatException(
+        'plant_date wajib dan harus valid (YYYY-MM-DD)',
+      );
     }
 
     return PlantWritePayload(
@@ -120,14 +127,19 @@ class PlantModel with _$PlantModel {
     }
 
     return PlantModel(
-      plantId: (json['plant_id'] as String?) ?? '',
-      siteId: json['site_id'] as String?,
-      varietasId: json['varietas_id'] as String?,
-      plantName: json['plant_name'] as String?,
-      plantType: json['plant_type'] as String?,
-      plantSpecies: json['plant_species'] as String?,
-      plantDate: parsePlantDateValue(json['plant_date']),
-      plantHarvest: parsePlantDateValue(json['plant_harvest']),
+      plantId: (json['plant_id'] ?? json['plantId'] ?? json['id'] ?? '')
+          .toString(),
+      siteId: (json['site_id'] ?? json['siteId'])?.toString(),
+      varietasId: (json['varietas_id'] ?? json['varietasId'])?.toString(),
+      plantName: (json['plant_name'] ?? json['plantName'] ?? json['name'])
+          ?.toString(),
+      plantType: (json['plant_type'] ?? json['plantType'] ?? json['type'])
+          ?.toString(),
+      plantSpecies: (json['plant_species'] ?? json['plantSpecies'])?.toString(),
+      plantDate: parsePlantDateValue(json['plant_date'] ?? json['plantDate']),
+      plantHarvest: parsePlantDateValue(
+        json['plant_harvest'] ?? json['plantHarvest'],
+      ),
       plantSts: parsedSts,
     );
   }
@@ -142,13 +154,15 @@ class PlantModel with _$PlantModel {
       if (plantType != null) 'plant_type': plantType,
       if (plantSpecies != null) 'plant_species': plantSpecies,
       if (plantDate != null) 'plant_date': formatPlantDateForApi(plantDate!),
-      if (plantHarvest != null) 'plant_harvest': formatPlantDateForApi(plantHarvest!),
+      if (plantHarvest != null)
+        'plant_harvest': formatPlantDateForApi(plantHarvest!),
       if (plantSts != null) 'plant_sts': plantSts,
     };
   }
 
   /// Payload create/update sesuai Swagger dari model ini.
-  PlantWritePayload toWritePayload() => PlantWritePayload.fromEntity(toEntity());
+  PlantWritePayload toWritePayload() =>
+      PlantWritePayload.fromEntity(toEntity());
 
   /// Convert Model to Entity
   Plant toEntity() {
@@ -158,12 +172,10 @@ class PlantModel with _$PlantModel {
     if (plantType != null) {
       final result = validator.validatePlantType(plantType);
       cropType = result.fold((failure) {
-        if (kDebugMode) {
-          debugPrint(
-            '[PlantModel] Invalid plant type "$plantType" → default PADI: '
-            '${failure.message}',
-          );
-        }
+        _debugLog(
+          '[PlantModel] Invalid plant type "$plantType" -> default PADI: '
+          '${failure.message}',
+        );
         return CropType.PADI;
       }, (type) => type);
     }

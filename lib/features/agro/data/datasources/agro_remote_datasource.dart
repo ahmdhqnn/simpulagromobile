@@ -1,8 +1,16 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
 import '../models/agro_model.dart';
+
+void _debugLog(String message) {
+  assert(() {
+    developer.log(message, name: 'AgroRemoteDataSource');
+    return true;
+  }());
+}
 
 class AgroRemoteDataSource {
   final Dio _dio;
@@ -18,10 +26,10 @@ class AgroRemoteDataSource {
       final response = await _dio.get(ApiEndpoints.agro(siteId));
       return _parseAgroResponse(response.data);
     } on DioException catch (e) {
-      debugPrint('❌ Agro datasource error: ${e.message}');
+      _debugLog('Agro datasource error: ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in agro datasource: $e');
+      _debugLog('Unexpected error in agro datasource: $e');
       rethrow;
     }
   }

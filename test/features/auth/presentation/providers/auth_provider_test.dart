@@ -87,9 +87,9 @@ void main() {
       });
 
       test('returns false and sets error on failure', () async {
-        when(
-          () => mockRepository.login('john', 'wrong'),
-        ).thenAnswer((_) async => const Left(AuthFailure('Username atau Password salah')));
+        when(() => mockRepository.login('john', 'wrong')).thenAnswer(
+          (_) async => const Left(AuthFailure('Username atau Password salah')),
+        );
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'wrong');
@@ -101,18 +101,15 @@ void main() {
       });
 
       test('sets connection error message on network failure', () async {
-        when(
-          () => mockRepository.login('john', 'pass'),
-        ).thenAnswer((_) async => const Left(ServerFailure('Tidak Ada Koneksi Internet')));
+        when(() => mockRepository.login('john', 'pass')).thenAnswer(
+          (_) async => const Left(ServerFailure('Tidak Ada Koneksi Internet')),
+        );
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'pass');
 
         expect(result, isFalse);
-        expect(
-          notifier.state.error,
-          contains('Tidak Ada Koneksi Internet'),
-        );
+        expect(notifier.state.error, contains('Tidak Ada Koneksi Internet'));
       });
     });
 
@@ -122,8 +119,12 @@ void main() {
         when(
           () => mockRepository.login('john', 'pass'),
         ).thenAnswer((_) async => const Right(user));
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
-        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
+        when(
+          () => mockRepository.getPermissions(),
+        ).thenAnswer((_) async => const Right([]));
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');
@@ -144,8 +145,12 @@ void main() {
         when(
           () => mockRepository.login('john', 'pass'),
         ).thenAnswer((_) async => const Right(user));
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
-        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
+        when(
+          () => mockRepository.getPermissions(),
+        ).thenAnswer((_) async => const Right([]));
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');
@@ -158,7 +163,9 @@ void main() {
       });
 
       test('does nothing if already unauthenticated', () async {
-        when(() => mockRepository.logout()).thenAnswer((_) async => const Right(null));
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(null));
 
         final notifier = AuthNotifier(mockRepository);
 
@@ -212,7 +219,9 @@ void main() {
         when(
           () => mockRepository.login('john', 'pass'),
         ).thenAnswer((_) async => const Right(user));
-        when(() => mockRepository.getPermissions()).thenAnswer((_) async => const Right([]));
+        when(
+          () => mockRepository.getPermissions(),
+        ).thenAnswer((_) async => const Right([]));
 
         final notifier = AuthNotifier(mockRepository);
         await notifier.login('john', 'pass');
@@ -268,6 +277,73 @@ void main() {
       expect(updated.user?.userId, equals('USR_001'));
       expect(updated.permissions, equals(['read:site']));
       expect(updated.error, equals('Some error'));
+    });
+  });
+
+  group('ChangePasswordNotifier', () {
+    test('returns success and sets success state', () async {
+      when(
+        () => mockRepository.changePassword(
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass',
+          confirmPassword: 'new-pass',
+        ),
+      ).thenAnswer((_) async => const Right('Password berhasil diubah'));
+
+      final notifier = ChangePasswordNotifier(mockRepository);
+      final result = await notifier.submit(
+        oldPassword: 'old-pass',
+        newPassword: 'new-pass',
+        confirmPassword: 'new-pass',
+      );
+
+      expect(result, isTrue);
+      expect(notifier.state.isSuccess, isTrue);
+      expect(notifier.state.errorType, isNull);
+    });
+
+    test('maps ValidationFailure to confirmMismatch error type', () async {
+      when(
+        () => mockRepository.changePassword(
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass',
+          confirmPassword: 'bad-confirm',
+        ),
+      ).thenAnswer(
+        (_) async =>
+            const Left(ValidationFailure('Konfirmasi password tidak cocok')),
+      );
+
+      final notifier = ChangePasswordNotifier(mockRepository);
+      final result = await notifier.submit(
+        oldPassword: 'old-pass',
+        newPassword: 'new-pass',
+        confirmPassword: 'bad-confirm',
+      );
+
+      expect(result, isFalse);
+      expect(notifier.state.isSuccess, isFalse);
+      expect(notifier.state.errorType, ChangePasswordErrorType.confirmMismatch);
+    });
+
+    test('maps AuthFailure to unauthorized error type', () async {
+      when(
+        () => mockRepository.changePassword(
+          oldPassword: 'wrong-old',
+          newPassword: 'new-pass',
+          confirmPassword: 'new-pass',
+        ),
+      ).thenAnswer((_) async => const Left(AuthFailure('Unauthorized')));
+
+      final notifier = ChangePasswordNotifier(mockRepository);
+      final result = await notifier.submit(
+        oldPassword: 'wrong-old',
+        newPassword: 'new-pass',
+        confirmPassword: 'new-pass',
+      );
+
+      expect(result, isFalse);
+      expect(notifier.state.errorType, ChangePasswordErrorType.unauthorized);
     });
   });
 }

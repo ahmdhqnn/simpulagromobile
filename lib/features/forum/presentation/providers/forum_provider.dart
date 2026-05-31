@@ -57,6 +57,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
   Timer? _pollingTimer;
 
   static const _pollingInterval = Duration(seconds: 30);
+  static const _pageLimit = 20;
 
   ForumNotifier(this._repository) : super(const ForumState());
 
@@ -74,18 +75,21 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
   Future<void> _silentRefresh() async {
     if (state.isLoading) return;
-    final result = await _repository.getPosts(page: 1, limit: 20);
+    final result = await _repository.getPaginatedPosts(
+      page: 1,
+      limit: _pageLimit,
+    );
     result.fold((_) {}, (newPosts) {
       if (mounted) {
         final existingIds = state.posts.map((p) => p.postId).toSet();
-        final newIds = newPosts.map((p) => p.postId).toSet();
+        final newIds = newPosts.items.map((p) => p.postId).toSet();
 
-        final addedPosts = newPosts
+        final addedPosts = newPosts.items
             .where((p) => !existingIds.contains(p.postId))
             .toList();
 
         final updatedExisting = state.posts.map((existing) {
-          final updated = newPosts.firstWhere(
+          final updated = newPosts.items.firstWhere(
             (p) => p.postId == existing.postId,
             orElse: () => existing,
           );
@@ -124,7 +128,10 @@ class ForumNotifier extends StateNotifier<ForumState> {
     }
 
     final page = refresh ? 1 : state.currentPage;
-    final result = await _repository.getPosts(page: page, limit: 20);
+    final result = await _repository.getPaginatedPosts(
+      page: page,
+      limit: _pageLimit,
+    );
 
     result.fold(
       (failure) {
@@ -138,20 +145,24 @@ class ForumNotifier extends StateNotifier<ForumState> {
           });
         }
       },
-      (newPosts) {
+      (pageData) {
         if (mounted) {
+          final newPosts = pageData.items;
+          final hasMore = pageData.meta.hasExplicitPageBoundary
+              ? pageData.hasNextPage
+              : newPosts.length >= _pageLimit;
           if (refresh) {
             state = ForumState(
               posts: newPosts,
               isLoading: false,
-              hasMore: newPosts.length >= 20,
+              hasMore: hasMore,
               currentPage: 2,
             );
           } else {
             state = ForumState(
               posts: [...state.posts, ...newPosts],
               isLoading: false,
-              hasMore: newPosts.length >= 20,
+              hasMore: hasMore,
               currentPage: page + 1,
             );
           }
@@ -306,22 +317,30 @@ class CommentsState {
   final List<Comment> comments;
   final bool isLoading;
   final String? error;
+  final bool hasMore;
+  final int currentPage;
 
   const CommentsState({
     this.comments = const [],
     this.isLoading = false,
     this.error,
+    this.hasMore = true,
+    this.currentPage = 1,
   });
 
   CommentsState copyWith({
     List<Comment>? comments,
     bool? isLoading,
     String? error,
+    bool? hasMore,
+    int? currentPage,
   }) {
     return CommentsState(
       comments: comments ?? this.comments,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
     );
   }
 }
@@ -334,9 +353,25 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
   CommentsNotifier(this._repository, this._postId, this._ref)
     : super(const CommentsState());
 
-  Future<void> loadComments() async {
-    state = state.copyWith(isLoading: true, error: null);
-    final result = await _repository.getComments(postId: _postId);
+  static const _pageLimit = 30;
+
+  Future<void> loadComments({bool refresh = true}) async {
+    if (state.isLoading) return;
+    if (!refresh && !state.hasMore) return;
+
+    final page = refresh ? 1 : state.currentPage;
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      currentPage: refresh ? 1 : state.currentPage,
+      hasMore: refresh ? true : state.hasMore,
+    );
+
+    final result = await _repository.getPaginatedComments(
+      postId: _postId,
+      page: page,
+      limit: _pageLimit,
+    );
     result.fold(
       (failure) {
         if (mounted) {
@@ -344,18 +379,30 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
 
           Future.delayed(const Duration(seconds: 5), () {
             if (mounted && state.error != null && !state.isLoading) {
-              loadComments();
+              loadComments(refresh: refresh);
             }
           });
         }
       },
-      (comments) {
+      (pageData) {
         if (mounted) {
-          state = CommentsState(comments: comments, isLoading: false);
+          final comments = refresh
+              ? pageData.items
+              : [...state.comments, ...pageData.items];
+          state = CommentsState(
+            comments: comments,
+            isLoading: false,
+            hasMore: pageData.meta.hasExplicitPageBoundary
+                ? pageData.hasNextPage
+                : pageData.items.length >= _pageLimit,
+            currentPage: page + 1,
+          );
         }
       },
     );
   }
+
+  Future<void> loadMoreComments() => loadComments(refresh: false);
 
   Future<void> addComment(String content) async {
     final result = await _repository.createComment(

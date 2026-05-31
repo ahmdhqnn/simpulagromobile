@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
-import '../../../utilitas/presentation/providers/permission_guard_provider.dart';
+import '../../../admin/presentation/providers/permission_guard_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/monitoring_provider.dart';
 

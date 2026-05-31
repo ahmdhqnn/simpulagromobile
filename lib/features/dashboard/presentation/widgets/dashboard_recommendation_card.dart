@@ -15,6 +15,9 @@ class DashboardRecommendationCard extends ConsumerWidget {
     final recAsync = ref.watch(recommendationListProvider);
 
     return recAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (list) {
         if (list.isEmpty) {
           return const InfoStateWidget.icon(

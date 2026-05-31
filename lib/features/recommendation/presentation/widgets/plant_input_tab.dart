@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/recommendation_request.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/recommendation_provider.dart';
 
@@ -18,8 +19,6 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
   final _temp = TextEditingController(text: '30');
   final _hum = TextEditingController(text: '75');
   final _ph = TextEditingController(text: '6.4');
-  bool _loading = false;
-  String? _result;
 
   @override
   void dispose() {
@@ -36,37 +35,25 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
     final siteId = ref.read(selectedSiteIdProvider);
     if (siteId == null) return;
 
-    setState(() {
-      _loading = true;
-      _result = null;
-    });
-
-    try {
-      final ds = ref.read(recommendationDatasourceProvider);
-      final models = await ds.postPlantRecommendation(siteId, {
-        'soil_nitro': double.parse(_nitro.text),
-        'soil_phos': double.parse(_phos.text),
-        'soil_pot': double.parse(_pot.text),
-        'env_temp': double.parse(_temp.text),
-        'env_hum': double.parse(_hum.text),
-        'soil_ph': double.parse(_ph.text),
-      });
-      ref.invalidate(recommendationListProvider);
-      setState(() {
-        _result = models.isEmpty
-            ? 'Tidak ada rekomendasi dikembalikan'
-            : '${models.length} rekomendasi dihasilkan';
-      });
-    } catch (e) {
-      setState(() => _result = 'Error: $e');
-    } finally {
-      setState(() => _loading = false);
-    }
+    await ref
+        .read(plantRecommendationProvider.notifier)
+        .submit(
+          siteId,
+          PlantRecommendationInput(
+            soilNitro: double.tryParse(_nitro.text) ?? 0,
+            soilPhos: double.tryParse(_phos.text) ?? 0,
+            soilPot: double.tryParse(_pot.text) ?? 0,
+            envTemp: double.tryParse(_temp.text) ?? 0,
+            envHum: double.tryParse(_hum.text) ?? 0,
+            soilPh: double.tryParse(_ph.text) ?? 0,
+          ),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     final siteId = ref.watch(selectedSiteIdProvider);
+    final state = ref.watch(plantRecommendationProvider);
     if (siteId == null) {
       return const Center(child: Text('Pilih site terlebih dahulu'));
     }
@@ -89,9 +76,9 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
           _field(_ph, 'soil_ph'),
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: _loading ? null : _submit,
+            onPressed: state.isLoading ? null : _submit,
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
-            child: _loading
+            child: state.isLoading
                 ? const SizedBox(
                     height: 20,
                     width: 20,
@@ -102,9 +89,17 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
                   )
                 : const Text('POST /recommendations/plant'),
           ),
-          if (_result != null) ...[
+          if (state.message != null || state.error != null) ...[
             const SizedBox(height: 12),
-            Text(_result!, textAlign: TextAlign.center),
+            Text(
+              state.message ?? 'Error: ${state.error}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: state.error == null
+                    ? null
+                    : Theme.of(context).colorScheme.error,
+              ),
+            ),
           ],
         ],
       ),

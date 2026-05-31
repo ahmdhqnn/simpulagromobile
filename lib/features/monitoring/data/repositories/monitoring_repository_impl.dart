@@ -28,18 +28,26 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
     }
 
     switch (statusCode) {
-      case 401: return AuthFailure(message);
-      case 403: return PermissionFailure(message);
-      case 404: return NotFoundFailure(message);
-      case 409: return ValidationFailure(message);
-      default: return ServerFailure(message, statusCode: statusCode);
+      case 401:
+        return AuthFailure(message);
+      case 403:
+        return PermissionFailure(message);
+      case 404:
+        return NotFoundFailure(message);
+      case 409:
+        return ValidationFailure(message);
+      default:
+        return ServerFailure(message, statusCode: statusCode);
     }
   }
 
   @override
-  Future<Either<Failure, List<SensorReadUpdate>>> getLatestReads(String siteId) async {
+  Future<Either<Failure, List<SensorReadUpdate>>> getLatestReads(
+    String siteId, {
+    String? sensId,
+  }) async {
     try {
-      final res = await remoteDataSource.getLatestReads(siteId);
+      final res = await remoteDataSource.getLatestReads(siteId, sensId: sensId);
       return Right(res);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
@@ -49,7 +57,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<SensorReadModel>>> getTodayReads(String siteId) async {
+  Future<Either<Failure, List<SensorReadModel>>> getTodayReads(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getTodayReads(siteId);
       return Right(res);
@@ -63,7 +73,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<SensorReadModel>>> getSevenDayReads(String siteId) async {
+  Future<Either<Failure, List<SensorReadModel>>> getSevenDayReads(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getSevenDayReads(siteId);
       return Right(res);
@@ -97,7 +109,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<SensorReadModel>>> getPlantingDateReads(String siteId) async {
+  Future<Either<Failure, List<SensorReadModel>>> getPlantingDateReads(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getPlantingDateReads(siteId);
       return Right(res);
@@ -124,7 +138,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<SensorDailyModel>>> getDailyReads(String siteId) async {
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyReads(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getDailyReads(siteId);
       return Right(res);
@@ -136,7 +152,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<SensorDailyModel>>> getDailyToday(String siteId) async {
+  Future<Either<Failure, List<SensorDailyModel>>> getDailyToday(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getDailyToday(siteId);
       return Right(res);
@@ -163,7 +181,10 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, void>> triggerDailyRekap(String siteId, String day) async {
+  Future<Either<Failure, void>> triggerDailyRekap(
+    String siteId,
+    String day,
+  ) async {
     try {
       await remoteDataSource.triggerDailyRekap(siteId, day);
       return const Right(null);
@@ -221,6 +242,19 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
+  Future<Either<Failure, List<DeviceSensorThresholdModel>>>
+  getDeviceSensorThresholdValues(String siteId) async {
+    try {
+      final res = await remoteDataSource.getDeviceSensorThresholdValues(siteId);
+      return Right(res);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<LogModel>>> getLogs() async {
     try {
       final res = await remoteDataSource.getLogs();
@@ -235,7 +269,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getEnvironmentalHealth(String siteId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getEnvironmentalHealth(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getEnvironmentalHealth(siteId);
       return Right(res);
@@ -247,7 +283,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getPlantRecommendation(String siteId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getPlantRecommendation(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getPlantRecommendation(siteId);
       return Right(res);
@@ -273,7 +311,9 @@ class MonitoringRepositoryImpl implements MonitoringRepository {
   }
 
   @override
-  Future<Either<Failure, List<MonthlyRekapModel>>> getMonthlyReads(String siteId) async {
+  Future<Either<Failure, List<MonthlyRekapModel>>> getMonthlyReads(
+    String siteId,
+  ) async {
     try {
       final res = await remoteDataSource.getMonthlyReads(siteId);
       return Right(res);
