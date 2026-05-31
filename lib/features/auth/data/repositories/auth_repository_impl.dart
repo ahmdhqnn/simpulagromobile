@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/auth/token_manager.dart';
 import '../../../../core/storage/secure_storage.dart';
@@ -61,6 +62,26 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(permissions);
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Server error occurred'));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final message = await _remoteDataSource.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+      return Right(message);
+    } on DioException catch (e) {
+      return Left(e.toFailure());
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }

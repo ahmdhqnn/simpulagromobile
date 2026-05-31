@@ -15,6 +15,13 @@ abstract class AuthRepository {
   /// Get user permissions from server
   Future<Either<Failure, List<String>>> getPermissions();
 
+  /// Change password for current logged-in user
+  Future<Either<Failure, String>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  });
+
   /// Check if user has a valid session (tokens exist)
   Future<bool> isLoggedIn();
 

@@ -9,6 +9,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../../../varietas/domain/entities/varietas_item.dart';
+import '../../../varietas/presentation/providers/varietas_provider.dart';
 
 class PlantInputForm extends ConsumerStatefulWidget {
   final String siteId;
@@ -34,8 +36,10 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
   final _varietasIdController = TextEditingController();
 
   CropType? _selectedPlantType;
+  String? _selectedVarietasId;
   DateTime _plantDate = DateTime.now();
   bool _isSubmitting = false;
+  bool _useManualVarietasId = false;
   bool _didPrefillVarietas = false;
 
   bool get _isEditMode => widget.initialPlant != null;
@@ -47,6 +51,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     if (plant != null) {
       _plantNameController.text = plant.plantName ?? '';
       _varietasIdController.text = plant.varietasId ?? '';
+      _selectedVarietasId = plant.varietasId?.trim();
       _selectedPlantType = plant.plantType;
       _plantDate = plant.plantDate ?? DateTime.now();
       _didPrefillVarietas = true;
@@ -66,6 +71,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     final activePlant = ref.watch(currentPlantProvider);
     final createState = ref.watch(createPlantProvider);
     final updateState = ref.watch(updatePlantFormProvider);
+    final varietasAsync = ref.watch(varietasListProvider);
     final isProviderSubmitting = _isEditMode
         ? updateState.isLoading
         : createState.isLoading;
@@ -74,6 +80,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     if (!_isEditMode) {
       _prefillVarietasFromHistory(ref.watch(plantsProvider).valueOrNull ?? []);
     }
+    _syncVarietasSelection(varietasAsync.valueOrNull ?? const <VarietasItem>[]);
 
     return SingleChildScrollView(
       child: Padding(
@@ -167,14 +174,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
                     _FormField(
                       label: l10n.plantVarietasIdLabel,
-                      child: _buildTextField(
-                        context,
-                        controller: _varietasIdController,
-                        hintText: l10n.plantVarietasIdHint,
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? l10n.plantVarietasIdRequired
-                            : null,
-                      ),
+                      child: _buildVarietasField(context, l10n, varietasAsync),
                     ),
 
                     SizedBox(height: context.rh(0.025)),
@@ -219,6 +219,154 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
             SizedBox(height: context.rh(0.02)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildVarietasField(
+    BuildContext context,
+    AppLocalizations l10n,
+    AsyncValue<List<VarietasItem>> varietasAsync,
+  ) {
+    if (_useManualVarietasId) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTextField(
+            context,
+            controller: _varietasIdController,
+            hintText: l10n.plantVarietasIdHint,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? l10n.plantVarietasIdRequired
+                : null,
+          ),
+          SizedBox(height: context.rh(0.008)),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => setState(() => _useManualVarietasId = false),
+              child: Text(l10n.plantVarietasUseList),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return varietasAsync.when(
+      data: (items) {
+        final activeItems = items.where((item) => item.isActive).toList();
+        if (activeItems.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextField(
+                context,
+                controller: _varietasIdController,
+                hintText: l10n.plantVarietasIdHint,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.plantVarietasIdRequired
+                    : null,
+              ),
+              SizedBox(height: context.rh(0.008)),
+              Text(
+                l10n.plantVarietasEmptyFallback,
+                style: AppTextStyles.hint(context, size: context.sp(12)),
+              ),
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: context.rh(0.05).clamp(40.0, 48.0),
+              padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedVarietasId,
+                  hint: Text(
+                    l10n.plantVarietasIdHint,
+                    style: AppTextStyles.hint(context, size: context.sp(14)),
+                  ),
+                  isExpanded: true,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.textPrimary,
+                    size: context.sp(22),
+                  ),
+                  items: activeItems.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item.varietasId,
+                      child: Text(
+                        item.displayName,
+                        style: AppTextStyles.label(
+                          context,
+                          size: context.sp(14),
+                          weight: FontWeight.w400,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedVarietasId = value;
+                      _varietasIdController.text = value ?? '';
+                    });
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: context.rh(0.008)),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => setState(() => _useManualVarietasId = true),
+                child: Text(l10n.plantVarietasUseManual),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => Container(
+        height: context.rh(0.05).clamp(40.0, 48.0),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      error: (_, __) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTextField(
+            context,
+            controller: _varietasIdController,
+            hintText: l10n.plantVarietasIdHint,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? l10n.plantVarietasIdRequired
+                : null,
+          ),
+          SizedBox(height: context.rh(0.008)),
+          Text(
+            l10n.plantVarietasLoadFailedFallback,
+            style: AppTextStyles.label(
+              context,
+              size: context.sp(12),
+              color: AppColors.error,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -364,7 +512,31 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     _didPrefillVarietas = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _varietasIdController.text.trim().isNotEmpty) return;
-      _varietasIdController.text = previousVarietasId!;
+      final id = previousVarietasId!;
+      _varietasIdController.text = id;
+      _selectedVarietasId = id;
+    });
+  }
+
+  void _syncVarietasSelection(List<VarietasItem> items) {
+    final currentId = _varietasIdController.text.trim();
+    if (currentId.isEmpty || items.isEmpty) return;
+
+    final exists = items.any((item) => item.varietasId == currentId);
+    if (!exists) {
+      if (!_useManualVarietasId) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() => _useManualVarietasId = true);
+        });
+      }
+      return;
+    }
+
+    if (_selectedVarietasId == currentId) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _selectedVarietasId = currentId);
     });
   }
 
@@ -373,7 +545,8 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    if (_varietasIdController.text.trim().isEmpty) {
+    final varietasId = _resolveVarietasId();
+    if (varietasId == null) {
       SnackbarHelper.showError(context, l10n.plantVarietasIdRequired);
       return;
     }
@@ -409,7 +582,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
             siteId: siteId,
             plantId: plant.plantId.trim(),
             plantName: _plantNameController.text.trim(),
-            varietasId: _varietasIdController.text.trim(),
+            varietasId: varietasId,
             plantType: _selectedPlantType!,
             plantDate: _plantDate,
           );
@@ -419,7 +592,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
           .createPlant(
             siteId: widget.siteId,
             plantName: _plantNameController.text.trim(),
-            varietasId: _varietasIdController.text.trim(),
+            varietasId: varietasId,
             plantType: _selectedPlantType!,
             plantDate: _plantDate,
           );
@@ -442,6 +615,18 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       result.errorMessage ??
           (_isEditMode ? l10n.plantUpdateFailed : l10n.plantCreateFailed),
     );
+  }
+
+  String? _resolveVarietasId() {
+    final fromDropdown = _selectedVarietasId?.trim();
+    if (!_useManualVarietasId &&
+        fromDropdown != null &&
+        fromDropdown.isNotEmpty) {
+      return fromDropdown;
+    }
+    final fromInput = _varietasIdController.text.trim();
+    if (fromInput.isEmpty) return null;
+    return fromInput;
   }
 }
 

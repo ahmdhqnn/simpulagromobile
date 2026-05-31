@@ -3,15 +3,18 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class SensorStatusListWidget extends StatefulWidget {
   final List<SensorReadUpdate> reads;
   final EnvironmentalHealth? envHealth;
+  final SensorMetadataAdapter metadataAdapter;
 
   const SensorStatusListWidget({
     super.key,
     required this.reads,
     this.envHealth,
+    required this.metadataAdapter,
   });
 
   @override
@@ -44,8 +47,11 @@ class _SensorStatusListWidgetState extends State<SensorStatusListWidget> {
               height: 20,
               color: AppColors.textPrimary.withValues(alpha: 0.07),
             ),
-            itemBuilder: (context, i) =>
-                _SensorRow(read: reads[i], envHealth: widget.envHealth),
+            itemBuilder: (context, i) => _SensorRow(
+              read: reads[i],
+              envHealth: widget.envHealth,
+              metadataAdapter: widget.metadataAdapter,
+            ),
           ),
           if (reads.length > 3)
             InkWell(
@@ -76,21 +82,36 @@ class _SensorStatusListWidgetState extends State<SensorStatusListWidget> {
 class _SensorRow extends StatelessWidget {
   final SensorReadUpdate read;
   final EnvironmentalHealth? envHealth;
+  final SensorMetadataAdapter metadataAdapter;
 
-  const _SensorRow({required this.read, this.envHealth});
+  const _SensorRow({
+    required this.read,
+    this.envHealth,
+    required this.metadataAdapter,
+  });
 
   @override
   Widget build(BuildContext context) {
     final val = read.numericValue;
-    final isOk = val > 0;
-    final color = SensorMeta.color(read.dsId);
+    final color = metadataAdapter.colorFor(read.dsId);
+    final status = metadataAdapter.statusFor(
+      dsId: read.dsId,
+      devId: read.devId,
+      value: val,
+    );
+    final statusLabel = metadataAdapter.statusLabel(status);
 
-    double persentase = isOk ? 80.0 : 0.0;
+    double persentase = val > 0 ? 80.0 : 0.0;
     if (envHealth != null && envHealth!.sensors.isNotEmpty) {
       final match = envHealth!.sensors
           .where((s) => s.dsId == read.dsId)
           .firstOrNull;
       if (match != null) persentase = match.persentase;
+    }
+
+    final isOnline = val > 0;
+    if (!isOnline) {
+      persentase = 0;
     }
 
     return Row(
@@ -113,7 +134,7 @@ class _SensorRow extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      SensorMeta.label(read.dsId),
+                      metadataAdapter.labelFor(read.dsId, devId: read.devId),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(13),
@@ -123,7 +144,7 @@ class _SensorRow extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${read.readUpdateValue ?? '-'}${SensorMeta.unit(read.dsId)}',
+                    '${read.readUpdateValue ?? '-'}${metadataAdapter.unitFor(read.dsId, devId: read.devId)}',
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(13),
@@ -152,25 +173,40 @@ class _SensorRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: isOk
-                ? AppColors.success.withValues(alpha: 0.1)
+            color: isOnline
+                ? _statusColor(status).withValues(alpha: 0.12)
                 : AppColors.textPrimary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            isOk ? 'Aktif' : 'Offline',
+            statusLabel,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(10),
               fontWeight: FontWeight.w600,
-              color: isOk
-                  ? AppColors.success
+              color: isOnline
+                  ? _statusColor(status)
                   : AppColors.textPrimary.withValues(alpha: 0.4),
             ),
           ),
         ),
       ],
     );
+  }
+
+  Color _statusColor(SensorReadingStatus status) {
+    switch (status) {
+      case SensorReadingStatus.optimal:
+        return AppColors.success;
+      case SensorReadingStatus.warning:
+        return AppColors.warning;
+      case SensorReadingStatus.critical:
+        return AppColors.error;
+      case SensorReadingStatus.offline:
+        return AppColors.textPrimary.withValues(alpha: 0.4);
+      case SensorReadingStatus.unknown:
+        return AppColors.info;
+    }
   }
 
   IconData _iconFor(String dsId) {

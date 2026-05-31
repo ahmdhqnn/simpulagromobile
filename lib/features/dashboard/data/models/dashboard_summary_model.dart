@@ -4,6 +4,12 @@ library;
 
 import '../../domain/entities/dashboard_entity.dart';
 
+DateTime? _toDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  return DateTime.tryParse(value.toString());
+}
+
 class DashboardDeviceSummaryModel {
   final int total;
   final int active;
@@ -55,22 +61,27 @@ class SensorReadModel {
   });
 
   factory SensorReadModel.fromJson(Map<String, dynamic> json) {
-    // Coba parse timestamp dari berbagai field yang mungkin ada
-    DateTime? parsedDate;
     final rawDate =
+        json['read_update_date'] ??
+        json['read_date'] ??
+        json['day'] ??
         json['read_at'] ??
-        json['created_at'] ??
         json['read_update_at'] ??
+        json['created_at'] ??
+        json['updated_at'] ??
         json['timestamp'];
-    if (rawDate is String) {
-      parsedDate = DateTime.tryParse(rawDate);
-    }
 
     return SensorReadModel(
       devId: (json['dev_id'] ?? '').toString(),
       dsId: (json['ds_id'] ?? '').toString(),
-      value: (json['read_update_value'] ?? json['value'] ?? '0').toString(),
-      readAt: parsedDate,
+      value:
+          (json['read_update_value'] ??
+                  json['read_value'] ??
+                  json['avg_val'] ??
+                  json['value'] ??
+                  '0')
+              .toString(),
+      readAt: _toDateTime(rawDate),
     );
   }
 

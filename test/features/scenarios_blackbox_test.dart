@@ -8,6 +8,7 @@ import 'package:dartz/dartz.dart' as dz hide Task;
 
 import 'package:simpulagromobile/core/providers/app_startup_provider.dart';
 import 'package:simpulagromobile/core/providers/core_providers.dart';
+import 'package:simpulagromobile/core/network/paginated_result.dart';
 import 'package:simpulagromobile/core/storage/secure_storage.dart';
 import 'package:simpulagromobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:simpulagromobile/features/auth/presentation/providers/auth_provider.dart';
@@ -405,11 +406,29 @@ void main() {
         );
 
         when(
-          () => mockForumRepository.getPosts(page: 1, limit: 20),
-        ).thenAnswer((_) async => dz.Right(page1Posts));
+          () => mockForumRepository.getPaginatedPosts(page: 1, limit: 20),
+        ).thenAnswer(
+          (_) async => dz.Right(
+            PaginatedResult.fromItems(
+              page1Posts,
+              page: 1,
+              limit: 20,
+              meta: const {'page': 1, 'limit': 20, 'total_pages': 2},
+            ),
+          ),
+        );
         when(
-          () => mockForumRepository.getPosts(page: 2, limit: 20),
-        ).thenAnswer((_) async => dz.Right(page2Posts));
+          () => mockForumRepository.getPaginatedPosts(page: 2, limit: 20),
+        ).thenAnswer(
+          (_) async => dz.Right(
+            PaginatedResult.fromItems(
+              page2Posts,
+              page: 2,
+              limit: 20,
+              meta: const {'page': 2, 'limit': 20, 'total_pages': 2},
+            ),
+          ),
+        );
 
         final container = ProviderContainer(
           overrides: [

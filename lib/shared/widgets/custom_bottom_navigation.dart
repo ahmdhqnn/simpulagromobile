@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 
 class BottomNavItem extends StatelessWidget {
@@ -27,8 +28,8 @@ class BottomNavItem extends StatelessWidget {
         width: 64,
         height: 44,
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFF7F7F7) : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
+          color: isActive ? AppColors.pill : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Center(
           child: SvgPicture.asset(
@@ -36,8 +37,11 @@ class BottomNavItem extends StatelessWidget {
             width: 24,
             height: 24,
             colorFilter: isActive
-                ? const ColorFilter.mode(Color(0xFF1D1D1D), BlendMode.srcIn)
-                : const ColorFilter.mode(Color(0xFF1D1D1D), BlendMode.srcIn),
+                ? const ColorFilter.mode(AppColors.textPrimary, BlendMode.srcIn)
+                : const ColorFilter.mode(
+                    AppColors.textPrimary,
+                    BlendMode.srcIn,
+                  ),
           ),
         ),
       ),
@@ -68,8 +72,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(100),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/profile_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/providers/app_providers.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final settings = ref.watch(settingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengaturan'), centerTitle: true),
+      appBar: AppBar(title: Text(l10n.settingsTitle), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -19,6 +22,8 @@ class SettingsScreen extends ConsumerWidget {
           _buildDataSection(context, ref, settings),
           const SizedBox(height: 16),
           _buildDisplaySection(context, ref, settings),
+          const SizedBox(height: 16),
+          _buildAccountSection(context),
           const SizedBox(height: 16),
           _buildAboutSection(context),
         ],
@@ -158,6 +163,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildAboutSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -165,7 +171,7 @@ class SettingsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tentang',
+              l10n.settingsAboutSection,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -197,6 +203,34 @@ class SettingsScreen extends ConsumerWidget {
                 'Kebijakan Privasi',
                 'Data Anda disimpan secara aman dan tidak dibagikan kepada pihak ketiga tanpa persetujuan Anda.',
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.settingsAccountSection,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              title: Text(l10n.settingsChangePassword),
+              subtitle: Text(l10n.settingsChangePasswordSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              contentPadding: EdgeInsets.zero,
+              onTap: () => context.push('/settings/change-password'),
             ),
           ],
         ),

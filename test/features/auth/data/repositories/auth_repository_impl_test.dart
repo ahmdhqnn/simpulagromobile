@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:dio/dio.dart';
 import 'package:simpulagromobile/core/auth/token_manager.dart';
 import 'package:simpulagromobile/core/storage/secure_storage.dart';
 import 'package:simpulagromobile/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -60,13 +61,10 @@ void main() {
 
         final result = await repository.login('john', 'pass123');
 
-        result.fold(
-          (failure) => fail('Should not fail'),
-          (user) {
-            expect(user.userId, equals('USR_001'));
-            expect(user.userName, equals('John Doe'));
-          },
-        );
+        result.fold((failure) => fail('Should not fail'), (user) {
+          expect(user.userId, equals('USR_001'));
+          expect(user.userName, equals('John Doe'));
+        });
 
         verify(
           () => mockTokenManager.saveTokens(
@@ -200,13 +198,10 @@ void main() {
 
         final result = await repository.getProfile();
 
-        result.fold(
-          (f) => fail('Should not fail'),
-          (user) {
-            expect(user.userId, equals('USR_001'));
-            expect(user.userName, equals('John Updated'));
-          },
-        );
+        result.fold((f) => fail('Should not fail'), (user) {
+          expect(user.userId, equals('USR_001'));
+          expect(user.userName, equals('John Updated'));
+        });
         verify(() => mockStorage.saveUserData(any())).called(1);
       });
     });
@@ -219,11 +214,123 @@ void main() {
 
         final result = await repository.getPermissions();
 
+        result.fold((f) => fail('Should not fail'), (perms) {
+          expect(perms, equals(['read:site', 'write:site']));
+        });
+      });
+    });
+
+    group('changePassword', () {
+      test('returns success message on 200', () async {
+        when(
+          () => mockRemoteDataSource.changePassword(
+            oldPassword: 'old-pass',
+            newPassword: 'new-pass',
+            confirmPassword: 'new-pass',
+          ),
+        ).thenAnswer((_) async => 'Password berhasil diubah');
+
+        final result = await repository.changePassword(
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass',
+          confirmPassword: 'new-pass',
+        );
+
+        result.fold((f) => fail('Should not fail'), (message) {
+          expect(message, 'Password berhasil diubah');
+        });
+      });
+
+      test('maps 400 to ValidationFailure', () async {
+        when(
+          () => mockRemoteDataSource.changePassword(
+            oldPassword: 'old-pass',
+            newPassword: 'new-pass',
+            confirmPassword: 'invalid-confirm',
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/auth/change-password'),
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: RequestOptions(path: '/auth/change-password'),
+              statusCode: 400,
+              data: {'message': 'Konfirmasi password tidak cocok'},
+            ),
+          ),
+        );
+
+        final result = await repository.changePassword(
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass',
+          confirmPassword: 'invalid-confirm',
+        );
+
         result.fold(
-          (f) => fail('Should not fail'),
-          (perms) {
-            expect(perms, equals(['read:site', 'write:site']));
-          },
+          (failure) => expect(failure, isA<ValidationFailure>()),
+          (_) => fail('Should fail'),
+        );
+      });
+
+      test('maps 401 to AuthFailure', () async {
+        when(
+          () => mockRemoteDataSource.changePassword(
+            oldPassword: 'wrong-old',
+            newPassword: 'new-pass',
+            confirmPassword: 'new-pass',
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/auth/change-password'),
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: RequestOptions(path: '/auth/change-password'),
+              statusCode: 401,
+              data: {'message': 'Unauthorized'},
+            ),
+          ),
+        );
+
+        final result = await repository.changePassword(
+          oldPassword: 'wrong-old',
+          newPassword: 'new-pass',
+          confirmPassword: 'new-pass',
+        );
+
+        result.fold(
+          (failure) => expect(failure, isA<AuthFailure>()),
+          (_) => fail('Should fail'),
+        );
+      });
+
+      test('maps 404 to NotFoundFailure', () async {
+        when(
+          () => mockRemoteDataSource.changePassword(
+            oldPassword: 'old-pass',
+            newPassword: 'new-pass',
+            confirmPassword: 'new-pass',
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/auth/change-password'),
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: RequestOptions(path: '/auth/change-password'),
+              statusCode: 404,
+              data: {'message': 'User tidak ditemukan'},
+            ),
+          ),
+        );
+
+        final result = await repository.changePassword(
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass',
+          confirmPassword: 'new-pass',
+        );
+
+        result.fold(
+          (failure) => expect(failure, isA<NotFoundFailure>()),
+          (_) => fail('Should fail'),
         );
       });
     });

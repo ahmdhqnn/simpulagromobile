@@ -53,12 +53,17 @@ class AgroIndicatorScreen extends ConsumerWidget {
     final healthAsync = ref.watch(environmentalHealthProvider);
 
     final phaseAsync = ref.watch(currentPhaseProvider(siteId));
-    final recommendationsAsync = ref.watch(recommendationsBySiteProvider(siteId));
+    final recommendationsAsync = ref.watch(
+      recommendationsBySiteProvider(siteId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: agroAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               _buildHeader(context, ref),
@@ -98,6 +103,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         recommendationsAsync.when(
+                          skipLoadingOnReload: true,
+                          skipLoadingOnRefresh: true,
+                          skipError: true,
                           data: (recommendations) {
                             return Column(
                               children: [
@@ -120,6 +128,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
                         ),
 
                         phaseAsync.when(
+                          skipLoadingOnReload: true,
+                          skipLoadingOnRefresh: true,
+                          skipError: true,
                           data: (phase) {
                             return Column(
                               children: [

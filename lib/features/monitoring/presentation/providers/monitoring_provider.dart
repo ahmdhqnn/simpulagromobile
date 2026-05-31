@@ -1,15 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../site/presentation/providers/site_provider.dart';
-import '../../../plant/presentation/providers/plant_provider.dart';
 import '../../data/datasources/monitoring_remote_datasource.dart';
 import '../../data/models/monitoring_models.dart';
 import '../../domain/repositories/monitoring_repository.dart';
 import '../../data/repositories/monitoring_repository_impl.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../utils/monitoring_display_utils.dart';
+import '../utils/sensor_metadata_adapter.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REPOSITORY
@@ -22,6 +24,50 @@ final monitoringRepositoryProvider = Provider<MonitoringRepository>((ref) {
   return MonitoringRepositoryImpl(dataSource);
 });
 
+class MonitoringSyncStatus {
+  final DateTime? lastUpdated;
+  final Duration refreshInterval;
+  final bool autoRefreshEnabled;
+  final bool isStale;
+
+  const MonitoringSyncStatus({
+    required this.lastUpdated,
+    required this.refreshInterval,
+    required this.autoRefreshEnabled,
+    required this.isStale,
+  });
+}
+
+final monitoringLastUpdatedProvider = StateProvider<DateTime?>((_) => null);
+
+final monitoringSyncStatusProvider = Provider<MonitoringSyncStatus>((ref) {
+  final lastUpdated = ref.watch(monitoringLastUpdatedProvider);
+  final refreshInterval = ref.watch(appRealtimeRefreshIntervalProvider);
+  final autoRefreshEnabled = ref.watch(appAutoRefreshEnabledProvider);
+  ref.watch(realtimeRefreshTickProvider);
+
+  return MonitoringSyncStatus(
+    lastUpdated: lastUpdated,
+    refreshInterval: refreshInterval,
+    autoRefreshEnabled: autoRefreshEnabled,
+    isStale: isMonitoringStale(
+      lastUpdated: lastUpdated,
+      now: DateTime.now(),
+      refreshInterval: refreshInterval,
+    ),
+  );
+});
+
+void _markMonitoringSynced(Ref ref) {
+  ref.read(monitoringLastUpdatedProvider.notifier).state = DateTime.now();
+}
+
+Future<void> _watchMonitoringRealtimeRefresh(Ref ref, int slot) async {
+  ref.watch(realtimeRefreshTickProvider);
+  if (slot <= 0) return;
+  await Future<void>.delayed(Duration(milliseconds: 500 * slot));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // REALTIME
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,18 +79,54 @@ final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-
-  // Decouple data streaming if no active plant
-  final activePlant = ref.watch(currentPlantProvider);
-  if (activePlant == null) return [];
+  await _watchMonitoringRealtimeRefresh(ref, 0);
 
   return ref.retryOnError(() async {
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getLatestReads(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
+
+/// Threshold metadata canonical source.
+/// GET /api/sites/:siteId/device-sensors/values
+final deviceSensorThresholdValuesProvider =
+    FutureProvider.autoDispose<List<DeviceSensorThresholdModel>>((ref) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+
+      return ref.retryOnError(() async {
+        final result = await ref
+            .read(monitoringRepositoryProvider)
+            .getDeviceSensorThresholdValues(siteId);
+        return result.fold((f) => throw f, (data) {
+          _markMonitoringSynced(ref);
+          return data;
+        });
+      });
+    });
+
+final deviceSensorThresholdByDsIdProvider =
+    Provider.autoDispose<Map<String, DeviceSensorThresholdModel>>((ref) {
+      final rows = ref.watch(deviceSensorThresholdValuesProvider).valueOrNull;
+      if (rows == null || rows.isEmpty) return const {};
+      final map = <String, DeviceSensorThresholdModel>{};
+      for (final row in rows) {
+        if (row.dsId.isEmpty) continue;
+        map.putIfAbsent(row.dsId, () => row);
+      }
+      return map;
+    });
+
+final sensorMetadataAdapterProvider =
+    Provider.autoDispose<SensorMetadataAdapter>((ref) {
+      final rows = ref.watch(deviceSensorThresholdValuesProvider).valueOrNull;
+      return SensorMetadataAdapter(rows ?? const []);
+    });
 
 /// Bacaan sensor hari ini (untuk grafik realtime).
 /// GET /api/sites/:siteId/reads/today
@@ -53,16 +135,16 @@ final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
-
-  // Decouple data streaming if no active plant
-  final activePlant = ref.watch(currentPlantProvider);
-  if (activePlant == null) return [];
+  await _watchMonitoringRealtimeRefresh(ref, 1);
 
   return ref.retryOnError(() async {
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getTodayReads(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
 
@@ -81,7 +163,9 @@ final logsProvider = FutureProvider.autoDispose<List<LogModel>>((ref) async {
 
 enum HistoryFilter { today, singleDate, sevenDay, dateRange, plantingDate }
 
-final historySingleDateProvider = StateProvider<DateTime>((_) => DateTime.now());
+final historySingleDateProvider = StateProvider<DateTime>(
+  (_) => DateTime.now(),
+);
 
 final historyFilterProvider = StateProvider<HistoryFilter>(
   (_) => HistoryFilter.sevenDay,
@@ -125,9 +209,10 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
       case HistoryFilter.dateRange:
         final start = ref.read(historyStartDateProvider);
         final end = ref.read(historyEndDateProvider);
+        final boundedStart = boundedHistoryStartDate(start, end);
         result = await repo.getDateRangeReads(
           siteId,
-          startDate: fmt(start),
+          startDate: fmt(boundedStart),
           endDate: fmt(end),
         );
         break;
@@ -135,7 +220,10 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
         result = await repo.getPlantingDateReads(siteId);
         break;
     }
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
 
@@ -154,7 +242,10 @@ final devicesProvider = FutureProvider.autoDispose<List<DeviceModel>>((
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getDevices(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
 
@@ -169,7 +260,10 @@ final monitoringSensorCountProvider = FutureProvider.autoDispose<int>((
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getSensorCount(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
 
@@ -184,16 +278,16 @@ final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
 ) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return EnvironmentalHealth.empty();
-
-  // Decouple data streaming if no active plant
-  final activePlant = ref.watch(currentPlantProvider);
-  if (activePlant == null) return EnvironmentalHealth.empty();
+  await _watchMonitoringRealtimeRefresh(ref, 2);
 
   final raw = await ref.retryOnError(() async {
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getEnvironmentalHealth(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 
   if (raw.isEmpty) return EnvironmentalHealth.empty();
@@ -206,16 +300,16 @@ final plantRecommendationProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return {};
-
-      // Decouple recommendation if no active plant
-      final activePlant = ref.watch(currentPlantProvider);
-      if (activePlant == null) return {};
+      await _watchMonitoringRealtimeRefresh(ref, 3);
 
       return ref.retryOnError(() async {
         final result = await ref
             .read(monitoringRepositoryProvider)
             .getPlantRecommendation(siteId);
-        return result.fold((f) => throw f, (data) => data);
+        return result.fold((f) => throw f, (data) {
+          _markMonitoringSynced(ref);
+          return data;
+        });
       });
     });
 
@@ -227,15 +321,14 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
 
-  // Decouple data streaming if no active plant
-  final activePlant = ref.watch(currentPlantProvider);
-  if (activePlant == null) return [];
-
   return ref.retryOnError(() async {
     final result = await ref
         .read(monitoringRepositoryProvider)
         .getDailyReads(siteId);
-    return result.fold((f) => throw f, (data) => data);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
+    });
   });
 });
 
@@ -260,50 +353,50 @@ final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
 
 /// Rekap harian hari ini.
 /// GET /sites/{siteId}/reads/daily/today
-final dailyTodayProvider =
-    FutureProvider.autoDispose<List<SensorDailyModel>>((ref) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) {
-        throw StateError('Pilih site terlebih dahulu');
-      }
+final dailyTodayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
+  ref,
+) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) {
+    throw StateError('Pilih site terlebih dahulu');
+  }
 
-      // Decouple data streaming if no active plant
-      final activePlant = ref.watch(currentPlantProvider);
-      if (activePlant == null) return [];
-
-      return ref.retryOnError(() async {
-        final result = await ref
-            .read(monitoringRepositoryProvider)
-            .getDailyToday(siteId);
-        return result.fold((f) => throw f, (data) => data);
-      });
+  return ref.retryOnError(() async {
+    final result = await ref
+        .read(monitoringRepositoryProvider)
+        .getDailyToday(siteId);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
     });
+  });
+});
 
 final dailyByDayDateProvider = StateProvider<DateTime>((_) => DateTime.now());
 
 /// Rekap harian per tanggal.
 /// GET /sites/{siteId}/reads/daily/by-day?day=
-final dailyByDayProvider =
-    FutureProvider.autoDispose<List<SensorDailyModel>>((ref) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) {
-        throw StateError('Pilih site terlebih dahulu');
-      }
+final dailyByDayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
+  ref,
+) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) {
+    throw StateError('Pilih site terlebih dahulu');
+  }
 
-      // Decouple data streaming if no active plant
-      final activePlant = ref.watch(currentPlantProvider);
-      if (activePlant == null) return [];
-
-      final d = ref.watch(dailyByDayDateProvider);
-      final day =
-          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-      return ref.retryOnError(() async {
-        final result = await ref
-            .read(monitoringRepositoryProvider)
-            .getDailyByDay(siteId, day);
-        return result.fold((f) => throw f, (data) => data);
-      });
+  final d = ref.watch(dailyByDayDateProvider);
+  final day =
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  return ref.retryOnError(() async {
+    final result = await ref
+        .read(monitoringRepositoryProvider)
+        .getDailyByDay(siteId, day);
+    return result.fold((f) => throw f, (data) {
+      _markMonitoringSynced(ref);
+      return data;
     });
+  });
+});
 
 /// Rekap bulanan sensor (avg/min/max).
 /// GET /api/sites/:siteId/reads/mounth
@@ -312,15 +405,14 @@ final monthlyReadsProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
 
-      // Decouple data streaming if no active plant
-      final activePlant = ref.watch(currentPlantProvider);
-      if (activePlant == null) return [];
-
       return ref.retryOnError(() async {
         final result = await ref
             .read(monitoringRepositoryProvider)
             .getMonthlyReads(siteId);
-        return result.fold((f) => throw f, (data) => data);
+        return result.fold((f) => throw f, (data) {
+          _markMonitoringSynced(ref);
+          return data;
+        });
       });
     });
 
@@ -359,8 +451,8 @@ class ReadCorrectionNotifier extends StateNotifier<AsyncValue<void>> {
 
 final readCorrectionProvider =
     StateNotifierProvider<ReadCorrectionNotifier, AsyncValue<void>>((ref) {
-  return ReadCorrectionNotifier(ref.watch(monitoringRepositoryProvider));
-});
+      return ReadCorrectionNotifier(ref.watch(monitoringRepositoryProvider));
+    });
 
 class DailyRekapTriggerNotifier extends StateNotifier<AsyncValue<void>> {
   DailyRekapTriggerNotifier(this._repo) : super(const AsyncData(null));
@@ -385,5 +477,5 @@ class DailyRekapTriggerNotifier extends StateNotifier<AsyncValue<void>> {
 
 final dailyRekapTriggerProvider =
     StateNotifierProvider<DailyRekapTriggerNotifier, AsyncValue<void>>((ref) {
-  return DailyRekapTriggerNotifier(ref.watch(monitoringRepositoryProvider));
-});
+      return DailyRekapTriggerNotifier(ref.watch(monitoringRepositoryProvider));
+    });

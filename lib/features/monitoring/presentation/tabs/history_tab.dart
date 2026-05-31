@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
-import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
+import '../utils/sensor_metadata_adapter.dart';
 import '../widgets/history/history_chart_widget.dart';
 import '../widgets/history/history_data_table_widget.dart';
 import '../widgets/history/history_filter_widget.dart';
@@ -15,8 +16,10 @@ class HistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final historyAsync = ref.watch(historyReadsProvider);
     final selectedParam = ref.watch(selectedSensorParamProvider);
+    final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -33,27 +36,34 @@ class HistoryTab extends ConsumerWidget {
             const HistoryFilterWidget(),
             SizedBox(height: context.rh(0.024)),
 
-            const SectionHeaderWidget(title: 'Grafik History'),
+            SectionHeaderWidget(title: l10n.monitoringHistoryChartSection),
             SizedBox(height: context.rh(0.014)),
 
             historyAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 195),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(historyReadsProvider),
               ),
               data: (reads) {
-                final params = reads
-                    .map((r) => r.dsId ?? '')
-                    .where((s) => s.isNotEmpty)
-                    .toSet()
-                    .toList();
+                final params =
+                    reads
+                        .map((r) => r.dsId ?? '')
+                        .where((s) => s.isNotEmpty)
+                        .toSet()
+                        .toList()
+                      ..sort();
                 final param =
-                    selectedParam ?? (params.isNotEmpty ? params.first : null);
+                    selectedParam != null && params.contains(selectedParam)
+                    ? selectedParam
+                    : (params.isNotEmpty ? params.first : null);
                 if (param == null || reads.isEmpty) {
-                  return const InfoStateWidget.icon(
+                  return InfoStateWidget.icon(
                     icon: Icons.show_chart_rounded,
-                    message: 'Belum ada data riwayat',
+                    message: l10n.monitoringEmptyHistory,
                     height: 195,
                   );
                 }
@@ -61,7 +71,13 @@ class HistoryTab extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (params.length > 1)
-                      _buildParamSelector(context, ref, params, param),
+                      _buildParamSelector(
+                        context,
+                        ref,
+                        params,
+                        param,
+                        metadataAdapter,
+                      ),
                     Builder(
                       builder: (_) {
                         final filtered =
@@ -73,6 +89,7 @@ class HistoryTab extends ConsumerWidget {
                         return HistoryChartWidget(
                           reads: filtered,
                           param: param,
+                          metadataAdapter: metadataAdapter,
                         );
                       },
                     ),
@@ -85,16 +102,27 @@ class HistoryTab extends ConsumerWidget {
 
             // Data Table
             historyAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 60),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) {
-                final params = reads.map((r) => r.dsId ?? '').toSet().toList();
+                final params =
+                    reads
+                        .map((r) => r.dsId ?? '')
+                        .where((s) => s.isNotEmpty)
+                        .toSet()
+                        .toList()
+                      ..sort();
                 final param =
-                    selectedParam ?? (params.isNotEmpty ? params.first : null);
+                    selectedParam != null && params.contains(selectedParam)
+                    ? selectedParam
+                    : (params.isNotEmpty ? params.first : null);
                 if (param == null) {
-                  return const InfoStateWidget.icon(
+                  return InfoStateWidget.icon(
                     icon: Icons.table_chart_outlined,
-                    message: 'Pilih parameter sensor',
+                    message: l10n.monitoringSelectSensor,
                     height: 60,
                   );
                 }
@@ -107,9 +135,14 @@ class HistoryTab extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SectionHeaderWidget(title: 'Data Riwayat'),
+                    SectionHeaderWidget(
+                      title: l10n.monitoringHistoryDataSection,
+                    ),
                     SizedBox(height: context.rh(0.014)),
-                    HistoryDataTableWidget(reads: filtered.take(50).toList()),
+                    HistoryDataTableWidget(
+                      reads: filtered.take(50).toList(),
+                      metadataAdapter: metadataAdapter,
+                    ),
                   ],
                 );
               },
@@ -127,13 +160,14 @@ class HistoryTab extends ConsumerWidget {
     WidgetRef ref,
     List<String> params,
     String selected,
+    SensorMetadataAdapter metadataAdapter,
   ) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: params.map((p) {
           final isSel = p == selected;
-          final c = SensorMeta.color(p);
+          final c = metadataAdapter.colorFor(p);
           return GestureDetector(
             onTap: () =>
                 ref.read(selectedSensorParamProvider.notifier).state = p,
@@ -155,7 +189,7 @@ class HistoryTab extends ConsumerWidget {
                     : null,
               ),
               child: Text(
-                SensorMeta.shortLabel(p),
+                metadataAdapter.shortLabelFor(p),
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(11),

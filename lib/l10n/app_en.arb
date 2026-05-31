@@ -17,6 +17,45 @@
   "viewAll": "View All",
   "errorLoadData": "Failed to load data",
   "retry": "Retry",
+  "settingsTitle": "Settings",
+  "settingsAccountSection": "Account",
+  "settingsAboutSection": "About",
+  "settingsChangePassword": "Change Password",
+  "settingsChangePasswordSubtitle": "Update your account password",
+  "changePasswordTitle": "Change Password",
+  "changePasswordCurrentLabel": "Current Password",
+  "changePasswordCurrentHint": "Enter current password",
+  "changePasswordCurrentRequired": "Current password is required",
+  "changePasswordNewLabel": "New Password",
+  "changePasswordNewHint": "Enter new password",
+  "changePasswordNewRequired": "New password is required",
+  "changePasswordConfirmLabel": "Confirm New Password",
+  "changePasswordConfirmHint": "Repeat new password",
+  "changePasswordConfirmRequired": "Password confirmation is required",
+  "changePasswordConfirmMismatch": "Password confirmation does not match",
+  "changePasswordSubmit": "Save New Password",
+  "changePasswordSuccess": "Password updated successfully",
+  "changePasswordFailed": "Failed to update password. Please try again.",
+  "changePasswordErrorConfirmMismatch": "Password confirmation does not match.",
+  "changePasswordErrorUnauthorized": "Current password is incorrect or session expired.",
+  "changePasswordErrorUserNotFound": "User not found.",
+  "siteInviteTitle": "Invite Site Member",
+  "siteInviteSiteIdLabel": "Site ID: {siteId}",
+  "@siteInviteSiteIdLabel": {
+    "placeholders": {
+      "siteId": { "type": "String" }
+    }
+  },
+  "siteInviteUserIdLabel": "User ID",
+  "siteInviteUserIdHint": "Example: USR_001",
+  "siteInviteUserIdRequired": "User ID is required",
+  "siteInviteSubmit": "Send Invite",
+  "siteInviteSuccess": "Member invitation sent successfully",
+  "siteInviteErrorBadRequest": "Invalid invitation payload.",
+  "siteInviteErrorForbidden": "Only admin/site leader can invite members.",
+  "siteInviteErrorConflict": "User is already a member of this site.",
+  "siteInviteErrorNoSiteSelected": "No site selected.",
+  "siteInviteErrorUnknown": "Failed to send member invitation.",
   "healthSectionTitle": "Environmental Health",
   "summarySectionTitle": "Summary",
   "deviceTitle": "Device",
@@ -41,6 +80,10 @@
   "plantVarietasIdLabel": "Varietas ID",
   "plantVarietasIdHint": "Ex. VARIETAS001",
   "plantVarietasIdRequired": "Varietas ID is required",
+  "plantVarietasUseManual": "Manual input",
+  "plantVarietasUseList": "Select from list",
+  "plantVarietasEmptyFallback": "Varietas list is empty. Please enter varietas ID manually.",
+  "plantVarietasLoadFailedFallback": "Failed to load varietas. Use manual ID input.",
   "plantTypeLabel": "Planting Type",
   "plantTypeHint": "Ex. PADI, JAGUNG, etc.",
   "plantTypeRequired": "Please select a planting type",
@@ -115,5 +158,93 @@
   "plantErrorTitle": "Something went wrong",
   "plantDetailTitle": "Plant's Detail",
   "plantHstUnit": "Day",
-  "plantStatusLabel": "Status"
+  "plantStatusLabel": "Status",
+  "monitoringTitle": "Monitoring",
+  "monitoringTabRealtime": "Realtime",
+  "monitoringTabRawReads": "Raw Reads",
+  "monitoringTabDailyRecap": "Daily Recap",
+  "monitoringTabMonthlyRecap": "Monthly Recap",
+  "monitoringTabMaps": "Maps",
+  "monitoringTabAnalytics": "Analytics",
+  "monitoringTabAdmin": "Admin",
+  "monitoringSyncWaiting": "Waiting for sync",
+  "monitoringSyncAt": "Synced {time}",
+  "@monitoringSyncAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSyncStale": "data needs refresh",
+  "monitoringAutoRefreshEvery": "Auto-refresh every {seconds}s",
+  "@monitoringAutoRefreshEvery": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringAutoRefreshOff": "Auto-refresh off",
+  "monitoringNoActivePlantTitle": "No active plant",
+  "monitoringNoActivePlantMessage": "Sensor data still updates. Add a plant so monitoring recommendations can follow the planting cycle.",
+  "monitoringAddPlant": "Add Plant",
+  "monitoringViewPlantList": "View plant list",
+  "monitoringLatestStatusTitle": "Latest Sensor Status",
+  "monitoringTodayChartSection": "Today's Chart",
+  "monitoringSensorDetailSection": "Sensor Status Detail",
+  "monitoringEmptySensor": "No sensor data yet",
+  "monitoringEmptyTodayChart": "No chart data for today yet",
+  "monitoringHistoryChartSection": "History Chart",
+  "monitoringEmptyHistory": "No history data yet",
+  "monitoringSelectSensor": "Select a sensor parameter",
+  "monitoringHistoryDataSection": "History Data",
+  "monitoringChartNoSensorData": "No data for this sensor yet",
+  "monitoringChartDailyAggregation": "Daily Aggregation",
+  "monitoringChartNoDailyAggregation": "No daily aggregation data yet",
+  "monitoringChartLast7DaysAggregation": "Last 7 Days Aggregation",
+  "monitoringMonthlyRecapSection": "Monthly Recap",
+  "monitoringDailyTodaySection": "Today's Recap",
+  "monitoringDailyByDateSection": "Recap by Date",
+  "monitoringDailyNoRecap": "No recap data available",
+  "monitoringSelectSiteFirst": "Select a site first",
+  "monitoringFilterToday": "Today",
+  "monitoringFilterSingleDate": "By Date",
+  "monitoringFilterSevenDay": "7 Days",
+  "monitoringFilterDateRange": "Date Range",
+  "monitoringFilterPlantingDate": "Planting Cycle",
+  "commonDateLabel": "Date",
+  "commonFromLabel": "From",
+  "commonToLabel": "To",
+  "monitoringTodayCardTitle": "Today's Sensor Data",
+  "monitoringTodayCardSubtitle": "Realtime daily sensor monitoring",
+  "monitoringChartNoDataForSensor": "No data for this sensor yet",
+  "commonMin": "Min",
+  "commonMax": "Max",
+  "commonAverage": "Average",
+  "monitoringHistoryCardSubtitle": "{count} points - sensor history",
+  "@monitoringHistoryCardSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringInvalidSensorData": "Invalid sensor data",
+  "monitoringDailyAnalyticsTitle": "Daily Sensor Analysis",
+  "monitoringDailyAnalyticsSubtitle": "Today's Sensor Statistics",
+  "monitoringDailyEmpty": "No daily data yet",
+  "monitoringDailyUnavailableToday": "No sensor data available for today",
+  "monitoringMonthlyCardEmpty": "No monthly recap data yet",
+  "monitoringMonthlyCardNoSensorData": "No data for this sensor yet",
+  "monitoringMonthlyCardTitle": "Monthly Recap",
+  "monitoringMonthlyCardSubtitle": "Monthly averages",
+  "monitoringMonthlyLegendAverage": "Average {sensor}",
+  "@monitoringMonthlyLegendAverage": {
+    "placeholders": {
+      "sensor": {
+        "type": "String"
+      }
+    }
+  }
 }

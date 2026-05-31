@@ -1,6 +1,80 @@
 library;
 
-import 'package:flutter/material.dart';
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value.replaceAll(',', '.'));
+  return null;
+}
+
+int? _toInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+DateTime? _toDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  if (value is num) {
+    final raw = value.toInt();
+    final millis = raw > 1000000000000 ? raw : raw * 1000;
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+  return DateTime.tryParse(value.toString());
+}
+
+dynamic _firstOf(Map<String, dynamic> json, Iterable<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value != null) return value;
+  }
+  return null;
+}
+
+String _monthLabel(dynamic value) {
+  if (value == null) return '';
+  if (value is DateTime) {
+    return '${value.year}-${value.month.toString().padLeft(2, '0')}';
+  }
+  if (value is Map) {
+    final year = value['year'] ?? value['y'];
+    final month = value['month'] ?? value['m'];
+    final monthInt = _toInt(month);
+    if (year != null && monthInt != null) {
+      return '${year.toString()}-${monthInt.toString().padLeft(2, '0')}';
+    }
+    for (final key in ['value', 'label', 'date', 'start']) {
+      final candidate = value[key];
+      if (candidate != null) return _monthLabel(candidate);
+    }
+  }
+  final text = value.toString();
+  if (text.length >= 7 && RegExp(r'^\d{4}-\d{2}').hasMatch(text)) {
+    return text.substring(0, 7);
+  }
+  return text;
+}
+
+double? _average(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a + b) / parsed.length;
+}
+
+double? _minValue(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a < b ? a : b);
+}
+
+double? _maxValue(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a > b ? a : b);
+}
 
 class DeviceModel {
   final String devId;
@@ -30,27 +104,19 @@ class DeviceModel {
     final rawSensors =
         (json['sensor'] as List?) ?? (json['sensors'] as List?) ?? [];
     final sensorList = rawSensors
-        .whereType<Map<String, dynamic>>()
-        .map(SensorModel.fromJson)
+        .whereType<Map>()
+        .map((item) => SensorModel.fromJson(Map<String, dynamic>.from(item)))
         .toList();
-
-    // dev_sts bisa berupa int atau String dari backend
-    final rawSts = json['dev_sts'];
-    final parsedSts = rawSts is int
-        ? rawSts
-        : rawSts is String
-        ? int.tryParse(rawSts)
-        : null;
 
     return DeviceModel(
       devId: json['dev_id']?.toString() ?? '',
       siteId: json['site_id']?.toString(),
       devName: json['dev_name']?.toString(),
       devLocation: json['dev_location']?.toString(),
-      devLon: (json['dev_lon'] as num?)?.toDouble(),
-      devLat: (json['dev_lat'] as num?)?.toDouble(),
-      devAlt: (json['dev_alt'] as num?)?.toDouble(),
-      devSts: parsedSts,
+      devLon: _toDouble(json['dev_lon']),
+      devLat: _toDouble(json['dev_lat']),
+      devAlt: _toDouble(json['dev_alt']),
+      devSts: _toInt(json['dev_sts']),
       sensors: sensorList,
     );
   }
@@ -92,9 +158,9 @@ class SensorModel {
       sensName: json['sens_name']?.toString(),
       sensAddress: json['sens_address']?.toString(),
       sensLocation: json['sens_location']?.toString(),
-      sensLat: (json['sens_lat'] as num?)?.toDouble(),
-      sensLon: (json['sens_lon'] as num?)?.toDouble(),
-      sensAlt: (json['sens_alt'] as num?)?.toDouble(),
+      sensLat: _toDouble(json['sens_lat']),
+      sensLon: _toDouble(json['sens_lon']),
+      sensAlt: _toDouble(json['sens_alt']),
     );
   }
 
@@ -123,19 +189,50 @@ class SensorReadUpdate {
   });
 
   factory SensorReadUpdate.fromJson(Map<String, dynamic> json) {
+    final dsId =
+        _firstOf(json, ['ds_id', 'dsId', 'device_sensor_id'])?.toString() ?? '';
+    final devId =
+        _firstOf(json, ['dev_id', 'devId', 'device_id'])?.toString() ?? '';
+    final readUpdateId =
+        _firstOf(json, ['read_update_id', 'readUpdateId', 'id'])?.toString() ??
+        (devId.isNotEmpty && dsId.isNotEmpty ? '$devId-$dsId' : '');
+
     return SensorReadUpdate(
-      readUpdateId: json['read_update_id']?.toString() ?? '',
-      dsId: json['ds_id']?.toString() ?? '',
-      devId: json['dev_id']?.toString() ?? '',
-      readUpdateDate: json['read_update_date'] != null
-          ? DateTime.tryParse(json['read_update_date'].toString())
-          : null,
-      readUpdateValue: json['read_update_value']?.toString(),
+      readUpdateId: readUpdateId,
+      dsId: dsId,
+      devId: devId,
+      readUpdateDate: _toDateTime(
+        _firstOf(json, [
+          'read_update_date',
+          'readUpdateDate',
+          'read_update_at',
+          'readUpdateAt',
+          'read_update_time',
+          'read_date',
+          'readDate',
+          'updated_at',
+          'updatedAt',
+          'created_at',
+          'timestamp',
+          'date',
+          'time',
+        ]),
+      ),
+      readUpdateValue: _firstOf(json, [
+        'read_update_value',
+        'readUpdateValue',
+        'read_value',
+        'readValue',
+        'value',
+        'val',
+      ])?.toString(),
     );
   }
 
-  double get numericValue => double.tryParse(readUpdateValue ?? '') ?? 0.0;
-  bool get hasValue => numericValue > 0;
+  double? get parsedValue => _toDouble(readUpdateValue);
+  double get numericValue => parsedValue ?? 0.0;
+  bool get hasNumericValue => parsedValue != null;
+  bool get hasValue => readUpdateValue != null && readUpdateValue!.isNotEmpty;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -161,28 +258,62 @@ class SensorReadModel {
   });
 
   factory SensorReadModel.fromJson(Map<String, dynamic> json) {
-    // read_sts bisa berupa int atau String
-    final rawSts = json['read_sts'];
-    final parsedSts = rawSts is int
-        ? rawSts
-        : rawSts is String
-        ? int.tryParse(rawSts)
-        : null;
+    final dsId = _firstOf(json, [
+      'ds_id',
+      'dsId',
+      'device_sensor_id',
+    ])?.toString();
+    final devId = _firstOf(json, ['dev_id', 'devId', 'device_id'])?.toString();
+    final date = _toDateTime(
+      _firstOf(json, [
+        'read_date',
+        'readDate',
+        'read_update_date',
+        'readUpdateDate',
+        'read_at',
+        'readAt',
+        'read_time',
+        'created_at',
+        'createdAt',
+        'timestamp',
+        'date',
+        'time',
+        'day',
+      ]),
+    );
+    final readId =
+        _firstOf(json, ['read_id', 'readId', 'id', 'log_rx_id'])?.toString() ??
+        [
+          if (devId != null && devId.isNotEmpty) devId,
+          if (dsId != null && dsId.isNotEmpty) dsId,
+          if (date != null) date.toIso8601String(),
+        ].join('-');
 
     return SensorReadModel(
-      readId: json['read_id']?.toString() ?? '',
-      dsId: json['ds_id']?.toString(),
-      devId: json['dev_id']?.toString(),
-      readDate: json['read_date'] != null
-          ? DateTime.tryParse(json['read_date'].toString())
-          : null,
-      readValue: json['read_value']?.toString(),
-      readSts: parsedSts,
+      readId: readId,
+      dsId: dsId,
+      devId: devId,
+      readDate: date,
+      readValue: _firstOf(json, [
+        'read_value',
+        'readValue',
+        'read_update_value',
+        'readUpdateValue',
+        'value',
+        'val',
+        'avg_val',
+        'avgValue',
+        'average',
+        'avg',
+      ])?.toString(),
+      readSts: _toInt(_firstOf(json, ['read_sts', 'readStatus', 'status'])),
     );
   }
 
-  double get numericValue => double.tryParse(readValue ?? '') ?? 0.0;
-  bool get isValid => numericValue > 0;
+  double? get parsedValue => _toDouble(readValue);
+  double get numericValue => parsedValue ?? 0.0;
+  bool get hasNumericValue => parsedValue != null;
+  bool get isValid => hasNumericValue;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,14 +340,43 @@ class SensorDailyModel {
 
   factory SensorDailyModel.fromJson(Map<String, dynamic> json) {
     return SensorDailyModel(
-      day: json['day'] != null
-          ? DateTime.tryParse(json['day'].toString())
-          : null,
-      devId: json['dev_id']?.toString() ?? '',
-      dsId: json['ds_id']?.toString() ?? '',
-      avgVal: (json['avg_val'] as num?)?.toDouble(),
-      minVal: (json['min_val'] as num?)?.toDouble(),
-      maxVal: (json['max_val'] as num?)?.toDouble(),
+      day: _toDateTime(
+        _firstOf(json, ['day', 'date', 'read_date', 'created_at']),
+      ),
+      devId: _firstOf(json, ['dev_id', 'devId', 'device_id'])?.toString() ?? '',
+      dsId:
+          _firstOf(json, ['ds_id', 'dsId', 'device_sensor_id'])?.toString() ??
+          '',
+      avgVal: _toDouble(
+        _firstOf(json, [
+          'avg_val',
+          'avgVal',
+          'avgValue',
+          'avg_value',
+          'average',
+          'avg',
+        ]),
+      ),
+      minVal: _toDouble(
+        _firstOf(json, [
+          'min_val',
+          'minVal',
+          'minValue',
+          'min_value',
+          'minimum',
+          'min',
+        ]),
+      ),
+      maxVal: _toDouble(
+        _firstOf(json, [
+          'max_val',
+          'maxVal',
+          'maxValue',
+          'max_value',
+          'maximum',
+          'max',
+        ]),
+      ),
     );
   }
 }
@@ -247,6 +407,73 @@ class LogModel {
 // ─────────────────────────────────────────────────────────────────────────────
 // SENSOR META — label, unit, color helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+class DeviceSensorThresholdModel {
+  final String dsId;
+  final String? devId;
+  final String? sensId;
+  final String? dsName;
+  final String? sensName;
+  final String? unitId;
+  final String? unitSymbol;
+  final String? unitName;
+  final double? dsMaxNormValue;
+  final double? dsMinNormValue;
+  final double? dsMaxValWarn;
+  final double? dsMinValWarn;
+  final double? dsMaxValue;
+  final double? dsMinValue;
+
+  const DeviceSensorThresholdModel({
+    required this.dsId,
+    this.devId,
+    this.sensId,
+    this.dsName,
+    this.sensName,
+    this.unitId,
+    this.unitSymbol,
+    this.unitName,
+    this.dsMaxNormValue,
+    this.dsMinNormValue,
+    this.dsMaxValWarn,
+    this.dsMinValWarn,
+    this.dsMaxValue,
+    this.dsMinValue,
+  });
+
+  factory DeviceSensorThresholdModel.fromJson(Map<String, dynamic> json) {
+    final unit = json['unit'];
+    final sensor = json['sensor'];
+    final unitMap = unit is Map<String, dynamic> ? unit : null;
+    final sensorMap = sensor is Map<String, dynamic> ? sensor : null;
+
+    return DeviceSensorThresholdModel(
+      dsId: json['ds_id']?.toString() ?? '',
+      devId: json['dev_id']?.toString(),
+      sensId: json['sens_id']?.toString() ?? sensorMap?['sens_id']?.toString(),
+      dsName: json['ds_name']?.toString(),
+      sensName:
+          json['sens_name']?.toString() ?? sensorMap?['sens_name']?.toString(),
+      unitId: json['unit_id']?.toString() ?? unitMap?['unit_id']?.toString(),
+      unitSymbol:
+          json['unit_symbol']?.toString() ??
+          unitMap?['unit_symbol']?.toString(),
+      unitName:
+          json['unit_name']?.toString() ?? unitMap?['unit_name']?.toString(),
+      dsMaxNormValue: _toDouble(json['ds_max_norm_value']),
+      dsMinNormValue: _toDouble(json['ds_min_norm_value']),
+      dsMaxValWarn: _toDouble(json['ds_max_val_warn']),
+      dsMinValWarn: _toDouble(json['ds_min_val_warn']),
+      dsMaxValue: _toDouble(json['ds_max_value']),
+      dsMinValue: _toDouble(json['ds_min_value']),
+    );
+  }
+
+  String get compositeKey => '${devId ?? ''}|$dsId';
+  bool get hasNormalRange => dsMinNormValue != null || dsMaxNormValue != null;
+  bool get hasWarnRange => dsMinValWarn != null || dsMaxValWarn != null;
+  bool get hasAbsoluteRange => dsMinValue != null || dsMaxValue != null;
+}
 
 class SensorMeta {
   SensorMeta._();
@@ -293,26 +520,26 @@ class SensorMeta {
     }
   }
 
-  static Color color(String dsId) {
+  static int colorValue(String dsId) {
     switch (dsId) {
       case 'env_temp':
-        return const Color(0xFFFF8A65);
+        return 0xFFFF8A65;
       case 'env_hum':
-        return const Color(0xFF42A5F5);
+        return 0xFF42A5F5;
       case 'soil_nitro':
-        return const Color(0xFF66BB6A);
+        return 0xFF66BB6A;
       case 'soil_phos':
-        return const Color(0xFFAB47BC);
+        return 0xFFAB47BC;
       case 'soil_pot':
-        return const Color(0xFFFF7043);
+        return 0xFFFF7043;
       case 'soil_ph':
-        return const Color(0xFF26C6DA);
+        return 0xFF26C6DA;
       case 'soil_temp':
-        return const Color(0xFF8BC34A);
+        return 0xFF8BC34A;
       case 'soil_hum':
-        return const Color(0xFF29B6F6);
+        return 0xFF29B6F6;
       default:
-        return const Color(0xFF4CAF50);
+        return 0xFF4CAF50;
     }
   }
 
@@ -414,12 +641,131 @@ class MonthlyRekapModel {
 
   factory MonthlyRekapModel.fromJson(Map<String, dynamic> json) {
     return MonthlyRekapModel(
-      month: json['month']?.toString() ?? '',
-      devId: json['dev_id']?.toString() ?? '',
-      dsId: json['ds_id']?.toString() ?? '',
-      avgVal: (json['avg_val'] as num?)?.toDouble(),
-      minVal: (json['min_val'] as num?)?.toDouble(),
-      maxVal: (json['max_val'] as num?)?.toDouble(),
+      month: _monthLabel(_firstOf(json, ['month', 'day', 'date'])),
+      devId: _firstOf(json, ['dev_id', 'devId', 'device_id'])?.toString() ?? '',
+      dsId:
+          _firstOf(json, ['ds_id', 'dsId', 'device_sensor_id'])?.toString() ??
+          '',
+      avgVal: _toDouble(
+        _firstOf(json, [
+          'avg_val',
+          'avgVal',
+          'avgValue',
+          'avg_value',
+          'average',
+          'avg',
+        ]),
+      ),
+      minVal: _toDouble(
+        _firstOf(json, [
+          'min_val',
+          'minVal',
+          'minValue',
+          'min_value',
+          'minimum',
+          'min',
+        ]),
+      ),
+      maxVal: _toDouble(
+        _firstOf(json, [
+          'max_val',
+          'maxVal',
+          'maxValue',
+          'max_value',
+          'maximum',
+          'max',
+        ]),
+      ),
     );
+  }
+
+  static List<MonthlyRekapModel> fromBackendJson(Map<String, dynamic> json) {
+    final dayReads =
+        json['day_reads'] ??
+        json['dayReads'] ??
+        json['reads'] ??
+        json['items'] ??
+        json['rows'];
+    if (dayReads is! List) return [MonthlyRekapModel.fromJson(json)];
+
+    final rows = dayReads
+        .whereType<Map>()
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList();
+    if (rows.isEmpty) return [];
+
+    final month = _monthLabel(
+      _firstOf(json, ['month', 'date']) ??
+          _firstOf(rows.first, ['day', 'date', 'read_date']),
+    );
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    for (final row in rows) {
+      final devId =
+          _firstOf(row, ['dev_id', 'devId', 'device_id'])?.toString() ?? '';
+      final dsId =
+          _firstOf(row, ['ds_id', 'dsId', 'device_sensor_id'])?.toString() ??
+          '';
+      if (dsId.isEmpty) continue;
+      final key = '$devId|$dsId';
+      grouped.putIfAbsent(key, () => []).add(row);
+    }
+
+    return grouped.entries.map((entry) {
+      final first = entry.value.first;
+      return MonthlyRekapModel(
+        month: month,
+        devId:
+            _firstOf(first, ['dev_id', 'devId', 'device_id'])?.toString() ?? '',
+        dsId:
+            _firstOf(first, [
+              'ds_id',
+              'dsId',
+              'device_sensor_id',
+            ])?.toString() ??
+            '',
+        avgVal: _average(
+          entry.value.map(
+            (row) => _toDouble(
+              _firstOf(row, [
+                'avg_val',
+                'avgVal',
+                'avgValue',
+                'avg_value',
+                'average',
+                'avg',
+              ]),
+            ),
+          ),
+        ),
+        minVal: _minValue(
+          entry.value.map(
+            (row) => _toDouble(
+              _firstOf(row, [
+                'min_val',
+                'minVal',
+                'minValue',
+                'min_value',
+                'minimum',
+                'min',
+              ]),
+            ),
+          ),
+        ),
+        maxVal: _maxValue(
+          entry.value.map(
+            (row) => _toDouble(
+              _firstOf(row, [
+                'max_val',
+                'maxVal',
+                'maxValue',
+                'max_value',
+                'maximum',
+                'max',
+              ]),
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 }

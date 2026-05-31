@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/dashboard_entity.dart';
+import '../../../monitoring/presentation/utils/sensor_metadata_adapter.dart';
 
 class _StatusInfo {
   final String label;
@@ -31,11 +33,62 @@ _StatusInfo _statusInfoFor(double persentase) {
   }
 }
 
+_StatusInfo _statusInfoForReadingStatus(SensorReadingStatus status) {
+  switch (status) {
+    case SensorReadingStatus.optimal:
+      return const _StatusInfo(
+        label: 'Optimal',
+        gradientColors: [
+          Color(0xFF72E85A),
+          Color(0xFF4DC934),
+          Color(0xFF2FA010),
+        ],
+      );
+    case SensorReadingStatus.warning:
+      return const _StatusInfo(
+        label: 'Waspada',
+        gradientColors: [
+          Color(0xFFFFCC55),
+          Color(0xFFFFAA22),
+          Color(0xFFE07800),
+        ],
+      );
+    case SensorReadingStatus.critical:
+      return const _StatusInfo(
+        label: 'Kritis',
+        gradientColors: [
+          Color(0xFFFF7A7A),
+          Color(0xFFFF4444),
+          Color(0xFFCC1111),
+        ],
+      );
+    case SensorReadingStatus.offline:
+      return const _StatusInfo(
+        label: 'Offline',
+        gradientColors: [
+          Color(0xFFBDBDBD),
+          Color(0xFF9E9E9E),
+          Color(0xFF757575),
+        ],
+      );
+    case SensorReadingStatus.unknown:
+      return const _StatusInfo(
+        label: 'Aktif',
+        gradientColors: [
+          Color(0xFF72E85A),
+          Color(0xFF4DC934),
+          Color(0xFF2FA010),
+        ],
+      );
+  }
+}
+
 class SensorStatusCard extends StatelessWidget {
   final String label;
   final String value;
   final String unit;
   final double persentase;
+  final SensorReadingStatus? readingStatus;
 
   const SensorStatusCard({
     super.key,
@@ -43,12 +96,16 @@ class SensorStatusCard extends StatelessWidget {
     required this.value,
     required this.unit,
     required this.persentase,
+    this.readingStatus,
   });
 
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.sizeOf(context).width;
-    final status = _statusInfoFor(persentase);
+    final status =
+        readingStatus == null || readingStatus == SensorReadingStatus.unknown
+        ? _statusInfoFor(persentase)
+        : _statusInfoForReadingStatus(readingStatus!);
 
     final valueFontSize = (sw / 390 * 30).clamp(22.0, 36.0);
     final unitFontSize = (sw / 390 * 11).clamp(9.0, 14.0);
@@ -77,7 +134,6 @@ class SensorStatusCard extends StatelessWidget {
                     errorBuilder: (_, __, ___) =>
                         const Icon(Icons.sensors, size: 22),
                   ),
-
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -105,7 +161,6 @@ class SensorStatusCard extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   Text(
                     label,
                     textAlign: TextAlign.center,
@@ -123,7 +178,6 @@ class SensorStatusCard extends StatelessWidget {
               ),
             ),
           ),
-
           Container(
             height: 34,
             width: double.infinity,
@@ -167,12 +221,13 @@ class SensorStatusCard extends StatelessWidget {
 
 class SensorStatusGrid extends StatefulWidget {
   final List<SensorHealthEntity> sensors;
-
+  final SensorMetadataAdapter? metadataAdapter;
   final int defaultCount;
 
   const SensorStatusGrid({
     super.key,
     required this.sensors,
+    this.metadataAdapter,
     this.defaultCount = 6,
   });
 
@@ -182,51 +237,13 @@ class SensorStatusGrid extends StatefulWidget {
 
 class _SensorStatusGridState extends State<SensorStatusGrid> {
   bool _expanded = false;
-
-  String _labelFor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-        return 'Suhu Udara';
-      case 'env_hum':
-        return 'Kel. Udara';
-      case 'soil_nitro':
-        return 'Nitrogen';
-      case 'soil_phos':
-        return 'Fosfor';
-      case 'soil_pot':
-        return 'Kalium';
-      case 'soil_ph':
-        return 'pH Tanah';
-      case 'soil_temp':
-        return 'Suhu Tanah';
-      case 'soil_hum':
-        return 'Kel. Tanah';
-      default:
-        return dsId;
-    }
-  }
-
-  String _unitFor(String dsId) {
-    switch (dsId) {
-      case 'env_temp':
-      case 'soil_temp':
-        return '°C';
-      case 'env_hum':
-      case 'soil_hum':
-        return '%';
-      case 'soil_nitro':
-      case 'soil_phos':
-      case 'soil_pot':
-        return 'ppm';
-      case 'soil_ph':
-        return 'pH';
-      default:
-        return '';
-    }
-  }
+  final SensorMetadataAdapter _fallbackAdapter = SensorMetadataAdapter(
+    const [],
+  );
 
   @override
   Widget build(BuildContext context) {
+    final adapter = widget.metadataAdapter ?? _fallbackAdapter;
     final total = widget.sensors.length;
     final showCount = _expanded ? total : total.clamp(0, widget.defaultCount);
     final hasMore = total > widget.defaultCount;
@@ -241,21 +258,26 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
             crossAxisCount: 3,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-
             childAspectRatio: 0.547,
           ),
           itemCount: showCount,
           itemBuilder: (context, i) {
             final sensor = widget.sensors[i];
+            final numericValue = double.tryParse(sensor.readUpdateValue) ?? 0;
+            final readingStatus = adapter.statusFor(
+              dsId: sensor.dsId,
+              devId: sensor.devId,
+              value: numericValue,
+            );
             return SensorStatusCard(
-              label: _labelFor(sensor.dsId),
+              label: adapter.labelFor(sensor.dsId, devId: sensor.devId),
               value: sensor.readUpdateValue,
-              unit: _unitFor(sensor.dsId),
+              unit: adapter.unitFor(sensor.dsId, devId: sensor.devId),
               persentase: sensor.persentase,
+              readingStatus: readingStatus,
             );
           },
         ),
-
         if (hasMore) ...[
           const SizedBox(height: 10),
           GestureDetector(

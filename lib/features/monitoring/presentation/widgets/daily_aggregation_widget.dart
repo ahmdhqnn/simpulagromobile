@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../data/models/monitoring_models.dart';
+import '../utils/sensor_metadata_adapter.dart';
 
 /// Daily aggregation widget showing min, max, avg values
 class DailyAggregationWidget extends StatelessWidget {
   final List<SensorDailyModel> data;
   final String title;
   final DateRange dateRange;
+  final SensorMetadataAdapter metadataAdapter;
 
   const DailyAggregationWidget({
     super.key,
     required this.data,
+    required this.metadataAdapter,
     this.title = 'Daily Summary',
     this.dateRange = DateRange.week,
   });
@@ -105,6 +108,7 @@ class DailyAggregationWidget extends StatelessWidget {
               return _SensorAggregationItem(
                 sensorId: entry.key,
                 data: entry.value,
+                metadataAdapter: metadataAdapter,
               );
             },
           ),
@@ -158,20 +162,31 @@ class DailyAggregationWidget extends StatelessWidget {
 class _SensorAggregationItem extends StatelessWidget {
   final String sensorId;
   final List<SensorDailyModel> data;
+  final SensorMetadataAdapter metadataAdapter;
 
-  const _SensorAggregationItem({required this.sensorId, required this.data});
+  const _SensorAggregationItem({
+    required this.sensorId,
+    required this.data,
+    required this.metadataAdapter,
+  });
 
   @override
   Widget build(BuildContext context) {
     // Calculate aggregations
-    final values = data.map((d) => d.avgVal ?? 0).toList();
+    final values = data.map((d) => d.avgVal).whereType<double>().toList();
     final avg = values.isEmpty
         ? 0
         : values.reduce((a, b) => a + b) / values.length;
-    final min = data.map((d) => d.minVal ?? 0).reduce((a, b) => a < b ? a : b);
-    final max = data.map((d) => d.maxVal ?? 0).reduce((a, b) => a > b ? a : b);
-    final unit = SensorMeta.unit(sensorId);
-    final label = SensorMeta.label(sensorId);
+    final minValues = data.map((d) => d.minVal).whereType<double>().toList();
+    final maxValues = data.map((d) => d.maxVal).whereType<double>().toList();
+    final min = minValues.isEmpty
+        ? 0
+        : minValues.reduce((a, b) => a < b ? a : b);
+    final max = maxValues.isEmpty
+        ? 0
+        : maxValues.reduce((a, b) => a > b ? a : b);
+    final unit = metadataAdapter.unitFor(sensorId);
+    final label = metadataAdapter.labelFor(sensorId);
 
     return Padding(
       padding: EdgeInsets.all(context.rw(0.041)),

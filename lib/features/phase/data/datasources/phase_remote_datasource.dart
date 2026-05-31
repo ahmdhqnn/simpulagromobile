@@ -1,8 +1,16 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
 import '../models/phase_model.dart';
+
+void _debugLog(String message) {
+  assert(() {
+    developer.log(message, name: 'PhaseRemoteDatasource');
+    return true;
+  }());
+}
 
 /// Remote datasource untuk Fase Pertumbuhan & GDD
 /// API: /fase/phases-list, /fase/phases-by-hst/:siteId
@@ -20,10 +28,10 @@ class PhaseRemoteDatasource {
           .map((json) => PhaseModel.fromApiJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      debugPrint('❌ Phase datasource error (getAllPhases): ${e.message}');
+      _debugLog('❌ Phase datasource error (getAllPhases): ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in phase datasource (getAllPhases): $e');
+      _debugLog('❌ Unexpected error in phase datasource (getAllPhases): $e');
       rethrow;
     }
   }
@@ -37,12 +45,10 @@ class PhaseRemoteDatasource {
           .map((json) => PhaseModel.fromApiJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      debugPrint(
-        '❌ Phase datasource error (getPhasesByCropType): ${e.message}',
-      );
+      _debugLog('❌ Phase datasource error (getPhasesByCropType): ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in phase datasource (getPhasesByCropType): $e',
       );
       rethrow;
@@ -73,15 +79,15 @@ class PhaseRemoteDatasource {
       return CurrentPhaseData.fromJson(data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        debugPrint('⚠️ No active plant found at site $siteId');
+        _debugLog('⚠️ No active plant found at site $siteId');
         return null;
       }
-      debugPrint(
+      _debugLog(
         '❌ Phase datasource error (getCurrentPhaseByHst): ${e.message}',
       );
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in phase datasource (getCurrentPhaseByHst): $e',
       );
       rethrow;
@@ -123,12 +129,12 @@ class PhaseRemoteDatasource {
           )
           .toList();
     } on DioException catch (e) {
-      debugPrint('❌ Phase datasource error (getPhasesByPlant): ${e.message}');
+      _debugLog('❌ Phase datasource error (getPhasesByPlant): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in phase datasource (getPhasesByPlant): $e',
       );
       rethrow;
@@ -147,9 +153,7 @@ class PhaseRemoteDatasource {
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint(
-        '❌ Unexpected error in phase datasource (getCurrentPhase): $e',
-      );
+      _debugLog('❌ Unexpected error in phase datasource (getCurrentPhase): $e');
       rethrow;
     }
   }
@@ -162,7 +166,7 @@ class PhaseRemoteDatasource {
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in phase datasource (getPhaseById): $e');
+      _debugLog('❌ Unexpected error in phase datasource (getPhaseById): $e');
       rethrow;
     }
   }
@@ -175,9 +179,7 @@ class PhaseRemoteDatasource {
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint(
-        '❌ Unexpected error in phase datasource (getPhaseHistory): $e',
-      );
+      _debugLog('❌ Unexpected error in phase datasource (getPhaseHistory): $e');
       rethrow;
     }
   }

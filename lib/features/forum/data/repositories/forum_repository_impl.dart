@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/paginated_result.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/reaction.dart';
@@ -30,11 +31,16 @@ class ForumRepositoryImpl implements ForumRepository {
     }
 
     switch (statusCode) {
-      case 401: return AuthFailure(message);
-      case 403: return PermissionFailure(message);
-      case 404: return NotFoundFailure(message);
-      case 409: return ValidationFailure(message);
-      default: return ServerFailure(message, statusCode: statusCode);
+      case 401:
+        return AuthFailure(message);
+      case 403:
+        return PermissionFailure(message);
+      case 404:
+        return NotFoundFailure(message);
+      case 409:
+        return ValidationFailure(message);
+      default:
+        return ServerFailure(message, statusCode: statusCode);
     }
   }
 
@@ -44,13 +50,29 @@ class ForumRepositoryImpl implements ForumRepository {
     int limit = 20,
     String? siteId,
   }) async {
+    final result = await getPaginatedPosts(
+      page: page,
+      limit: limit,
+      siteId: siteId,
+    );
+    return result.map((page) => page.items);
+  }
+
+  @override
+  Future<Either<Failure, PaginatedResult<Post>>> getPaginatedPosts({
+    int page = 1,
+    int limit = 20,
+    String? siteId,
+  }) async {
     try {
-      final posts = await _remoteDataSource.getPosts(
+      final pageData = await _remoteDataSource.getPaginatedPosts(
         page: page,
         limit: limit,
         siteId: siteId,
       );
-      return Right(posts);
+      return Right(
+        PaginatedResult<Post>(items: pageData.items, meta: pageData.meta),
+      );
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {
@@ -127,9 +149,15 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
-  Future<Either<Failure, List<Post>>> getMyPosts({int page = 1, int limit = 20}) async {
+  Future<Either<Failure, List<Post>>> getMyPosts({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
-      final posts = await _remoteDataSource.getMyPosts(page: page, limit: limit);
+      final posts = await _remoteDataSource.getMyPosts(
+        page: page,
+        limit: limit,
+      );
       return Right(posts);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
@@ -139,9 +167,15 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
-  Future<Either<Failure, List<Post>>> getLikedPosts({int page = 1, int limit = 20}) async {
+  Future<Either<Failure, List<Post>>> getLikedPosts({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
-      final posts = await _remoteDataSource.getLikedPosts(page: page, limit: limit);
+      final posts = await _remoteDataSource.getLikedPosts(
+        page: page,
+        limit: limit,
+      );
       return Right(posts);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
@@ -156,7 +190,10 @@ class ForumRepositoryImpl implements ForumRepository {
     int limit = 20,
   }) async {
     try {
-      final comments = await _remoteDataSource.getMyComments(page: page, limit: limit);
+      final comments = await _remoteDataSource.getMyComments(
+        page: page,
+        limit: limit,
+      );
       return Right(comments);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
@@ -166,7 +203,9 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
-  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleLike(String postId) async {
+  Future<Either<Failure, ({bool isLiked, int likeCount})>> toggleLike(
+    String postId,
+  ) async {
     try {
       final result = await _remoteDataSource.toggleLike(postId);
       return Right(result);
@@ -209,13 +248,29 @@ class ForumRepositoryImpl implements ForumRepository {
     int page = 1,
     int limit = 50,
   }) async {
+    final result = await getPaginatedComments(
+      postId: postId,
+      page: page,
+      limit: limit,
+    );
+    return result.map((page) => page.items);
+  }
+
+  @override
+  Future<Either<Failure, PaginatedResult<Comment>>> getPaginatedComments({
+    required String postId,
+    int page = 1,
+    int limit = 50,
+  }) async {
     try {
-      final comments = await _remoteDataSource.getComments(
+      final pageData = await _remoteDataSource.getPaginatedComments(
         postId: postId,
         page: page,
         limit: limit,
       );
-      return Right(comments);
+      return Right(
+        PaginatedResult<Comment>(items: pageData.items, meta: pageData.meta),
+      );
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {

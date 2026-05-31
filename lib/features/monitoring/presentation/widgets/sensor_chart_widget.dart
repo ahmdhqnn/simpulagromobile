@@ -29,8 +29,12 @@ class SensorChartWidget extends StatefulWidget {
 }
 
 class _SensorChartWidgetState extends State<SensorChartWidget> {
+  List<SensorReadModel> get _validData =>
+      widget.data.where((item) => item.hasNumericValue).toList();
+
   @override
   Widget build(BuildContext context) {
+    final data = _validData;
     return Container(
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
@@ -59,7 +63,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
           SizedBox(height: context.rh(0.015)),
           SizedBox(
             height: 200,
-            child: widget.data.isEmpty ? _buildEmptyState() : _buildChart(),
+            child: data.isEmpty ? _buildEmptyState() : _buildChart(data),
           ),
         ],
       ),
@@ -90,19 +94,19 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
     );
   }
 
-  Widget _buildChart() {
+  Widget _buildChart(List<SensorReadModel> data) {
     switch (widget.chartType) {
       case ChartType.line:
-        return _buildLineChart();
+        return _buildLineChart(data);
       case ChartType.bar:
-        return _buildBarChart();
+        return _buildBarChart(data);
       case ChartType.area:
-        return _buildAreaChart();
+        return _buildAreaChart(data);
     }
   }
 
-  Widget _buildLineChart() {
-    final spots = widget.data.asMap().entries.map((e) {
+  Widget _buildLineChart(List<SensorReadModel> data) {
+    final spots = data.asMap().entries.map((e) {
       return FlSpot(e.key.toDouble(), e.value.numericValue);
     }).toList();
 
@@ -146,10 +150,10 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
               ),
               getTitlesWidget: (v, _) {
                 final idx = v.toInt();
-                if (idx < 0 || idx >= widget.data.length) {
+                if (idx < 0 || idx >= data.length) {
                   return const SizedBox.shrink();
                 }
-                final d = widget.data[idx].readDate;
+                final d = data[idx].readDate;
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
@@ -191,9 +195,9 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final idx = spot.x.toInt();
-                final data = widget.data[idx];
+                final item = data[idx];
                 return LineTooltipItem(
-                  '${data.numericValue.toStringAsFixed(1)}\n',
+                  '${item.numericValue.toStringAsFixed(1)}\n',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -201,8 +205,8 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
                   ),
                   children: [
                     TextSpan(
-                      text: data.readDate != null
-                          ? DateFormat('HH:mm').format(data.readDate!)
+                      text: item.readDate != null
+                          ? DateFormat('HH:mm').format(item.readDate!)
                           : '',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -219,7 +223,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
     );
   }
 
-  Widget _buildBarChart() {
+  Widget _buildBarChart(List<SensorReadModel> data) {
     final color = widget.color ?? AppColors.primary;
 
     return BarChart(
@@ -256,10 +260,10 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
               reservedSize: 28,
               getTitlesWidget: (v, _) {
                 final idx = v.toInt();
-                if (idx < 0 || idx >= widget.data.length) {
+                if (idx < 0 || idx >= data.length) {
                   return const SizedBox.shrink();
                 }
-                final d = widget.data[idx].readDate;
+                final d = data[idx].readDate;
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
@@ -275,7 +279,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
           ),
         ),
         borderData: FlBorderData(show: false),
-        barGroups: widget.data.asMap().entries.map((e) {
+        barGroups: data.asMap().entries.map((e) {
           return BarChartGroupData(
             x: e.key,
             barRods: [
@@ -294,8 +298,8 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
     );
   }
 
-  Widget _buildAreaChart() {
-    final spots = widget.data.asMap().entries.map((e) {
+  Widget _buildAreaChart(List<SensorReadModel> data) {
+    final spots = data.asMap().entries.map((e) {
       return FlSpot(e.key.toDouble(), e.value.numericValue);
     }).toList();
 
@@ -339,10 +343,10 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
               ),
               getTitlesWidget: (v, _) {
                 final idx = v.toInt();
-                if (idx < 0 || idx >= widget.data.length) {
+                if (idx < 0 || idx >= data.length) {
                   return const SizedBox.shrink();
                 }
-                final d = widget.data[idx].readDate;
+                final d = data[idx].readDate;
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(

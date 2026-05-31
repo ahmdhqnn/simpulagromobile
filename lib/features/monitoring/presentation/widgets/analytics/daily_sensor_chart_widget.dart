@@ -1,16 +1,26 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
+
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../../utils/monitoring_display_utils.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class DailySensorChartWidget extends StatefulWidget {
   final List<SensorDailyModel> data;
-  const DailySensorChartWidget({super.key, required this.data});
+  final SensorMetadataAdapter metadataAdapter;
+
+  const DailySensorChartWidget({
+    super.key,
+    required this.data,
+    required this.metadataAdapter,
+  });
 
   @override
   State<DailySensorChartWidget> createState() => _DailySensorChartWidgetState();
@@ -19,38 +29,75 @@ class DailySensorChartWidget extends StatefulWidget {
 class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
   String _selected = 'env_temp';
 
-  List<String> get _params => widget.data.map((d) => d.dsId).toSet().toList();
+  List<String> get _params =>
+      widget.data.map((item) => item.dsId).toSet().toList()..sort();
 
   @override
   void initState() {
     super.initState();
-    final p = _params;
-    if (p.isNotEmpty && !p.contains(_selected)) _selected = p.first;
+    final params = _params;
+    if (params.isNotEmpty && !params.contains(_selected)) {
+      _selected = params.first;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant DailySensorChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final params = _params;
+    if (params.isNotEmpty && !params.contains(_selected)) {
+      _selected = params.first;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.data.isEmpty) {
       return _buildEmptyState(context);
     }
 
-    final filtered = widget.data.where((d) => d.dsId == _selected).toList()
-      ..sort((a, b) => (a.day ?? DateTime(0)).compareTo(b.day ?? DateTime(0)));
+    final filtered =
+        widget.data.where((item) => item.dsId == _selected).toList()..sort(
+          (a, b) => (a.day ?? DateTime(0)).compareTo(b.day ?? DateTime(0)),
+        );
+    final validRows = filtered
+        .where(
+          (item) =>
+              item.avgVal != null || item.minVal != null || item.maxVal != null,
+        )
+        .toList();
+    final chartRows = sampleForChart(validRows, maxPoints: 90);
 
-    final avgSpots = filtered
+    final avgSpots = chartRows
         .asMap()
         .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.avgVal ?? 0))
+        .map(
+          (entry) => FlSpot(
+            entry.key.toDouble(),
+            entry.value.avgVal ?? entry.value.minVal ?? entry.value.maxVal ?? 0,
+          ),
+        )
         .toList();
-    final minSpots = filtered
+    final minSpots = chartRows
         .asMap()
         .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.minVal ?? 0))
+        .map(
+          (entry) => FlSpot(
+            entry.key.toDouble(),
+            entry.value.minVal ?? entry.value.avgVal ?? 0,
+          ),
+        )
         .toList();
-    final maxSpots = filtered
+    final maxSpots = chartRows
         .asMap()
         .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.maxVal ?? 0))
+        .map(
+          (entry) => FlSpot(
+            entry.key.toDouble(),
+            entry.value.maxVal ?? entry.value.avgVal ?? 0,
+          ),
+        )
         .toList();
 
     return AppCardWidget.elevated(
@@ -61,32 +108,32 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
           const SizedBox(height: 12),
           _buildParamSelector(context),
           SizedBox(height: context.rh(0.02)),
-          if (filtered.isEmpty)
-            const Center(
+          if (filtered.isEmpty || chartRows.isEmpty)
+            Center(
               child: Text(
-                'Belum ada data harian',
-                style: TextStyle(color: AppColors.textTertiary),
+                l10n.monitoringDailyEmpty,
+                style: const TextStyle(color: AppColors.textTertiary),
               ),
             )
           else
-            _buildChart(context, filtered, avgSpots, minSpots, maxSpots),
+            _buildChart(context, chartRows, avgSpots, minSpots, maxSpots),
           SizedBox(height: context.rh(0.015)),
-          _buildLegend(),
+          _buildLegend(context),
         ],
       ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
           const SizedBox(height: 12),
-          Container(
+          SizedBox(
             height: 218,
-            padding: const EdgeInsets.all(12),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -102,7 +149,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
                   ),
                   SizedBox(height: context.rh(0.005)),
                   Text(
-                    'Tidak ada data sensor yang tersedia untuk hari ini',
+                    l10n.monitoringDailyUnavailableToday,
                     textAlign: TextAlign.center,
                     style: AppTextStyles.hint(context),
                   ),
@@ -116,12 +163,13 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         const IconBadgeWidget.icon(
           icon: Icons.show_chart,
-          background: Color(0xFFFFF3E0),
-          tint: Color(0xFFFF9800),
+          background: AppColors.softOrange,
+          tint: AppColors.warning,
           radius: 10,
         ),
         SizedBox(width: context.rw(0.03)),
@@ -130,12 +178,12 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Analisis Sensor Harian',
+                l10n.monitoringDailyAnalyticsTitle,
                 style: AppTextStyles.sectionTitle(context, 20),
               ),
               const SizedBox(height: 4),
               Text(
-                'Statistik Sensor Hari Ini',
+                l10n.monitoringDailyAnalyticsSubtitle,
                 style: AppTextStyles.hint(context),
               ),
             ],
@@ -149,23 +197,22 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _params.map((p) {
-          final isSel = p == _selected;
+        children: _params.map((param) {
+          final isSelected = param == _selected;
+          final color = widget.metadataAdapter.colorFor(param);
           return GestureDetector(
-            onTap: () => setState(() => _selected = p),
+            onTap: () => setState(() => _selected = param),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isSel
-                    ? SensorMeta.color(p)
-                    : SensorMeta.color(p).withValues(alpha: 0.1),
+                color: isSelected ? color : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: isSel
+                boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: SensorMeta.color(p).withValues(alpha: 0.3),
+                          color: color.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -173,12 +220,12 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
                     : null,
               ),
               child: Text(
-                SensorMeta.shortLabel(p),
+                widget.metadataAdapter.shortLabelFor(param),
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(11),
                   fontWeight: FontWeight.w600,
-                  color: isSel ? Colors.white : SensorMeta.color(p),
+                  color: isSelected ? Colors.white : color,
                 ),
               ),
             ),
@@ -212,7 +259,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 40,
-                getTitlesWidget: (value, meta) => Text(
+                getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
@@ -236,19 +283,21 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
                   1,
                   double.infinity,
                 ),
-                getTitlesWidget: (v, _) {
-                  final idx = v.toInt();
-                  if (idx < 0 || idx >= filtered.length) {
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= filtered.length) {
                     return const SizedBox.shrink();
                   }
-                  final d = filtered[idx].day;
+                  final date = filtered[index].day;
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      d != null ? DateFormat('d/M').format(d) : '',
+                      date != null
+                          ? context.dateFormat('d/M').format(date)
+                          : '',
                       style: TextStyle(
                         fontSize: context.sp(10),
-                        color: const Color(0xFF757575),
+                        color: AppColors.textSecondary,
                         fontFamily: AppTextStyles.fontFamily,
                         fontWeight: FontWeight.w500,
                       ),
@@ -274,7 +323,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
                 color: AppColors.divider,
                 width: 1,
               ),
-              getTooltipItems: (spots) => spots
+              getTooltipItems: (touchedSpots) => touchedSpots
                   .map(
                     (spot) => LineTooltipItem(
                       spot.y.toStringAsFixed(1),
@@ -303,8 +352,8 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
       color: color,
       barWidth: 3,
       dotData: FlDotData(
-        show: true,
-        getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+        show: spots.length <= 28,
+        getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
           radius: 4,
           color: color,
           strokeWidth: 2,
@@ -322,14 +371,15 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
     );
   }
 
-  Widget _buildLegend() {
+  Widget _buildLegend(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 16,
       runSpacing: 8,
       children: [
-        _legendItem(AppColors.success, 'Rata-rata'),
-        _legendItem(AppColors.info, 'Min'),
-        _legendItem(AppColors.warning, 'Max'),
+        _legendItem(AppColors.success, l10n.commonAverage),
+        _legendItem(AppColors.info, l10n.commonMin),
+        _legendItem(AppColors.warning, l10n.commonMax),
       ],
     );
   }
@@ -349,7 +399,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: AppTextStyles.fontFamily,
             fontSize: 10,
             color: AppColors.textSecondary,

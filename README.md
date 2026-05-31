@@ -21,10 +21,16 @@ SimpulAgro Mobile adalah aplikasi monitoring pertanian berbasis IoT yang membant
 
 ## ✨ Features
 
-### ✅ Implemented (100% Complete)
+### Status integrasi backend (24 Mei 2026)
+
+**~88%** selaras dengan kontrak Swagger live (`dokumentasi backend api/backend api.md`).  
+Gate otomatis: `flutter analyze` ✅ · `flutter test` (144) ✅ · APK debug/release ✅.  
+Detail: lihat `QA_REPORT.md` dan `BACKEND_INTEGRATION_SCREEN_AUDIT.md`.
+
+### ✅ Implemented (core)
 
 - **Authentication** - Login dengan JWT, secure token storage
-- **Dashboard** - Environmental health, sensor overview, quick actions
+- **Dashboard** - Environmental health, sensor overview, catatan terbaru, quick actions
 - **Device Management** - CRUD operations untuk IoT devices
 - **Sensor Management** - CRUD operations untuk sensors
 - **Real-time Monitoring** - 4 tabs (Realtime, History, Maps, Analytics)
@@ -34,8 +40,10 @@ SimpulAgro Mobile adalah aplikasi monitoring pertanian berbasis IoT yang membant
 - **Agro Indicators** - VDP, GDD, ETC calculations dengan visualizations
 - **Charts & Analytics** - Interactive charts dengan FL Chart
 - **Phase Tracking** - Detailed growth phase tracking
-- **Profile & Settings** - User profile management (Read-only compliant)
-- **Admin Features** - User, role, permission management (Admin utilities)
+- **Profile & Settings** - Profile read-only, hak akses dari `/profile/permissions`
+- **Site Notes** - `GET/POST /sites/{siteId}/notes` (dashboard + site detail)
+- **Site Member Invite** - `POST /sites/{siteId}/members/invite`
+- **Admin Features** - User, role, unit, device, sensor (tanpa CRUD permission palsu)
 
 ---
 
@@ -248,25 +256,18 @@ flutter clean && flutter pub get
 
 ## 📊 Project Status
 
-### Completion: 100%
+### Backend integration: ~88% (bukan 100%)
 
-| Feature | Status | Files |
-|---------|--------|-------|
-| Core Infrastructure | ✅ 100% | 20 |
-| Authentication | ✅ 100% | 15 |
-| Dashboard | ✅ 100% | 12 |
-| Site Management | ✅ 100% | 8 |
-| Device Management | ✅ 100% | 10 |
-| Sensor Management | ✅ 100% | 10 |
-| Monitoring | ✅ 100% | 15 |
-| Plant Management | ✅ 100% | 8 |
-| Task Management | ✅ 100% | 10 |
-| Recommendation | ✅ 100% | 8 |
-| Agro Indicators | ✅ 100% | 10 |
-| Phase Tracking | ✅ 100% | 8 |
-| Profile/Settings | ✅ 100% | 3 |
+| Gate | Status |
+|------|--------|
+| `flutter analyze` | ✅ No issues |
+| `flutter test` | ✅ 144 passed |
+| `flutter build apk` (debug + release) | ✅ Lulus |
+| Manual QA vs backend live | ⏳ Belum |
 
-**Total**: 373+ Dart files, 0 compilation errors, 141 passing tests.
+Detail audit: [QA_REPORT.md](QA_REPORT.md), [BACKEND_INTEGRATION_SCREEN_AUDIT.md](BACKEND_INTEGRATION_SCREEN_AUDIT.md).
+
+**Total**: 373+ Dart files, 144 passing tests.
 
 ---
 

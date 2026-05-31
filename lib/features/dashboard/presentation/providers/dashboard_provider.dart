@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -13,6 +14,12 @@ import '../../domain/usecases/get_plant_summary_usecase.dart';
 import '../../domain/usecases/get_sensor_summary_usecase.dart';
 import '../../domain/usecases/get_seven_day_reads_usecase.dart';
 import '../../domain/usecases/get_today_reads_usecase.dart';
+
+Future<void> _watchDashboardRefresh(Ref ref, int slot) async {
+  ref.watch(realtimeRefreshTickProvider);
+  if (slot <= 0) return;
+  await Future<void>.delayed(Duration(milliseconds: 350 * slot));
+}
 
 // ─── DataSource Provider ─────────────────────────────────
 final dashboardDataSourceProvider = Provider<DashboardRemoteDataSource>((ref) {
@@ -74,12 +81,10 @@ final environmentalHealthProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return null;
       final useCase = ref.watch(getEnvironmentalHealthUseCaseProvider);
+      await _watchDashboardRefresh(ref, 0);
       return ref.retryOnError(() async {
         final result = await useCase(siteId);
-        return result.fold(
-          (failure) => throw failure,
-          (entity) => entity,
-        );
+        return result.fold((failure) => throw failure, (entity) => entity);
       });
     });
 
@@ -93,10 +98,7 @@ final deviceSummaryProvider = FutureProvider.autoDispose<DeviceSummaryEntity?>((
   final useCase = ref.watch(getDeviceSummaryUseCaseProvider);
   return ref.retryOnError(() async {
     final result = await useCase(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (entity) => entity,
-    );
+    return result.fold((failure) => throw failure, (entity) => entity);
   });
 });
 
@@ -110,10 +112,7 @@ final sensorSummaryProvider = FutureProvider.autoDispose<SensorSummaryEntity?>((
   final useCase = ref.watch(getSensorSummaryUseCaseProvider);
   return ref.retryOnError(() async {
     final result = await useCase(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (entity) => entity,
-    );
+    return result.fold((failure) => throw failure, (entity) => entity);
   });
 });
 
@@ -127,10 +126,7 @@ final plantSummaryProvider = FutureProvider.autoDispose<PlantSummaryEntity?>((
   final useCase = ref.watch(getPlantSummaryUseCaseProvider);
   return ref.retryOnError(() async {
     final result = await useCase(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (entity) => entity,
-    );
+    return result.fold((failure) => throw failure, (entity) => entity);
   });
 });
 
@@ -141,12 +137,10 @@ final latestSensorReadsProvider =
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final useCase = ref.watch(getLatestSensorReadsUseCaseProvider);
+      await _watchDashboardRefresh(ref, 1);
       return ref.retryOnError(() async {
         final result = await useCase(siteId);
-        return result.fold(
-          (failure) => throw failure,
-          (entities) => entities,
-        );
+        return result.fold((failure) => throw failure, (entities) => entities);
       });
     });
 
@@ -159,26 +153,19 @@ final sevenDayReadsProvider =
       final useCase = ref.watch(getSevenDayReadsUseCaseProvider);
       return ref.retryOnError(() async {
         final result = await useCase(siteId);
-        return result.fold(
-          (failure) => throw failure,
-          (entities) => entities,
-        );
+        return result.fold((failure) => throw failure, (entities) => entities);
       });
     });
 
 // ─── Today Reads ──────────────────────────────────────────
 /// GET /sites/{siteId}/reads/today
-final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadEntity>>((
-  ref,
-) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final useCase = ref.watch(getTodayReadsUseCaseProvider);
-  return ref.retryOnError(() async {
-    final result = await useCase(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (entities) => entities,
-    );
-  });
-});
+final dashboardTodayReadsProvider =
+    FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+      final useCase = ref.watch(getTodayReadsUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId);
+        return result.fold((failure) => throw failure, (entities) => entities);
+      });
+    });

@@ -36,8 +36,14 @@ class MapsTab extends ConsumerWidget {
           children: [
             // Stats Bar
             devicesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (devices) {
                 final sensorCount = sensorCountAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   data: (c) => c,
                   loading: () =>
                       devices.fold<int>(0, (s, d) => s + d.sensors.length),
@@ -58,6 +64,9 @@ class MapsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Maps'),
             SizedBox(height: context.rh(0.014)),
             devicesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 195),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
@@ -92,6 +101,9 @@ class MapsTab extends ConsumerWidget {
             const SectionHeaderWidget(title: 'Daftar Device & Sensor'),
             SizedBox(height: context.rh(0.014)),
             devicesAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               loading: () => const LoadingCardWidget(height: 73),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => devices.isEmpty

@@ -4,6 +4,30 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/response_parser.dart';
 import '../models/monitoring_models.dart';
 
+Iterable<Map<String, dynamic>> _dataMaps(dynamic responseData) {
+  return ResponseParser.extractDataList(
+    responseData,
+  ).whereType<Map>().map((item) => Map<String, dynamic>.from(item));
+}
+
+bool _isExpectedEmptyResponse(DioException e) {
+  final status = e.response?.statusCode;
+  if (status == 400 || status == 404 || status == 422) return true;
+  if (status != 500) return false;
+  final body = e.response?.data;
+  final message = body is Map
+      ? [body['message'], body['error']]
+            .whereType<Object>()
+            .map((value) => value.toString())
+            .join(' ')
+            .toLowerCase()
+      : body?.toString().toLowerCase() ?? '';
+  return message.contains('no data') ||
+      message.contains('not found') ||
+      message.contains('tidak ada') ||
+      message.contains('belum ada');
+}
+
 class MonitoringRemoteDataSource {
   final Dio _dio;
 
@@ -13,12 +37,20 @@ class MonitoringRemoteDataSource {
 
   /// GET /api/sites/:siteId/reads/updates
   /// Nilai sensor terkini per ds_id.
-  Future<List<SensorReadUpdate>> getLatestReads(String siteId) async {
-    final res = await _dio.get(ApiEndpoints.readsUpdates(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorReadUpdate.fromJson)
-        .toList();
+  Future<List<SensorReadUpdate>> getLatestReads(
+    String siteId, {
+    String? sensId,
+  }) async {
+    final queryParameters = <String, dynamic>{};
+    if (sensId != null && sensId.isNotEmpty) {
+      queryParameters['sens_id'] = sensId;
+    }
+
+    final res = await _dio.get(
+      ApiEndpoints.readsUpdates(siteId),
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
+    );
+    return _dataMaps(res.data).map(SensorReadUpdate.fromJson).toList();
   }
 
   // ── History ─────────────────────────────────────────────────────────────────
@@ -31,10 +63,7 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/reads/seven-day
   Future<List<SensorReadModel>> getSevenDayReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsSevenDay(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorReadModel.fromJson)
-        .toList();
+    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads?startDate=&endDate=
@@ -65,29 +94,20 @@ class MonitoringRemoteDataSource {
       ApiEndpoints.reads(siteId),
       queryParameters: queryParameters,
     );
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorReadModel.fromJson)
-        .toList();
+    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads/planting-date
   Future<List<SensorReadModel>> getPlantingDateReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsPlantingDate(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorReadModel.fromJson)
-        .toList();
+    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads/daily
   /// Agregasi harian (avg/min/max) per ds_id.
   Future<List<SensorDailyModel>> getDailyReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsDaily(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorDailyModel.fromJson)
-        .toList();
+    return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
   }
 
   // ── Devices & Sensors ───────────────────────────────────────────────────────
@@ -96,10 +116,7 @@ class MonitoringRemoteDataSource {
   /// Device beserta nested sensor list (key 'sensor' atau 'sensors').
   Future<List<DeviceModel>> getDevices(String siteId) async {
     final res = await _dio.get(ApiEndpoints.devices(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(DeviceModel.fromJson)
-        .toList();
+    return _dataMaps(res.data).map(DeviceModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/sensors
@@ -107,6 +124,22 @@ class MonitoringRemoteDataSource {
   Future<int> getSensorCount(String siteId) async {
     final res = await _dio.get(ApiEndpoints.sensors(siteId));
     return ResponseParser.extractDataList(res.data).length;
+  }
+
+  /// GET /api/sites/:siteId/device-sensors/values
+  /// Metadata threshold canonical untuk status sensor.
+  Future<List<DeviceSensorThresholdModel>> getDeviceSensorThresholdValues(
+    String siteId,
+  ) async {
+    try {
+      final res = await _dio.get(ApiEndpoints.deviceSensorValues(siteId));
+      return _dataMaps(
+        res.data,
+      ).map(DeviceSensorThresholdModel.fromJson).toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      rethrow;
+    }
   }
 
   // ── Logs ────────────────────────────────────────────────────────────────────
@@ -127,8 +160,15 @@ class MonitoringRemoteDataSource {
 
   /// GET /api/sites/:siteId/recommendations/plant-by-site
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId) async {
-    final res = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
-    return res.data as Map<String, dynamic>? ?? {};
+    try {
+      final res = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
+      return ResponseParser.extractDataMap(res.data);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) {
+        return <String, dynamic>{};
+      }
+      rethrow;
+    }
   }
 
   // ── Alarms ──────────────────────────────────────────────────────────────────
@@ -144,42 +184,50 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/reads/mounth
   /// Rekap bulanan sensor (avg/min/max) per ds_id.
   Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId) async {
-    final res = await _dio.get(ApiEndpoints.readsMonthly(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(MonthlyRekapModel.fromJson)
-        .toList();
+    try {
+      final res = await _dio.get(ApiEndpoints.readsMonthly(siteId));
+      return _dataMaps(
+        res.data,
+      ).expand(MonthlyRekapModel.fromBackendJson).toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      rethrow;
+    }
   }
 
   // ── Daily recap (today / by-day) ─────────────────────────────────────────────
 
   /// GET /sites/{siteId}/reads/daily/today
   Future<List<SensorDailyModel>> getDailyToday(String siteId) async {
-    final res = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorDailyModel.fromJson)
-        .toList();
+    try {
+      final res = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
+      return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      rethrow;
+    }
   }
 
   /// GET /sites/{siteId}/reads/daily/by-day?day=YYYY-MM-DD
-  Future<List<SensorDailyModel>> getDailyByDay(String siteId, String day) async {
-    final res = await _dio.get(
-      ApiEndpoints.readsDailyByDay(siteId),
-      queryParameters: {'day': day},
-    );
-    return ResponseParser.extractDataList(res.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SensorDailyModel.fromJson)
-        .toList();
+  Future<List<SensorDailyModel>> getDailyByDay(
+    String siteId,
+    String day,
+  ) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.readsDailyByDay(siteId),
+        queryParameters: {'day': day},
+      );
+      return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      rethrow;
+    }
   }
 
   /// POST /sites/{siteId}/reads/daily/rekap  body: { "day": "YYYY-MM-DD" }
   Future<void> triggerDailyRekap(String siteId, String day) async {
-    await _dio.post(
-      ApiEndpoints.readsRekapDaily(siteId),
-      data: {'day': day},
-    );
+    await _dio.post(ApiEndpoints.readsRekapDaily(siteId), data: {'day': day});
   }
 
   /// PUT /sites/{siteId}/reads/{id}

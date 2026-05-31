@@ -1,13 +1,23 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../../utils/monitoring_display_utils.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class MonthlyTrendCardWidget extends StatefulWidget {
   final List<MonthlyRekapModel> data;
-  const MonthlyTrendCardWidget({super.key, required this.data});
+  final SensorMetadataAdapter metadataAdapter;
+
+  const MonthlyTrendCardWidget({
+    super.key,
+    required this.data,
+    required this.metadataAdapter,
+  });
 
   @override
   State<MonthlyTrendCardWidget> createState() => _MonthlyTrendCardWidgetState();
@@ -16,17 +26,35 @@ class MonthlyTrendCardWidget extends StatefulWidget {
 class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
   String _selected = 'env_temp';
 
-  List<String> get _params => widget.data.map((d) => d.dsId).toSet().toList();
+  List<String> get _params =>
+      widget.data
+          .map((item) => item.dsId)
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
 
   @override
   void initState() {
     super.initState();
-    final p = _params;
-    if (p.isNotEmpty && !p.contains(_selected)) _selected = p.first;
+    final params = _params;
+    if (params.isNotEmpty && !params.contains(_selected)) {
+      _selected = params.first;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant MonthlyTrendCardWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final params = _params;
+    if (params.isNotEmpty && !params.contains(_selected)) {
+      _selected = params.first;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.data.isEmpty) {
       return AppCardWidget(
         height: 120,
@@ -41,7 +69,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Belum ada data rekap bulanan',
+                l10n.monitoringMonthlyCardEmpty,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
@@ -54,14 +82,23 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
       );
     }
 
-    final filtered = widget.data.where((d) => d.dsId == _selected).toList();
-    final color = SensorMeta.color(_selected);
-    final unit = SensorMeta.unit(_selected);
+    final filtered =
+        widget.data.where((item) => item.dsId == _selected).toList()
+          ..sort((a, b) => a.month.compareTo(b.month));
+    final validRows = filtered
+        .where(
+          (item) =>
+              item.avgVal != null || item.minVal != null || item.maxVal != null,
+        )
+        .toList();
+    final chartRows = sampleForChart(validRows, maxPoints: 36);
+    final color = widget.metadataAdapter.colorFor(_selected);
+    final unit = widget.metadataAdapter.unitFor(_selected);
 
-    final barGroups = filtered.asMap().entries.map((e) {
-      final avg = e.value.avgVal ?? 0;
+    final barGroups = chartRows.asMap().entries.map((entry) {
+      final avg = entry.value.avgVal ?? 0;
       return BarChartGroupData(
-        x: e.key,
+        x: entry.key,
         barRods: [
           BarChartRodData(
             toY: avg,
@@ -70,7 +107,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
             borderRadius: BorderRadius.circular(4),
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
-              toY: (e.value.maxVal ?? avg) * 1.2,
+              toY: (entry.value.maxVal ?? avg) * 1.2,
               color: color.withValues(alpha: 0.08),
             ),
           ),
@@ -88,7 +125,18 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
           if (filtered.isEmpty)
             Center(
               child: Text(
-                'Tidak ada data untuk sensor ini',
+                l10n.monitoringMonthlyCardNoSensorData,
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(12),
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            )
+          else if (chartRows.isEmpty)
+            Center(
+              child: Text(
+                l10n.monitoringMonthlyCardNoSensorData,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
@@ -97,7 +145,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
               ),
             )
           else
-            _buildBarChart(context, filtered, barGroups, color, unit),
+            _buildBarChart(context, chartRows, barGroups, color, unit),
           const SizedBox(height: 8),
           _buildLegend(context, color),
         ],
@@ -106,6 +154,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
   }
 
   Widget _buildHeader(BuildContext context, Color color) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Container(
@@ -122,9 +171,12 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Rekap Bulanan', style: AppTextStyles.cardTitle(context)),
               Text(
-                'Rata-rata per bulan',
+                l10n.monitoringMonthlyCardTitle,
+                style: AppTextStyles.cardTitle(context),
+              ),
+              Text(
+                l10n.monitoringMonthlyCardSubtitle,
                 style: AppTextStyles.caption(context),
               ),
             ],
@@ -138,22 +190,22 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _params.map((p) {
-          final isSel = p == _selected;
-          final c = SensorMeta.color(p);
+        children: _params.map((param) {
+          final isSelected = param == _selected;
+          final color = widget.metadataAdapter.colorFor(param);
           return GestureDetector(
-            onTap: () => setState(() => _selected = p),
+            onTap: () => setState(() => _selected = param),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8, bottom: 12),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSel ? c : c.withValues(alpha: 0.1),
+                color: isSelected ? color : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: isSel
+                boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: c.withValues(alpha: 0.3),
+                          color: color.withValues(alpha: 0.3),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -161,12 +213,12 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
                     : null,
               ),
               child: Text(
-                SensorMeta.shortLabel(p),
+                widget.metadataAdapter.shortLabelFor(param),
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(10),
                   fontWeight: FontWeight.w600,
-                  color: isSel ? Colors.white : c,
+                  color: isSelected ? Colors.white : color,
                 ),
               ),
             ),
@@ -191,15 +243,15 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (_) =>
-                FlLine(color: const Color(0xFFEEEEEE), strokeWidth: 1),
+                FlLine(color: AppColors.divider, strokeWidth: 1),
           ),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 40,
-                getTitlesWidget: (v, _) => Text(
-                  v.toStringAsFixed(0),
+                getTitlesWidget: (value, _) => Text(
+                  value.toStringAsFixed(0),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(9),
@@ -218,17 +270,17 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 28,
-                getTitlesWidget: (v, _) {
-                  final idx = v.toInt();
-                  if (idx < 0 || idx >= filtered.length) {
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= filtered.length) {
                     return const SizedBox.shrink();
                   }
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      filtered[idx].month.length >= 7
-                          ? filtered[idx].month.substring(5, 7)
-                          : filtered[idx].month,
+                      filtered[index].month.length >= 7
+                          ? filtered[index].month.substring(5, 7)
+                          : filtered[index].month,
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(9),
@@ -251,16 +303,15 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
                 vertical: 8,
               ),
               tooltipBorder: BorderSide(color: color.withValues(alpha: 0.3)),
-              getTooltipItem: (group, groupIndex, rod, rodIndex) =>
-                  BarTooltipItem(
-                    '${rod.toY.toStringAsFixed(1)}$unit',
-                    TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      fontFamily: AppTextStyles.fontFamily,
-                    ),
-                  ),
+              getTooltipItem: (_, __, rod, ___) => BarTooltipItem(
+                '${rod.toY.toStringAsFixed(1)}$unit',
+                TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  fontFamily: AppTextStyles.fontFamily,
+                ),
+              ),
             ),
           ),
         ),
@@ -269,6 +320,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
   }
 
   Widget _buildLegend(BuildContext context, Color color) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Container(
@@ -281,7 +333,9 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
         ),
         const SizedBox(width: 6),
         Text(
-          'Rata-rata ${SensorMeta.label(_selected)}',
+          l10n.monitoringMonthlyLegendAverage(
+            widget.metadataAdapter.labelFor(_selected),
+          ),
           style: AppTextStyles.caption(context, size: 10),
         ),
       ],

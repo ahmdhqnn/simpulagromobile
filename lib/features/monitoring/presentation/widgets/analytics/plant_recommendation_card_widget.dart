@@ -4,17 +4,22 @@ import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
-import '../../../data/models/monitoring_models.dart';
+import '../../utils/sensor_metadata_adapter.dart';
 
 class PlantRecommendationCardWidget extends StatelessWidget {
   final Map<String, dynamic> data;
-  const PlantRecommendationCardWidget({super.key, required this.data});
+  final SensorMetadataAdapter metadataAdapter;
+  const PlantRecommendationCardWidget({
+    super.key,
+    required this.data,
+    required this.metadataAdapter,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final recData = data['data'] as Map<String, dynamic>?;
+    final recData = _extractMap(data['data']) ?? data;
 
-    if (recData == null || recData.isEmpty) {
+    if (recData.isEmpty) {
       return const InfoStateWidget.svg(
         svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
         message: 'Belum ada rekomendasi untuk tanaman',
@@ -22,10 +27,27 @@ class PlantRecommendationCardWidget extends StatelessWidget {
       );
     }
 
-    final recommendation = recData['recommendation'] as Map<String, dynamic>?;
-    final plantName = recommendation?['plant'] as String? ?? '-';
-    final confidence = (recommendation?['confidence'] as num?)?.toDouble();
-    final sensorData = recData['sensor_data'] as Map<String, dynamic>?;
+    final recommendation =
+        _extractMap(recData['recommendation']) ??
+        _extractMap(recData['recommended_plant']) ??
+        recData;
+    final plantName =
+        _stringValue(
+          recommendation['plant'] ??
+              recommendation['plant_name'] ??
+              recommendation['plantName'] ??
+              recommendation['name'] ??
+              recommendation['label'],
+        ) ??
+        '-';
+    final confidence = _toConfidence(
+      recommendation['confidence'] ??
+          recommendation['confidence_score'] ??
+          recommendation['score'],
+    );
+    final sensorData =
+        _extractMap(recData['sensor_data']) ??
+        _extractMap(recData['sensorData']);
 
     return AppCardWidget(
       radius: AppRadius.lg,
@@ -106,7 +128,7 @@ class PlantRecommendationCardWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${SensorMeta.label(e.key)}: ${e.value}',
+                    '${metadataAdapter.labelFor(e.key)}: ${e.value}',
                     style: AppTextStyles.caption(context, size: 11),
                   ),
                 );
@@ -116,5 +138,25 @@ class PlantRecommendationCardWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Map<String, dynamic>? _extractMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  String? _stringValue(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  double? _toConfidence(dynamic value) {
+    if (value == null) return null;
+    final raw = value is num
+        ? value.toDouble()
+        : double.tryParse(value.toString().replaceAll(',', '.'));
+    if (raw == null) return null;
+    return raw > 1 ? raw / 100 : raw;
   }
 }

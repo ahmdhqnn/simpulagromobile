@@ -10,31 +10,43 @@ final notesRemoteDataSourceProvider = Provider<NotesRemoteDataSource>((ref) {
 });
 
 /// Daftar catatan untuk site terpilih
-final siteNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((ref) async {
+final siteNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((
+  ref,
+) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');
   }
   final ds = ref.watch(notesRemoteDataSourceProvider);
   return ref.retryOnError(() async {
-    final models = await ds.getNotes(siteId);
+    final models = await ds.getNotes(siteId, page: 1, limit: 50);
     return models.map((m) => m.toEntity()).toList();
   });
 });
 
 /// Catatan per site (untuk Site Detail)
-final siteNotesBySiteProvider =
-    FutureProvider.autoDispose.family<List<SiteNote>, String>((ref, siteId) async {
-  final ds = ref.watch(notesRemoteDataSourceProvider);
-  return ref.retryOnError(() async {
-    final models = await ds.getNotes(siteId);
-    return models.map((m) => m.toEntity()).toList();
-  });
-});
+final siteNotesBySiteProvider = FutureProvider.autoDispose
+    .family<List<SiteNote>, String>((ref, siteId) async {
+      final ds = ref.watch(notesRemoteDataSourceProvider);
+      return ref.retryOnError(() async {
+        final models = await ds.getNotes(siteId, page: 1, limit: 50);
+        return models.map((m) => m.toEntity()).toList();
+      });
+    });
 
 /// 3 catatan terbaru untuk dashboard
-final latestNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((ref) async {
-  final notes = await ref.watch(siteNotesProvider.future);
+final latestNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((
+  ref,
+) async {
+  final siteId = ref.watch(selectedSiteIdProvider);
+  if (siteId == null) {
+    throw StateError('Pilih site terlebih dahulu');
+  }
+  final ds = ref.watch(notesRemoteDataSourceProvider);
+  final models = await ref.retryOnError(
+    () => ds.getNotes(siteId, page: 1, limit: 3),
+  );
+  final notes = models.map((m) => m.toEntity()).toList();
   notes.sort((a, b) {
     final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
     final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
@@ -68,8 +80,5 @@ class CreateNoteNotifier extends StateNotifier<AsyncValue<void>> {
 
 final createNoteProvider =
     StateNotifierProvider<CreateNoteNotifier, AsyncValue<void>>((ref) {
-  return CreateNoteNotifier(
-    ref.watch(notesRemoteDataSourceProvider),
-    ref,
-  );
-});
+      return CreateNoteNotifier(ref.watch(notesRemoteDataSourceProvider), ref);
+    });

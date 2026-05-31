@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -14,15 +15,16 @@ class DailyRecapTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final siteId = ref.watch(selectedSiteIdProvider);
     if (siteId == null) {
-      return const Center(child: Text('Pilih site terlebih dahulu'));
+      return Center(child: Text(l10n.monitoringSelectSiteFirst));
     }
 
     final todayAsync = ref.watch(dailyTodayProvider);
     final byDayAsync = ref.watch(dailyByDayProvider);
     final selectedDay = ref.watch(dailyByDayDateProvider);
-    final fmt = DateFormat('dd MMM yyyy');
+    final fmt = context.dateFormat('dd MMM yyyy');
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -39,9 +41,12 @@ class DailyRecapTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeaderWidget(title: 'Rekap Hari Ini'),
+            SectionHeaderWidget(title: l10n.monitoringDailyTodaySection),
             SizedBox(height: context.rh(0.014)),
             todayAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (items) => _DailyTable(items: items),
               loading: () => const LoadingCardWidget(height: 120),
               error: (e, _) => ErrorStateCardWidget(
@@ -50,7 +55,7 @@ class DailyRecapTab extends ConsumerWidget {
               ),
             ),
             SizedBox(height: context.rh(0.024)),
-            const SectionHeaderWidget(title: 'Rekap Per Tanggal'),
+            SectionHeaderWidget(title: l10n.monitoringDailyByDateSection),
             SizedBox(height: context.rh(0.01)),
             OutlinedButton.icon(
               onPressed: () async {
@@ -62,7 +67,6 @@ class DailyRecapTab extends ConsumerWidget {
                 );
                 if (picked != null) {
                   ref.read(dailyByDayDateProvider.notifier).state = picked;
-                  ref.invalidate(dailyByDayProvider);
                 }
               },
               icon: const Icon(Icons.calendar_today, size: 18),
@@ -70,6 +74,9 @@ class DailyRecapTab extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.014)),
             byDayAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (items) => _DailyTable(items: items),
               loading: () => const LoadingCardWidget(height: 120),
               error: (e, _) => ErrorStateCardWidget(
@@ -91,10 +98,11 @@ class _DailyTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (items.isEmpty) {
-      return const InfoStateWidget.icon(
+      return InfoStateWidget.icon(
         icon: Icons.table_chart_outlined,
-        message: 'Tidak ada data rekap',
+        message: l10n.monitoringDailyNoRecap,
         height: 100,
       );
     }
@@ -103,22 +111,24 @@ class _DailyTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Hari')),
+          columns: [
+            DataColumn(label: Text(l10n.commonDateLabel)),
             DataColumn(label: Text('ds_id')),
             DataColumn(label: Text('dev_id')),
-            DataColumn(label: Text('Min')),
-            DataColumn(label: Text('Max')),
-            DataColumn(label: Text('Avg')),
+            DataColumn(label: Text(l10n.commonMin)),
+            DataColumn(label: Text(l10n.commonMax)),
+            DataColumn(label: Text(l10n.commonAverage)),
           ],
           rows: items.map((r) {
             return DataRow(
               cells: [
-                DataCell(Text(
-                  r.day != null
-                      ? DateFormat('yyyy-MM-dd').format(r.day!)
-                      : '-',
-                )),
+                DataCell(
+                  Text(
+                    r.day != null
+                        ? context.dateFormat('yyyy-MM-dd').format(r.day!)
+                        : '-',
+                  ),
+                ),
                 DataCell(Text(r.dsId)),
                 DataCell(Text(r.devId)),
                 DataCell(Text(r.minVal?.toStringAsFixed(2) ?? '-')),

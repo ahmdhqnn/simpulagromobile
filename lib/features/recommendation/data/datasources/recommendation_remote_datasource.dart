@@ -1,10 +1,19 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/recommendation_model.dart';
 import '../models/recommendation_bundle_model.dart';
+
+void _debugLog(String message) {
+  assert(() {
+    developer.log(message, name: 'RecommendationRemoteDatasource');
+    return true;
+  }());
+}
 
 /// Recommendation remote datasource
 abstract class RecommendationRemoteDatasource {
@@ -73,19 +82,19 @@ class RecommendationRemoteDatasourceImpl
   ) async {
     try {
       final response = await _dio.get(ApiEndpoints.recommendations(siteId));
-      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      final data = ResponseParser.extractDataMap(response.data);
       return _parseRecommendationResponse(data, siteId);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 404) {
-        debugPrint(
+      if (_isExpectedEmptyRecommendationError(e)) {
+        _debugLog(
           '⚠️ Recommendation datasource (getBySite) returned ${e.response?.statusCode}: Returning empty list',
         );
         return [];
       }
-      debugPrint('❌ Recommendation datasource error (getBySite): ${e.message}');
+      _debugLog('❌ Recommendation datasource error (getBySite): ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in recommendation datasource (getBySite): $e',
       );
       rethrow;
@@ -103,19 +112,17 @@ class RecommendationRemoteDatasourceImpl
     try {
       // API tidak memiliki endpoint per-plant, gunakan history
       final response = await _dio.get(ApiEndpoints.recHistory(siteId));
-      final data = response.data['data'] as List? ?? [];
+      final data = ResponseParser.extractDataList(response.data);
       return data
-          .map(
-            (json) => _parseHistoryItem(json as Map<String, dynamic>, siteId),
-          )
+          .whereType<Map>()
+          .expand((json) => _parseHistoryEntry(json, siteId))
           .toList();
     } on DioException catch (e) {
-      debugPrint(
-        '❌ Recommendation datasource error (getByPlant): ${e.message}',
-      );
+      if (_isExpectedEmptyRecommendationError(e)) return [];
+      _debugLog('❌ Recommendation datasource error (getByPlant): ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in recommendation datasource (getByPlant): $e',
       );
       rethrow;
@@ -162,12 +169,12 @@ class RecommendationRemoteDatasourceImpl
 
       return RecommendationModel.fromJson(data);
     } on DioException catch (e) {
-      debugPrint('❌ Recommendation datasource error (getById): ${e.message}');
+      _debugLog('❌ Recommendation datasource error (getById): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in recommendation datasource (getById): $e',
       );
       rethrow;
@@ -203,12 +210,12 @@ class RecommendationRemoteDatasourceImpl
 
       return RecommendationModel.fromJson(data);
     } on DioException catch (e) {
-      debugPrint('❌ Recommendation datasource error (apply): ${e.message}');
+      _debugLog('❌ Recommendation datasource error (apply): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint('❌ Unexpected error in recommendation datasource (apply): $e');
+      _debugLog('❌ Unexpected error in recommendation datasource (apply): $e');
       rethrow;
     }
   }
@@ -244,12 +251,12 @@ class RecommendationRemoteDatasourceImpl
 
       return RecommendationModel.fromJson(data);
     } on DioException catch (e) {
-      debugPrint('❌ Recommendation datasource error (dismiss): ${e.message}');
+      _debugLog('❌ Recommendation datasource error (dismiss): ${e.message}');
       rethrow;
     } on Failure {
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in recommendation datasource (dismiss): $e',
       );
       rethrow;
@@ -266,16 +273,17 @@ class RecommendationRemoteDatasourceImpl
   ) async {
     try {
       final response = await _dio.get(
-        '/sites/$siteId/recommendations',
+        ApiEndpoints.recommendations(siteId),
         queryParameters: {'refresh': 'true'},
       );
-      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      final data = ResponseParser.extractDataMap(response.data);
       return _parseRecommendationResponse(data, siteId);
     } on DioException catch (e) {
-      debugPrint('❌ Recommendation datasource error (generate): ${e.message}');
+      if (_isExpectedEmptyRecommendationError(e)) return [];
+      _debugLog('❌ Recommendation datasource error (generate): ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint(
+      _debugLog(
         '❌ Unexpected error in recommendation datasource (generate): $e',
       );
       rethrow;
@@ -283,14 +291,20 @@ class RecommendationRemoteDatasourceImpl
   }
 
   @override
-  Future<List<RecommendationModel>> getRecommendationHistory(String siteId) async {
-    final response = await _dio.get(ApiEndpoints.recHistory(siteId));
-    final data = response.data['data'] as List? ?? [];
-    return data
-        .map(
-          (json) => _parseHistoryItem(json as Map<String, dynamic>, siteId),
-        )
-        .toList();
+  Future<List<RecommendationModel>> getRecommendationHistory(
+    String siteId,
+  ) async {
+    try {
+      final response = await _dio.get(ApiEndpoints.recHistory(siteId));
+      final data = ResponseParser.extractDataList(response.data);
+      return data
+          .whereType<Map>()
+          .expand((json) => _parseHistoryEntry(json, siteId))
+          .toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyRecommendationError(e)) return [];
+      rethrow;
+    }
   }
 
   @override
@@ -298,19 +312,21 @@ class RecommendationRemoteDatasourceImpl
     String siteId,
     String phaseId,
   ) async {
-    final response = await _dio.get(ApiEndpoints.recByPhase(siteId, phaseId));
-    final data = response.data['data'];
-    if (data is Map<String, dynamic>) {
+    try {
+      final response = await _dio.get(ApiEndpoints.recByPhase(siteId, phaseId));
+      final rows = ResponseParser.extractDataList(response.data);
+      if (rows.isNotEmpty) {
+        return rows
+            .whereType<Map>()
+            .expand((e) => _parseHistoryEntry(e, siteId))
+            .toList();
+      }
+      final data = ResponseParser.extractDataMap(response.data);
       return _parseRecommendationResponse(data, siteId);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyRecommendationError(e)) return [];
+      rethrow;
     }
-    if (data is List) {
-      return data
-          .map(
-            (e) => _parseHistoryItem(e as Map<String, dynamic>, siteId),
-          )
-          .toList();
-    }
-    return [];
   }
 
   @override
@@ -322,11 +338,15 @@ class RecommendationRemoteDatasourceImpl
       ApiEndpoints.plantRecommendations(siteId),
       data: payload,
     );
-    final data = response.data['data'];
-    if (data is Map<String, dynamic>) {
-      return _parseRecommendationResponse(data, siteId);
+    final rows = ResponseParser.extractDataList(response.data);
+    if (rows.isNotEmpty) {
+      return rows
+          .whereType<Map>()
+          .expand((e) => _parseHistoryEntry(e, siteId))
+          .toList();
     }
-    return [];
+    final data = ResponseParser.extractDataMap(response.data);
+    return _parseRecommendationResponse(data, siteId);
   }
 
   @override
@@ -364,50 +384,244 @@ class RecommendationRemoteDatasourceImpl
   /// TODO: Minta backend untuk menambahkan ID field di response
   List<RecommendationModel> _parseRecommendationResponse(
     Map<String, dynamic> data,
-    String siteId,
-  ) {
-    // Backend API actually returns "sensor_data" and "recommendations" map
-    final recommendationsMap = data['recommendations'] as Map<String, dynamic>?;
-    if (recommendationsMap == null) return [];
+    String siteId, {
+    DateTime? createdAt,
+    String? idSeed,
+  }) {
+    final recommendationsMap = _asStringMap(data['recommendations']);
+    if (recommendationsMap == null || recommendationsMap.isEmpty) {
+      if (_looksLikeDirectRecommendation(data)) {
+        return [_parseDirectRecommendationItem(data, siteId)];
+      }
+      return [];
+    }
 
     final result = <RecommendationModel>[];
-    final now = DateTime.now();
+    final timestamp = createdAt ?? DateTime.now();
 
-    void parseItem(String key, String typeStr, String defaultTitle) {
-      if (recommendationsMap.containsKey(key)) {
-        final itemMap = recommendationsMap[key];
-        if (itemMap is Map<String, dynamic> && !itemMap.containsKey('error')) {
-          final status = itemMap['status'] as String?;
-          final pesan = itemMap['pesan'] as String?;
-          result.add(
-            RecommendationModel(
-              recommendationId: '${key}_${siteId}_${now.millisecondsSinceEpoch}',
-              type: typeStr,
-              title: typeStr == 'npk' ? _buildNpkTitle(itemMap) : (pesan ?? defaultTitle),
-              description: pesan ?? '-',
-              priority: _mapNpkPriority(status),
-              status: 'pending',
-              siteId: siteId,
-              parameters: RecommendationBundleModel(
-                npk: typeStr == 'npk' ? RecommendationActionResultModel.fromJson(itemMap) : null,
-                ph: typeStr == 'ph' ? RecommendationActionResultModel.fromJson(itemMap) : null,
-              ),
-              actionItems: typeStr == 'npk' ? _buildNpkActionItems(itemMap) : _buildPhActionItems(itemMap),
-              createdAt: now,
-              reason: pesan,
-            ),
-          );
-        }
+    void parseItem(
+      String key,
+      String typeStr,
+      String defaultTitle,
+      dynamic raw,
+    ) {
+      final item = _buildRecommendationFromRaw(
+        raw: raw,
+        key: key,
+        typeStr: typeStr,
+        defaultTitle: defaultTitle,
+        siteId: siteId,
+        createdAt: timestamp,
+        idSeed: idSeed,
+      );
+      if (item != null) result.add(item);
+    }
+
+    parseItem('npk', 'npk', 'Penyesuaian NPK', recommendationsMap['npk']);
+    parseItem('ph', 'ph', 'Penyesuaian pH Tanah', recommendationsMap['ph']);
+
+    final lingkungan = _asStringMap(recommendationsMap['lingkungan']);
+    if (lingkungan != null) {
+      for (final entry in lingkungan.entries) {
+        parseItem(
+          'lingkungan_${entry.key}',
+          _environmentType(entry.key),
+          _environmentTitle(entry.key),
+          entry.value,
+        );
       }
     }
 
-    parseItem('npk', 'npk', 'Penyesuaian NPK');
-    parseItem('ph', 'ph', 'Penyesuaian pH Tanah');
+    for (final entry in recommendationsMap.entries) {
+      if (entry.key == 'npk' ||
+          entry.key == 'ph' ||
+          entry.key == 'lingkungan') {
+        continue;
+      }
+      parseItem(
+        entry.key,
+        _mapRecommendationType(entry.key),
+        _titleFromKey(entry.key),
+        entry.value,
+      );
+    }
 
     return result;
   }
 
+  /// Parse item dari history endpoint versi baru maupun format lama.
+  List<RecommendationModel> _parseHistoryEntry(
+    Map<dynamic, dynamic> raw,
+    String siteId,
+  ) {
+    final json = Map<String, dynamic>.from(raw);
+    final createdAt = _parseDate(
+      json['created_at'] ??
+          json['rec_created'] ??
+          json['date'] ??
+          json['rec_date'],
+    );
+    final idSeed = _stringOrNull(json['rec_id'] ?? json['date']);
+
+    final liveBundle = _asStringMap(json['recommendations']);
+    if (liveBundle != null && liveBundle.isNotEmpty) {
+      return _parseRecommendationResponse(
+        json,
+        siteId,
+        createdAt: createdAt,
+        idSeed: idSeed,
+      );
+    }
+
+    final npkRec = _parseJsonMap(json['npk_recommendation']);
+    final phRec = _parseJsonMap(json['ph_recommendation']);
+    if (npkRec != null || phRec != null) {
+      return _parseRecommendationResponse(
+        {
+          'recommendations': {
+            if (npkRec != null) 'npk': npkRec,
+            if (phRec != null) 'ph': phRec,
+          },
+        },
+        siteId,
+        createdAt: createdAt,
+        idSeed: idSeed,
+      );
+    }
+
+    if (_looksLikeDirectRecommendation(json)) {
+      return [_parseDirectRecommendationItem(json, siteId)];
+    }
+
+    return const [];
+  }
+
+  RecommendationModel? _buildRecommendationFromRaw({
+    required dynamic raw,
+    required String key,
+    required String typeStr,
+    required String defaultTitle,
+    required String siteId,
+    required DateTime createdAt,
+    String? idSeed,
+  }) {
+    if (raw == null) return null;
+
+    final itemMap = _asStringMap(raw);
+    if (itemMap != null && itemMap.isEmpty) return null;
+    if (itemMap != null &&
+        itemMap.containsKey('error') &&
+        !_hasDisplayableMessage(itemMap)) {
+      return null;
+    }
+
+    final rawText = raw is String ? raw.trim() : null;
+    if (itemMap == null && (rawText == null || rawText.isEmpty)) {
+      return null;
+    }
+
+    final title = itemMap == null
+        ? defaultTitle
+        : _titleFromMap(itemMap, typeStr, defaultTitle);
+    final description =
+        (itemMap == null ? rawText : _messageFromMap(itemMap)) ??
+        'Rekomendasi tersedia berdasarkan data sensor terbaru.';
+    final priority = itemMap == null
+        ? 'medium'
+        : _mapNpkPriority(
+            _stringOrNull(
+              itemMap['priority'] ?? itemMap['status'] ?? itemMap['level'],
+            ),
+          );
+    final actionModel = itemMap == null ? null : _actionModel(itemMap);
+
+    return RecommendationModel(
+      recommendationId: _generatedId(key, siteId, createdAt, idSeed),
+      type: typeStr,
+      title: title,
+      description: description,
+      priority: priority,
+      status: 'pending',
+      siteId: siteId,
+      parameters: RecommendationBundleModel(
+        npk: typeStr == 'npk' ? actionModel : null,
+        ph: typeStr == 'ph' ? actionModel : null,
+      ),
+      actionItems: itemMap == null
+          ? [description]
+          : _buildActionItems(itemMap, fallback: description),
+      createdAt: createdAt,
+      confidenceScore: itemMap == null
+          ? null
+          : _toConfidence(itemMap['confidence'] ?? itemMap['confidence_score']),
+      reason: description,
+    );
+  }
+
+  RecommendationModel _parseDirectRecommendationItem(
+    Map<String, dynamic> json,
+    String siteId,
+  ) {
+    final createdAt = _parseDate(
+      json['created_at'] ??
+          json['createdAt'] ??
+          json['date'] ??
+          json['rec_date'],
+    );
+    final title =
+        _stringOrNull(json['title'] ?? json['name']) ??
+        'Rekomendasi ${_stringOrNull(json['date'] ?? json['rec_date']) ?? ''}'
+            .trim();
+    final description =
+        _stringOrNull(
+          json['description'] ?? json['pesan'] ?? json['message'],
+        ) ??
+        'Data rekomendasi tersedia.';
+
+    return RecommendationModel(
+      recommendationId:
+          _stringOrNull(
+            json['recommendation_id'] ?? json['rec_id'] ?? json['id'],
+          ) ??
+          _generatedId(
+            'recommendation',
+            siteId,
+            createdAt ?? DateTime.now(),
+            null,
+          ),
+      type: _mapRecommendationType(
+        _stringOrNull(json['type'] ?? json['category']) ?? 'general',
+      ),
+      title: title.isEmpty ? 'Rekomendasi' : title,
+      description: description,
+      priority: _mapNpkPriority(
+        _stringOrNull(json['priority'] ?? json['status'] ?? json['level']),
+      ),
+      status: _mapRecommendationStatus(
+        _stringOrNull(json['recommendation_status'] ?? json['status']),
+      ),
+      plantId: _stringOrNull(json['plant_id'] ?? json['plantId']),
+      plantName: _stringOrNull(json['plant_name'] ?? json['plantName']),
+      siteId: _stringOrNull(json['site_id'] ?? json['siteId']) ?? siteId,
+      siteName: _stringOrNull(json['site_name'] ?? json['siteName']),
+      actionItems: _buildActionItems(json, fallback: description),
+      createdAt: createdAt,
+      confidenceScore: _toConfidence(
+        json['confidence_score'] ?? json['confidence'],
+      ),
+      reason: _stringOrNull(json['reason']),
+    );
+  }
+
+  bool _looksLikeDirectRecommendation(Map<String, dynamic> json) {
+    return json.containsKey('title') ||
+        json.containsKey('description') ||
+        json.containsKey('rec_id') ||
+        json.containsKey('recommendation_id');
+  }
+
   /// Parse item dari history endpoint
+  // ignore: unused_element
   RecommendationModel _parseHistoryItem(
     Map<String, dynamic> json,
     String siteId,
@@ -417,7 +631,7 @@ class RecommendationRemoteDatasourceImpl
       try {
         return jsonDecode(jsonStr) as Map<String, dynamic>;
       } catch (e) {
-        debugPrint('⚠️ Failed to parse JSON string: $e');
+        _debugLog('⚠️ Failed to parse JSON string: $e');
         return null;
       }
     }
@@ -438,13 +652,195 @@ class RecommendationRemoteDatasourceImpl
       status: json['npk_status'] == 'success' ? 'applied' : 'pending',
       siteId: siteId,
       parameters: RecommendationBundleModel(
-        npk: npkRec != null ? RecommendationActionResultModel.fromJson(npkRec) : null,
-        ph: phRec != null ? RecommendationActionResultModel.fromJson(phRec) : null,
+        npk: npkRec != null
+            ? RecommendationActionResultModel.fromJson(npkRec)
+            : null,
+        ph: phRec != null
+            ? RecommendationActionResultModel.fromJson(phRec)
+            : null,
       ),
       createdAt: json['rec_created'] != null
           ? DateTime.tryParse(json['rec_created'] as String)
           : null,
     );
+  }
+
+  Map<String, dynamic>? _asStringMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  Map<String, dynamic>? _parseJsonMap(dynamic value) {
+    if (value == null) return null;
+    final map = _asStringMap(value);
+    if (map != null) return map;
+    if (value is! String || value.trim().isEmpty) return null;
+    try {
+      final decoded = jsonDecode(value);
+      return _asStringMap(decoded);
+    } catch (e) {
+      _debugLog('Failed to parse recommendation JSON string: $e');
+      return null;
+    }
+  }
+
+  String? _stringOrNull(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  DateTime? _parseDate(dynamic value) {
+    final text = _stringOrNull(value);
+    if (text == null) return null;
+    return DateTime.tryParse(text);
+  }
+
+  double? _toConfidence(dynamic value) {
+    if (value == null) return null;
+    final raw = value is num
+        ? value.toDouble()
+        : double.tryParse(value.toString().replaceAll(',', '.'));
+    if (raw == null) return null;
+    return raw > 1 ? raw / 100 : raw;
+  }
+
+  num _toNum(dynamic value) {
+    if (value is num) return value;
+    return num.tryParse(value?.toString().replaceAll(',', '.') ?? '') ?? 0;
+  }
+
+  bool _hasDisplayableMessage(Map<String, dynamic> item) {
+    return _messageFromMap(item) != null ||
+        _stringOrNull(item['title'] ?? item['description']) != null;
+  }
+
+  String? _messageFromMap(Map<String, dynamic> item) {
+    return _stringOrNull(
+      item['pesan'] ??
+          item['message'] ??
+          item['description'] ??
+          item['recommendation'] ??
+          item['action'],
+    );
+  }
+
+  String _titleFromMap(
+    Map<String, dynamic> item,
+    String typeStr,
+    String fallback,
+  ) {
+    final explicit = _stringOrNull(item['title'] ?? item['name']);
+    if (explicit != null) return explicit;
+    if (typeStr == 'npk') return _buildNpkTitle(item);
+    final message = _messageFromMap(item);
+    return message ?? fallback;
+  }
+
+  RecommendationActionResultModel _actionModel(Map<String, dynamic> item) {
+    return RecommendationActionResultModel(
+      status: _stringOrNull(item['status'] ?? item['priority']) ?? 'normal',
+      pesan: _messageFromMap(item) ?? 'Tidak ada tindakan khusus.',
+      dosisKgHa: _toNum(
+        item['dosis_kg_ha'] ??
+            item['dose_kg_ha'] ??
+            item['dose'] ??
+            item['dosis'],
+      ),
+    );
+  }
+
+  List<String> _buildActionItems(
+    Map<String, dynamic> item, {
+    required String fallback,
+  }) {
+    final actionItems = item['action_items'] ?? item['actions'];
+    if (actionItems is List) {
+      final list = actionItems
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (list.isNotEmpty) return list;
+    }
+
+    final items = <String>[];
+    final dose = _toNum(
+      item['dosis_kg_ha'] ??
+          item['dose_kg_ha'] ??
+          item['dose'] ??
+          item['dosis'],
+    );
+    if (dose > 0) items.add('Dosis: $dose kg/ha');
+    final message = _messageFromMap(item);
+    if (message != null) items.add(message);
+    return items.isEmpty ? [fallback] : items;
+  }
+
+  String _mapRecommendationType(String value) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('npk') ||
+        normalized.contains('nitrogen') ||
+        normalized.contains('phos') ||
+        normalized.contains('pot')) {
+      return 'npk';
+    }
+    if (normalized == 'ph' || normalized.contains('soil_ph')) return 'ph';
+    if (normalized.contains('water') ||
+        normalized.contains('hum') ||
+        normalized.contains('siram')) {
+      return 'watering';
+    }
+    if (normalized.contains('plant')) return 'planting';
+    return 'general';
+  }
+
+  String _mapRecommendationStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'applied':
+      case 'success':
+      case 'done':
+        return 'applied';
+      case 'dismissed':
+      case 'ignored':
+        return 'dismissed';
+      case 'expired':
+        return 'expired';
+      default:
+        return 'pending';
+    }
+  }
+
+  String _environmentType(String key) {
+    final normalized = key.toLowerCase();
+    if (normalized.contains('hum') || normalized.contains('moisture')) {
+      return 'watering';
+    }
+    return 'general';
+  }
+
+  String _environmentTitle(String key) {
+    return 'Rekomendasi ${_titleFromKey(key)}';
+  }
+
+  String _titleFromKey(String key) {
+    return key
+        .split(RegExp(r'[_\-\s]+'))
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+        .join(' ');
+  }
+
+  String _generatedId(
+    String key,
+    String siteId,
+    DateTime createdAt,
+    String? seed,
+  ) {
+    final normalizedSeed = seed?.replaceAll(RegExp(r'[^A-Za-z0-9_]+'), '_');
+    final suffix = normalizedSeed?.isNotEmpty == true
+        ? normalizedSeed
+        : createdAt.millisecondsSinceEpoch.toString();
+    return '${key}_${siteId}_$suffix';
   }
 
   String _buildNpkTitle(Map<String, dynamic> npk) {
@@ -471,6 +867,7 @@ class RecommendationRemoteDatasourceImpl
     return 'Lihat detail rekomendasi.';
   }
 
+  // ignore: unused_element
   List<String> _buildNpkActionItems(Map<String, dynamic> npk) {
     final items = <String>[];
     if (npk['dosis_kg_ha'] != null && npk['dosis_kg_ha'] > 0) {
@@ -480,6 +877,7 @@ class RecommendationRemoteDatasourceImpl
     return items;
   }
 
+  // ignore: unused_element
   List<String> _buildPhActionItems(Map<String, dynamic> ph) {
     final items = <String>[];
     if (ph['dosis_kg_ha'] != null && ph['dosis_kg_ha'] > 0) {
@@ -492,8 +890,11 @@ class RecommendationRemoteDatasourceImpl
   String _mapNpkPriority(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'high':
+      case 'tinggi':
+      case 'rendah':
         return 'high';
       case 'medium':
+      case 'sedang':
         return 'medium';
       case 'low':
         return 'low';
@@ -508,5 +909,29 @@ class RecommendationRemoteDatasourceImpl
       default:
         return 'medium';
     }
+  }
+
+  bool _isExpectedEmptyRecommendationError(DioException e) {
+    final status = e.response?.statusCode;
+    if (status == 400 || status == 404 || status == 422) return true;
+    if (status != 500) return false;
+    final message = _errorMessage(e.response?.data).toLowerCase();
+    return message.contains('no active') ||
+        message.contains('no sensor') ||
+        message.contains('no data') ||
+        message.contains('not found') ||
+        message.contains('tidak ada') ||
+        message.contains('belum ada');
+  }
+
+  String _errorMessage(dynamic data) {
+    if (data is Map) {
+      return [
+        data['message'],
+        data['error'],
+        data['details'],
+      ].whereType<Object>().map((value) => value.toString()).join(' ');
+    }
+    return data?.toString() ?? '';
   }
 }

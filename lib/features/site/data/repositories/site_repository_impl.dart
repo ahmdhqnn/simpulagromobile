@@ -91,11 +91,23 @@ class SiteRepositoryImpl implements SiteRepository {
   }
 
   @override
-  Future<Either<Failure, void>> inviteMember(String siteId, String userId) async {
+  Future<Either<Failure, void>> inviteMember(
+    String siteId,
+    String userId,
+  ) async {
     try {
       await _remoteDataSource.inviteMember(siteId, userId);
       return const Right(null);
     } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      switch (statusCode) {
+        case 400:
+          return const Left(ValidationFailure('INVITE_BAD_REQUEST'));
+        case 403:
+          return const Left(PermissionFailure('INVITE_FORBIDDEN'));
+        case 409:
+          return const Left(ValidationFailure('INVITE_CONFLICT'));
+      }
       return Left(_handleDioError(e));
     } catch (e) {
       return Left(ServerFailure('Failed to invite member: $e'));

@@ -64,6 +64,114 @@ class AppLocalizationsId extends AppLocalizations {
   String get retry => 'Coba Lagi';
 
   @override
+  String get settingsTitle => 'Pengaturan';
+
+  @override
+  String get settingsAccountSection => 'Akun';
+
+  @override
+  String get settingsAboutSection => 'Tentang';
+
+  @override
+  String get settingsChangePassword => 'Ganti Password';
+
+  @override
+  String get settingsChangePasswordSubtitle => 'Perbarui password akun Anda';
+
+  @override
+  String get changePasswordTitle => 'Ganti Password';
+
+  @override
+  String get changePasswordCurrentLabel => 'Password Lama';
+
+  @override
+  String get changePasswordCurrentHint => 'Masukkan password lama';
+
+  @override
+  String get changePasswordCurrentRequired => 'Password lama wajib diisi';
+
+  @override
+  String get changePasswordNewLabel => 'Password Baru';
+
+  @override
+  String get changePasswordNewHint => 'Masukkan password baru';
+
+  @override
+  String get changePasswordNewRequired => 'Password baru wajib diisi';
+
+  @override
+  String get changePasswordConfirmLabel => 'Konfirmasi Password Baru';
+
+  @override
+  String get changePasswordConfirmHint => 'Ulangi password baru';
+
+  @override
+  String get changePasswordConfirmRequired => 'Konfirmasi password wajib diisi';
+
+  @override
+  String get changePasswordConfirmMismatch => 'Konfirmasi password tidak sama';
+
+  @override
+  String get changePasswordSubmit => 'Simpan Password Baru';
+
+  @override
+  String get changePasswordSuccess => 'Password berhasil diubah';
+
+  @override
+  String get changePasswordFailed =>
+      'Gagal mengubah password. Silakan coba lagi.';
+
+  @override
+  String get changePasswordErrorConfirmMismatch =>
+      'Konfirmasi password tidak cocok.';
+
+  @override
+  String get changePasswordErrorUnauthorized =>
+      'Password lama salah atau sesi sudah berakhir.';
+
+  @override
+  String get changePasswordErrorUserNotFound => 'Pengguna tidak ditemukan.';
+
+  @override
+  String get siteInviteTitle => 'Undang Member Site';
+
+  @override
+  String siteInviteSiteIdLabel(String siteId) {
+    return 'Site ID: $siteId';
+  }
+
+  @override
+  String get siteInviteUserIdLabel => 'User ID';
+
+  @override
+  String get siteInviteUserIdHint => 'Contoh: USR_001';
+
+  @override
+  String get siteInviteUserIdRequired => 'User ID wajib diisi';
+
+  @override
+  String get siteInviteSubmit => 'Kirim Undangan';
+
+  @override
+  String get siteInviteSuccess => 'Undangan member berhasil dikirim';
+
+  @override
+  String get siteInviteErrorBadRequest => 'Data undangan tidak valid.';
+
+  @override
+  String get siteInviteErrorForbidden =>
+      'Hanya admin/site leader yang dapat mengundang member.';
+
+  @override
+  String get siteInviteErrorConflict => 'User sudah menjadi member site ini.';
+
+  @override
+  String get siteInviteErrorNoSiteSelected => 'Site belum dipilih.';
+
+  @override
+  String get siteInviteErrorUnknown => 'Gagal mengirim undangan member.';
+
+  @override
   String get healthSectionTitle => 'Kesehatan Lingkungan';
 
   @override
@@ -135,6 +243,20 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get plantVarietasIdRequired => 'ID varietas wajib diisi';
+
+  @override
+  String get plantVarietasUseManual => 'Input manual';
+
+  @override
+  String get plantVarietasUseList => 'Pilih dari daftar';
+
+  @override
+  String get plantVarietasEmptyFallback =>
+      'Daftar varietas kosong. Silakan isi ID varietas manual.';
+
+  @override
+  String get plantVarietasLoadFailedFallback =>
+      'Gagal memuat varietas. Gunakan input ID manual.';
 
   @override
   String get plantTypeLabel => 'Jenis Tanaman';
@@ -284,4 +406,197 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get plantStatusLabel => 'Status';
+
+  @override
+  String get monitoringTitle => 'Monitoring';
+
+  @override
+  String get monitoringTabRealtime => 'Realtime';
+
+  @override
+  String get monitoringTabRawReads => 'Raw Reads';
+
+  @override
+  String get monitoringTabDailyRecap => 'Rekap Harian';
+
+  @override
+  String get monitoringTabMonthlyRecap => 'Rekap Bulan';
+
+  @override
+  String get monitoringTabMaps => 'Maps';
+
+  @override
+  String get monitoringTabAnalytics => 'Analytics';
+
+  @override
+  String get monitoringTabAdmin => 'Admin';
+
+  @override
+  String get monitoringSyncWaiting => 'Menunggu sinkronisasi';
+
+  @override
+  String monitoringSyncAt(String time) {
+    return 'Sinkron $time';
+  }
+
+  @override
+  String get monitoringSyncStale => 'data perlu disegarkan';
+
+  @override
+  String monitoringAutoRefreshEvery(int seconds) {
+    return 'Auto-refresh $seconds detik';
+  }
+
+  @override
+  String get monitoringAutoRefreshOff => 'Auto-refresh nonaktif';
+
+  @override
+  String get monitoringNoActivePlantTitle => 'Belum ada tanaman aktif';
+
+  @override
+  String get monitoringNoActivePlantMessage =>
+      'Data sensor tetap diperbarui. Tambahkan tanaman agar rekomendasi monitoring terhubung ke siklus tanam.';
+
+  @override
+  String get monitoringAddPlant => 'Tambah Tanaman';
+
+  @override
+  String get monitoringViewPlantList => 'Lihat daftar tanaman';
+
+  @override
+  String get monitoringLatestStatusTitle => 'Status Sensor Terkini';
+
+  @override
+  String get monitoringTodayChartSection => 'Grafik Hari Ini';
+
+  @override
+  String get monitoringSensorDetailSection => 'Detail Status Sensor';
+
+  @override
+  String get monitoringEmptySensor => 'Belum ada data sensor';
+
+  @override
+  String get monitoringEmptyTodayChart => 'Belum ada data grafik hari ini';
+
+  @override
+  String get monitoringHistoryChartSection => 'Grafik History';
+
+  @override
+  String get monitoringEmptyHistory => 'Belum ada data riwayat';
+
+  @override
+  String get monitoringSelectSensor => 'Pilih parameter sensor';
+
+  @override
+  String get monitoringHistoryDataSection => 'Data Riwayat';
+
+  @override
+  String get monitoringChartNoSensorData => 'Belum ada data untuk sensor ini';
+
+  @override
+  String get monitoringChartDailyAggregation => 'Agregasi Harian';
+
+  @override
+  String get monitoringChartNoDailyAggregation =>
+      'Belum ada data agregasi harian';
+
+  @override
+  String get monitoringChartLast7DaysAggregation => 'Agregasi 7 Hari Terakhir';
+
+  @override
+  String get monitoringMonthlyRecapSection => 'Rekap Bulanan';
+
+  @override
+  String get monitoringDailyTodaySection => 'Rekap Hari Ini';
+
+  @override
+  String get monitoringDailyByDateSection => 'Rekap Per Tanggal';
+
+  @override
+  String get monitoringDailyNoRecap => 'Tidak ada data rekap';
+
+  @override
+  String get monitoringSelectSiteFirst => 'Pilih site terlebih dahulu';
+
+  @override
+  String get monitoringFilterToday => 'Hari Ini';
+
+  @override
+  String get monitoringFilterSingleDate => 'Per Tanggal';
+
+  @override
+  String get monitoringFilterSevenDay => '7 Hari';
+
+  @override
+  String get monitoringFilterDateRange => 'Rentang Tanggal';
+
+  @override
+  String get monitoringFilterPlantingDate => 'Masa Tanam';
+
+  @override
+  String get commonDateLabel => 'Tanggal';
+
+  @override
+  String get commonFromLabel => 'Dari';
+
+  @override
+  String get commonToLabel => 'Sampai';
+
+  @override
+  String get monitoringTodayCardTitle => 'Data Sensor Hari Ini';
+
+  @override
+  String get monitoringTodayCardSubtitle => 'Pemantauan harian sensor realtime';
+
+  @override
+  String get monitoringChartNoDataForSensor =>
+      'Belum ada data untuk sensor ini';
+
+  @override
+  String get commonMin => 'Min';
+
+  @override
+  String get commonMax => 'Max';
+
+  @override
+  String get commonAverage => 'Rata-rata';
+
+  @override
+  String monitoringHistoryCardSubtitle(int count) {
+    return '$count data - riwayat sensor';
+  }
+
+  @override
+  String get monitoringInvalidSensorData => 'Data sensor tidak valid';
+
+  @override
+  String get monitoringDailyAnalyticsTitle => 'Analisis Sensor Harian';
+
+  @override
+  String get monitoringDailyAnalyticsSubtitle => 'Statistik Sensor Hari Ini';
+
+  @override
+  String get monitoringDailyEmpty => 'Belum ada data harian';
+
+  @override
+  String get monitoringDailyUnavailableToday =>
+      'Tidak ada data sensor yang tersedia untuk hari ini';
+
+  @override
+  String get monitoringMonthlyCardEmpty => 'Belum ada data rekap bulanan';
+
+  @override
+  String get monitoringMonthlyCardNoSensorData =>
+      'Tidak ada data untuk sensor ini';
+
+  @override
+  String get monitoringMonthlyCardTitle => 'Rekap Bulanan';
+
+  @override
+  String get monitoringMonthlyCardSubtitle => 'Rata-rata per bulan';
+
+  @override
+  String monitoringMonthlyLegendAverage(String sensor) {
+    return 'Rata-rata $sensor';
+  }
 }

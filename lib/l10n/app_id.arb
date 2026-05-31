@@ -34,6 +34,45 @@
   "viewAll": "Lihat Semua",
   "errorLoadData": "Gagal memuat data",
   "retry": "Coba Lagi",
+  "settingsTitle": "Pengaturan",
+  "settingsAccountSection": "Akun",
+  "settingsAboutSection": "Tentang",
+  "settingsChangePassword": "Ganti Password",
+  "settingsChangePasswordSubtitle": "Perbarui password akun Anda",
+  "changePasswordTitle": "Ganti Password",
+  "changePasswordCurrentLabel": "Password Lama",
+  "changePasswordCurrentHint": "Masukkan password lama",
+  "changePasswordCurrentRequired": "Password lama wajib diisi",
+  "changePasswordNewLabel": "Password Baru",
+  "changePasswordNewHint": "Masukkan password baru",
+  "changePasswordNewRequired": "Password baru wajib diisi",
+  "changePasswordConfirmLabel": "Konfirmasi Password Baru",
+  "changePasswordConfirmHint": "Ulangi password baru",
+  "changePasswordConfirmRequired": "Konfirmasi password wajib diisi",
+  "changePasswordConfirmMismatch": "Konfirmasi password tidak sama",
+  "changePasswordSubmit": "Simpan Password Baru",
+  "changePasswordSuccess": "Password berhasil diubah",
+  "changePasswordFailed": "Gagal mengubah password. Silakan coba lagi.",
+  "changePasswordErrorConfirmMismatch": "Konfirmasi password tidak cocok.",
+  "changePasswordErrorUnauthorized": "Password lama salah atau sesi sudah berakhir.",
+  "changePasswordErrorUserNotFound": "Pengguna tidak ditemukan.",
+  "siteInviteTitle": "Undang Member Site",
+  "siteInviteSiteIdLabel": "Site ID: {siteId}",
+  "@siteInviteSiteIdLabel": {
+    "placeholders": {
+      "siteId": { "type": "String" }
+    }
+  },
+  "siteInviteUserIdLabel": "User ID",
+  "siteInviteUserIdHint": "Contoh: USR_001",
+  "siteInviteUserIdRequired": "User ID wajib diisi",
+  "siteInviteSubmit": "Kirim Undangan",
+  "siteInviteSuccess": "Undangan member berhasil dikirim",
+  "siteInviteErrorBadRequest": "Data undangan tidak valid.",
+  "siteInviteErrorForbidden": "Hanya admin/site leader yang dapat mengundang member.",
+  "siteInviteErrorConflict": "User sudah menjadi member site ini.",
+  "siteInviteErrorNoSiteSelected": "Site belum dipilih.",
+  "siteInviteErrorUnknown": "Gagal mengirim undangan member.",
   "healthSectionTitle": "Kesehatan Lingkungan",
   "summarySectionTitle": "Ringkasan",
   "deviceTitle": "Device",
@@ -58,6 +97,10 @@
   "plantVarietasIdLabel": "ID Varietas",
   "plantVarietasIdHint": "Contoh: VARIETAS001",
   "plantVarietasIdRequired": "ID varietas wajib diisi",
+  "plantVarietasUseManual": "Input manual",
+  "plantVarietasUseList": "Pilih dari daftar",
+  "plantVarietasEmptyFallback": "Daftar varietas kosong. Silakan isi ID varietas manual.",
+  "plantVarietasLoadFailedFallback": "Gagal memuat varietas. Gunakan input ID manual.",
   "plantTypeLabel": "Jenis Tanaman",
   "plantTypeHint": "Contoh: PADI, JAGUNG, dll.",
   "plantTypeRequired": "Pilih jenis tanaman terlebih dahulu",
@@ -132,5 +175,93 @@
   "plantErrorTitle": "Terjadi kesalahan",
   "plantDetailTitle": "Detail Tanaman",
   "plantHstUnit": "Hari",
-  "plantStatusLabel": "Status"
+  "plantStatusLabel": "Status",
+  "monitoringTitle": "Monitoring",
+  "monitoringTabRealtime": "Realtime",
+  "monitoringTabRawReads": "Raw Reads",
+  "monitoringTabDailyRecap": "Rekap Harian",
+  "monitoringTabMonthlyRecap": "Rekap Bulan",
+  "monitoringTabMaps": "Maps",
+  "monitoringTabAnalytics": "Analytics",
+  "monitoringTabAdmin": "Admin",
+  "monitoringSyncWaiting": "Menunggu sinkronisasi",
+  "monitoringSyncAt": "Sinkron {time}",
+  "@monitoringSyncAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSyncStale": "data perlu disegarkan",
+  "monitoringAutoRefreshEvery": "Auto-refresh {seconds} detik",
+  "@monitoringAutoRefreshEvery": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringAutoRefreshOff": "Auto-refresh nonaktif",
+  "monitoringNoActivePlantTitle": "Belum ada tanaman aktif",
+  "monitoringNoActivePlantMessage": "Data sensor tetap diperbarui. Tambahkan tanaman agar rekomendasi monitoring terhubung ke siklus tanam.",
+  "monitoringAddPlant": "Tambah Tanaman",
+  "monitoringViewPlantList": "Lihat daftar tanaman",
+  "monitoringLatestStatusTitle": "Status Sensor Terkini",
+  "monitoringTodayChartSection": "Grafik Hari Ini",
+  "monitoringSensorDetailSection": "Detail Status Sensor",
+  "monitoringEmptySensor": "Belum ada data sensor",
+  "monitoringEmptyTodayChart": "Belum ada data grafik hari ini",
+  "monitoringHistoryChartSection": "Grafik History",
+  "monitoringEmptyHistory": "Belum ada data riwayat",
+  "monitoringSelectSensor": "Pilih parameter sensor",
+  "monitoringHistoryDataSection": "Data Riwayat",
+  "monitoringChartNoSensorData": "Belum ada data untuk sensor ini",
+  "monitoringChartDailyAggregation": "Agregasi Harian",
+  "monitoringChartNoDailyAggregation": "Belum ada data agregasi harian",
+  "monitoringChartLast7DaysAggregation": "Agregasi 7 Hari Terakhir",
+  "monitoringMonthlyRecapSection": "Rekap Bulanan",
+  "monitoringDailyTodaySection": "Rekap Hari Ini",
+  "monitoringDailyByDateSection": "Rekap Per Tanggal",
+  "monitoringDailyNoRecap": "Tidak ada data rekap",
+  "monitoringSelectSiteFirst": "Pilih site terlebih dahulu",
+  "monitoringFilterToday": "Hari Ini",
+  "monitoringFilterSingleDate": "Per Tanggal",
+  "monitoringFilterSevenDay": "7 Hari",
+  "monitoringFilterDateRange": "Rentang Tanggal",
+  "monitoringFilterPlantingDate": "Masa Tanam",
+  "commonDateLabel": "Tanggal",
+  "commonFromLabel": "Dari",
+  "commonToLabel": "Sampai",
+  "monitoringTodayCardTitle": "Data Sensor Hari Ini",
+  "monitoringTodayCardSubtitle": "Pemantauan harian sensor realtime",
+  "monitoringChartNoDataForSensor": "Belum ada data untuk sensor ini",
+  "commonMin": "Min",
+  "commonMax": "Max",
+  "commonAverage": "Rata-rata",
+  "monitoringHistoryCardSubtitle": "{count} data - riwayat sensor",
+  "@monitoringHistoryCardSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringInvalidSensorData": "Data sensor tidak valid",
+  "monitoringDailyAnalyticsTitle": "Analisis Sensor Harian",
+  "monitoringDailyAnalyticsSubtitle": "Statistik Sensor Hari Ini",
+  "monitoringDailyEmpty": "Belum ada data harian",
+  "monitoringDailyUnavailableToday": "Tidak ada data sensor yang tersedia untuk hari ini",
+  "monitoringMonthlyCardEmpty": "Belum ada data rekap bulanan",
+  "monitoringMonthlyCardNoSensorData": "Tidak ada data untuk sensor ini",
+  "monitoringMonthlyCardTitle": "Rekap Bulanan",
+  "monitoringMonthlyCardSubtitle": "Rata-rata per bulan",
+  "monitoringMonthlyLegendAverage": "Rata-rata {sensor}",
+  "@monitoringMonthlyLegendAverage": {
+    "placeholders": {
+      "sensor": {
+        "type": "String"
+      }
+    }
+  }
 }

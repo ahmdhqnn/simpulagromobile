@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../providers/monitoring_provider.dart';
+import '../../utils/monitoring_display_utils.dart';
 
 class HistoryFilterWidget extends ConsumerStatefulWidget {
   const HistoryFilterWidget({super.key});
@@ -38,8 +40,8 @@ class _HistoryFilterWidgetState extends ConsumerState<HistoryFilterWidget> {
                 height: 36,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: SvgPicture.asset(
                   'assets/icons/filter_icon.svg',
@@ -73,17 +75,18 @@ class _HistoryFilterWidgetState extends ConsumerState<HistoryFilterWidget> {
   }
 
   String _getFilterLabel(HistoryFilter filter) {
+    final l10n = AppLocalizations.of(context)!;
     switch (filter) {
       case HistoryFilter.today:
-        return 'Hari Ini';
+        return l10n.monitoringFilterToday;
       case HistoryFilter.singleDate:
-        return 'Per Tanggal';
+        return l10n.monitoringFilterSingleDate;
       case HistoryFilter.sevenDay:
-        return '7 Hari';
+        return l10n.monitoringFilterSevenDay;
       case HistoryFilter.dateRange:
-        return 'Rentang Tanggal';
+        return l10n.monitoringFilterDateRange;
       case HistoryFilter.plantingDate:
-        return 'Masa Tanam';
+        return l10n.monitoringFilterPlantingDate;
     }
   }
 }
@@ -102,8 +105,8 @@ class _FilterChipButton extends StatelessWidget {
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Center(
           child: Text(
@@ -128,26 +131,21 @@ class _FilterMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final filters = [
-      (HistoryFilter.today, 'Hari Ini'),
-      (HistoryFilter.singleDate, 'Per Tanggal'),
-      (HistoryFilter.sevenDay, '7 Hari'),
-      (HistoryFilter.dateRange, 'Rentang Tanggal'),
-      (HistoryFilter.plantingDate, 'Masa Tanam'),
+      (HistoryFilter.today, l10n.monitoringFilterToday),
+      (HistoryFilter.singleDate, l10n.monitoringFilterSingleDate),
+      (HistoryFilter.sevenDay, l10n.monitoringFilterSevenDay),
+      (HistoryFilter.dateRange, l10n.monitoringFilterDateRange),
+      (HistoryFilter.plantingDate, l10n.monitoringFilterPlantingDate),
     ];
 
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppShadows.menu,
       ),
       child: Column(
         children: filters.map((f) {
@@ -197,10 +195,11 @@ class _SingleDatePicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final date = ref.watch(historySingleDateProvider);
-    final fmt = DateFormat('dd MMM yyyy');
+    final fmt = context.dateFormat('dd MMM yyyy');
+    final l10n = AppLocalizations.of(context)!;
 
     return _DateButton(
-      label: 'Tanggal',
+      label: l10n.commonDateLabel,
       date: fmt.format(date),
       onTap: () async {
         final picked = await showDatePicker(
@@ -217,7 +216,6 @@ class _SingleDatePicker extends ConsumerWidget {
         );
         if (picked != null) {
           ref.read(historySingleDateProvider.notifier).state = picked;
-          ref.invalidate(historyReadsProvider);
         }
       },
     );
@@ -231,20 +229,34 @@ class _DateRangePicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final start = ref.watch(historyStartDateProvider);
     final end = ref.watch(historyEndDateProvider);
-    final fmt = DateFormat('dd MMM yyyy');
+    final fmt = context.dateFormat('dd MMM yyyy');
+    final l10n = AppLocalizations.of(context)!;
 
     return Row(
       children: [
         Expanded(
           child: _DateButton(
-            label: 'Dari',
+            label: l10n.commonFromLabel,
             date: fmt.format(start),
             onTap: () async {
+              final now = DateTime.now();
+              final lastAllowed = end.isAfter(now) ? now : end;
+              final earliestAllowed = end.subtract(
+                const Duration(days: maxHistoryRangeDays),
+              );
+              final firstAllowed = earliestAllowed.isBefore(DateTime(2020))
+                  ? DateTime(2020)
+                  : earliestAllowed;
+              final initialDate = start.isBefore(firstAllowed)
+                  ? firstAllowed
+                  : start.isAfter(lastAllowed)
+                  ? lastAllowed
+                  : start;
               final picked = await showDatePicker(
                 context: context,
-                initialDate: start,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
+                initialDate: initialDate,
+                firstDate: firstAllowed,
+                lastDate: lastAllowed,
                 builder: (ctx, child) => Theme(
                   data: Theme.of(ctx).copyWith(
                     colorScheme: const ColorScheme.light(
@@ -256,7 +268,6 @@ class _DateRangePicker extends ConsumerWidget {
               );
               if (picked != null) {
                 ref.read(historyStartDateProvider.notifier).state = picked;
-                ref.invalidate(historyReadsProvider);
               }
             },
           ),
@@ -264,14 +275,20 @@ class _DateRangePicker extends ConsumerWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _DateButton(
-            label: 'Sampai',
+            label: l10n.commonToLabel,
             date: fmt.format(end),
             onTap: () async {
+              final lastAllowed = maxHistoryEndDate(start, DateTime.now());
+              final initialDate = end.isBefore(start)
+                  ? start
+                  : end.isAfter(lastAllowed)
+                  ? lastAllowed
+                  : end;
               final picked = await showDatePicker(
                 context: context,
-                initialDate: end,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
+                initialDate: initialDate,
+                firstDate: start,
+                lastDate: lastAllowed,
                 builder: (ctx, child) => Theme(
                   data: Theme.of(ctx).copyWith(
                     colorScheme: const ColorScheme.light(
@@ -283,7 +300,6 @@ class _DateRangePicker extends ConsumerWidget {
               );
               if (picked != null) {
                 ref.read(historyEndDateProvider.notifier).state = picked;
-                ref.invalidate(historyReadsProvider);
               }
             },
           ),

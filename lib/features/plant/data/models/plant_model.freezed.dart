@@ -223,7 +223,7 @@ class __$$PlantModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$PlantModelImpl extends _PlantModel with DiagnosticableTreeMixin {
+class _$PlantModelImpl extends _PlantModel {
   const _$PlantModelImpl({
     @JsonKey(name: 'plant_id') required this.plantId,
     @JsonKey(name: 'site_id') this.siteId,
@@ -265,24 +265,8 @@ class _$PlantModelImpl extends _PlantModel with DiagnosticableTreeMixin {
   final int? plantSts;
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'PlantModel(plantId: $plantId, siteId: $siteId, varietasId: $varietasId, plantName: $plantName, plantType: $plantType, plantSpecies: $plantSpecies, plantDate: $plantDate, plantHarvest: $plantHarvest, plantSts: $plantSts)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'PlantModel'))
-      ..add(DiagnosticsProperty('plantId', plantId))
-      ..add(DiagnosticsProperty('siteId', siteId))
-      ..add(DiagnosticsProperty('varietasId', varietasId))
-      ..add(DiagnosticsProperty('plantName', plantName))
-      ..add(DiagnosticsProperty('plantType', plantType))
-      ..add(DiagnosticsProperty('plantSpecies', plantSpecies))
-      ..add(DiagnosticsProperty('plantDate', plantDate))
-      ..add(DiagnosticsProperty('plantHarvest', plantHarvest))
-      ..add(DiagnosticsProperty('plantSts', plantSts));
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/providers/app_startup_provider.dart';
 import '../../../../core/storage/secure_storage.dart';
@@ -108,7 +109,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final result = await _repository.login(username, password);
     return result.fold(
       (failure) {
-        state = AuthState(status: AuthStatus.unauthenticated, error: failure.message);
+        state = AuthState(
+          status: AuthStatus.unauthenticated,
+          error: failure.message,
+        );
         return false;
       },
       (user) {
@@ -138,22 +142,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Refresh profil user dari server
   Future<void> refreshProfile() async {
     final result = await _repository.getProfile();
-    result.fold(
-      (_) {},
-      (user) {
-        if (mounted) state = state.copyWith(user: user);
-      },
-    );
+    result.fold((_) {}, (user) {
+      if (mounted) state = state.copyWith(user: user);
+    });
   }
 
   Future<void> _loadPermissions() async {
     final result = await _repository.getPermissions();
-    result.fold(
-      (_) {},
-      (perms) {
-        if (mounted) state = state.copyWith(permissions: perms);
-      },
-    );
+    result.fold((_) {}, (perms) {
+      if (mounted) state = state.copyWith(permissions: perms);
+    });
   }
 }
 
@@ -177,6 +175,93 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 
   return notifier;
 });
+
+enum ChangePasswordErrorType {
+  confirmMismatch,
+  unauthorized,
+  userNotFound,
+  unknown,
+}
+
+class ChangePasswordState {
+  final bool isLoading;
+  final bool isSuccess;
+  final String? message;
+  final ChangePasswordErrorType? errorType;
+
+  const ChangePasswordState({
+    this.isLoading = false,
+    this.isSuccess = false,
+    this.message,
+    this.errorType,
+  });
+}
+
+class ChangePasswordNotifier extends StateNotifier<ChangePasswordState> {
+  ChangePasswordNotifier(this._repository) : super(const ChangePasswordState());
+
+  final AuthRepository _repository;
+
+  Future<bool> submit({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    state = const ChangePasswordState(isLoading: true);
+
+    final result = await _repository.changePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+
+    return result.fold(
+      (failure) {
+        state = ChangePasswordState(
+          isLoading: false,
+          isSuccess: false,
+          message: failure.message,
+          errorType: _mapErrorType(failure),
+        );
+        return false;
+      },
+      (message) {
+        state = ChangePasswordState(
+          isLoading: false,
+          isSuccess: true,
+          message: message,
+        );
+        return true;
+      },
+    );
+  }
+
+  void reset() {
+    state = const ChangePasswordState();
+  }
+
+  ChangePasswordErrorType _mapErrorType(Failure failure) {
+    if (failure is ValidationFailure) {
+      return ChangePasswordErrorType.confirmMismatch;
+    }
+    if (failure is AuthFailure) {
+      return ChangePasswordErrorType.unauthorized;
+    }
+    if (failure is NotFoundFailure) {
+      return ChangePasswordErrorType.userNotFound;
+    }
+    return ChangePasswordErrorType.unknown;
+  }
+}
+
+final changePasswordProvider =
+    StateNotifierProvider.autoDispose<
+      ChangePasswordNotifier,
+      ChangePasswordState
+    >((ref) {
+      final repository = ref.watch(authRepositoryProvider);
+      return ChangePasswordNotifier(repository);
+    });
 
 // ─── Onboarding Provider ─────────────────────────────────
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((

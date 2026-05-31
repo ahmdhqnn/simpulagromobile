@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:simpulagromobile/core/providers/app_providers.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:simpulagromobile/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:simpulagromobile/features/monitoring/presentation/providers/monitoring_provider.dart';
 import 'package:simpulagromobile/features/monitoring/presentation/screens/monitoring_screen.dart';
 import 'package:simpulagromobile/features/plant/presentation/screens/plant_screen.dart';
 import 'package:simpulagromobile/features/task/presentation/screens/task_list_screen.dart';
@@ -47,10 +49,16 @@ class _MainShellState extends ConsumerState<MainShell>
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed) {
+      if (!ref.read(appAutoRefreshEnabledProvider)) return;
+
       final now = DateTime.now();
       final lastResumed = _lastResumedAt;
+      final refreshInterval = ref.read(appRealtimeRefreshIntervalProvider);
 
-      if (lastResumed == null || now.difference(lastResumed).inMinutes >= 5) {
+      final shouldRefresh =
+          lastResumed == null || now.difference(lastResumed) >= refreshInterval;
+
+      if (shouldRefresh) {
         _refreshCurrentTabData();
       }
       _lastResumedAt = now;
@@ -72,8 +80,14 @@ class _MainShellState extends ConsumerState<MainShell>
         ref.invalidate(latestSensorReadsProvider);
         break;
       case 1:
+        ref.invalidate(latestReadsProvider);
+        ref.invalidate(todayReadsProvider);
+        ref.invalidate(envHealthProvider);
+        ref.invalidate(dailyTodayProvider);
+        ref.invalidate(monthlyReadsProvider);
         break;
       case 2:
+        ref.invalidate(siteListProvider);
         break;
       case 3:
         break;

@@ -68,8 +68,7 @@ class _AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth header for refresh endpoint to avoid loops
-    if (options.path.contains('refresh') ||
-        options.path.contains('login')) {
+    if (options.path.contains('refresh') || options.path.contains('login')) {
       handler.next(options);
       return;
     }
@@ -101,8 +100,7 @@ class _AuthInterceptor extends Interceptor {
     }
 
     final requestPath = err.requestOptions.path;
-    if (requestPath.contains('refresh') ||
-        requestPath.contains('login')) {
+    if (requestPath.contains('refresh') || requestPath.contains('login')) {
       handler.next(err);
       return;
     }
@@ -145,7 +143,7 @@ class _AuthInterceptor extends Interceptor {
   }
 }
 
-/// Interceptor untuk retry otomatis saat timeout atau server error 5xx
+/// Interceptor untuk retry otomatis saat timeout/koneksi gagal.
 class _RetryInterceptor extends Interceptor {
   final Dio _dio;
   int _retryCount = 0;
@@ -195,9 +193,6 @@ class _RetryInterceptor extends Interceptor {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.connectionError:
         return true;
-      case DioExceptionType.badResponse:
-        final statusCode = err.response?.statusCode ?? 0;
-        return statusCode >= 500;
       default:
         return false;
     }
