@@ -16,7 +16,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
         padding: EdgeInsets.all(context.rw(0.04)),
         decoration: BoxDecoration(
           color: AppColors.warning.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         child: Row(
           children: [
@@ -26,7 +26,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
               child: Text(
                 'Pilih site untuk memuat data monitoring dan rekomendasi',
                 style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(13),
                 ),
               ),
@@ -41,7 +41,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
       padding: EdgeInsets.all(context.rw(0.04)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +49,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
           Text(
             site!.displayName,
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(16),
               fontWeight: FontWeight.w600,
             ),
@@ -59,9 +59,9 @@ class DashboardSiteCommandBanner extends StatelessWidget {
             Text(
               site!.siteAddress!,
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(12),
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -69,7 +69,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
           Text(
             'ID: ${site!.siteId} · ${site!.isActive ? 'Aktif' : 'Nonaktif'}',
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(11),
               color: AppColors.primary,
             ),

@@ -14,28 +14,28 @@ class QuickActionsWidget extends ConsumerWidget {
       const _QuickActionConfig(
         svgIcon: 'assets/icons/monitoring-outline-icon.svg',
         label: 'Monitoring',
-        bgColor: Color(0xFFFFF6E9),
-        iconColor: Color(0xFFFFA929),
+        bgColor: AppColors.softOrange,
+        iconColor: AppColors.warning,
         tabIndex: 1,
       ),
       const _QuickActionConfig(
         svgIcon: 'assets/icons/plant-outline-icon.svg',
         label: 'Tanaman',
-        bgColor: Color(0xFFEDF7EE),
+        bgColor: AppColors.softGreen,
         iconColor: AppColors.success,
         tabIndex: 2,
       ),
       const _QuickActionConfig(
         svgIcon: 'assets/icons/check-task-outline-icon.svg',
         label: 'Task',
-        bgColor: Color(0xFFE8EFE9),
+        bgColor: AppColors.softGreenAlt,
         iconColor: AppColors.primary,
         tabIndex: 3,
       ),
       const _QuickActionConfig(
         svgIcon: 'assets/icons/forum-outline-icon.svg',
         label: 'Forum',
-        bgColor: Color(0xFFECF6FE),
+        bgColor: AppColors.softBlue,
         iconColor: AppColors.info,
         tabIndex: 4,
       ),
@@ -46,7 +46,7 @@ class QuickActionsWidget extends ConsumerWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Row(
         children: List.generate(actions.length * 2 - 1, (index) {
@@ -112,7 +112,7 @@ class _QuickActionItem extends StatelessWidget {
         height: itemWidth.clamp(60.0, 90.0),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadius.xs),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -127,7 +127,7 @@ class _QuickActionItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(11),
                 fontWeight: FontWeight.w500,
                 color: iconColor,

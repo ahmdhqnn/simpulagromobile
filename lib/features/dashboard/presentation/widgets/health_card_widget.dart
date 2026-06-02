@@ -22,7 +22,7 @@ class HealthCardWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment(0.50, 0.00),
           end: Alignment(0.50, 1.00),
-          colors: [Color(0xFFE1F3E2), Color(0xFFFDDEC5)],
+          colors: [AppColors.healthGradientStart, AppColors.healthGradientEnd],
         ),
       ),
       child: Padding(
@@ -46,7 +46,7 @@ class HealthCardWidget extends StatelessWidget {
     if (score >= 80) {
       return const _HealthStatus(
         label: 'Sangat Baik',
-        color: Color(0xFF88E096),
+        color: AppColors.healthStatusGood,
         icon: Icons.verified_rounded,
         iconSize: 13,
       );
@@ -54,7 +54,7 @@ class HealthCardWidget extends StatelessWidget {
     if (score >= 60) {
       return const _HealthStatus(
         label: 'Kondisi Baik',
-        color: Color(0xFF88E096),
+        color: AppColors.healthStatusGood,
         icon: Icons.check_circle_rounded,
         iconSize: 13,
       );
@@ -62,14 +62,14 @@ class HealthCardWidget extends StatelessWidget {
     if (score >= 40) {
       return const _HealthStatus(
         label: 'Cukup',
-        color: Color(0xFFFFD580),
+        color: AppColors.healthStatusWarning,
         icon: Icons.info_rounded,
         iconSize: 13,
       );
     }
     return const _HealthStatus(
       label: 'Perlu Perhatian',
-      color: Color(0xFFFCBCBC),
+      color: AppColors.healthStatusCritical,
       icon: Icons.warning_amber_rounded,
       iconSize: 14,
     );

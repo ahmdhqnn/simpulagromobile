@@ -391,8 +391,7 @@ class _RecommendationHubScreenState
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.divider.withValues(alpha: 0.9)),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -449,13 +448,13 @@ class _RecommendationHubScreenState
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         onTap: () =>
             context.push('/recommendation/${recommendation.recommendationId}'),
         child: Ink(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(color: AppColors.divider.withValues(alpha: 0.9)),
           ),
           padding: const EdgeInsets.all(14),
@@ -629,13 +628,13 @@ class _RecommendationHubScreenState
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontFamily: AppTextStyles.fontFamily,
-          fontSize: 10,
+          fontSize: context.sp(10),
           fontWeight: FontWeight.w600,
           color: color,
         ),
@@ -655,13 +654,13 @@ class _RecommendationHubScreenState
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Text(
         scope.label,
         style: TextStyle(
           fontFamily: AppTextStyles.fontFamily,
-          fontSize: 10,
+          fontSize: context.sp(10),
           fontWeight: FontWeight.w600,
           color: color,
         ),
@@ -701,13 +700,13 @@ class _RecommendationHubScreenState
       case RecommendationType.ph:
         return AppColors.info;
       case RecommendationType.watering:
-        return const Color(0xFF1E88E5);
+        return AppColors.recWatering;
       case RecommendationType.pestControl:
         return AppColors.error;
       case RecommendationType.harvesting:
-        return const Color(0xFFF57C00);
+        return AppColors.recHarvesting;
       case RecommendationType.planting:
-        return const Color(0xFF2E7D32);
+        return AppColors.recPlanting;
       case RecommendationType.general:
         return AppColors.primary;
     }
@@ -722,7 +721,7 @@ class _RecommendationHubScreenState
       case RecommendationPriority.high:
         return AppColors.error;
       case RecommendationPriority.critical:
-        return const Color(0xFFD32F2F);
+        return AppColors.errorDark;
     }
   }
 
@@ -735,7 +734,7 @@ class _RecommendationHubScreenState
       case RecommendationStatus.dismissed:
         return AppColors.textSecondary;
       case RecommendationStatus.expired:
-        return const Color(0xFF757575);
+        return AppColors.muted;
     }
   }
 }

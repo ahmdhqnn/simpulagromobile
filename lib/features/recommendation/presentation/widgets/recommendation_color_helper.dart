@@ -14,7 +14,7 @@ class RecommendationColors {
       case RecommendationPriority.high:
         return AppColors.error;
       case RecommendationPriority.critical:
-        return const Color(0xFFD32F2F);
+        return AppColors.errorDark;
     }
   }
 
@@ -27,11 +27,10 @@ class RecommendationColors {
       case RecommendationStatus.dismissed:
         return AppColors.textSecondary;
       case RecommendationStatus.expired:
-        return const Color(0xFF757575);
+        return AppColors.muted;
     }
   }
 
-  /// Capitalizes "snake_case_keys" into "Snake Case Keys" for display.
   static String formatParameterKey(String key) {
     return key
         .replaceAll('_', ' ')

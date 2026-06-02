@@ -55,7 +55,7 @@ class _RecommendationTabsScreenState
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.primary,
@@ -346,7 +346,7 @@ class _RecommendationSimpleList extends StatelessWidget {
       case RecommendationPriority.high:
         return AppColors.error;
       case RecommendationPriority.critical:
-        return const Color(0xFFD32F2F);
+        return AppColors.errorDark;
     }
   }
 
@@ -359,7 +359,7 @@ class _RecommendationSimpleList extends StatelessWidget {
       case RecommendationStatus.dismissed:
         return AppColors.textSecondary;
       case RecommendationStatus.expired:
-        return const Color(0xFF757575);
+        return AppColors.muted;
     }
   }
 }

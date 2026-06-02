@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
-import '../../../../shared/widgets/app_card_widget.dart';
-import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
@@ -129,98 +127,202 @@ class DashboardRecommendationCard extends ConsumerWidget {
         .length;
     final latest = items.isEmpty ? null : items.first;
 
-    return AppCardWidget(
-      radius: AppRadius.lg,
-      padding: EdgeInsets.all(context.rw(0.04)),
-      border: Border.all(color: AppColors.divider.withValues(alpha: 0.7)),
+    return GestureDetector(
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              IconBadgeWidget.icon(
-                icon: icon,
-                background: color.withValues(alpha: 0.12),
-                tint: color,
-                radius: 10,
-              ),
-              SizedBox(width: context.rw(0.03)),
-              Expanded(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                SizedBox(width: context.rw(0.02)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: context.sp(22),
+                          fontWeight: FontWeight.w300,
+                          color: AppColors.textPrimary,
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.hint(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                _metricPill(
+                  context,
+                  'Total',
+                  '${items.length}',
+                  color.withValues(alpha: 0.1),
+                  color,
+                ),
+                const SizedBox(width: 8),
+                _metricPill(
+                  context,
+                  'Pending',
+                  '$pending',
+                  AppColors.warning.withValues(alpha: 0.1),
+                  AppColors.warning,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            if (latest != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppTextStyles.cardTitle(context, 14)),
-                    const SizedBox(height: 2),
                     Text(
-                      subtitle,
-                      maxLines: 1,
+                      latest.title,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption(context),
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(14),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      latest.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.hint(context),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Lihat Detail',
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w600,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          color: color,
+                          size: 16,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: color),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Center(
+                  child: Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.hint(context),
+                  ),
+                ),
+              ),
             ],
-          ),
-          SizedBox(height: context.rh(0.012)),
-          Row(
-            children: [
-              _metricPill(context, 'Total ${items.length}', AppColors.primary),
-              const SizedBox(width: 8),
-              _metricPill(context, 'Pending $pending', AppColors.warning),
-            ],
-          ),
-          SizedBox(height: context.rh(0.012)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _metricPill(
+    BuildContext context,
+    String label,
+    String value,
+    Color backgroundColor,
+    Color textColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Text(
-            latest == null ? description : latest.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.label(
-              context,
-              size: 13,
-              weight: FontWeight.w700,
-              height: 1.35,
+            '$label ',
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(11),
+              fontWeight: FontWeight.w400,
+              color: textColor,
             ),
           ),
-          const SizedBox(height: 4),
           Text(
-            latest == null ? 'Belum ada data rekomendasi.' : latest.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.caption(context, size: 12),
+            value,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(11),
+              fontWeight: FontWeight.w700,
+              color: textColor,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _metricPill(BuildContext context, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption(
-          context,
-          size: 11,
-          weight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-
   Widget _buildErrorCard(BuildContext context, String message) {
-    return AppCardWidget(
+    return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(context.rw(0.04)),
-      radius: AppRadius.lg,
-      border: Border.all(color: AppColors.error.withValues(alpha: 0.18)),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: AppColors.error, size: 20),
@@ -228,7 +330,11 @@ class DashboardRecommendationCard extends ConsumerWidget {
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.caption(context, size: 12),
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(12),
+                color: AppColors.error,
+              ),
             ),
           ),
         ],

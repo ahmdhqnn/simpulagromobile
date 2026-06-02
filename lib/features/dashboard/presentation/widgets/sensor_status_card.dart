@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/responsive.dart';
 import '../../domain/entities/dashboard_entity.dart';
 import '../../../monitoring/presentation/utils/sensor_metadata_adapter.dart';
 
@@ -116,7 +118,7 @@ class SensorStatusCard extends StatelessWidget {
       height: 201,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(
         children: [
@@ -143,7 +145,7 @@ class SensorStatusCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: valueFontSize,
-                          fontFamily: 'Plus Jakarta Sans',
+                          fontFamily: AppTextStyles.fontFamily,
                           fontWeight: FontWeight.w600,
                           height: 1.0,
                         ),
@@ -154,7 +156,7 @@ class SensorStatusCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: unitFontSize,
-                          fontFamily: 'Plus Jakarta Sans',
+                          fontFamily: AppTextStyles.fontFamily,
                           fontWeight: FontWeight.w600,
                           height: 1.4,
                         ),
@@ -169,7 +171,7 @@ class SensorStatusCard extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: labelFontSize,
-                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamily: AppTextStyles.fontFamily,
                       fontWeight: FontWeight.w600,
                       height: 1.2,
                     ),
@@ -189,8 +191,8 @@ class SensorStatusCard extends StatelessWidget {
                 stops: const [0.0, 0.5, 1.0],
               ),
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(18),
-                bottomRight: Radius.circular(18),
+                bottomLeft: Radius.circular(AppRadius.lg),
+                bottomRight: Radius.circular(AppRadius.lg),
               ),
             ),
             alignment: Alignment.center,
@@ -200,7 +202,7 @@ class SensorStatusCard extends StatelessWidget {
               style: TextStyle(
                 color: Colors.white,
                 fontSize: badgeFontSize,
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontWeight: FontWeight.w700,
                 height: 1.0,
                 shadows: const [
@@ -286,7 +288,7 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
               height: 40,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -295,11 +297,11 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
                     _expanded
                         ? 'Sembunyikan'
                         : 'Lihat ${total - widget.defaultCount} sensor lainnya',
-                    style: const TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(13),
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1D1D1D),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -309,7 +311,7 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
                     child: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 18,
-                      color: Color(0xFF1D1D1D),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],

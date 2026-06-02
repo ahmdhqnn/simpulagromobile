@@ -20,7 +20,7 @@ class RecommendationListScreen extends ConsumerWidget {
     final siteId = ref.watch(selectedSiteIdProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -147,27 +147,20 @@ class RecommendationListScreen extends ConsumerWidget {
         Text(
           value.toString(),
           style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: context.sp(24),
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(11),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-          ),
-        ),
+        Text(label, style: AppTextStyles.hint(context)),
       ],
     );
   }
 
   Widget _buildStatDivider() {
-    return Container(height: 32, width: 1, color: const Color(0xFFE0E0E0));
+    return Container(height: 32, width: 1, color: AppColors.divider);
   }
 
   Widget _buildFilterChips(
@@ -198,17 +191,17 @@ class RecommendationListScreen extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
                   filter.label,
                   style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
                     fontWeight: FontWeight.w500,
                     color: isSelected
                         ? Colors.white
-                        : const Color(0xFF1D1D1D).withValues(alpha: 0.7),
+                        : AppColors.textPrimary.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -255,22 +248,16 @@ class RecommendationListScreen extends ConsumerWidget {
                         Text(
                           recommendation.title,
                           style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
+                            fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(15),
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1D1D1D),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           recommendation.type.label,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(12),
-                            color: const Color(
-                              0xFF1D1D1D,
-                            ).withValues(alpha: 0.6),
-                          ),
+                          style: AppTextStyles.hint(context),
                         ),
                       ],
                     ),
@@ -286,9 +273,9 @@ class RecommendationListScreen extends ConsumerWidget {
               Text(
                 recommendation.description,
                 style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(13),
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.7),
+                  color: AppColors.textPrimary.withValues(alpha: 0.7),
                   height: 1.4,
                 ),
                 maxLines: 2,
@@ -303,16 +290,12 @@ class RecommendationListScreen extends ConsumerWidget {
                       Icon(
                         Icons.location_on,
                         size: 14,
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                        color: AppColors.textPrimary.withValues(alpha: 0.5),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         recommendation.siteName!,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                        ),
+                        style: AppTextStyles.caption(context, size: 12),
                       ),
                     ],
                     if (recommendation.plantName != null) ...[
@@ -320,16 +303,12 @@ class RecommendationListScreen extends ConsumerWidget {
                       Icon(
                         Icons.eco,
                         size: 14,
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+                        color: AppColors.textPrimary.withValues(alpha: 0.5),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         recommendation.plantName!,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(12),
-                          color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                        ),
+                        style: AppTextStyles.caption(context, size: 12),
                       ),
                     ],
                   ],
@@ -347,11 +326,7 @@ class RecommendationListScreen extends ConsumerWidget {
                   if (recommendation.confidenceScore != null)
                     Text(
                       'Akurasi: ${recommendation.confidenceLevel}',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                      ),
+                      style: AppTextStyles.caption(context, size: 12),
                     ),
                 ],
               ),
@@ -367,12 +342,12 @@ class RecommendationListScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
+          fontFamily: AppTextStyles.fontFamily,
           fontSize: context.sp(11),
           fontWeight: FontWeight.w600,
           color: color,
@@ -396,16 +371,16 @@ class RecommendationListScreen extends ConsumerWidget {
             Icon(
               Icons.lightbulb_outline,
               size: context.rw(0.164).clamp(48.0, 72.0),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
+              color: AppColors.textPrimary.withValues(alpha: 0.3),
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
               'Tidak ada rekomendasi',
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1D1D1D),
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: context.rh(0.01)),
@@ -415,9 +390,9 @@ class RecommendationListScreen extends ConsumerWidget {
                   : 'Tidak ada rekomendasi untuk filter "${filter.label}".',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(14),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                color: AppColors.textPrimary.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
@@ -430,7 +405,7 @@ class RecommendationListScreen extends ConsumerWidget {
                 icon: const Icon(Icons.refresh),
                 label: const Text(
                   'Muat Ulang',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                  style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -440,7 +415,7 @@ class RecommendationListScreen extends ConsumerWidget {
                     vertical: 12,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                 ),
               ),
@@ -467,10 +442,10 @@ class RecommendationListScreen extends ConsumerWidget {
             Text(
               'Gagal memuat rekomendasi',
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1D1D1D),
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: context.rh(0.01)),
@@ -478,9 +453,9 @@ class RecommendationListScreen extends ConsumerWidget {
               error.toString().replaceAll('Exception: ', ''),
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(14),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                color: AppColors.textPrimary.withValues(alpha: 0.6),
               ),
             ),
             SizedBox(height: context.rh(0.03)),
@@ -494,12 +469,12 @@ class RecommendationListScreen extends ConsumerWidget {
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
               child: const Text(
                 'Coba Lagi',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
             ),
           ],
@@ -517,7 +492,7 @@ class RecommendationListScreen extends ConsumerWidget {
       case RecommendationPriority.high:
         return AppColors.error;
       case RecommendationPriority.critical:
-        return const Color(0xFFD32F2F);
+        return AppColors.errorDark;
     }
   }
 
@@ -530,7 +505,7 @@ class RecommendationListScreen extends ConsumerWidget {
       case RecommendationStatus.dismissed:
         return AppColors.textSecondary;
       case RecommendationStatus.expired:
-        return const Color(0xFF757575);
+        return AppColors.muted;
     }
   }
 }

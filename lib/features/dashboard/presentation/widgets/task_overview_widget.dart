@@ -24,12 +24,11 @@ class TaskOverviewWidget extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row
           Row(
             children: [
               Expanded(
@@ -39,34 +38,27 @@ class TaskOverviewWidget extends StatelessWidget {
                     Text(
                       'Ringkasan Task',
                       style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(22),
                         fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
+                        color: AppColors.textPrimary,
                         height: 1.0,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Tingkat Penyelesaian',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                        height: 1.3,
-                      ),
+                      style: AppTextStyles.hint(context),
                     ),
                   ],
                 ),
               ),
-
               Container(
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF6E9),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.softOrange,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -83,21 +75,19 @@ class TaskOverviewWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Completion rate value
           Text(
             '${completionRate.toStringAsFixed(0)}%',
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(22),
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF1D1D1D),
+              color: AppColors.textPrimary,
               height: 1.0,
             ),
           ),
           const SizedBox(height: 8),
-          // Progress bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.xs),
             child: LinearProgressIndicator(
               value: progressValue,
               minHeight: 8,

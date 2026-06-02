@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 
-/// Activity timeline widget for dashboard
 class ActivityTimelineWidget extends StatelessWidget {
   final List<ActivityItem> activities;
 
@@ -16,7 +15,7 @@ class ActivityTimelineWidget extends StatelessWidget {
         padding: EdgeInsets.all(context.rw(0.051)),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Center(
           child: Column(
@@ -29,11 +28,7 @@ class ActivityTimelineWidget extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Belum ada aktivitas',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(13),
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.caption(context, size: 13),
               ),
             ],
           ),
@@ -45,7 +40,7 @@ class ActivityTimelineWidget extends StatelessWidget {
       padding: EdgeInsets.all(context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,22 +49,15 @@ class ActivityTimelineWidget extends StatelessWidget {
             children: [
               Text(
                 'Aktivitas Terbaru',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+                style: AppTextStyles.cardTitle(context, 14),
               ),
               const Spacer(),
               TextButton(
-                onPressed: () {
-                  // Navigate to full activity log
-                },
+                onPressed: () {},
                 child: Text(
                   'Lihat Semua',
                   style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
                   ),
                 ),
@@ -118,22 +106,18 @@ class _ActivityItem extends StatelessWidget {
             children: [
               Text(
                 activity.title,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(13),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                style: AppTextStyles.label(
+                  context,
+                  size: 13,
+                  weight: FontWeight.w600,
+                  height: 1.3,
                 ),
               ),
               if (activity.description != null) ...[
                 const SizedBox(height: 2),
                 Text(
                   activity.description!,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTextStyles.caption(context, size: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -141,9 +125,9 @@ class _ActivityItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 _formatTime(activity.timestamp),
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(11),
+                style: AppTextStyles.caption(
+                  context,
+                  size: 11,
                   color: AppColors.textTertiary,
                 ),
               ),
@@ -172,7 +156,6 @@ class _ActivityItem extends StatelessWidget {
   }
 }
 
-/// Activity item model
 class ActivityItem {
   final String title;
   final String? description;
