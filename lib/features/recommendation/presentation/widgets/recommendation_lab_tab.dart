@@ -97,7 +97,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
           const Text(
             '[TEST] Rekomendasi dummy - admin only',
             style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: AppTextStyles.fontFamily,
               fontWeight: FontWeight.w600,
             ),
           ),

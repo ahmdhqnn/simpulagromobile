@@ -33,26 +33,28 @@ class DashboardDailyRecapCard extends ConsumerWidget {
               padding: EdgeInsets.all(context.rw(0.035)),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       'ds: ${r.dsId}',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.label(
+                        context,
+                        size: 12,
+                        weight: FontWeight.w600,
+                        height: 1.3,
                       ),
                     ),
                   ),
                   Text(
                     'avg ${r.avgVal?.toStringAsFixed(1) ?? '-'}',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(11),
+                    style: AppTextStyles.label(
+                      context,
+                      size: 11,
                       color: AppColors.primary,
+                      height: 1.3,
                     ),
                   ),
                 ],

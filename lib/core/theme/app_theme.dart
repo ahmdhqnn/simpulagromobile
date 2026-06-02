@@ -19,7 +19,17 @@ class AppColors {
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFFA726);
   static const Color error = Color(0xFFEF5350);
+  static const Color errorDark = Color(0xFFD32F2F);
   static const Color info = Color(0xFF42A5F5);
+  static const Color infoDeep = Color(0xFF1E88E5);
+
+  // Recommendation type colors
+  static const Color recWatering = Color(0xFF1E88E5);
+  static const Color recHarvesting = Color(0xFFF57C00);
+  static const Color recPlanting = Color(0xFF2E7D32);
+
+  // Muted / disabled
+  static const Color muted = Color(0xFF757575);
 
   // Neutral
   static const Color background = Color(0xFFF0F0F0);
@@ -48,6 +58,15 @@ class AppColors {
   static const Color softBlue = Color(0xFFECF6FE);
   static const Color softOrange = Color(0xFFFFF6E9);
   static const Color softGreenAlt = Color(0xFFE8EFE9);
+
+  // Health card gradient colors
+  static const Color healthGradientStart = Color(0xFFE1F3E2);
+  static const Color healthGradientEnd = Color(0xFFFDDEC5);
+
+  // Health status badge colors (soft tones for pill/badge)
+  static const Color healthStatusGood = Color(0xFF88E096);
+  static const Color healthStatusWarning = Color(0xFFFFD580);
+  static const Color healthStatusCritical = Color(0xFFFCBCBC);
 }
 
 /// Standard corner radius tokens used across cards, badges, and buttons.

@@ -25,7 +25,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: recommendationAsync.when(
           skipLoadingOnReload: true,

@@ -65,7 +65,7 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
         children: [
           const Text(
             'Input nilai sensor untuk rekomendasi tanaman',
-            style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
           ),
           const SizedBox(height: 16),
           _field(_nitro, 'soil_nitro'),

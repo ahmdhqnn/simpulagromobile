@@ -18,14 +18,12 @@ class LatestSensorReadsWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: reads.length > 5
-            ? 5
-            : reads.length, // Tampilkan maksimal 5 terbaru
+        itemCount: reads.length > 5 ? 5 : reads.length,
         separatorBuilder: (context, index) => const Divider(
           color: AppColors.divider,
           height: 1,
@@ -47,7 +45,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: AppColors.softBlue,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: SvgPicture.asset(
                     'assets/icons/sensor-icon.svg',
@@ -64,21 +62,17 @@ class LatestSensorReadsWidget extends StatelessWidget {
                     children: [
                       Text(
                         read.label,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(14),
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1D1D1D),
+                        style: AppTextStyles.label(
+                          context,
+                          size: 14,
+                          weight: FontWeight.w600,
+                          height: 1.3,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         devId,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(11),
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.caption(context, size: 11),
                       ),
                     ],
                   ),
@@ -88,11 +82,12 @@ class LatestSensorReadsWidget extends StatelessWidget {
                   children: [
                     Text(
                       '$value ${read.unit}'.trim(),
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(14),
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.label(
+                        context,
+                        size: 14,
                         color: AppColors.primary,
+                        weight: FontWeight.bold,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -110,7 +105,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Center(
         child: Column(
@@ -123,11 +118,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Belum ada bacaan sensor',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(12),
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.caption(context, size: 12),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SmartScoreGauge extends StatelessWidget {
   const SmartScoreGauge({
@@ -7,7 +8,7 @@ class SmartScoreGauge extends StatelessWidget {
     required this.score,
     this.totalSensors = 0,
     this.statusLabel = 'Perlu Perhatian',
-    this.statusColor = const Color(0xFFFCBCBC),
+    this.statusColor = AppColors.healthStatusCritical,
     this.statusIcon = Icons.warning_amber_rounded,
     this.statusIconSize = 14,
   });
@@ -43,7 +44,7 @@ class SmartScoreGauge extends StatelessWidget {
                   painter: _GaugePainter(percentage: percentage),
                 ),
               ),
-              // Nilai tengah
+
               Positioned(
                 top: gaugeH * 0.38,
                 child: Column(
@@ -55,7 +56,7 @@ class SmartScoreGauge extends StatelessWidget {
                           TextSpan(
                             text: score.toStringAsFixed(0),
                             style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
+                              fontFamily: AppTextStyles.fontFamily,
                               fontSize: sw / 390 * 44,
                               fontWeight: FontWeight.w500,
                               color: Colors.black,
@@ -69,7 +70,7 @@ class SmartScoreGauge extends StatelessWidget {
                               child: Text(
                                 '%',
                                 style: TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontFamily: AppTextStyles.fontFamily,
                                   fontSize: sw / 390 * 12,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.black,
@@ -84,7 +85,7 @@ class SmartScoreGauge extends StatelessWidget {
                     Text(
                       '$totalSensors Sensor Aktif',
                       style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: sw / 390 * 12,
                         fontWeight: FontWeight.w400,
                         color: Colors.black,
@@ -108,7 +109,7 @@ class SmartScoreGauge extends StatelessWidget {
               Text(
                 statusLabel,
                 style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: sw / 390 * 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
