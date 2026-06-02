@@ -60,25 +60,55 @@ class PhaseModel with _$PhaseModel {
   /// Menangani kedua format: field langsung atau nested.
   factory PhaseModel.fromApiJson(Map<String, dynamic> json) {
     return PhaseModel(
-      id: (json['phase_id'] as String?) ?? '',
-      cropType: (json['chrop_type'] as String?) ?? '',
-      phaseName: (json['phase_name'] as String?) ?? '',
-      phaseOrder: (json['phase_order'] as num?)?.toInt() ?? 1,
-      hstMin: (json['phase_hst_min'] as num?)?.toInt() ?? 0,
-      hstMax: (json['phase_hst_max'] as num?)?.toInt() ?? 0,
+      id: _stringValue(json['phase_id'] ?? json['phaseId'] ?? json['id']),
+      cropType: _stringValue(
+        json['chrop_type'] ??
+            json['crop_type'] ??
+            json['cropType'] ??
+            json['plant_type'] ??
+            json['plantType'],
+      ),
+      phaseName: _stringValue(
+        json['phase_name'] ?? json['phaseName'] ?? json['name'],
+      ),
+      phaseOrder: _intValue(
+        json['phase_order'] ?? json['phaseOrder'] ?? json['order'],
+        fallback: 1,
+      ),
+      hstMin: _intValue(
+        json['phase_hst_min'] ??
+            json['phaseHstMin'] ??
+            json['hst_min'] ??
+            json['hstMin'],
+      ),
+      hstMax: _intValue(
+        json['phase_hst_max'] ??
+            json['phaseHstMax'] ??
+            json['hst_max'] ??
+            json['hstMax'],
+      ),
     );
   }
 
   /// Enrich model dengan HST saat ini untuk menentukan status dan progress.
   /// Dipanggil setelah mendapat data dari /fase/phases-by-hst/{siteId}.
-  PhaseModel enrichWithHst({required int currentHst, String? currentPhaseId}) {
+  PhaseModel enrichWithHst({
+    required int currentHst,
+    String? currentPhaseId,
+    String? currentPhaseName,
+  }) {
     final String phaseStatus;
     final double phaseProgress;
+    final matchesBackendPhase =
+        currentPhaseId != null && currentPhaseId.trim().isNotEmpty
+        ? id == currentPhaseId
+        : _normalizePhaseName(phaseName) ==
+              _normalizePhaseName(currentPhaseName ?? '');
 
     if (currentHst > hstMax) {
       phaseStatus = 'completed';
       phaseProgress = 1.0;
-    } else if (id == currentPhaseId ||
+    } else if (matchesBackendPhase ||
         (currentHst >= hstMin && currentHst <= hstMax)) {
       phaseStatus = 'active';
       final range = hstMax - hstMin;
@@ -133,3 +163,13 @@ class PhaseModel with _$PhaseModel {
         'Fase $order pertumbuhan tanaman $cropType.';
   }
 }
+
+String _stringValue(dynamic value) => value?.toString().trim() ?? '';
+
+int _intValue(dynamic value, {int fallback = 0}) {
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString().trim() ?? '') ?? fallback;
+}
+
+String _normalizePhaseName(String value) =>
+    value.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();

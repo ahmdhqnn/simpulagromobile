@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
+import '../../core/utils/ui_error_message.dart';
 import 'app_card_widget.dart';
 
 class InfoStateWidget extends StatelessWidget {
@@ -78,7 +79,7 @@ class InfoStateWidget extends StatelessWidget {
                 fontSize: context.sp(12),
                 fontWeight: FontWeight.w300,
                 color: AppColors.textPrimary,
-                height: 1.83,
+                height: 1.25,
               ),
             ),
           ],
@@ -113,7 +114,7 @@ class ErrorStateCardWidget extends StatelessWidget {
           const Icon(Icons.error_outline, color: AppColors.error, size: 28),
           SizedBox(height: context.rh(0.01)),
           Text(
-            message.replaceAll('Exception: ', ''),
+            toUiErrorMessage(message),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,

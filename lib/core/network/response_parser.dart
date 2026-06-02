@@ -88,6 +88,7 @@ class ResponseParser {
       'permissions',
       'varietas',
       'phases',
+      'recommendations',
     ];
 
     for (final key in keys) {

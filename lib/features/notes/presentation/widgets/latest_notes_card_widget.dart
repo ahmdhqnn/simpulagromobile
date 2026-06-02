@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../domain/entities/site_note.dart';
@@ -35,7 +36,7 @@ class LatestNotesCardWidget extends ConsumerWidget {
       ),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
-        message: e.toString(),
+        message: toUiErrorMessage(e),
         height: 80,
       ),
     );
@@ -77,7 +78,7 @@ class _NoteTile extends StatelessWidget {
           if (dateStr.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              '${note.userId} · $dateStr',
+              '${note.userId} - $dateStr',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(11),

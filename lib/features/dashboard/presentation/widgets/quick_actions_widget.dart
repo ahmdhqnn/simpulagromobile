@@ -1,14 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 
-class QuickActionsWidget extends StatelessWidget {
+class QuickActionsWidget extends ConsumerWidget {
   const QuickActionsWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final actions = [
+      const _QuickActionConfig(
+        svgIcon: 'assets/icons/monitoring-outline-icon.svg',
+        label: 'Monitoring',
+        bgColor: Color(0xFFFFF6E9),
+        iconColor: Color(0xFFFFA929),
+        tabIndex: 1,
+      ),
+      const _QuickActionConfig(
+        svgIcon: 'assets/icons/plant-outline-icon.svg',
+        label: 'Tanaman',
+        bgColor: Color(0xFFEDF7EE),
+        iconColor: AppColors.success,
+        tabIndex: 2,
+      ),
+      const _QuickActionConfig(
+        svgIcon: 'assets/icons/check-task-outline-icon.svg',
+        label: 'Task',
+        bgColor: Color(0xFFE8EFE9),
+        iconColor: AppColors.primary,
+        tabIndex: 3,
+      ),
+      const _QuickActionConfig(
+        svgIcon: 'assets/icons/forum-outline-icon.svg',
+        label: 'Forum',
+        bgColor: Color(0xFFECF6FE),
+        iconColor: AppColors.info,
+        tabIndex: 4,
+      ),
+    ];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -17,42 +49,40 @@ class QuickActionsWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        children: [
-          _QuickActionItem(
-            svgIcon: 'assets/icons/check-task-outline-icon.svg',
-            label: 'Task',
-            bgColor: const Color(0xFFE8EFE9),
-            iconColor: AppColors.primary,
-            onTap: () => context.push('/tasks'),
-          ),
-          SizedBox(width: context.rw(0.025)),
-          _QuickActionItem(
-            svgIcon: 'assets/icons/monitoring-outline-icon.svg',
-            label: 'Monitoring',
-            bgColor: const Color(0xFFFFF6E9),
-            iconColor: const Color(0xFFFFA929),
-            onTap: () {},
-          ),
-          SizedBox(width: context.rw(0.025)),
-          _QuickActionItem(
-            svgIcon: 'assets/icons/plant-outline-icon.svg',
-            label: 'Tanaman',
-            bgColor: const Color(0xFFEDF7EE),
-            iconColor: AppColors.success,
-            onTap: () {},
-          ),
-          SizedBox(width: context.rw(0.025)),
-          _QuickActionItem(
-            svgIcon: 'assets/icons/grafik_outline_icon.svg',
-            label: 'Laporan',
-            bgColor: const Color(0xFFFDEEEE),
-            iconColor: AppColors.error,
-            onTap: () {},
-          ),
-        ],
+        children: List.generate(actions.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            return SizedBox(width: context.rw(0.025));
+          }
+
+          final item = actions[index ~/ 2];
+          return _QuickActionItem(
+            svgIcon: item.svgIcon,
+            label: item.label,
+            bgColor: item.bgColor,
+            iconColor: item.iconColor,
+            onTap: () => ref.read(mainShellTabIndexProvider.notifier).state =
+                item.tabIndex,
+          );
+        }),
       ),
     );
   }
+}
+
+class _QuickActionConfig {
+  final String svgIcon;
+  final String label;
+  final Color bgColor;
+  final Color iconColor;
+  final int tabIndex;
+
+  const _QuickActionConfig({
+    required this.svgIcon,
+    required this.label,
+    required this.bgColor,
+    required this.iconColor,
+    required this.tabIndex,
+  });
 }
 
 class _QuickActionItem extends StatelessWidget {

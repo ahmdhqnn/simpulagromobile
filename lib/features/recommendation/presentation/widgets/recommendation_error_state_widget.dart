@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/ui_error_message.dart';
 
 class RecommendationErrorStateWidget extends StatelessWidget {
   final String errorMessage;
@@ -37,7 +38,7 @@ class RecommendationErrorStateWidget extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.01)),
             Text(
-              errorMessage.replaceAll('Exception: ', ''),
+              toUiErrorMessage(errorMessage),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,

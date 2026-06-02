@@ -13,7 +13,7 @@ class HealthCardWidget extends StatelessWidget {
     final score = health.overallHealth;
     final totalSensors = health.totalSensors;
 
-    final (statusLabel, statusColor, showWarning) = _resolveStatus(score);
+    final status = _resolveStatus(score);
 
     return Container(
       width: double.infinity,
@@ -33,18 +33,59 @@ class HealthCardWidget extends StatelessWidget {
         child: SmartScoreGauge(
           score: score,
           totalSensors: totalSensors,
-          statusLabel: statusLabel,
-          statusColor: statusColor,
-          showWarning: showWarning,
+          statusLabel: status.label,
+          statusColor: status.color,
+          statusIcon: status.icon,
+          statusIconSize: status.iconSize,
         ),
       ),
     );
   }
 
-  (String, Color, bool) _resolveStatus(double score) {
-    if (score >= 80) return ('Sangat Baik', const Color(0xFF88E096), false);
-    if (score >= 60) return ('Kondisi Baik', const Color(0xFF88E096), false);
-    if (score >= 40) return ('Cukup', const Color(0xFFFFD580), true);
-    return ('Perlu Perhatian', const Color(0xFFFCBCBC), true);
+  _HealthStatus _resolveStatus(double score) {
+    if (score >= 80) {
+      return const _HealthStatus(
+        label: 'Sangat Baik',
+        color: Color(0xFF88E096),
+        icon: Icons.verified_rounded,
+        iconSize: 13,
+      );
+    }
+    if (score >= 60) {
+      return const _HealthStatus(
+        label: 'Kondisi Baik',
+        color: Color(0xFF88E096),
+        icon: Icons.check_circle_rounded,
+        iconSize: 13,
+      );
+    }
+    if (score >= 40) {
+      return const _HealthStatus(
+        label: 'Cukup',
+        color: Color(0xFFFFD580),
+        icon: Icons.info_rounded,
+        iconSize: 13,
+      );
+    }
+    return const _HealthStatus(
+      label: 'Perlu Perhatian',
+      color: Color(0xFFFCBCBC),
+      icon: Icons.warning_amber_rounded,
+      iconSize: 14,
+    );
   }
+}
+
+class _HealthStatus {
+  const _HealthStatus({
+    required this.label,
+    required this.color,
+    required this.icon,
+    required this.iconSize,
+  });
+
+  final String label;
+  final Color color;
+  final IconData icon;
+  final double iconSize;
 }

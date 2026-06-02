@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../domain/entities/device.dart';
 import '../models/device_model.dart';
 
@@ -12,11 +13,12 @@ class DeviceRemoteDataSource {
   /// GET /api/sites/:siteId/devices
   Future<List<DeviceModel>> getDevices(String siteId) async {
     final response = await _dio.get(ApiEndpoints.devices(siteId));
-    final data = response.data['data'] as List? ?? [];
+    final data = ResponseParser.extractDataList(response.data);
     return data
+        .whereType<Map>()
         .map(
           (json) => DeviceModel.fromJson(
-            _normalizeDevice(json as Map<String, dynamic>),
+            _normalizeDevice(Map<String, dynamic>.from(json)),
           ),
         )
         .toList();
@@ -33,14 +35,20 @@ class DeviceRemoteDataSource {
   /// Get device by ID
   Future<DeviceModel> getDeviceById(String siteId, String devId) async {
     final response = await _dio.get(ApiEndpoints.deviceById(siteId, devId));
-    return DeviceModel.fromJson(response.data['data']);
+    return DeviceModel.fromJson(
+      _normalizeDevice(ResponseParser.extractDataMap(response.data)),
+    );
   }
 
   /// Get device coordinates
   Future<List<DeviceModel>> getDeviceCoordinates(String siteId) async {
     final response = await _dio.get(ApiEndpoints.deviceCoordinates(siteId));
-    final data = response.data['data'] as List;
-    return data.map((json) => DeviceModel.fromJson(json)).toList();
+    final data = ResponseParser.extractDataList(response.data);
+    return data.whereType<Map>().map((json) {
+      return DeviceModel.fromJson(
+        _normalizeDevice(Map<String, dynamic>.from(json)),
+      );
+    }).toList();
   }
 
   /// Create new device
@@ -60,7 +68,9 @@ class DeviceRemoteDataSource {
         'dev_sts': device.devSts ?? 1,
       },
     );
-    return DeviceModel.fromJson(response.data['data']);
+    return DeviceModel.fromJson(
+      _normalizeDevice(ResponseParser.extractDataMap(response.data)),
+    );
   }
 
   /// Update device
@@ -83,7 +93,9 @@ class DeviceRemoteDataSource {
         'dev_sts': device.devSts,
       },
     );
-    return DeviceModel.fromJson(response.data['data']);
+    return DeviceModel.fromJson(
+      _normalizeDevice(ResponseParser.extractDataMap(response.data)),
+    );
   }
 
   /// Delete device

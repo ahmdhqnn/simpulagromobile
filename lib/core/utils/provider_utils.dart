@@ -38,3 +38,26 @@ extension AutoRetryRef on Ref {
     return fallbackDelay;
   }
 }
+
+extension CacheForExtension on Ref {
+  /// Mempertahankan state provider di memori selama [duration] setelah tidak lagi didengarkan.
+  void cacheFor(Duration duration) {
+    final link = keepAlive();
+    Timer? timer;
+
+    onCancel(() {
+      timer = Timer(duration, () {
+        link.close();
+      });
+    });
+
+    onResume(() {
+      timer?.cancel();
+    });
+
+    onDispose(() {
+      timer?.cancel();
+    });
+  }
+}
+

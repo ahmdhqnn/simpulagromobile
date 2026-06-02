@@ -10,6 +10,12 @@ abstract class RecommendationRepository {
 
   /// Get recommendations by site
   Future<Either<Failure, List<Recommendation>>> getRecommendationsBySite(
+    String siteId, {
+    bool refresh = false,
+  });
+
+  /// Get latest recommendations snapshot for selected site.
+  Future<Either<Failure, List<Recommendation>>> getLatestRecommendationsForSite(
     String siteId,
   );
 

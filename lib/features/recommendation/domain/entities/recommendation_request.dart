@@ -22,12 +22,22 @@ class RecommendationLabInput {
     required this.soilNitro,
     required this.soilPhos,
     required this.soilPot,
+    required this.envTemp,
+    required this.envHum,
+    required this.soilTemp,
+    required this.soilHum,
+    required this.soilPh,
   });
 
   final String phase;
   final double soilNitro;
   final double soilPhos;
   final double soilPot;
+  final double envTemp;
+  final double envHum;
+  final double soilTemp;
+  final double soilHum;
+  final double soilPh;
 }
 
 class RecommendationPreviewResult {

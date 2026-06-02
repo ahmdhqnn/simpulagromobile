@@ -29,10 +29,32 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
 
   @override
   Future<Either<Failure, List<Recommendation>>> getRecommendationsBySite(
+    String siteId, {
+    bool refresh = false,
+  }) async {
+    try {
+      final models = await _remoteDatasource.getRecommendationsBySite(
+        siteId,
+        refresh: refresh,
+      );
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Recommendation>>> getLatestRecommendationsForSite(
     String siteId,
   ) async {
     try {
-      final models = await _remoteDatasource.getRecommendationsBySite(siteId);
+      final models = await _remoteDatasource.getLatestRecommendationsForSite(
+        siteId,
+      );
       return Right(models.map((m) => m.toEntity()).toList());
     } on DioException catch (e) {
       return Left(e.toFailure());
@@ -262,6 +284,11 @@ class RecommendationRepositoryImpl implements RecommendationRepository {
         'soil_nitro': input.soilNitro,
         'soil_phos': input.soilPhos,
         'soil_pot': input.soilPot,
+        'env_temp': input.envTemp,
+        'env_hum': input.envHum,
+        'soil_temp': input.soilTemp,
+        'soil_hum': input.soilHum,
+        'soil_ph': input.soilPh,
       },
       if (includeSiteId && siteId != null) 'siteId': siteId,
     };

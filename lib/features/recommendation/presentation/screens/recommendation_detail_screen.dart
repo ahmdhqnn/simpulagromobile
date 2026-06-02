@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../providers/recommendation_provider.dart';
+import '../providers/recommendation_hub_provider.dart';
 import '../widgets/recommendation_action_items_card_widget.dart';
 import '../widgets/recommendation_detail_header_widget.dart';
 import '../widgets/recommendation_error_state_widget.dart';
@@ -21,7 +21,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recommendationAsync = ref.watch(
-      recommendationDetailProvider(recommendationId),
+      recommendationHubDetailProvider(recommendationId),
     );
 
     return Scaffold(
@@ -36,7 +36,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
               RecommendationDetailHeaderWidget(
                 onBack: () => context.pop(),
                 onRefresh: () => ref.invalidate(
-                  recommendationDetailProvider(recommendationId),
+                  recommendationHubDetailProvider(recommendationId),
                 ),
               ),
               const Expanded(
@@ -53,14 +53,14 @@ class RecommendationDetailScreen extends ConsumerWidget {
               RecommendationDetailHeaderWidget(
                 onBack: () => context.pop(),
                 onRefresh: () => ref.invalidate(
-                  recommendationDetailProvider(recommendationId),
+                  recommendationHubDetailProvider(recommendationId),
                 ),
               ),
               Expanded(
                 child: RecommendationErrorStateWidget(
                   errorMessage: error.toString(),
                   onRetry: () => ref.invalidate(
-                    recommendationDetailProvider(recommendationId),
+                    recommendationHubDetailProvider(recommendationId),
                   ),
                 ),
               ),
@@ -69,7 +69,8 @@ class RecommendationDetailScreen extends ConsumerWidget {
           data: (recommendation) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
-              ref.invalidate(recommendationDetailProvider(recommendationId));
+              invalidateRecommendationHubData(ref);
+              ref.invalidate(recommendationHubDetailProvider(recommendationId));
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Column(
@@ -77,7 +78,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
                 RecommendationDetailHeaderWidget(
                   onBack: () => context.pop(),
                   onRefresh: () => ref.invalidate(
-                    recommendationDetailProvider(recommendationId),
+                    recommendationHubDetailProvider(recommendationId),
                   ),
                 ),
                 Expanded(

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/providers/app_providers.dart';
+
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -14,11 +14,18 @@ import '../../domain/usecases/get_plant_summary_usecase.dart';
 import '../../domain/usecases/get_sensor_summary_usecase.dart';
 import '../../domain/usecases/get_seven_day_reads_usecase.dart';
 import '../../domain/usecases/get_today_reads_usecase.dart';
+import '../../../monitoring/presentation/providers/monitoring_provider.dart';
 
-Future<void> _watchDashboardRefresh(Ref ref, int slot) async {
-  ref.watch(realtimeRefreshTickProvider);
-  if (slot <= 0) return;
-  await Future<void>.delayed(Duration(milliseconds: 350 * slot));
+class DashboardSummarySnapshot {
+  const DashboardSummarySnapshot({
+    this.deviceSummary,
+    this.sensorSummary,
+    this.plantSummary,
+  });
+
+  final DeviceSummaryEntity? deviceSummary;
+  final SensorSummaryEntity? sensorSummary;
+  final PlantSummaryEntity? plantSummary;
 }
 
 // ─── DataSource Provider ─────────────────────────────────
@@ -74,18 +81,44 @@ final getTodayReadsUseCaseProvider = Provider<GetTodayReadsUseCase>((ref) {
   return GetTodayReadsUseCase(ref.watch(dashboardRepositoryProvider));
 });
 
+final dashboardSummaryProvider =
+    FutureProvider.autoDispose<DashboardSummarySnapshot>((ref) async {
+      ref.cacheFor(const Duration(minutes: 5));
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return const DashboardSummarySnapshot();
+
+      final deviceUseCase = ref.watch(getDeviceSummaryUseCaseProvider);
+      final sensorUseCase = ref.watch(getSensorSummaryUseCaseProvider);
+      final plantUseCase = ref.watch(getPlantSummaryUseCaseProvider);
+
+      final device = await deviceUseCase(
+        siteId,
+      ).then((result) => result.fold((_) => null, (entity) => entity));
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+
+      final sensor = await sensorUseCase(
+        siteId,
+      ).then((result) => result.fold((_) => null, (entity) => entity));
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+
+      final plant = await plantUseCase(
+        siteId,
+      ).then((result) => result.fold((_) => null, (entity) => entity));
+
+      return DashboardSummarySnapshot(
+        deviceSummary: device,
+        sensorSummary: sensor,
+        plantSummary: plant,
+      );
+    });
+
 // ─── Environmental Health ─────────────────────────────────
 /// GET /sites/{siteId}/agro/environmental-health
 final environmentalHealthProvider =
     FutureProvider.autoDispose<EnvironmentalHealthEntity?>((ref) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) return null;
-      final useCase = ref.watch(getEnvironmentalHealthUseCaseProvider);
-      await _watchDashboardRefresh(ref, 0);
-      return ref.retryOnError(() async {
-        final result = await useCase(siteId);
-        return result.fold((failure) => throw failure, (entity) => entity);
-      });
+      ref.cacheFor(const Duration(minutes: 3));
+      final mHealth = await ref.watch(envHealthProvider.future);
+      return mHealth.toEntity();
     });
 
 // ─── Device Summary ───────────────────────────────────────
@@ -93,6 +126,7 @@ final environmentalHealthProvider =
 final deviceSummaryProvider = FutureProvider.autoDispose<DeviceSummaryEntity?>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getDeviceSummaryUseCaseProvider);
@@ -107,6 +141,7 @@ final deviceSummaryProvider = FutureProvider.autoDispose<DeviceSummaryEntity?>((
 final sensorSummaryProvider = FutureProvider.autoDispose<SensorSummaryEntity?>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getSensorSummaryUseCaseProvider);
@@ -121,6 +156,7 @@ final sensorSummaryProvider = FutureProvider.autoDispose<SensorSummaryEntity?>((
 final plantSummaryProvider = FutureProvider.autoDispose<PlantSummaryEntity?>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getPlantSummaryUseCaseProvider);
@@ -134,20 +170,25 @@ final plantSummaryProvider = FutureProvider.autoDispose<PlantSummaryEntity?>((
 /// GET /sites/{siteId}/reads/updates
 final latestSensorReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) return [];
-      final useCase = ref.watch(getLatestSensorReadsUseCaseProvider);
-      await _watchDashboardRefresh(ref, 1);
-      return ref.retryOnError(() async {
-        final result = await useCase(siteId);
-        return result.fold((failure) => throw failure, (entities) => entities);
-      });
+      ref.cacheFor(const Duration(minutes: 2));
+      final updates = await ref.watch(latestReadsProvider.future);
+      return updates
+          .map(
+            (update) => SensorReadEntity(
+              devId: update.devId,
+              dsId: update.dsId,
+              value: update.readUpdateValue ?? '0',
+              readAt: update.readUpdateDate,
+            ),
+          )
+          .toList();
     });
 
 // ─── Daily Reads ──────────────────────────────────────────
 /// GET /sites/{siteId}/reads/daily
 final sevenDayReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
+      ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final useCase = ref.watch(getSevenDayReadsUseCaseProvider);
@@ -161,11 +202,16 @@ final sevenDayReadsProvider =
 /// GET /sites/{siteId}/reads/today
 final dashboardTodayReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) return [];
-      final useCase = ref.watch(getTodayReadsUseCaseProvider);
-      return ref.retryOnError(() async {
-        final result = await useCase(siteId);
-        return result.fold((failure) => throw failure, (entities) => entities);
-      });
+      ref.cacheFor(const Duration(minutes: 3));
+      final reads = await ref.watch(todayReadsProvider.future);
+      return reads
+          .map(
+            (read) => SensorReadEntity(
+              devId: read.devId ?? '',
+              dsId: read.dsId ?? '',
+              value: read.readValue ?? '0',
+              readAt: read.readDate,
+            ),
+          )
+          .toList();
     });

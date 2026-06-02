@@ -28,6 +28,34 @@ bool _isExpectedEmptyResponse(DioException e) {
       message.contains('belum ada');
 }
 
+bool _isRecoverableDailyRecapError(DioException e) {
+  final status = e.response?.statusCode ?? 0;
+  if (status != 500 && status != 502 && status != 503 && status != 504) {
+    return false;
+  }
+  final body = e.response?.data;
+  final message = body is Map
+      ? [
+          body['message'],
+          body['error'],
+          body['details'],
+        ].whereType<Object>().map((value) => value.toString()).join(' ')
+      : body?.toString() ?? '';
+  final normalized = message.toLowerCase();
+  if (normalized.isEmpty) return true;
+  return normalized.contains('database') ||
+      normalized.contains('db') ||
+      normalized.contains('query') ||
+      normalized.contains('server') ||
+      normalized.contains('timeout') ||
+      normalized.contains('connection');
+}
+
+String _todayString() {
+  final now = DateTime.now();
+  return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+}
+
 class MonitoringRemoteDataSource {
   final Dio _dio;
 
@@ -199,11 +227,15 @@ class MonitoringRemoteDataSource {
 
   /// GET /sites/{siteId}/reads/daily/today
   Future<List<SensorDailyModel>> getDailyToday(String siteId) async {
+    final day = _todayString();
     try {
       final res = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
       return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) return [];
+      if (_isRecoverableDailyRecapError(e)) {
+        return _loadDailyTodayFallback(siteId, day);
+      }
       rethrow;
     }
   }
@@ -214,15 +246,50 @@ class MonitoringRemoteDataSource {
     String day,
   ) async {
     try {
-      final res = await _dio.get(
-        ApiEndpoints.readsDailyByDay(siteId),
-        queryParameters: {'day': day},
-      );
-      return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+      return _loadDailyByDay(siteId, day);
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) return [];
       rethrow;
     }
+  }
+
+  Future<List<SensorDailyModel>> _loadDailyTodayFallback(
+    String siteId,
+    String day,
+  ) async {
+    try {
+      return await _loadDailyByDay(siteId, day);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      if (!_isRecoverableDailyRecapError(e)) rethrow;
+    }
+
+    try {
+      final allDaily = await getDailyReads(siteId);
+      return allDaily.where((item) => _isSameDay(item.day, day)).toList();
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return [];
+      if (_isRecoverableDailyRecapError(e)) return [];
+      rethrow;
+    }
+  }
+
+  Future<List<SensorDailyModel>> _loadDailyByDay(
+    String siteId,
+    String day,
+  ) async {
+    final res = await _dio.get(
+      ApiEndpoints.readsDailyByDay(siteId),
+      queryParameters: {'day': day},
+    );
+    return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+  }
+
+  bool _isSameDay(DateTime? date, String day) {
+    if (date == null) return false;
+    final itemDay =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return itemDay == day;
   }
 
   /// POST /sites/{siteId}/reads/daily/rekap  body: { "day": "YYYY-MM-DD" }

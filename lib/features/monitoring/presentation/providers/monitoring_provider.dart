@@ -356,6 +356,7 @@ final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
 final dailyTodayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');
@@ -402,6 +403,7 @@ final dailyByDayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 /// GET /api/sites/:siteId/reads/mounth
 final monthlyReadsProvider =
     FutureProvider.autoDispose<List<MonthlyRekapModel>>((ref) async {
+      ref.cacheFor(const Duration(minutes: 10));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
 

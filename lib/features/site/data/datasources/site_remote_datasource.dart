@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../domain/entities/site.dart';
 import '../models/site_model.dart';
 
@@ -12,15 +13,18 @@ class SiteRemoteDataSource {
   /// Fetch all sites
   Future<List<SiteModel>> getSites() async {
     final response = await _dio.get(ApiEndpoints.sites);
-    final data = response.data['data'] as List;
-    return data.map((json) => SiteModel.fromJson(json)).toList();
+    final data = ResponseParser.extractDataList(response.data);
+    return data
+        .whereType<Map>()
+        .map((json) => SiteModel.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
   }
 
   /// GET /api/sites/:siteId
   /// Fetch site by ID
   Future<SiteModel> getSiteById(String siteId) async {
     final response = await _dio.get(ApiEndpoints.siteById(siteId));
-    return SiteModel.fromJson(response.data['data']);
+    return SiteModel.fromJson(ResponseParser.extractDataMap(response.data));
   }
 
   /// POST /api/sites
@@ -38,7 +42,7 @@ class SiteRemoteDataSource {
         'site_sts': site.siteSts ?? 1,
       },
     );
-    return SiteModel.fromJson(response.data['data']);
+    return SiteModel.fromJson(ResponseParser.extractDataMap(response.data));
   }
 
   /// PUT /api/sites/:siteId
@@ -55,7 +59,7 @@ class SiteRemoteDataSource {
         if (site.siteSts != null) 'site_sts': site.siteSts,
       },
     );
-    return SiteModel.fromJson(response.data['data']);
+    return SiteModel.fromJson(ResponseParser.extractDataMap(response.data));
   }
 
   /// POST /sites/{siteId}/members/invite

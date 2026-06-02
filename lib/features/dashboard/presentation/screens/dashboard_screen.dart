@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -22,11 +23,15 @@ import '../widgets/dashboard_recommendation_card.dart';
 import '../../../notes/presentation/widgets/latest_notes_card_widget.dart';
 import '../../../monitoring/presentation/providers/monitoring_provider.dart';
 import '../../../notes/presentation/providers/notes_provider.dart';
-import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  void _switchToMainTab(WidgetRef ref, int index) {
+    ref.read(mainShellTabIndexProvider.notifier).state = index;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,9 +40,7 @@ class DashboardScreen extends ConsumerWidget {
     final sitesAsync = ref.watch(sitesProvider);
     final selectedSite = ref.watch(selectedSiteProvider);
     final healthAsync = ref.watch(environmentalHealthProvider);
-    final deviceSummaryAsync = ref.watch(deviceSummaryProvider);
-    final sensorSummaryAsync = ref.watch(sensorSummaryProvider);
-    final plantSummaryAsync = ref.watch(plantSummaryProvider);
+    final dashboardSummaryAsync = ref.watch(dashboardSummaryProvider);
     final latestReadsAsync = ref.watch(latestSensorReadsProvider);
     final taskStats = ref.watch(taskStatsProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
@@ -49,15 +52,13 @@ class DashboardScreen extends ConsumerWidget {
           color: AppColors.primary,
           onRefresh: () async {
             ref.invalidate(environmentalHealthProvider);
-            ref.invalidate(deviceSummaryProvider);
-            ref.invalidate(sensorSummaryProvider);
-            ref.invalidate(plantSummaryProvider);
+            ref.invalidate(dashboardSummaryProvider);
             ref.invalidate(latestSensorReadsProvider);
             ref.invalidate(sitesProvider);
             ref.invalidate(taskListProvider);
             ref.invalidate(latestNotesProvider);
             ref.invalidate(dailyTodayProvider);
-            ref.invalidate(recommendationListProvider);
+            invalidateRecommendationHubData(ref);
             await Future.delayed(const Duration(milliseconds: 500));
           },
           child: SingleChildScrollView(
@@ -201,79 +202,92 @@ class DashboardScreen extends ConsumerWidget {
 
                         SectionHeaderWidget(title: l10n.summarySectionTitle),
                         SizedBox(height: context.rh(0.014)),
-                        GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
-                          childAspectRatio: 1.6,
-                          crossAxisSpacing: context.rw(0.025),
-                          mainAxisSpacing: context.rw(0.025),
-                          children: [
-                            SummaryCardWidget(
-                              title: l10n.deviceTitle,
-                              value: deviceSummaryAsync.when(
-                                skipLoadingOnReload: true,
-                                skipLoadingOnRefresh: true,
-                                skipError: true,
-                                data: (d) => d?.total.toString() ?? '0',
-                                loading: () => '...',
-                                error: (_, __) => '-',
-                              ),
-                              svgIcon: 'assets/icons/device-outline-icon.svg',
-                              iconBgColor: AppColors.softGreenAlt,
-                              iconColor: AppColors.primary,
-                              onTap: () {},
-                            ),
-                            SummaryCardWidget(
-                              title: l10n.sensorTitle,
-                              value: sensorSummaryAsync.when(
-                                skipLoadingOnReload: true,
-                                skipLoadingOnRefresh: true,
-                                skipError: true,
-                                data: (s) => s?.total.toString() ?? '0',
-                                loading: () => '...',
-                                error: (_, __) => '-',
-                              ),
-                              svgIcon: 'assets/icons/sensor-icon.svg',
-                              iconBgColor: AppColors.softBlue,
-                              iconColor: AppColors.info,
-                              onTap: () {},
-                            ),
-                            SummaryCardWidget(
-                              title: l10n.plantTitle,
-                              value: plantSummaryAsync.when(
-                                skipLoadingOnReload: true,
-                                skipLoadingOnRefresh: true,
-                                skipError: true,
-                                data: (p) => p?.active.toString() ?? '0',
-                                loading: () => '...',
-                                error: (_, __) => '-',
-                              ),
-                              svgIcon: 'assets/icons/plant-outline-icon.svg',
-                              iconBgColor: AppColors.softGreen,
-                              iconColor: AppColors.success,
-                              onTap: () {},
-                            ),
-                            SummaryCardWidget(
-                              title: l10n.taskTitle,
-                              value: taskStats.total.toString(),
-                              svgIcon:
-                                  'assets/icons/check-task-outline-icon.svg',
-                              iconBgColor: AppColors.softOrange,
-                              iconColor: AppColors.warning,
-                              onTap: () async {
-                                await context.push('/tasks');
-                                ref.invalidate(taskListProvider);
-                              },
-                            ),
-                          ],
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final spacing = context.rw(0.025).clamp(8.0, 12.0);
+                            final cardWidth =
+                                (constraints.maxWidth - spacing) / 2;
+                            final cardHeight = 90.0;
+
+                            return GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 2,
+                              childAspectRatio: cardWidth / cardHeight,
+                              crossAxisSpacing: spacing,
+                              mainAxisSpacing: spacing,
+                              children: [
+                                SummaryCardWidget(
+                                  title: l10n.deviceTitle,
+                                  value: dashboardSummaryAsync.when(
+                                    skipLoadingOnReload: true,
+                                    skipLoadingOnRefresh: true,
+                                    skipError: true,
+                                    data: (s) =>
+                                        s.deviceSummary?.total.toString() ??
+                                        '-',
+                                    loading: () => '...',
+                                    error: (_, __) => '-',
+                                  ),
+                                  svgIcon:
+                                      'assets/icons/device-outline-icon.svg',
+                                  iconBgColor: AppColors.softGreenAlt,
+                                  iconColor: AppColors.primary,
+                                  onTap: () => _switchToMainTab(ref, 1),
+                                ),
+                                SummaryCardWidget(
+                                  title: l10n.sensorTitle,
+                                  value: dashboardSummaryAsync.when(
+                                    skipLoadingOnReload: true,
+                                    skipLoadingOnRefresh: true,
+                                    skipError: true,
+                                    data: (s) =>
+                                        s.sensorSummary?.total.toString() ??
+                                        '-',
+                                    loading: () => '...',
+                                    error: (_, __) => '-',
+                                  ),
+                                  svgIcon: 'assets/icons/sensor-icon.svg',
+                                  iconBgColor: AppColors.softBlue,
+                                  iconColor: AppColors.info,
+                                  onTap: () => _switchToMainTab(ref, 1),
+                                ),
+                                SummaryCardWidget(
+                                  title: l10n.plantTitle,
+                                  value: dashboardSummaryAsync.when(
+                                    skipLoadingOnReload: true,
+                                    skipLoadingOnRefresh: true,
+                                    skipError: true,
+                                    data: (s) =>
+                                        s.plantSummary?.active.toString() ??
+                                        '-',
+                                    loading: () => '...',
+                                    error: (_, __) => '-',
+                                  ),
+                                  svgIcon:
+                                      'assets/icons/plant-overview-outline-icon.svg',
+                                  iconBgColor: AppColors.softGreen,
+                                  iconColor: AppColors.success,
+                                  onTap: () => _switchToMainTab(ref, 2),
+                                ),
+                                SummaryCardWidget(
+                                  title: l10n.taskTitle,
+                                  value: taskStats.total.toString(),
+                                  svgIcon:
+                                      'assets/icons/task-overview-outline-icon.svg',
+                                  iconBgColor: AppColors.softOrange,
+                                  iconColor: AppColors.warning,
+                                  onTap: () {
+                                    _switchToMainTab(ref, 3);
+                                    ref.invalidate(taskListProvider);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         SizedBox(height: context.rh(0.024)),
 
-                        SectionHeaderWidget(
-                          title: l10n.taskSummarySectionTitle,
-                        ),
-                        SizedBox(height: context.rh(0.014)),
                         TaskOverviewWidget(
                           totalTasks: taskStats.total,
                           completedTasks: taskStats.completed,

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/recommendation_remote_datasource.dart';
 import '../../data/repositories/recommendation_repository_impl.dart';
@@ -43,6 +44,13 @@ final getRecommendationsUseCaseProvider = Provider<GetRecommendationsUseCase>((
 final getRecommendationsBySiteUseCaseProvider =
     Provider<GetRecommendationsBySiteUseCase>((ref) {
       return GetRecommendationsBySiteUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final getLatestRecommendationsForSiteUseCaseProvider =
+    Provider<GetLatestRecommendationsForSiteUseCase>((ref) {
+      return GetLatestRecommendationsForSiteUseCase(
         ref.watch(recommendationRepositoryProvider),
       );
     });
@@ -125,15 +133,59 @@ final dismissRecommendationUseCaseProvider =
       );
     });
 
+bool _isTransientRecommendationFailure(Failure failure) {
+  if (failure is NetworkFailure) return true;
+  if (failure is ServerFailure) {
+    final code = failure.statusCode ?? 0;
+    return code == 429 || (code >= 500 && code <= 599);
+  }
+  return false;
+}
+
+Future<String?> _resolveRecommendationPhaseId(Ref ref) async {
+  final selected = ref.read(selectedPhaseIdForRecProvider);
+  if (selected != null) return selected;
+
+  try {
+    final siteId = ref.read(selectedSiteIdProvider);
+    if (siteId != null) {
+      final current = await ref.read(currentPhaseProvider(siteId).future);
+      if (current != null) {
+        ref.read(selectedPhaseIdForRecProvider.notifier).state = current.id;
+        return current.id;
+      }
+    }
+  } catch (_) {}
+
+  try {
+    final phases = await ref.read(phasesForSelectedSiteProvider.future);
+    final fallback =
+        phases.where((phase) => phase.isActive).firstOrNull ??
+        phases.firstOrNull;
+    if (fallback != null) {
+      ref.read(selectedPhaseIdForRecProvider.notifier).state = fallback.id;
+      return fallback.id;
+    }
+  } catch (_) {}
+
+  return null;
+}
+
 /// History rekomendasi site
 final recommendationHistoryProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
+      ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final useCase = ref.watch(getRecommendationHistoryUseCaseProvider);
       return ref.retryOnError(() async {
         final result = await useCase(siteId);
-        return result.fold((failure) => throw failure, (items) => items);
+        return result.fold((failure) {
+          if (_isTransientRecommendationFailure(failure)) {
+            return <Recommendation>[];
+          }
+          throw failure;
+        }, (items) => items);
       });
     });
 
@@ -142,12 +194,19 @@ final selectedPhaseIdForRecProvider = StateProvider<String?>((ref) => null);
 final recommendationByPhaseProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
       final siteId = ref.watch(selectedSiteIdProvider);
-      final phaseId = ref.watch(selectedPhaseIdForRecProvider);
+      final selectedPhaseId = ref.watch(selectedPhaseIdForRecProvider);
+      final phaseId =
+          selectedPhaseId ?? await _resolveRecommendationPhaseId(ref);
       if (siteId == null || phaseId == null) return [];
       final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
       return ref.retryOnError(() async {
         final result = await useCase(siteId, phaseId);
-        return result.fold((failure) => throw failure, (items) => items);
+        return result.fold((failure) {
+          if (_isTransientRecommendationFailure(failure)) {
+            return <Recommendation>[];
+          }
+          throw failure;
+        }, (items) => items);
       });
     });
 
@@ -155,11 +214,11 @@ final recommendationByPhaseProvider =
 /// Mengambil rekomendasi untuk site yang sedang dipilih
 final recommendationListProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
+      ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
 
       final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
-      await _watchRecommendationRefresh(ref, 4);
       return await ref.retryOnError(() async {
         final result = await useCase(siteId);
         return result.fold(
