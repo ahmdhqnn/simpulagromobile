@@ -25,11 +25,11 @@ class RecommendationParametersCardWidget extends StatelessWidget {
           const SizedBox(height: 12),
           if (parameters.npk != null) ...[
             _buildRow(context, 'Status NPK', parameters.npk!.status),
-            _buildRow(context, 'Dosis NPK', '${parameters.npk!.dosisKgHa} kg/ha'),
+            _buildRow(context, 'Dosis NPK', _formatDose(parameters.npk!)),
           ],
           if (parameters.ph != null) ...[
             _buildRow(context, 'Status pH', parameters.ph!.status),
-            _buildRow(context, 'Dosis pH', '${parameters.ph!.dosisKgHa} kg/ha'),
+            _buildRow(context, 'Dosis pH', _formatDose(parameters.ph!)),
           ],
         ],
       ),
@@ -62,5 +62,26 @@ class RecommendationParametersCardWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDose(RecommendationActionResult result) {
+    if (result.dosisKgHa > 0) {
+      return '${_formatNumber(result.dosisKgHa)} kg/ha';
+    }
+
+    final text = '${result.status} ${result.pesan}'.toLowerCase();
+    if (text.contains('normal') ||
+        text.contains('aman') ||
+        text.contains('tidak diperlukan') ||
+        text.contains('tidak perlu')) {
+      return 'Tidak perlu tambahan';
+    }
+
+    return 'Belum tersedia dari backend';
+  }
+
+  String _formatNumber(num value) {
+    if (value % 1 == 0) return value.toInt().toString();
+    return value.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
   }
 }

@@ -75,26 +75,28 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
   Future<void> _silentRefresh() async {
     if (state.isLoading) return;
-    final result = await _repository.getPaginatedPosts(
-      page: 1,
-      limit: _pageLimit,
-    );
-    result.fold((_) {}, (newPosts) {
-      if (mounted) {
+    try {
+      final result = await _repository.getPaginatedPosts(
+        page: 1,
+        limit: _pageLimit,
+      );
+      result.fold((_) {}, (newPosts) {
+        if (!mounted) return;
+
         final existingIds = state.posts.map((p) => p.postId).toSet();
         final newIds = newPosts.items.map((p) => p.postId).toSet();
+        final incomingById = <String, Post>{
+          for (final item in newPosts.items) item.postId: item,
+        };
 
         final addedPosts = newPosts.items
             .where((p) => !existingIds.contains(p.postId))
+            .cast<Post>()
             .toList();
 
-        final updatedExisting = state.posts.map((existing) {
-          final updated = newPosts.items.firstWhere(
-            (p) => p.postId == existing.postId,
-            orElse: () => existing,
-          );
-          return updated;
-        }).toList();
+        final updatedExisting = state.posts
+            .map((existing) => incomingById[existing.postId] ?? existing)
+            .toList();
 
         final filteredExisting = updatedExisting
             .where((p) => newIds.contains(p.postId))
@@ -102,8 +104,10 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
         final mergedPosts = [...addedPosts, ...filteredExisting];
         state = state.copyWith(posts: mergedPosts);
-      }
-    });
+      });
+    } catch (_) {
+      // Silent polling must never crash the app.
+    }
   }
 
   @override

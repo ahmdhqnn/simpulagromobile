@@ -21,7 +21,6 @@ class MainShell extends ConsumerStatefulWidget {
 
 class _MainShellState extends ConsumerState<MainShell>
     with WidgetsBindingObserver {
-  int _currentIndex = 0;
   DateTime? _lastResumedAt;
 
   static const _screens = [
@@ -69,14 +68,13 @@ class _MainShellState extends ConsumerState<MainShell>
 
   void _refreshCurrentTabData() {
     if (!mounted) return;
+    final currentIndex = ref.read(mainShellTabIndexProvider);
 
-    switch (_currentIndex) {
+    switch (currentIndex) {
       case 0:
         ref.invalidate(siteListProvider);
         ref.invalidate(environmentalHealthProvider);
-        ref.invalidate(deviceSummaryProvider);
-        ref.invalidate(sensorSummaryProvider);
-        ref.invalidate(plantSummaryProvider);
+        ref.invalidate(dashboardSummaryProvider);
         ref.invalidate(latestSensorReadsProvider);
         break;
       case 1:
@@ -101,11 +99,14 @@ class _MainShellState extends ConsumerState<MainShell>
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(mainShellTabIndexProvider);
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(index: currentIndex, children: _screens),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        currentIndex: currentIndex,
+        onTap: (index) =>
+            ref.read(mainShellTabIndexProvider.notifier).state = index,
       ),
     );
   }

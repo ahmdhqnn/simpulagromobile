@@ -12,10 +12,7 @@ part 'app_providers.g.dart';
 
 const Duration defaultRealtimeRefreshInterval = Duration(seconds: 30);
 
-const List<Locale> supportedAppLocales = [
-  Locale('id'),
-  Locale('en'),
-];
+const List<Locale> supportedAppLocales = [Locale('id'), Locale('en')];
 
 @Riverpod(keepAlive: true)
 AppEnvironment appEnvironment(Ref ref) {
@@ -179,3 +176,6 @@ Stream<int> realtimeRefreshTick(Ref ref) {
   final interval = ref.watch(appRealtimeRefreshIntervalProvider);
   return Stream<int>.periodic(interval, (tick) => tick + 1);
 }
+
+/// Shared bottom navigation state for [MainShell] and dashboard shortcuts.
+final mainShellTabIndexProvider = StateProvider<int>((ref) => 0);

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
@@ -50,7 +51,7 @@ class DailyRecapTab extends ConsumerWidget {
               data: (items) => _DailyTable(items: items),
               loading: () => const LoadingCardWidget(height: 120),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: toUiErrorMessage(e),
                 onRetry: () => ref.invalidate(dailyTodayProvider),
               ),
             ),
@@ -80,7 +81,7 @@ class DailyRecapTab extends ConsumerWidget {
               data: (items) => _DailyTable(items: items),
               loading: () => const LoadingCardWidget(height: 120),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: toUiErrorMessage(e),
                 onRetry: () => ref.invalidate(dailyByDayProvider),
               ),
             ),

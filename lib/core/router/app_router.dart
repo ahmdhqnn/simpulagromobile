@@ -8,7 +8,8 @@ import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/task/presentation/screens/task_list_screen.dart';
 import '../../features/task/presentation/screens/task_detail_screen.dart';
 import '../../features/task/presentation/screens/task_form_screen.dart';
-import '../../features/recommendation/presentation/screens/recommendation_tabs_screen.dart';
+import '../../features/recommendation/presentation/providers/recommendation_hub_provider.dart';
+import '../../features/recommendation/presentation/screens/recommendation_hub_screen.dart';
 import '../../features/recommendation/presentation/screens/recommendation_detail_screen.dart';
 import '../../features/phase/presentation/screens/phase_list_screen.dart';
 import '../../features/phase/presentation/screens/phase_detail_screen.dart';
@@ -145,7 +146,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Recommendation
       GoRoute(
         path: '/recommendations',
-        builder: (_, __) => const RecommendationTabsScreen(),
+        builder: (_, state) {
+          final scope = recommendationScopeFromQuery(
+            state.uri.queryParameters['scope'],
+          );
+          return RecommendationHubScreen(initialScope: scope);
+        },
       ),
       GoRoute(
         path: '/recommendation/:id',

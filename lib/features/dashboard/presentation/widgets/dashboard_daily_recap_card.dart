@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../monitoring/presentation/providers/monitoring_provider.dart';
 
-/// Rekap harian hari ini dari GET /reads/daily/today
 class DashboardDailyRecapCard extends ConsumerWidget {
   const DashboardDailyRecapCard({super.key});
 
@@ -64,7 +64,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
       loading: () => const LoadingCardWidget(height: 80),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
-        message: e.toString(),
+        message: toUiErrorMessage(e),
         height: 72,
       ),
     );

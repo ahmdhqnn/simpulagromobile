@@ -16,8 +16,20 @@ class GetRecommendationsBySiteUseCase {
   final RecommendationRepository repository;
   GetRecommendationsBySiteUseCase(this.repository);
 
+  Future<Either<Failure, List<Recommendation>>> call(
+    String siteId, {
+    bool refresh = false,
+  }) async {
+    return await repository.getRecommendationsBySite(siteId, refresh: refresh);
+  }
+}
+
+class GetLatestRecommendationsForSiteUseCase {
+  final RecommendationRepository repository;
+  GetLatestRecommendationsForSiteUseCase(this.repository);
+
   Future<Either<Failure, List<Recommendation>>> call(String siteId) async {
-    return await repository.getRecommendationsBySite(siteId);
+    return await repository.getLatestRecommendationsForSite(siteId);
   }
 }
 
@@ -25,7 +37,10 @@ class GetRecommendationsByPlantUseCase {
   final RecommendationRepository repository;
   GetRecommendationsByPlantUseCase(this.repository);
 
-  Future<Either<Failure, List<Recommendation>>> call(String siteId, String plantId) async {
+  Future<Either<Failure, List<Recommendation>>> call(
+    String siteId,
+    String plantId,
+  ) async {
     return await repository.getRecommendationsByPlant(siteId, plantId);
   }
 }
@@ -34,7 +49,9 @@ class GetRecommendationsByTypeUseCase {
   final RecommendationRepository repository;
   GetRecommendationsByTypeUseCase(this.repository);
 
-  Future<Either<Failure, List<Recommendation>>> call(RecommendationType type) async {
+  Future<Either<Failure, List<Recommendation>>> call(
+    RecommendationType type,
+  ) async {
     return await repository.getRecommendationsByType(type);
   }
 }

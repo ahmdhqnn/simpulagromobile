@@ -44,6 +44,11 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
     soilNitro: double.tryParse(_nitro.text) ?? 0,
     soilPhos: double.tryParse(_phos.text) ?? 0,
     soilPot: double.tryParse(_pot.text) ?? 0,
+    envTemp: 0,
+    envHum: 0,
+    soilTemp: 0,
+    soilHum: 0,
+    soilPh: 0,
   );
 
   Future<void> _runPreview() async {

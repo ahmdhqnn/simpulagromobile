@@ -8,14 +8,16 @@ class SmartScoreGauge extends StatelessWidget {
     this.totalSensors = 0,
     this.statusLabel = 'Perlu Perhatian',
     this.statusColor = const Color(0xFFFCBCBC),
-    this.showWarning = true,
+    this.statusIcon = Icons.warning_amber_rounded,
+    this.statusIconSize = 14,
   });
 
   final double score;
   final int totalSensors;
   final String statusLabel;
   final Color statusColor;
-  final bool showWarning;
+  final IconData statusIcon;
+  final double statusIconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +116,8 @@ class SmartScoreGauge extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Container(
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   color: statusColor,
                   shape: BoxShape.circle,
@@ -123,8 +125,8 @@ class SmartScoreGauge extends StatelessWidget {
                 ),
                 child: Center(
                   child: Icon(
-                    showWarning ? Icons.priority_high : Icons.check,
-                    size: 13,
+                    statusIcon,
+                    size: statusIconSize,
                     color: Colors.white,
                   ),
                 ),
