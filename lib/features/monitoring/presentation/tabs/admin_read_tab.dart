@@ -52,9 +52,11 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     }
 
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.015),
+      padding: EdgeInsets.fromLTRB(
+        context.rw(0.051),
+        0,
+        context.rw(0.051),
+        context.rh(0.015),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,7 +125,9 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     final value = double.tryParse(_readValueController.text.trim());
     final sts = _readStsController.text.trim();
 
-    final ok = await ref.read(readCorrectionProvider.notifier).updateRead(
+    final ok = await ref
+        .read(readCorrectionProvider.notifier)
+        .updateRead(
           siteId,
           readId,
           readValue: value,
@@ -131,7 +135,9 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? 'Read diperbarui' : 'Gagal memperbarui read')),
+      SnackBar(
+        content: Text(ok ? 'Read diperbarui' : 'Gagal memperbarui read'),
+      ),
     );
     if (ok) {
       ref.invalidate(todayReadsProvider);
@@ -141,13 +147,14 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
 
   Future<void> _triggerRekap(String siteId) async {
     final day = DateFormat('yyyy-MM-dd').format(_rekapDay);
-    final ok = await ref.read(dailyRekapTriggerProvider.notifier).trigger(
-          siteId,
-          day,
-        );
+    final ok = await ref
+        .read(dailyRekapTriggerProvider.notifier)
+        .trigger(siteId, day);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? 'Rekap diproses untuk $day' : 'Gagal trigger rekap')),
+      SnackBar(
+        content: Text(ok ? 'Rekap diproses untuk $day' : 'Gagal trigger rekap'),
+      ),
     );
     if (ok) {
       ref.invalidate(dailyTodayProvider);

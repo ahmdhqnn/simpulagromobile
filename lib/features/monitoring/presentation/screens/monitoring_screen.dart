@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../tabs/admin_read_tab.dart';
@@ -57,6 +57,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final syncStatus = ref.watch(monitoringSyncStatusProvider);
+    final hPad = context.rw(0.051);
     final tabs = [
       l10n.monitoringTabRealtime,
       l10n.monitoringTabRawReads,
@@ -70,68 +71,131 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.rw(0.051),
-                vertical: context.rh(0.015),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: NestedScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverToBoxAdapter(
+              child: Column(
                 children: [
-                  Text(
-                    l10n.monitoringTitle,
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(28),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                      height: 1.0,
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      hPad,
+                      context.rh(0.015),
+                      hPad,
+                      0,
+                    ),
+                    child: Row(
+                      children: [const Spacer(), _buildRefreshButton()],
                     ),
                   ),
-                  CircularIconActionWidget(
-                    onPressed: _refreshAll,
-                    icon: Icons.refresh,
+                  SizedBox(height: context.rh(0.024)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: hPad),
+                    child: _MonitoringSyncStatusBar(status: syncStatus),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                context.rw(0.051),
-                0,
-                context.rw(0.051),
-                context.rh(0.012),
-              ),
-              child: _MonitoringSyncStatusBar(status: syncStatus),
-            ),
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textSecondary,
-              indicatorColor: AppColors.primary,
-              tabs: tabs.map((t) => Tab(text: t)).toList(),
-            ),
-            SizedBox(height: context.rh(0.01)),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: const [
-                  RealtimeTab(),
-                  HistoryTab(),
-                  DailyRecapTab(),
-                  MonthlyRecapTab(),
-                  MapsTab(),
-                  AnalyticsTab(),
-                  AdminReadTab(),
+                  SizedBox(height: context.rh(0.012)),
+                  _buildTabChips(context, tabs, hPad),
+                  SizedBox(height: context.rh(0.012)),
                 ],
               ),
             ),
           ],
+          body: TabBarView(
+            controller: _tabController,
+            children: const [
+              RealtimeTab(),
+              HistoryTab(),
+              DailyRecapTab(),
+              MonthlyRecapTab(),
+              MapsTab(),
+              AnalyticsTab(),
+              AdminReadTab(),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRefreshButton() {
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(29),
+      ),
+      child: IconButton(
+        onPressed: _refreshAll,
+        icon: SvgPicture.asset(
+          'assets/icons/arrow-rotate-left.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(
+            AppColors.textPrimary,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabChips(
+    BuildContext context,
+    List<String> tabs,
+    double horizontalInset,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 38,
+      child: AnimatedBuilder(
+        animation: _tabController.animation ?? _tabController,
+        builder: (context, _) {
+          var selectedIndex =
+              (_tabController.animation?.value ??
+                      _tabController.index.toDouble())
+                  .round();
+          if (selectedIndex < 0) selectedIndex = 0;
+          if (selectedIndex >= tabs.length) selectedIndex = tabs.length - 1;
+
+          return ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+            itemCount: tabs.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 2),
+            itemBuilder: (context, index) {
+              final selected = index == selectedIndex;
+              return GestureDetector(
+                onTap: () => _tabController.animateTo(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: selected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Center(
+                    child: Text(
+                      tabs[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w400,
+                        height: 1.83,
+                        color: selected
+                            ? AppColors.textPrimary
+                            : AppColors.textPrimary.withValues(alpha: 0.50),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -172,7 +236,6 @@ class _MonitoringSyncStatusBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
