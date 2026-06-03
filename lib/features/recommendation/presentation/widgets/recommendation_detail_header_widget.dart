@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 
@@ -23,7 +26,26 @@ class RecommendationDetailHeaderWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircularBackButtonWidget(onPressed: onBack),
-          CircularIconActionWidget(onPressed: onRefresh, icon: Icons.refresh),
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(29),
+            ),
+            child: IconButton(
+              onPressed: onRefresh,
+              icon: SvgPicture.asset(
+                'assets/icons/arrow-rotate-left.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textPrimary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

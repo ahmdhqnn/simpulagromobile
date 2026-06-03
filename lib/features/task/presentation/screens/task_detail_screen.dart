@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -95,27 +96,28 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         CircularBackButtonWidget(onPressed: () => context.pop()),
         const Spacer(),
         if (siteId != null && task != null)
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(29),
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: PopupMenuButton<String>(
-              icon: const Icon(
-                Icons.more_horiz_rounded,
-                size: 24,
-                color: AppColors.textPrimary,
+            onSelected: (value) => _onMenuAction(context, siteId, task, value),
+            itemBuilder: (_) => _buildMenuItems(task),
+            child: Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(29),
               ),
-              padding: EdgeInsets.zero,
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/more-icon.svg',
+                  width: 28,
+                  height: 28,
+                ),
               ),
-              onSelected: (value) =>
-                  _onMenuAction(context, siteId, task, value),
-              itemBuilder: (_) => _buildMenuItems(task),
             ),
           )
         else
@@ -220,25 +222,24 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             task.taskName,
-            style: AppTextStyles.cardTitle(
-              context,
-              18,
-            ).copyWith(fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(22),
+              fontWeight: FontWeight.w300,
+              color: AppColors.textPrimary,
+              height: 1,
+            ),
           ),
           if (task.taskDescription != null &&
               task.taskDescription!.isNotEmpty) ...[
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              task.taskDescription!,
-              style: AppTextStyles.caption(context, size: 13),
-            ),
+            const SizedBox(height: 1),
+            Text(task.taskDescription!, style: AppTextStyles.hint(context)),
           ],
           SizedBox(height: context.rh(0.02)),
           Row(

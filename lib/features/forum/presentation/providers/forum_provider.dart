@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/paginated_result.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/forum_remote_datasource.dart';
@@ -104,6 +105,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
         final mergedPosts = [...addedPosts, ...filteredExisting];
         state = state.copyWith(posts: mergedPosts);
+        unawaited(_hydrateCommentCounts(mergedPosts));
       });
     } catch (_) {
       // Silent polling must never crash the app.
@@ -162,6 +164,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
               hasMore: hasMore,
               currentPage: 2,
             );
+            unawaited(_hydrateCommentCounts(newPosts));
           } else {
             state = ForumState(
               posts: [...state.posts, ...newPosts],
@@ -169,6 +172,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
               hasMore: hasMore,
               currentPage: page + 1,
             );
+            unawaited(_hydrateCommentCounts(newPosts));
           }
         }
       },
@@ -296,6 +300,74 @@ class ForumNotifier extends StateNotifier<ForumState> {
     state = state.copyWith(posts: updatedPosts);
   }
 
+  Future<void> _hydrateCommentCounts(List<Post> posts) async {
+    if (posts.isEmpty) return;
+
+    final results = await Future.wait(
+      posts.map((post) async {
+        final response = await _repository.getPaginatedComments(
+          postId: post.postId,
+          page: 1,
+          limit: 1,
+        );
+        return response.fold<MapEntry<String, int>?>((_) => null, (page) {
+          final count = _resolveHydratedCommentCount(page);
+          return MapEntry(post.postId, count);
+        });
+      }),
+    );
+
+    if (!mounted) return;
+
+    final countByPostId = <String, int>{
+      for (final entry in results)
+        if (entry != null) entry.key: entry.value,
+    };
+
+    if (countByPostId.isEmpty) return;
+
+    var hasChanges = false;
+    final updatedPosts = state.posts.map((post) {
+      final hydratedCount = countByPostId[post.postId];
+      if (hydratedCount == null || hydratedCount == post.commentCount) {
+        return post;
+      }
+
+      hasChanges = true;
+      return Post(
+        postId: post.postId,
+        postTitle: post.postTitle,
+        userId: post.userId,
+        siteId: post.siteId,
+        postContent: post.postContent,
+        postImage: post.postImage,
+        likeCount: post.likeCount,
+        commentCount: hydratedCount,
+        shareCount: post.shareCount,
+        isLiked: post.isLiked,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        user: post.user,
+        site: post.site,
+      );
+    }).toList();
+
+    if (!hasChanges) return;
+    state = state.copyWith(posts: updatedPosts);
+  }
+
+  int _resolveHydratedCommentCount(PaginatedResult<Comment> page) {
+    final total = page.meta.total;
+    if (total != null) return total;
+
+    final totalPages = page.meta.totalPages;
+    if (totalPages != null && page.meta.limit == 1) {
+      return totalPages;
+    }
+
+    return page.items.length;
+  }
+
   void clearError() {
     state = state.copyWith(error: null);
   }
@@ -323,6 +395,7 @@ class CommentsState {
   final String? error;
   final bool hasMore;
   final int currentPage;
+  final int totalCount;
 
   const CommentsState({
     this.comments = const [],
@@ -330,6 +403,7 @@ class CommentsState {
     this.error,
     this.hasMore = true,
     this.currentPage = 1,
+    this.totalCount = 0,
   });
 
   CommentsState copyWith({
@@ -338,6 +412,7 @@ class CommentsState {
     String? error,
     bool? hasMore,
     int? currentPage,
+    int? totalCount,
   }) {
     return CommentsState(
       comments: comments ?? this.comments,
@@ -345,6 +420,7 @@ class CommentsState {
       error: error,
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
+      totalCount: totalCount ?? this.totalCount,
     );
   }
 }
@@ -393,6 +469,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
           final comments = refresh
               ? pageData.items
               : [...state.comments, ...pageData.items];
+          final totalCount = pageData.meta.total ?? comments.length;
           state = CommentsState(
             comments: comments,
             isLoading: false,
@@ -400,6 +477,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
                 ? pageData.hasNextPage
                 : pageData.items.length >= _pageLimit,
             currentPage: page + 1,
+            totalCount: totalCount,
           );
         }
       },
@@ -418,7 +496,10 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
         state = state.copyWith(error: failure.message);
       },
       (newComment) {
-        state = state.copyWith(comments: [newComment, ...state.comments]);
+        state = state.copyWith(
+          comments: [newComment, ...state.comments],
+          totalCount: state.totalCount + 1,
+        );
 
         _ref.read(forumProvider.notifier).updateCommentCount(_postId, 1);
         _ref.invalidate(postDetailProvider(_postId));
@@ -455,7 +536,10 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
         final updatedComments = state.comments
             .where((c) => c.commentId != commentId)
             .toList();
-        state = state.copyWith(comments: updatedComments);
+        state = state.copyWith(
+          comments: updatedComments,
+          totalCount: (state.totalCount - 1).clamp(0, 999999),
+        );
 
         _ref.read(forumProvider.notifier).updateCommentCount(_postId, -1);
         _ref.invalidate(postDetailProvider(_postId));

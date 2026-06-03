@@ -6,7 +6,6 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../../../varietas/domain/entities/varietas_item.dart';
@@ -88,22 +87,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: context.rh(0.015)),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Opacity(
-                  opacity: 0.35,
-                  child: CircularBackButtonWidget(
-                    onPressed: () {}, // disabled saat form aktif
-                    svgIconPath: 'assets/icons/more-icon.svg',
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: context.rh(0.03)),
+            SizedBox(height: context.rh(0.024)),
 
             Text(
               _isEditMode ? l10n.plantEditTitle : l10n.plantAddTitle,
@@ -294,6 +278,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                     style: AppTextStyles.hint(context, size: context.sp(14)),
                   ),
                   isExpanded: true,
+                  focusColor: Colors.transparent,
                   icon: Icon(
                     Icons.keyboard_arrow_down,
                     color: AppColors.textPrimary,
@@ -392,6 +377,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
         filled: true,
         fillColor: AppColors.surfaceVariant,
+        hoverColor: Colors.transparent,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.pill),
           borderSide: BorderSide.none,
@@ -428,6 +414,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
             style: AppTextStyles.hint(context, size: context.sp(14)),
           ),
           isExpanded: true,
+          focusColor: Colors.transparent,
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: AppColors.textPrimary,
