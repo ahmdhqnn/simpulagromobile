@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/post.dart';
@@ -24,55 +25,58 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 6),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildContent(context),
-                  const SizedBox(height: 10),
-                  _buildStats(context),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: AppColors.divider),
-                  const SizedBox(height: 10),
-                  _buildActions(context),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: Ink(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 12),
+                _buildContent(context),
+                const SizedBox(height: 10),
+                _buildStats(context),
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: AppColors.divider),
+                const SizedBox(height: 10),
+                _buildActions(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
+    final siteName = post.site?.siteName.trim() ?? '';
+    final metaText = siteName.isEmpty
+        ? post.timeAgo
+        : '$siteName - ${post.timeAgo}';
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Avatar
         Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.softGreen,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceVariant,
+            shape: BoxShape.circle,
           ),
           child: post.user.userAvatar != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
+              ? ClipOval(
                   child: Image.network(
                     post.user.userAvatar!,
                     fit: BoxFit.cover,
@@ -82,8 +86,6 @@ class PostCard extends StatelessWidget {
               : _buildAvatarFallback(context),
         ),
         const SizedBox(width: 8),
-
-        // User Info
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,29 +94,29 @@ class PostCard extends StatelessWidget {
                 post.user.userName,
                 style: AppTextStyles.label(
                   context,
-                  size: 12,
+                  size: 13,
                   weight: FontWeight.w600,
+                  height: 1.2,
                 ),
               ),
-              Text(
-                '${post.site?.siteName ?? ''} • ${post.timeAgo}',
-                style: AppTextStyles.hint(context, size: 10),
-              ),
+              Text(metaText, style: AppTextStyles.hint(context, size: 10)),
             ],
           ),
         ),
-
-        // More button
         if (onMorePressed != null)
           InkWell(
             onTap: onMorePressed,
             borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: const Padding(
-              padding: EdgeInsets.all(4),
-              child: Icon(
-                Icons.more_horiz,
-                size: 20,
-                color: AppColors.textSecondary,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: SvgPicture.asset(
+                'assets/icons/more-icon.svg',
+                width: 20,
+                height: 20,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textSecondary,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),
@@ -124,20 +126,28 @@ class PostCard extends StatelessWidget {
 
   Widget _buildAvatarFallback(BuildContext context) {
     return Center(
-      child: SvgPicture.asset(
-        'assets/icons/user-outline-icon.svg',
-        width: 18,
-        height: 18,
-        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+      child: Text(
+        _avatarInitial,
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: context.sp(18),
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary.withValues(alpha: 0.35),
+        ),
       ),
     );
+  }
+
+  String get _avatarInitial {
+    final trimmed = post.user.userName.trim();
+    if (trimmed.isEmpty) return 'U';
+    return trimmed.substring(0, 1).toUpperCase();
   }
 
   Widget _buildContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
         if (post.postTitle.trim().isNotEmpty) ...[
           Text(
             post.postTitle,
@@ -152,8 +162,6 @@ class PostCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
         ],
-
-        // Content text
         Text(
           post.postContent,
           style: AppTextStyles.label(
@@ -165,8 +173,6 @@ class PostCard extends StatelessWidget {
           maxLines: 4,
           overflow: TextOverflow.ellipsis,
         ),
-
-        // Image
         if (post.hasImage) ...[
           const SizedBox(height: 12),
           ClipRRect(
@@ -200,7 +206,6 @@ class PostCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Like count
         Row(
           children: [
             Icon(
@@ -215,8 +220,6 @@ class PostCard extends StatelessWidget {
             ),
           ],
         ),
-
-        // Comments & Shares count
         Row(
           children: [
             Text(

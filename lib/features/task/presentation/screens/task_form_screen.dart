@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../site/domain/entities/site.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
@@ -33,6 +36,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   bool _hydrated = false;
 
   bool get isEditMode => widget.taskId != null;
+  String get _screenTitle => isEditMode ? 'Edit Task' : 'Tambah Task';
 
   @override
   void dispose() {
@@ -57,244 +61,300 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       _editSiteId ??= ref.read(selectedSiteIdProvider);
       final siteId = _editSiteId;
       if (siteId == null) {
-        return _scaffold(child: _buildMissingSite());
+        return _buildScreenShell(
+          child: _buildMessageCard(
+            icon: Icons.location_off_outlined,
+            iconColor: AppColors.warning,
+            title: 'Site belum dipilih',
+            description: 'Pilih site terlebih dahulu sebelum mengedit task.',
+            actionLabel: 'Kembali',
+            onAction: () => context.pop(),
+          ),
+        );
       }
 
       final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId!)));
       return taskAsync.when(
-        loading: () => _scaffold(child: _buildLoading()),
-        error: (e, _) =>
-            _scaffold(child: _buildDetailError(siteId, e.toString())),
+        loading: () => _buildScreenShell(child: _buildLoadingCard()),
+        error: (error, _) => _buildScreenShell(
+          child: _buildMessageCard(
+            icon: Icons.error_outline,
+            iconColor: AppColors.error,
+            title: 'Gagal memuat task',
+            description: error.toString(),
+            actionLabel: 'Coba Lagi',
+            onAction: () =>
+                ref.invalidate(taskDetailProvider((siteId, widget.taskId!))),
+          ),
+        ),
         data: (task) {
           _hydrateOnce(task);
-          return _buildFormScaffold(siteId: siteId);
+          return _buildScreenShell(child: _buildFormCard());
         },
       );
     }
 
     _selectedSite ??= ref.watch(selectedSiteProvider);
-    return _buildFormScaffold(siteId: null);
+    return _buildScreenShell(child: _buildFormCard());
   }
 
-  Scaffold _scaffold({required Widget child}) {
+  Widget _buildScreenShell({required Widget child}) {
+    final hPad = context.rw(0.051);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(isEditMode ? 'Edit Task' : 'Tambah Task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: child,
-    );
-  }
-
-  Widget _buildLoading() {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.primary),
-    );
-  }
-
-  Widget _buildMissingSite() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.rw(0.051)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.location_off_outlined,
-              size: 64,
-              color: AppColors.warning,
-            ),
-            SizedBox(height: context.rh(0.02)),
-            Text('Site belum dipilih', style: AppTextStyles.cardTitle(context)),
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              'Pilih site terlebih dahulu sebelum mengedit task.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption(context, size: 13),
-            ),
-            SizedBox(height: context.rh(0.03)),
-            ElevatedButton.icon(
-              onPressed: () => context.pop(),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Kembali'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailError(String siteId, String error) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.rw(0.051)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            SizedBox(height: context.rh(0.02)),
-            Text('Gagal memuat task', style: AppTextStyles.cardTitle(context)),
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption(context, size: 13),
-            ),
-            SizedBox(height: context.rh(0.03)),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  ref.invalidate(taskDetailProvider((siteId, widget.taskId!))),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Coba Lagi'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFormScaffold({required String? siteId}) {
-    return _scaffold(
-      child: Form(
-        key: _formKey,
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(context.rw(0.041)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isEditMode) ...[
-                _sectionTitle('Site'),
-                SizedBox(height: context.rh(0.01)),
-                _buildSiteSelector(),
-                SizedBox(height: context.rh(0.02)),
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: hPad),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: context.rh(0.015)),
+                _buildTopBar(),
+                SizedBox(height: context.rh(0.03)),
+                Text(_screenTitle, style: AppTextStyles.sectionTitle(context)),
+                SizedBox(height: context.rh(0.03)),
+                child,
+                SizedBox(
+                  height:
+                      context.rh(0.02) + MediaQuery.paddingOf(context).bottom,
+                ),
               ],
-              _sectionTitle('Nama Task'),
-              SizedBox(height: context.rh(0.01)),
-              TextFormField(
-                controller: _taskNameController,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan nama task',
-                  prefixIcon: const Icon(Icons.task_alt),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Nama task harus diisi';
-                  }
-                  return null;
-                },
-                textInputAction: TextInputAction.next,
-              ),
-              SizedBox(height: context.rh(0.02)),
-              _sectionTitle('Deskripsi'),
-              SizedBox(height: context.rh(0.01)),
-              TextFormField(
-                controller: _taskDescriptionController,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan deskripsi task (opsional)',
-                  prefixIcon: const Icon(Icons.description_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                ),
-                maxLines: 3,
-                textInputAction: TextInputAction.next,
-              ),
-              SizedBox(height: context.rh(0.02)),
-              _sectionTitle('Jenis Task'),
-              SizedBox(height: context.rh(0.01)),
-              _buildTypeSelector(),
-              SizedBox(height: context.rh(0.02)),
-              _sectionTitle('Prioritas'),
-              SizedBox(height: context.rh(0.01)),
-              _buildPrioritySelector(),
-              SizedBox(height: context.rh(0.02)),
-              if (isEditMode) ...[
-                _sectionTitle('Status'),
-                SizedBox(height: context.rh(0.01)),
-                _buildStatusSelector(),
-                SizedBox(height: context.rh(0.02)),
-              ],
-              SizedBox(height: context.rh(0.01)),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          isEditMode ? 'Simpan Perubahan' : 'Tambah Task',
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            fontSize: context.sp(14),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              ),
-              SizedBox(height: context.rh(0.02)),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontFamily: AppTextStyles.fontFamily,
-        fontSize: context.sp(13),
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+  Widget _buildTopBar() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: CircularBackButtonWidget(onPressed: () => context.pop()),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.05),
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Column(
+        children: [
+          const CircularProgressIndicator(color: AppColors.primary),
+          SizedBox(height: context.rh(0.018)),
+          Text(
+            'Memuat detail task',
+            style: AppTextStyles.cardTitle(context, context.sp(16)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(context.rw(0.051)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: context.rw(0.143).clamp(52.0, 60.0),
+            color: iconColor,
+          ),
+          SizedBox(height: context.rh(0.02)),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.cardTitle(context, context.sp(16)),
+          ),
+          SizedBox(height: context.rh(0.01)),
+          Text(
+            description,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.caption(context, size: context.sp(13)),
+          ),
+          SizedBox(height: context.rh(0.03)),
+          ElevatedButton(
+            onPressed: onAction,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            ),
+            child: Text(
+              actionLabel,
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(14),
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(context.rw(0.051)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isEditMode) ...[
+              _FormField(label: 'Site', child: _buildSiteSelector()),
+              SizedBox(height: context.rh(0.025)),
+            ],
+            _FormField(
+              label: 'Nama Task',
+              child: _buildTextField(
+                controller: _taskNameController,
+                hintText: 'Masukkan nama task',
+                textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama task harus diisi';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            SizedBox(height: context.rh(0.025)),
+            _FormField(
+              label: 'Deskripsi',
+              child: _buildTextField(
+                controller: _taskDescriptionController,
+                hintText: 'Tambahkan deskripsi task',
+                maxLines: 4,
+                textInputAction: TextInputAction.newline,
+              ),
+            ),
+            SizedBox(height: context.rh(0.025)),
+            _FormField(label: 'Jenis Task', child: _buildTypeSelector()),
+            SizedBox(height: context.rh(0.025)),
+            _FormField(label: 'Prioritas', child: _buildPrioritySelector()),
+            if (isEditMode) ...[
+              SizedBox(height: context.rh(0.025)),
+              _FormField(label: 'Status', child: _buildStatusSelector()),
+            ],
+            SizedBox(height: context.rh(0.037)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _CircleActionButton(
+                  svgPath: 'assets/icons/close-icon.svg',
+                  onTap: () => context.pop(),
+                ),
+                _CircleActionButton(
+                  svgPath: 'assets/icons/check-icon.svg',
+                  onTap: _isSubmitting ? null : _handleSubmit,
+                  isLoading: _isSubmitting,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    TextInputAction? textInputAction,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    final isMultiline = maxLines > 1;
+    final borderRadius = BorderRadius.circular(
+      isMultiline ? AppRadius.xl : AppRadius.pill,
+    );
+
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      maxLines: maxLines,
+      textInputAction: textInputAction,
+      style: AppTextStyles.label(
+        context,
+        size: context.sp(14),
+        weight: FontWeight.w400,
+      ),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
+        filled: true,
+        fillColor: AppColors.surfaceVariant,
+        hoverColor: Colors.transparent,
+        border: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: context.rw(0.041),
+          vertical: isMultiline ? context.rh(0.016) : context.rh(0.012),
+        ),
       ),
     );
   }
 
   Widget _buildSiteSelector() {
     final sitesAsync = ref.watch(sitesProvider);
+
     return sitesAsync.when(
       loading: () => Container(
-        height: 56,
+        height: context.rh(0.05).clamp(44.0, 48.0),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.divider),
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: const Center(
           child: SizedBox(
@@ -304,59 +364,85 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           ),
         ),
       ),
-      error: (e, _) => Container(
-        padding: const EdgeInsets.all(12),
+      error: (error, _) => Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(context.rw(0.036)),
         decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+          color: AppColors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: Text(
-          'Gagal memuat site: $e',
-          style: const TextStyle(color: AppColors.error),
+          'Gagal memuat site: $error',
+          style: AppTextStyles.label(
+            context,
+            size: context.sp(12),
+            color: AppColors.error,
+          ),
         ),
       ),
       data: (sites) {
         if (sites.isEmpty) {
           return Container(
-            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            padding: EdgeInsets.all(context.rw(0.036)),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.divider),
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            child: const Text('Belum ada site'),
+            child: Text(
+              'Belum ada site',
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(13),
+                weight: FontWeight.w400,
+              ),
+            ),
           );
         }
-        return InkWell(
-          onTap: () => _showSitePicker(sites),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.place_outlined, color: AppColors.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _selectedSite?.siteName ?? 'Pilih Site',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(13),
-                      fontWeight: FontWeight.w500,
-                      color: _selectedSite == null
-                          ? AppColors.textSecondary
-                          : AppColors.textPrimary,
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showSitePicker(sites),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            hoverColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            child: Container(
+              height: context.rh(0.05).clamp(44.0, 48.0),
+              padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedSite?.siteName ?? 'Pilih site',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          (_selectedSite == null
+                                  ? AppTextStyles.hint(
+                                      context,
+                                      size: context.sp(14),
+                                    )
+                                  : AppTextStyles.label(
+                                      context,
+                                      size: context.sp(14),
+                                      weight: FontWeight.w400,
+                                    ))
+                              .copyWith(height: 1),
                     ),
                   ),
-                ),
-                const Icon(Icons.keyboard_arrow_down),
-              ],
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.textPrimary,
+                    size: context.sp(22),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -365,77 +451,96 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   }
 
   void _showSitePicker(List<Site> sites) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Pilih Site',
-                  style: AppTextStyles.cardTitle(ctx, 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: sites.length,
-              itemBuilder: (_, i) {
-                final site = sites[i];
-                final isSelected = _selectedSite?.siteId == site.siteId;
-                return ListTile(
-                  onTap: () {
-                    setState(() => _selectedSite = site);
-                    Navigator.pop(ctx);
-                  },
-                  leading: Container(
-                    width: 36,
-                    height: 36,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.place_outlined,
-                      size: 18,
-                      color: AppColors.primary,
+                      color: AppColors.divider,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  title: Text(site.siteName ?? site.siteId),
-                  trailing: isSelected
-                      ? const Icon(
-                          Icons.check_circle,
-                          color: AppColors.primary,
-                          size: 20,
-                        )
-                      : null,
-                );
-              },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Pilih Site',
+                  style: AppTextStyles.cardTitle(sheetContext, 16),
+                ),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: context.rh(0.55)),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: sites.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final site = sites[index];
+                      final isSelected = _selectedSite?.siteId == site.siteId;
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          onTap: () {
+                            setState(() => _selectedSite = site);
+                            Navigator.of(sheetContext).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.surfaceVariant
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    site.siteName ?? site.siteId,
+                                    style: AppTextStyles.label(
+                                      sheetContext,
+                                      size: context.sp(14),
+                                      weight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -445,18 +550,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       runSpacing: 8,
       children: TaskType.values.map((type) {
         final isSelected = type == _selectedType;
-        return ChoiceChip(
-          label: Text(type.label),
-          selected: isSelected,
-          onSelected: (_) => setState(() => _selectedType = type),
+        return _buildChoiceChip(
+          label: type.label,
+          isSelected: isSelected,
           backgroundColor: AppColors.surfaceVariant,
           selectedColor: AppColors.primary,
-          labelStyle: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(12),
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
-          ),
+          selectedTextColor: Colors.white,
+          unselectedTextColor: AppColors.textSecondary,
+          onTap: () => setState(() => _selectedType = type),
         );
       }).toList(),
     );
@@ -469,29 +570,16 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       children: TaskPriority.values.map((priority) {
         final isSelected = priority == _selectedPriority;
         final color = _priorityColor(priority);
-        return ChoiceChip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.flag,
-                size: 16,
-                color: isSelected ? Colors.white : color,
-              ),
-              const SizedBox(width: 4),
-              Text(priority.label),
-            ],
-          ),
-          selected: isSelected,
-          onSelected: (_) => setState(() => _selectedPriority = priority),
-          backgroundColor: color.withValues(alpha: 0.1),
+        return _buildChoiceChip(
+          label: priority.label,
+          isSelected: isSelected,
+          backgroundColor: color.withValues(alpha: 0.12),
           selectedColor: color,
-          labelStyle: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(12),
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : color,
-          ),
+          selectedTextColor: Colors.white,
+          unselectedTextColor: color,
+          icon: Icons.flag,
+          iconColor: isSelected ? Colors.white : color,
+          onTap: () => setState(() => _selectedPriority = priority),
         );
       }).toList(),
     );
@@ -504,20 +592,60 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       children: TaskStatus.values.map((status) {
         final isSelected = status == _selectedStatus;
         final color = _statusColor(status);
-        return ChoiceChip(
-          label: Text(status.label),
-          selected: isSelected,
-          onSelected: (_) => setState(() => _selectedStatus = status),
-          backgroundColor: color.withValues(alpha: 0.1),
+        return _buildChoiceChip(
+          label: status.label,
+          isSelected: isSelected,
+          backgroundColor: color.withValues(alpha: 0.12),
           selectedColor: color,
-          labelStyle: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(12),
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : color,
-          ),
+          selectedTextColor: Colors.white,
+          unselectedTextColor: color,
+          onTap: () => setState(() => _selectedStatus = status),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildChoiceChip({
+    required String label,
+    required bool isSelected,
+    required Color backgroundColor,
+    required Color selectedColor,
+    required Color selectedTextColor,
+    required Color unselectedTextColor,
+    required VoidCallback onTap,
+    IconData? icon,
+    Color? iconColor,
+  }) {
+    return ChoiceChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 16, color: iconColor),
+            const SizedBox(width: 4),
+          ],
+          Text(label),
+        ],
+      ),
+      selected: isSelected,
+      showCheckmark: false,
+      onSelected: (_) => onTap(),
+      backgroundColor: backgroundColor,
+      selectedColor: selectedColor,
+      side: BorderSide.none,
+      shape: const StadiumBorder(),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.021),
+        vertical: context.rh(0.003),
+      ),
+      labelStyle: AppTextStyles.label(
+        context,
+        size: context.sp(12),
+        weight: FontWeight.w500,
+        color: isSelected ? selectedTextColor : unselectedTextColor,
+        height: 1.2,
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 
@@ -540,12 +668,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     setState(() => _isSubmitting = true);
 
     final repository = ref.read(taskRepositoryProvider);
-    final desc = _taskDescriptionController.text.trim();
+    final description = _taskDescriptionController.text.trim();
 
     if (isEditMode) {
       final changes = <String, dynamic>{
         'task_name': _taskNameController.text.trim(),
-        'task_desc': desc.isEmpty ? null : desc,
+        'task_desc': description.isEmpty ? null : description,
         'task_type': _selectedType.apiValue,
         'task_sts': _selectedStatus.apiValue,
         'task_priority': _selectedPriority.apiValue,
@@ -572,7 +700,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         taskId: '',
         siteId: siteId,
         taskName: _taskNameController.text.trim(),
-        taskDescription: desc.isEmpty ? null : desc,
+        taskDescription: description.isEmpty ? null : description,
         taskType: _selectedType,
         taskStatus: _selectedStatus,
         taskPriority: _selectedPriority,
@@ -594,14 +722,26 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   }
 
   void _showError(ScaffoldMessengerState messenger, String message) {
+    messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
   void _showSuccess(ScaffoldMessengerState messenger, String message) {
+    messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.success),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
@@ -627,5 +767,86 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       case TaskStatus.failed:
         return AppColors.error;
     }
+  }
+}
+
+class _FormField extends StatelessWidget {
+  final String label;
+  final Widget child;
+
+  const _FormField({required this.label, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.label(
+            context,
+            size: context.sp(14),
+            weight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: context.rh(0.01)),
+        child,
+      ],
+    );
+  }
+}
+
+class _CircleActionButton extends StatelessWidget {
+  final String svgPath;
+  final VoidCallback? onTap;
+  final bool isLoading;
+
+  const _CircleActionButton({
+    required this.svgPath,
+    required this.onTap,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = context.rw(0.128).clamp(48.0, 56.0);
+    final iconSize = context.rw(0.062).clamp(22.0, 28.0);
+    final isDisabled = onTap == null;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: isDisabled
+              ? AppColors.surfaceVariant.withValues(alpha: 0.5)
+              : AppColors.surfaceVariant,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: isLoading
+              ? SizedBox(
+                  width: iconSize,
+                  height: iconSize,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.textPrimary,
+                  ),
+                )
+              : SvgPicture.asset(
+                  svgPath,
+                  width: iconSize,
+                  height: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    isDisabled
+                        ? AppColors.textPrimary.withValues(alpha: 0.3)
+                        : AppColors.textPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 }

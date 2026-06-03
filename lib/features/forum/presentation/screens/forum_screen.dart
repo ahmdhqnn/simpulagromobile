@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -56,88 +59,233 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     }
   }
 
+  Future<void> _refreshPosts() async {
+    await ref.read(forumProvider.notifier).loadPosts(refresh: true);
+  }
+
+  Future<void> _openCreatePost(BuildContext context) async {
+    await context.push('/forum/create');
+    if (!mounted) return;
+    await _refreshPosts();
+  }
+
+  double _floatingButtonBottom(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return (bottomInset > 0 ? bottomInset + 102 : 112).toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     final forumState = ref.watch(forumProvider);
     final authState = ref.watch(authProvider);
     final currentUser = authState.user;
+    final hPad = context.rw(0.051);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(context),
-            Expanded(
-              child: RefreshIndicator(
-                color: AppColors.primary,
-                onRefresh: () async {
-                  await ref
-                      .read(forumProvider.notifier)
-                      .loadPosts(refresh: true);
-                },
-                child: _buildBody(context, forumState, currentUser?.userId),
+            RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _refreshPosts,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        hPad,
+                        context.rh(0.015),
+                        hPad,
+                        0,
+                      ),
+                      child: _buildHeader(context),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: context.rh(0.024)),
+                  ),
+                  _buildBodySliver(
+                    context,
+                    forumState,
+                    currentUser?.userId,
+                    hPad,
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: _floatingButtonBottom(context) + 78,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: hPad,
+              bottom: _floatingButtonBottom(context),
+              child: CircularBackButtonWidget(
+                onPressed: () => _openCreatePost(context),
+                svgIconPath: 'assets/icons/plus-outline-icon.svg',
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/forum/create'),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.015),
-      ),
-      color: AppColors.background,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Forum', style: AppTextStyles.sectionTitle(context, 28)),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            onSelected: (value) {
-              switch (value) {
-                case 'my-posts':
-                  context.push('/forum/my-posts');
-                  break;
-                case 'liked-posts':
-                  context.push('/forum/liked-posts');
-                  break;
-                case 'my-comments':
-                  context.push('/forum/my-comments');
-                  break;
-              }
-            },
-            itemBuilder: (_) => [
-              _buildPopupItem(
-                icon: Icons.article_outlined,
-                label: 'Postingan Saya',
-                value: 'my-posts',
-              ),
-              _buildPopupItem(
-                icon: Icons.favorite_border,
-                label: 'Disukai',
-                value: 'liked-posts',
-              ),
-              _buildPopupItem(
-                icon: Icons.chat_bubble_outline,
-                label: 'Komentar Saya',
-                value: 'my-comments',
-              ),
-            ],
+    return Row(
+      children: [
+        const Spacer(),
+        PopupMenuButton<String>(
+          padding: EdgeInsets.zero,
+          color: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-        ],
+          onSelected: (value) {
+            switch (value) {
+              case 'my-posts':
+                context.push('/forum/my-posts');
+                break;
+              case 'liked-posts':
+                context.push('/forum/liked-posts');
+                break;
+              case 'my-comments':
+                context.push('/forum/my-comments');
+                break;
+            }
+          },
+          itemBuilder: (_) => [
+            _buildPopupItem(
+              icon: Icons.article_outlined,
+              label: 'Postingan Saya',
+              value: 'my-posts',
+            ),
+            _buildPopupItem(
+              icon: Icons.favorite_border,
+              label: 'Disukai',
+              value: 'liked-posts',
+            ),
+            _buildPopupItem(
+              icon: Icons.chat_bubble_outline,
+              label: 'Komentar Saya',
+              value: 'my-comments',
+            ),
+          ],
+          child: Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(29),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/icons/more-icon.svg',
+                width: 28,
+                height: 28,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBodySliver(
+    BuildContext context,
+    ForumState forumState,
+    String? currentUserId,
+    double horizontalPadding,
+  ) {
+    if (forumState.error != null && forumState.posts.isEmpty) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: _buildErrorState(context, forumState.error!),
+      );
+    }
+
+    if (forumState.posts.isEmpty && !forumState.isLoading) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: _buildEmptyState(context),
+      );
+    }
+
+    if (forumState.posts.isEmpty && forumState.isLoading) {
+      return SliverPadding(
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (_, __) => const PostCardSkeleton(hasImage: true),
+            childCount: 4,
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index == forumState.posts.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              );
+            }
+
+            final post = forumState.posts[index];
+            final isOwnPost = post.userId == currentUserId;
+
+            return PostCard(
+              post: post,
+              onLike: () {
+                ref.read(forumProvider.notifier).toggleLike(post.postId);
+              },
+              onComment: () {
+                context.push('/forum/post/${post.postId}');
+              },
+              onShare: () => _showShareDialog(context, post.postId),
+              onTap: () {
+                context.push('/forum/post/${post.postId}');
+              },
+              onMorePressed: isOwnPost
+                  ? () => _showPostOptions(context, post.postId)
+                  : null,
+            );
+          },
+          childCount: forumState.posts.length + (forumState.isLoading ? 1 : 0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return EmptyStateWidget(
+      icon: Icons.forum_outlined,
+      title: 'Belum ada postingan',
+      message: 'Jadilah yang pertama membuat postingan di forum komunitas',
+      action: ElevatedButton.icon(
+        onPressed: () => _openCreatePost(context),
+        icon: const Icon(Icons.add, size: 18),
+        label: const Text(
+          'Buat Postingan',
+          style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        ),
       ),
     );
   }
@@ -162,83 +310,6 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBody(
-    BuildContext context,
-    ForumState forumState,
-    String? currentUserId,
-  ) {
-    if (forumState.error != null && forumState.posts.isEmpty) {
-      return _buildErrorState(context, forumState.error!);
-    }
-
-    if (forumState.posts.isEmpty && !forumState.isLoading) {
-      return EmptyStateWidget(
-        icon: Icons.forum_outlined,
-        title: 'Belum ada postingan',
-        message: 'Jadilah yang pertama membuat postingan di forum komunitas',
-        action: ElevatedButton.icon(
-          onPressed: () => context.push('/forum/create'),
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text(
-            'Buat Postingan',
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (forumState.posts.isEmpty && forumState.isLoading) {
-      return ListView.builder(
-        padding: EdgeInsets.all(context.rw(0.051)),
-        itemCount: 4,
-        itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
-      );
-    }
-
-    return ListView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.all(context.rw(0.051)),
-      itemCount: forumState.posts.length + (forumState.isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == forumState.posts.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          );
-        }
-
-        final post = forumState.posts[index];
-        final isOwnPost = post.userId == currentUserId;
-
-        return PostCard(
-          post: post,
-          onLike: () {
-            ref.read(forumProvider.notifier).toggleLike(post.postId);
-          },
-          onComment: () {
-            context.push('/forum/post/${post.postId}');
-          },
-          onShare: () => _showShareDialog(context, post.postId),
-          onTap: () {
-            context.push('/forum/post/${post.postId}');
-          },
-          onMorePressed: isOwnPost
-              ? () => _showPostOptions(context, post.postId)
-              : null,
-        );
-      },
     );
   }
 

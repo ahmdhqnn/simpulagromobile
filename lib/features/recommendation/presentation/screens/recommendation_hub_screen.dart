@@ -146,11 +146,31 @@ class _RecommendationHubScreenState
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           const Spacer(),
-          CircularIconActionWidget(
-            onPressed: _refreshAll,
-            icon: Icons.refresh_rounded,
-          ),
+          _buildRefreshButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRefreshButton() {
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(29),
+      ),
+      child: IconButton(
+        onPressed: _refreshAll,
+        icon: SvgPicture.asset(
+          'assets/icons/arrow-rotate-left.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(
+            AppColors.textPrimary,
+            BlendMode.srcIn,
+          ),
+        ),
       ),
     );
   }
@@ -312,12 +332,6 @@ class _RecommendationHubScreenState
         return DropdownButtonFormField<String>(
           value: dropdownValue,
           decoration: InputDecoration(
-            labelText: 'Filter Phase',
-            labelStyle: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              color: AppColors.textSecondary,
-              fontSize: context.sp(12),
-            ),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,

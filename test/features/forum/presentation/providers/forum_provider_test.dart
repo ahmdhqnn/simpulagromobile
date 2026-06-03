@@ -158,5 +158,88 @@ void main() {
         expect(state.currentPage, 3);
       },
     );
+
+    test('CommentsNotifier keeps totalCount from pagination meta', () async {
+      final comments = [
+        Comment(
+          commentId: 'C1',
+          postId: 'POST_123',
+          userId: 'USR_001',
+          commentContent: 'First',
+          createdAt: DateTime(2026, 5, 1),
+          user: const CommentUser(userId: 'USR_001', userName: 'User 1'),
+        ),
+      ];
+
+      when(
+        () => mockRepository.getPaginatedComments(
+          postId: 'POST_123',
+          page: 1,
+          limit: 30,
+        ),
+      ).thenAnswer(
+        (_) async => Right(
+          PaginatedResult.fromItems(
+            comments,
+            page: 1,
+            limit: 30,
+            meta: const {
+              'page': 1,
+              'limit': 30,
+              'total': 14,
+              'total_pages': 14,
+            },
+          ),
+        ),
+      );
+
+      final notifier = container.read(commentsProvider('POST_123').notifier);
+      await notifier.loadComments();
+
+      final state = container.read(commentsProvider('POST_123'));
+      expect(state.comments, hasLength(1));
+      expect(state.totalCount, 14);
+    });
+
+    test(
+      'loadPosts hydrates commentCount from comments pagination total',
+      () async {
+        when(
+          () => mockRepository.getPaginatedPosts(page: 1, limit: 20),
+        ).thenAnswer(
+          (_) async => Right(
+            PaginatedResult.fromItems(
+              [dummyPost],
+              page: 1,
+              limit: 20,
+              meta: const {'page': 1, 'limit': 20, 'total_pages': 1},
+            ),
+          ),
+        );
+        when(
+          () => mockRepository.getPaginatedComments(
+            postId: 'POST_123',
+            page: 1,
+            limit: 1,
+          ),
+        ).thenAnswer(
+          (_) async => Right(
+            PaginatedResult.fromItems(
+              const [],
+              page: 1,
+              limit: 1,
+              meta: const {'page': 1, 'limit': 1, 'total_pages': 9},
+            ),
+          ),
+        );
+
+        final notifier = container.read(forumProvider.notifier);
+        await notifier.loadPosts(refresh: true);
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        final hydratedPost = container.read(forumProvider).posts.first;
+        expect(hydratedPost.commentCount, 9);
+      },
+    );
   });
 }

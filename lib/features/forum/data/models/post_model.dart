@@ -44,16 +44,50 @@ class PostModel extends Post {
         JsonParser.tryKeys(json, ['forum_content', 'post_content', 'content']),
       ),
       postImage: JsonParser.parseStringOrNull(
-        JsonParser.tryKeys(json, ['forum_image_url', 'post_image', 'image_url']),
+        JsonParser.tryKeys(json, [
+          'forum_image_url',
+          'post_image',
+          'image_url',
+        ]),
       ),
-      likeCount: JsonParser.parseInt(
-        JsonParser.tryKeys(json, ['forum_like_count', 'like_count']),
+      likeCount: _parseCount(
+        json,
+        directKeys: const [
+          'forum_like_count',
+          'like_count',
+          'likes_count',
+          'forum_likes_count',
+          'total_likes',
+          'like_total',
+          'likeCount',
+        ],
+        nestedListKeys: const ['likes', 'reactions'],
       ),
-      commentCount: JsonParser.parseInt(
-        JsonParser.tryKeys(json, ['comment_count', 'forum_comment_count']),
+      commentCount: _parseCount(
+        json,
+        directKeys: const [
+          'comment_count',
+          'forum_comment_count',
+          'comments_count',
+          'forum_comments_count',
+          'total_comments',
+          'comment_total',
+          'commentCount',
+        ],
+        nestedListKeys: const ['comments'],
       ),
-      shareCount: JsonParser.parseInt(
-        JsonParser.tryKeys(json, ['forum_share_count', 'share_count']),
+      shareCount: _parseCount(
+        json,
+        directKeys: const [
+          'forum_share_count',
+          'share_count',
+          'shares_count',
+          'forum_shares_count',
+          'total_shares',
+          'share_total',
+          'shareCount',
+        ],
+        nestedListKeys: const ['shares'],
       ),
       isLiked: JsonParser.parseBool(json['is_liked']),
       createdAt: JsonParser.parseDateTime(
@@ -82,6 +116,52 @@ class PostModel extends Post {
       'forum_created': createdAt.toIso8601String(),
       'forum_update': updatedAt?.toIso8601String(),
     };
+  }
+
+  static int _parseCount(
+    Map<String, dynamic> json, {
+    required List<String> directKeys,
+    List<String> nestedListKeys = const [],
+  }) {
+    final direct = JsonParser.tryKeys(json, directKeys);
+    if (direct != null) {
+      return JsonParser.parseInt(direct);
+    }
+
+    for (final containerKey in const ['counts', 'stats', 'summary', 'totals']) {
+      final nested = JsonParser.parseMapOrNull(json[containerKey]);
+      if (nested == null) continue;
+      final nestedValue = JsonParser.tryKeys(nested, directKeys);
+      if (nestedValue != null) {
+        return JsonParser.parseInt(nestedValue);
+      }
+    }
+
+    for (final listKey in nestedListKeys) {
+      final nestedValue = json[listKey];
+      if (nestedValue is List) {
+        return nestedValue.length;
+      }
+      if (nestedValue is Map) {
+        final nested = JsonParser.parseMap(nestedValue);
+        final total = JsonParser.tryKeys(nested, const [
+          'total',
+          'count',
+          'length',
+          'total_items',
+          'totalItems',
+        ]);
+        if (total != null) {
+          return JsonParser.parseInt(total);
+        }
+        final data = nested['data'];
+        if (data is List) {
+          return data.length;
+        }
+      }
+    }
+
+    return 0;
   }
 }
 

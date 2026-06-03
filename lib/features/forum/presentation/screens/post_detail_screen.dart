@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/comment.dart';
@@ -85,195 +87,325 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final commentsState = ref.watch(commentsProvider(widget.postId));
     final authState = ref.watch(authProvider);
     final currentUserId = authState.user?.userId;
+    final hPad = context.rw(0.051);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
-      appBar: AppBar(
-        title: Text(
-          'Detail Postingan',
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      backgroundColor: AppColors.background,
       body: postAsync.when(
-        data: (post) => Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  ref.invalidate(postDetailProvider(widget.postId));
-                  await ref
-                      .read(commentsProvider(widget.postId).notifier)
-                      .loadComments();
-                },
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                    // Post Content
-                    SliverToBoxAdapter(
-                      child: _buildPostContent(context, post, currentUserId),
-                    ),
+        data: (post) {
+          final commentCount = _resolveCommentCount(post, commentsState);
 
-                    // Divider
-                    SliverToBoxAdapter(
-                      child: Container(
-                        height: 8,
-                        color: const Color(0xFFF0F0F0),
-                      ),
-                    ),
-
-                    // Comments Header
-                    SliverToBoxAdapter(
-                      child: _buildCommentsHeader(
-                        context,
-                        commentsState.comments.length,
-                      ),
-                    ),
-
-                    // Comments List
-                    if (commentsState.isLoading)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              PostCardSkeleton(hasImage: false),
-                              PostCardSkeleton(hasImage: false),
-                            ],
+          return SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () async {
+                      ref.invalidate(postDetailProvider(widget.postId));
+                      await ref
+                          .read(commentsProvider(widget.postId).notifier)
+                          .loadComments();
+                    },
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              hPad,
+                              context.rh(0.015),
+                              hPad,
+                              0,
+                            ),
+                            child: _buildTopBar(context, post, currentUserId),
                           ),
                         ),
-                      )
-                    else if (commentsState.comments.isEmpty)
-                      SliverToBoxAdapter(child: _buildEmptyComments(context))
-                    else
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final comment = commentsState.comments[index];
-                          final isOwn =
-                              comment.userId == currentUserId ||
-                              post.userId == currentUserId;
-                          return _buildCommentItem(context, comment, isOwn);
-                        }, childCount: commentsState.comments.length),
-                      ),
-
-                    if (commentsState.isLoading &&
-                        commentsState.comments.isNotEmpty)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: context.rh(0.024)),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            child: _buildPostContent(
+                              context,
+                              post,
+                              commentCount,
                             ),
                           ),
                         ),
-                      ),
-
-                    // Bottom spacing
-                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                  ],
-                ),
-              ),
-            ),
-
-            // Comment Input
-            _buildCommentInput(context),
-          ],
-        ),
-        loading: () => const DetailScreenSkeleton(
-          infoRowCount: 3,
-          hasDescription: true,
-          headerHeight: 0,
-        ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: AppColors.textPrimary.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Gagal memuat postingan',
-                  style: AppTextStyles.cardTitle(context, 16),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString().replaceAll('Exception: ', ''),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption(context),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      ref.invalidate(postDetailProvider(widget.postId)),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(
-                    'Coba Lagi',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(13),
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: context.rh(0.012)),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            child: _buildCommentsHeader(context, commentCount),
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: context.rh(0.012)),
+                        ),
+                        if (commentsState.isLoading &&
+                            commentsState.comments.isEmpty)
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (_, __) => Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: context.rh(0.012),
+                                  ),
+                                  child: const PostCardSkeleton(
+                                    hasImage: false,
+                                  ),
+                                ),
+                                childCount: 2,
+                              ),
+                            ),
+                          )
+                        else if (commentsState.comments.isEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: hPad),
+                              child: _buildEmptyComments(context),
+                            ),
+                          )
+                        else
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final comment = commentsState.comments[index];
+                                final canManage =
+                                    comment.userId == currentUserId ||
+                                    post.userId == currentUserId;
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: context.rh(0.012),
+                                  ),
+                                  child: _buildCommentItem(
+                                    context,
+                                    comment,
+                                    canManage,
+                                  ),
+                                );
+                              }, childCount: commentsState.comments.length),
+                            ),
+                          ),
+                        if (commentsState.isLoading &&
+                            commentsState.comments.isNotEmpty)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: context.rh(0.02)),
+                        ),
+                      ],
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                    ),
-                  ),
                 ),
+                _buildCommentInput(context),
               ],
             ),
+          );
+        },
+        loading: () => SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
+                child: _buildTopBar(context, null, currentUserId),
+              ),
+              SizedBox(height: context.rh(0.024)),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
+                  child: const DetailScreenSkeleton(
+                    infoRowCount: 3,
+                    hasDescription: true,
+                    headerHeight: 120,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        error: (error, _) => SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
+                child: _buildTopBar(context, null, currentUserId),
+              ),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(context.rw(0.061)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppColors.textPrimary.withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Gagal memuat postingan',
+                          style: AppTextStyles.cardTitle(context, 16),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          error.toString().replaceAll('Exception: ', ''),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.caption(context),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              ref.invalidate(postDetailProvider(widget.postId)),
+                          icon: const Icon(Icons.refresh, size: 18),
+                          label: Text(
+                            'Coba Lagi',
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: context.sp(13),
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.pill,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPostContent(
-    BuildContext context,
-    Post post,
-    String? currentUserId,
-  ) {
+  int _resolveCommentCount(Post post, CommentsState state) {
+    if (state.totalCount > 0) return state.totalCount;
+    if (!state.isLoading) return state.comments.length;
+    return post.commentCount;
+  }
+
+  Widget _buildTopBar(BuildContext context, Post? post, String? currentUserId) {
+    final canManage = post != null && post.userId == currentUserId;
+
+    return Row(
+      children: [
+        CircularBackButtonWidget(onPressed: () => context.pop()),
+        const Spacer(),
+        if (canManage)
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            onSelected: (value) {
+              if (value == 'edit') {
+                context.push('/forum/edit/${post.postId}');
+              } else if (value == 'delete') {
+                _confirmDelete(context, post.postId);
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 18),
+                    SizedBox(width: 8),
+                    Text('Edit'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: AppColors.error,
+                    ),
+                    SizedBox(width: 8),
+                    Text('Hapus', style: TextStyle(color: AppColors.error)),
+                  ],
+                ),
+              ),
+            ],
+            child: Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(29),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/more-icon.svg',
+                  width: 28,
+                  height: 28,
+                ),
+              ),
+            ),
+          )
+        else
+          const SizedBox(width: 58, height: 58),
+      ],
+    );
+  }
+
+  Widget _buildPostContent(BuildContext context, Post post, int commentCount) {
+    final siteName = post.site?.siteName.trim() ?? '';
+    final metaText = siteName.isEmpty
+        ? post.timeAgo
+        : '$siteName - ${post.timeAgo}';
+
     return Container(
-      color: AppColors.surface,
-      padding: EdgeInsets.all(context.rw(0.051)),
+      padding: EdgeInsets.all(context.rw(0.041)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.softGreen,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    'assets/icons/user-outline-icon.svg',
-                    width: 22,
-                    height: 22,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.primary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
+              _buildAvatar(
+                context,
+                name: post.user.userName,
+                imageUrl: post.user.userAvatar,
+                size: 44,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,164 +414,575 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       post.user.userName,
                       style: AppTextStyles.label(
                         context,
-                        size: 14,
+                        size: 13,
                         weight: FontWeight.w600,
+                        height: 1.2,
                       ),
                     ),
                     Text(
-                      '${post.site?.siteName ?? ''} • ${post.timeAgo}',
-                      style: AppTextStyles.hint(context, size: 11),
+                      metaText,
+                      style: AppTextStyles.hint(context, size: 10),
                     ),
                   ],
                 ),
               ),
-              if (post.userId == currentUserId)
-                PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: AppColors.textSecondary,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      context.push('/forum/edit/${post.postId}');
-                    } else if (value == 'delete') {
-                      _confirmDelete(context, post.postId);
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: AppColors.error,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Hapus',
-                            style: TextStyle(color: AppColors.error),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
             ],
           ),
-
           SizedBox(height: context.rh(0.02)),
-
-          // Title
           if (post.postTitle.trim().isNotEmpty) ...[
-            Text(post.postTitle, style: AppTextStyles.cardTitle(context, 16)),
-            const SizedBox(height: 8),
+            Text(
+              post.postTitle,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(20),
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+                height: 1.1,
+              ),
+            ),
+            const SizedBox(height: 6),
           ],
-
-          // Content
           Text(
             post.postContent,
             style: AppTextStyles.label(
               context,
               size: 13,
               weight: FontWeight.w400,
-              height: 1.6,
+              height: 1.55,
             ),
           ),
-
-          // Image
           if (post.hasImage) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: context.rh(0.018)),
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.sm),
               child: Image.network(
                 post.postImage!,
                 width: double.infinity,
-                height: 200,
+                height: context.rh(0.24),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   width: double.infinity,
-                  height: 200,
+                  height: context.rh(0.24),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: const Icon(
                     Icons.broken_image_outlined,
-                    size: 48,
+                    size: 44,
                     color: AppColors.textTertiary,
                   ),
                 ),
               ),
             ),
           ],
-
-          const SizedBox(height: 16),
-
-          // Stats row
+          SizedBox(height: context.rh(0.018)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              children: [
+                _buildMetricCell(
+                  context,
+                  icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+                  label: 'Suka',
+                  value: post.likeCount,
+                  color: post.isLiked ? AppColors.error : AppColors.textPrimary,
+                ),
+                _buildMetricDivider(),
+                _buildMetricCell(
+                  context,
+                  icon: Icons.chat_bubble_outline,
+                  label: 'Komentar',
+                  value: commentCount,
+                  color: AppColors.textPrimary,
+                ),
+                _buildMetricDivider(),
+                _buildMetricCell(
+                  context,
+                  icon: Icons.share_outlined,
+                  label: 'Bagikan',
+                  value: post.shareCount,
+                  color: AppColors.textPrimary,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: context.rh(0.014)),
           Row(
             children: [
-              _buildStatItem(
-                context,
-                icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-                label: '${post.likeCount}',
-                color: post.isLiked ? AppColors.error : AppColors.textSecondary,
-                onTap: () async {
-                  await ref
-                      .read(forumProvider.notifier)
-                      .toggleLike(post.postId);
-                  ref.invalidate(postDetailProvider(widget.postId));
-                },
-                onLongPress: () =>
-                    _showReactionsSheet(context, ref, post.postId),
+              Expanded(
+                child: _buildPostActionChip(
+                  context,
+                  icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+                  label: 'Suka',
+                  color: post.isLiked
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+                  onTap: () async {
+                    await ref
+                        .read(forumProvider.notifier)
+                        .toggleLike(post.postId);
+                    ref.invalidate(postDetailProvider(widget.postId));
+                  },
+                  onLongPress: () =>
+                      _showReactionsSheet(context, ref, post.postId),
+                ),
               ),
-              const SizedBox(width: 16),
-              _buildStatItem(
-                context,
-                icon: Icons.thumb_down_outlined,
-                label: 'Dislike',
-                color: AppColors.textSecondary,
-                onTap: () async {
-                  await ref
-                      .read(forumProvider.notifier)
-                      .toggleDislike(post.postId);
-                  ref.invalidate(postDetailProvider(widget.postId));
-                },
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPostActionChip(
+                  context,
+                  icon: Icons.thumb_down_outlined,
+                  label: 'Dislike',
+                  color: AppColors.textSecondary,
+                  onTap: () async {
+                    await ref
+                        .read(forumProvider.notifier)
+                        .toggleDislike(post.postId);
+                    ref.invalidate(postDetailProvider(widget.postId));
+                  },
+                ),
               ),
-              const SizedBox(width: 24),
-              _buildStatItem(
-                context,
-                icon: Icons.chat_bubble_outline,
-                label:
-                    '${ref.watch(commentsProvider(widget.postId)).comments.length}',
-                color: AppColors.textSecondary,
-                onTap: () => _commentFocusNode.requestFocus(),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPostActionChip(
+                  context,
+                  icon: Icons.chat_bubble_outline,
+                  label: 'Komentar',
+                  color: AppColors.textSecondary,
+                  onTap: () => _commentFocusNode.requestFocus(),
+                ),
               ),
-              const SizedBox(width: 24),
-              _buildStatItem(
-                context,
-                icon: Icons.share_outlined,
-                label: '${post.shareCount}',
-                color: AppColors.textSecondary,
-                onTap: () => _handleShare(post.postId),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPostActionChip(
+                  context,
+                  icon: Icons.share_outlined,
+                  label: 'Bagikan',
+                  color: AppColors.textSecondary,
+                  onTap: () => _handleShare(post.postId),
+                ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCell(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required int value,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(height: 6),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(15),
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: AppTextStyles.caption(context, size: 10)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricDivider() {
+    return Container(
+      width: 1,
+      height: 38,
+      color: AppColors.divider,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+    );
+  }
+
+  Widget _buildPostActionChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+  }) {
+    return Material(
+      color: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: SizedBox(
+          height: 38,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption(
+                    context,
+                    size: 11,
+                    color: color,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommentsHeader(BuildContext context, int count) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.041),
+        vertical: 14,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        children: [
+          Text('Komentar', style: AppTextStyles.cardTitle(context, 14)),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.softGreen,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Text(
+              '$count',
+              style: AppTextStyles.label(
+                context,
+                size: 11,
+                color: AppColors.primary,
+                weight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyComments(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.041),
+        vertical: context.rh(0.04),
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: 44,
+            color: AppColors.textPrimary.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Belum ada komentar',
+            style: AppTextStyles.label(
+              context,
+              size: 14,
+              color: AppColors.textTertiary,
+              weight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Jadilah yang pertama berkomentar',
+            style: AppTextStyles.caption(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentItem(
+    BuildContext context,
+    Comment comment,
+    bool canManage,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(context.rw(0.041)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAvatar(
+            context,
+            name: comment.user.userName,
+            imageUrl: comment.user.userAvatar,
+            size: 36,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            comment.user.userName,
+                            style: AppTextStyles.label(
+                              context,
+                              size: 12,
+                              weight: FontWeight.w600,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            comment.timeAgo,
+                            style: AppTextStyles.hint(context, size: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (canManage)
+                      PopupMenuButton<String>(
+                        padding: EdgeInsets.zero,
+                        color: AppColors.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            _editComment(context, comment);
+                          } else if (value == 'delete') {
+                            _confirmDeleteComment(context, comment.commentId);
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, size: 18),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: AppColors.error,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Hapus',
+                                  style: TextStyle(color: AppColors.error),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/more-icon.svg',
+                              width: 18,
+                              height: 18,
+                              colorFilter: const ColorFilter.mode(
+                                AppColors.textSecondary,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  comment.commentContent,
+                  style: AppTextStyles.label(
+                    context,
+                    size: 12,
+                    weight: FontWeight.w400,
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentInput(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        context.rw(0.051),
+        10,
+        context.rw(0.051),
+        10,
+      ),
+      color: AppColors.background,
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: TextField(
+                  controller: _commentController,
+                  focusNode: _commentFocusNode,
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: context.sp(13),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Tulis komentar...',
+                    hintStyle: AppTextStyles.hint(context, size: 13),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                  ),
+                  maxLines: 3,
+                  minLines: 1,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _submitComment(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Material(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                onTap: _isSendingComment ? null : _submitComment,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: _isSendingComment
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatar(
+    BuildContext context, {
+    required String name,
+    required double size,
+    String? imageUrl,
+  }) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceVariant,
+        shape: BoxShape.circle,
+      ),
+      child: imageUrl != null && imageUrl.isNotEmpty
+          ? ClipOval(
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _buildAvatarFallback(context, name: name, size: size),
+              ),
+            )
+          : _buildAvatarFallback(context, name: name, size: size),
+    );
+  }
+
+  Widget _buildAvatarFallback(
+    BuildContext context, {
+    required String name,
+    required double size,
+  }) {
+    final trimmed = name.trim();
+    final initial = trimmed.isEmpty
+        ? 'U'
+        : trimmed.substring(0, 1).toUpperCase();
+
+    return Center(
+      child: Text(
+        initial,
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: context.sp(size <= 36 ? 14 : 18),
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary.withValues(alpha: 0.35),
+        ),
       ),
     );
   }
@@ -470,9 +1013,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
                     const SizedBox(height: 12),
                     ...reactions.map(
-                      (r) => ListTile(
+                      (reaction) => ListTile(
                         dense: true,
-                        title: Text(r.userName),
+                        title: Text(reaction.userName),
                         leading: const Icon(Icons.person_outline, size: 20),
                       ),
                     ),
@@ -480,282 +1023,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
+              error: (error, _) => Text('Error: $error'),
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    VoidCallback? onTap,
-    VoidCallback? onLongPress,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      borderRadius: BorderRadius.circular(AppRadius.xs),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTextStyles.label(
-                context,
-                size: 12,
-                color: color,
-                weight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCommentsHeader(BuildContext context, int count) {
-    return Container(
-      color: AppColors.surface,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: 12,
-      ),
-      child: Row(
-        children: [
-          Text('Komentar', style: AppTextStyles.cardTitle(context, 14)),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppColors.softGreen,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-            child: Text(
-              '$count',
-              style: AppTextStyles.label(
-                context,
-                size: 11,
-                color: AppColors.primary,
-                weight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyComments(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      child: Column(
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 48,
-            color: AppColors.textPrimary.withValues(alpha: 0.2),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Belum ada komentar',
-            style: AppTextStyles.label(
-              context,
-              size: 14,
-              color: AppColors.textTertiary,
-              weight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Jadilah yang pertama berkomentar',
-            style: AppTextStyles.caption(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentItem(BuildContext context, Comment comment, bool isOwn) {
-    return Container(
-      color: AppColors.surface,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: 10,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: AppColors.softGreenAlt,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-            child: Center(
-              child: Text(
-                comment.user.userName.isNotEmpty
-                    ? comment.user.userName[0].toUpperCase()
-                    : '?',
-                style: AppTextStyles.label(
-                  context,
-                  size: 13,
-                  color: AppColors.primary,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          // Comment content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      comment.user.userName,
-                      style: AppTextStyles.label(
-                        context,
-                        size: 12,
-                        weight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      comment.timeAgo,
-                      style: AppTextStyles.hint(context, size: 10),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  comment.commentContent,
-                  style: AppTextStyles.label(
-                    context,
-                    size: 12,
-                    weight: FontWeight.w400,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          if (isOwn) ...[
-            IconButton(
-              icon: const Icon(
-                Icons.edit_outlined,
-                size: 16,
-                color: AppColors.textTertiary,
-              ),
-              onPressed: () => _editComment(context, comment),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                size: 16,
-                color: AppColors.textTertiary,
-              ),
-              onPressed: () =>
-                  _confirmDeleteComment(context, comment.commentId),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentInput(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: 10,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-                child: TextField(
-                  controller: _commentController,
-                  focusNode: _commentFocusNode,
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(13),
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Tulis komentar...',
-                    hintStyle: AppTextStyles.hint(context, size: 13),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                  ),
-                  maxLines: 3,
-                  minLines: 1,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _submitComment(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Material(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                onTap: _isSendingComment ? null : _submitComment,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  child: _isSendingComment
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
