@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
@@ -23,61 +24,103 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final siteId = ref.watch(selectedSiteIdProvider);
+    final hPad = context.rw(0.051);
     if (siteId == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Detail Task'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
+        body: SafeArea(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
+                child: _buildTopBar(context),
+              ),
+              SizedBox(height: context.rh(0.024)),
+              _buildErrorState(context, 'Pilih site terlebih dahulu', null),
+            ],
+          ),
         ),
-        body: _buildErrorState(context, 'Pilih site terlebih dahulu', null),
       );
     }
 
     final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId)));
+    final task = taskAsync.maybeWhen(data: (data) => data, orElse: () => null);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Detail Task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          taskAsync.maybeWhen(
-            data: (task) => PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            ref.invalidate(taskDetailProvider((siteId, widget.taskId)));
+
+            try {
+              await ref.read(
+                taskDetailProvider((siteId, widget.taskId)).future,
+              );
+            } catch (_) {}
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
+                child: _buildTopBar(context, siteId: siteId, task: task),
+              ),
+              SizedBox(height: context.rh(0.024)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: hPad),
+                child: taskAsync.when(
+                  loading: () => const DetailScreenSkeleton(
+                    infoRowCount: 6,
+                    hasDescription: true,
+                  ),
+                  error: (error, _) =>
+                      _buildErrorState(context, error.toString(), siteId),
+                  data: (task) => _buildContent(context, task),
+                ),
+              ),
+              SizedBox(height: context.rh(0.02)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar(BuildContext context, {String? siteId, Task? task}) {
+    return Row(
+      children: [
+        CircularBackButtonWidget(onPressed: () => context.pop()),
+        const Spacer(),
+        if (siteId != null && task != null)
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(29),
+            ),
+            child: PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_horiz_rounded,
+                size: 24,
+                color: AppColors.textPrimary,
+              ),
+              padding: EdgeInsets.zero,
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
               onSelected: (value) =>
                   _onMenuAction(context, siteId, task, value),
               itemBuilder: (_) => _buildMenuItems(task),
             ),
-            orElse: () => const SizedBox.shrink(),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () async {
-          ref.invalidate(taskDetailProvider((siteId, widget.taskId)));
-
-          try {
-            await ref.read(taskDetailProvider((siteId, widget.taskId)).future);
-          } catch (_) {}
-        },
-        child: taskAsync.when(
-          loading: () =>
-              const DetailScreenSkeleton(infoRowCount: 6, hasDescription: true),
-          error: (error, _) => ListView(
-            children: [
-              SizedBox(height: context.rh(0.1)),
-              _buildErrorState(context, error.toString(), siteId),
-            ],
-          ),
-          data: (task) => _buildContent(context, siteId, task),
-        ),
-      ),
+          )
+        else
+          const SizedBox(width: 58, height: 58),
+      ],
     );
   }
 
@@ -153,22 +196,18 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
-  Widget _buildContent(BuildContext context, String siteId, Task task) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.all(context.rw(0.041)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStatusCard(context, task),
-          SizedBox(height: context.rh(0.02)),
-          _buildInfoCard(context, task),
-          SizedBox(height: context.rh(0.02)),
-          _buildDetailsCard(context, task),
-          SizedBox(height: context.rh(0.02)),
-          _buildTimelineCard(context, task),
-        ],
-      ),
+  Widget _buildContent(BuildContext context, Task task) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildStatusCard(context, task),
+        SizedBox(height: context.rh(0.02)),
+        _buildInfoCard(context, task),
+        SizedBox(height: context.rh(0.02)),
+        _buildDetailsCard(context, task),
+        SizedBox(height: context.rh(0.02)),
+        _buildTimelineCard(context, task),
+      ],
     );
   }
 

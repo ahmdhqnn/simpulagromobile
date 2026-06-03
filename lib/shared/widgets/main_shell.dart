@@ -102,11 +102,20 @@ class _MainShellState extends ConsumerState<MainShell>
     final currentIndex = ref.watch(mainShellTabIndexProvider);
 
     return Scaffold(
-      body: IndexedStack(index: currentIndex, children: _screens),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) =>
-            ref.read(mainShellTabIndexProvider.notifier).state = index,
+      extendBody: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          IndexedStack(index: currentIndex, children: _screens),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CustomBottomNavigationBar(
+              currentIndex: currentIndex,
+              onTap: (index) =>
+                  ref.read(mainShellTabIndexProvider.notifier).state = index,
+            ),
+          ),
+        ],
       ),
     );
   }

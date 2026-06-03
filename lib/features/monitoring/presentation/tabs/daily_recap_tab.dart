@@ -35,9 +35,11 @@ class DailyRecapTab extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(
-          horizontal: context.rw(0.051),
-          vertical: context.rh(0.015),
+        padding: EdgeInsets.fromLTRB(
+          context.rw(0.051),
+          0,
+          context.rw(0.051),
+          context.rh(0.015),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

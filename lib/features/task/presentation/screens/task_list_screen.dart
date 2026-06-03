@@ -24,6 +24,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final filteredTasksAsync = ref.watch(filteredTasksProvider);
     final currentFilter = ref.watch(taskFilterProvider);
     final stats = ref.watch(taskStatsProvider);
+    final hPad = context.rw(0.051);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -39,51 +40,61 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-              horizontal: context.rw(0.051),
-              vertical: context.rh(0.015),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context),
-                SizedBox(height: context.rh(0.024)),
-                _buildStatsCards(context, stats),
-                SizedBox(height: context.rh(0.024)),
-                _buildFilterTabs(context, currentFilter),
-                SizedBox(height: context.rh(0.024)),
-                filteredTasksAsync.when(
-                  loading: () => buildListSkeleton(count: 6, type: 'task'),
-                  error: (error, _) => ErrorStateCardWidget(
-                    message: error.toString(),
-                    onRetry: () => ref.invalidate(taskListProvider),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    hPad,
+                    context.rh(0.015),
+                    hPad,
+                    0,
                   ),
-                  data: (tasks) {
-                    if (tasks.isEmpty) {
-                      return InfoStateWidget.svg(
-                        svgIconPath: 'assets/icons/task-filled-icon.svg',
-                        message: _getEmptyMessage(currentFilter),
-                        height: 195,
+                  child: _buildHeader(context),
+                ),
+                SizedBox(height: context.rh(0.024)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
+                  child: _buildStatsCards(context, stats),
+                ),
+                SizedBox(height: context.rh(0.012)),
+                _buildFilterTabs(context, currentFilter, hPad),
+                SizedBox(height: context.rh(0.012)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
+                  child: filteredTasksAsync.when(
+                    loading: () => buildListSkeleton(count: 6, type: 'task'),
+                    error: (error, _) => ErrorStateCardWidget(
+                      message: error.toString(),
+                      onRetry: () => ref.invalidate(taskListProvider),
+                    ),
+                    data: (tasks) {
+                      if (tasks.isEmpty) {
+                        return InfoStateWidget.svg(
+                          svgIconPath: 'assets/icons/task-filled-icon.svg',
+                          message: _getEmptyMessage(currentFilter),
+                          height: 195,
+                        );
+                      }
+                      return Column(
+                        children: tasks
+                            .map(
+                              (task) => TaskCardWidget(
+                                task: task,
+                                onTap: () async {
+                                  final result = await context.push<bool>(
+                                    '/task/${task.taskId}',
+                                  );
+                                  if (result == true) {
+                                    ref.invalidate(taskListProvider);
+                                  }
+                                },
+                              ),
+                            )
+                            .toList(),
                       );
-                    }
-                    return Column(
-                      children: tasks
-                          .map(
-                            (task) => TaskCardWidget(
-                              task: task,
-                              onTap: () async {
-                                final result = await context.push<bool>(
-                                  '/task/${task.taskId}',
-                                );
-                                if (result == true) {
-                                  ref.invalidate(taskListProvider);
-                                }
-                              },
-                            ),
-                          )
-                          .toList(),
-                    );
-                  },
+                    },
+                  ),
                 ),
                 SizedBox(height: context.rh(0.02)),
               ],
@@ -96,18 +107,8 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Task',
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(28),
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-            height: 1.0,
-          ),
-        ),
+        const Spacer(),
         CircularBackButtonWidget(
           onPressed: () async {
             final result = await context.push<bool>('/task/create');
@@ -173,23 +174,28 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
-  Widget _buildFilterTabs(BuildContext context, TaskFilter currentFilter) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: TaskFilter.values
-            .expand(
-              (filter) => [
-                _FilterPill(
-                  label: filter.label,
-                  isSelected: currentFilter == filter,
-                  onTap: () =>
-                      ref.read(taskFilterProvider.notifier).state = filter,
-                ),
-                const SizedBox(width: 2),
-              ],
-            )
-            .toList(),
+  Widget _buildFilterTabs(
+    BuildContext context,
+    TaskFilter currentFilter,
+    double horizontalInset,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+        itemCount: TaskFilter.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 2),
+        itemBuilder: (context, index) {
+          final filter = TaskFilter.values[index];
+          return _FilterPill(
+            label: filter.label,
+            isSelected: currentFilter == filter,
+            onTap: () => ref.read(taskFilterProvider.notifier).state = filter,
+          );
+        },
       ),
     );
   }

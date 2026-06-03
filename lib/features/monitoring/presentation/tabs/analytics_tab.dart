@@ -44,7 +44,12 @@ class AnalyticsTab extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(context.rw(0.051)),
+        padding: EdgeInsets.fromLTRB(
+          context.rw(0.051),
+          0,
+          context.rw(0.051),
+          context.rh(0.015),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
