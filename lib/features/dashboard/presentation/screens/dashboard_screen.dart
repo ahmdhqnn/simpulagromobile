@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
@@ -300,8 +301,8 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: context.rh(0.014)),
                         const QuickActionsWidget(),
-                        SizedBox(height: context.rh(0.04)),
                       ],
+                      SizedBox(height: bottomNavigationContentSpace(context)),
                     ],
                   ),
                 ),

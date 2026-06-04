@@ -1,98 +1,188 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/icon_badge_widget.dart';
+import '../../../../phase/presentation/providers/phase_provider.dart';
 import '../../../../plant/domain/entities/plant.dart';
+import '../../../../plant/presentation/utils/plant_phase_display.dart';
 
-class GrowthPhaseCardWidget extends StatelessWidget {
-  final dynamic plant;
+class GrowthPhaseCardWidget extends ConsumerWidget {
+  final Plant plant;
   const GrowthPhaseCardWidget({super.key, required this.plant});
 
   @override
-  Widget build(BuildContext context) {
-    final phase = (plant?.growthPhase as String?) ?? '-';
-    final plantDate = plant?.plantDate as DateTime?;
-    final hst = (plant?.hst as int?) ?? 0;
-
-    String plantTypeDisplay = '-';
-    try {
-      final plantType = plant?.plantType;
-      if (plantType != null && plantType is CropType) {
-        plantTypeDisplay = plantType.displayName.toUpperCase();
-      }
-    } catch (_) {
-      plantTypeDisplay = '-';
-    }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final phaseAsync = plant.isCurrentPlanting
+        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        : null;
+    final phase = phaseAsync?.valueOrNull;
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
 
     return AppCardWidget(
+      radius: AppRadius.lg,
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const IconBadgeWidget.icon(
-                icon: Icons.grass,
-                background: Color(0xFFE3F2FD),
-                tint: Color(0xFF1976D2),
-                radius: 10,
+                icon: Icons.grass_outlined,
+                background: AppColors.softBlue,
+                tint: AppColors.infoDeep,
+                size: 42,
+                iconSize: 20,
+                radius: AppRadius.sm,
               ),
-              SizedBox(width: context.rw(0.03)),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Fase Pertumbuhan Saat Ini',
-                      style: AppTextStyles.sectionTitle(context, 20),
+                      style: AppTextStyles.cardTitle(context, context.sp(16)),
                     ),
                     const SizedBox(height: 4),
-                    Text(phase, style: AppTextStyles.hint(context)),
+                    Text(
+                      phaseLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption(
+                        context,
+                        size: context.sp(12),
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _label(context, 'Types of Plants'),
-                  _label(context, 'Planting Date'),
-                  _label(context, 'HST'),
-                  _label(context, 'Growth Phase'),
-                  _label(context, 'Status'),
-                ],
+          const SizedBox(height: 14),
+          _InfoRow(
+            label: l10n.plantTypeLabel,
+            value: plant.plantType?.displayName ?? '-',
+          ),
+          _InfoRow(
+            label: l10n.plantPlantDateLabel,
+            value: DateFormatter.formatDate(plant.plantDate),
+          ),
+          _InfoRow(
+            label: l10n.plantHstLabel,
+            value: plant.hst != null
+                ? '${plant.hst} ${l10n.plantHstUnit}'
+                : '-',
+          ),
+          _InfoRow(label: l10n.plantPhaseLabel, value: phaseLabel),
+          _InfoRow(label: l10n.plantStatusLabel, value: plant.statusText),
+          if (phase != null) ...[
+            const SizedBox(height: 6),
+            _PhaseProgress(
+              progress: phase.progressPercentage,
+              range: 'HST ${phase.hstMin}-${phase.hstMax}',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.caption(
+                context,
+                size: context.sp(11),
+                color: AppColors.textSecondary,
+                weight: FontWeight.w500,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _value(context, plantTypeDisplay),
-                  _value(
-                    context,
-                    plantDate != null
-                        ? DateFormat('dd MMM yyyy').format(plantDate)
-                        : '-',
-                  ),
-                  _value(context, '$hst Hari'),
-                  _value(context, phase),
-                  _value(context, plant.statusText as String? ?? '-'),
-                ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(12),
+                weight: FontWeight.w600,
+                height: 1.35,
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _label(BuildContext context, String text) =>
-      Text(text, style: AppTextStyles.label(context, weight: FontWeight.w500));
+class _PhaseProgress extends StatelessWidget {
+  final double progress;
+  final String range;
 
-  Widget _value(BuildContext context, String text) =>
-      Text(text, style: AppTextStyles.label(context, weight: FontWeight.w300));
+  const _PhaseProgress({required this.progress, required this.range});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = progress.clamp(0, 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              range,
+              style: AppTextStyles.caption(context, size: context.sp(11)),
+            ),
+            const Spacer(),
+            Text(
+              '$percent%',
+              style: AppTextStyles.caption(
+                context,
+                size: context.sp(11),
+                color: AppColors.textPrimary,
+                weight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: percent / 100,
+            minHeight: 6,
+            backgroundColor: AppColors.surfaceVariant,
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+          ),
+        ),
+      ],
+    );
+  }
 }

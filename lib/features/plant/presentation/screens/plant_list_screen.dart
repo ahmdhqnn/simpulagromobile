@@ -9,9 +9,11 @@ import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../utils/plant_mutation_actions.dart';
 import '../widgets/plant_actions_sheet_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../utils/plant_phase_display.dart';
 
 class PlantListScreen extends ConsumerWidget {
   const PlantListScreen({super.key});
@@ -95,6 +97,14 @@ class _PlantList extends ConsumerWidget {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
+        final siteId = ref.read(selectedSiteIdProvider);
+        if (siteId != null) {
+          ref.invalidate(currentPhaseProvider(siteId));
+          ref.invalidate(phaseListProvider(siteId));
+          ref.invalidate(phaseHistoryProvider(siteId));
+          ref.invalidate(phaseStatsProvider(siteId));
+          ref.invalidate(phasesForSelectedSiteProvider);
+        }
         await refreshPlantCache(ref);
       },
       child: Column(
@@ -126,6 +136,10 @@ class _PlantCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statusColor = _statusColor(plant);
+    final phaseAsync = plant.isCurrentPlanting
+        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        : null;
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
 
     return Container(
       decoration: BoxDecoration(
@@ -146,7 +160,7 @@ class _PlantCard extends ConsumerWidget {
                 onMoreTap: () => _showActions(context, ref),
               ),
               const SizedBox(height: 16),
-              _CardChipRow(plant: plant),
+              _CardChipRow(plant: plant, phaseLabel: phaseLabel),
             ],
           ),
         ),
@@ -284,8 +298,9 @@ class _CardTopRow extends StatelessWidget {
 
 class _CardChipRow extends StatelessWidget {
   final Plant plant;
+  final String phaseLabel;
 
-  const _CardChipRow({required this.plant});
+  const _CardChipRow({required this.plant, required this.phaseLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -300,11 +315,7 @@ class _CardChipRow extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: _InfoChip(
-            label: 'Fase',
-            value: plant.growthPhase ?? 'Unknown',
-            icon: Icons.eco,
-          ),
+          child: _InfoChip(label: 'Fase', value: phaseLabel, icon: Icons.eco),
         ),
       ],
     );

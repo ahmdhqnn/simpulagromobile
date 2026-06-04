@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/confirmation_dialog.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
@@ -17,6 +18,14 @@ class PlantMutationActions {
     final fromPlant = plant.siteId?.trim();
     if (fromPlant != null && fromPlant.isNotEmpty) return fromPlant;
     return ref.read(selectedSiteIdProvider);
+  }
+
+  static void _invalidatePhaseCache(WidgetRef ref, String siteId) {
+    ref.invalidate(currentPhaseProvider(siteId));
+    ref.invalidate(phaseListProvider(siteId));
+    ref.invalidate(phaseHistoryProvider(siteId));
+    ref.invalidate(phaseStatsProvider(siteId));
+    ref.invalidate(phasesForSelectedSiteProvider);
   }
 
   static Future<void> confirmAndHarvest(
@@ -42,13 +51,13 @@ class PlantMutationActions {
       return;
     }
 
-    final result = await ref.read(harvestPlantProvider.notifier).harvest(
-      siteId: siteId,
-      plantId: plant.plantId,
-    );
+    final result = await ref
+        .read(harvestPlantProvider.notifier)
+        .harvest(siteId: siteId, plantId: plant.plantId);
     if (!context.mounted) return;
 
     if (result.success) {
+      _invalidatePhaseCache(ref, siteId);
       SnackbarHelper.showSuccess(
         context,
         l10n.plantHarvestSuccess(plant.displayName),
@@ -83,13 +92,13 @@ class PlantMutationActions {
       return;
     }
 
-    final result = await ref.read(deletePlantProvider.notifier).delete(
-      siteId: siteId,
-      plantId: plant.plantId,
-    );
+    final result = await ref
+        .read(deletePlantProvider.notifier)
+        .delete(siteId: siteId, plantId: plant.plantId);
     if (!context.mounted) return;
 
     if (result.success) {
+      _invalidatePhaseCache(ref, siteId);
       SnackbarHelper.showSuccess(
         context,
         l10n.plantDeleteSuccess(plant.displayName),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../admin/presentation/providers/permission_guard_provider.dart';
@@ -56,7 +57,7 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         context.rw(0.051),
         0,
         context.rw(0.051),
-        context.rh(0.015),
+        bottomNavigationContentSpace(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

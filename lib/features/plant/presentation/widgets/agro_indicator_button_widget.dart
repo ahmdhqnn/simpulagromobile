@@ -27,7 +27,7 @@ class AgroIndicatorButton extends StatelessWidget {
               'Agro Indicator',
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF1D1D1D),
                 height: 1.8,

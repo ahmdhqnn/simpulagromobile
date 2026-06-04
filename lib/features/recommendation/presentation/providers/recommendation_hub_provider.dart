@@ -161,6 +161,7 @@ void resetRecommendationHubFilters(
   ref.read(recommendationStatusFilterProvider.notifier).state =
       RecommendationStatusFilter.all;
   ref.read(recommendationSearchQueryProvider.notifier).state = '';
+  ref.read(selectedPhaseIdForRecProvider.notifier).state = null;
 }
 
 void invalidateRecommendationHubData(WidgetRef ref) {
@@ -476,7 +477,7 @@ final recommendationHubStatsProvider =
 
 final recommendationHubDetailProvider = FutureProvider.autoDispose
     .family<Recommendation, String>((ref, recommendationId) async {
-      Recommendation? findIn(List<RecommendationCatalogItem> rows) {
+      Recommendation? findInCatalog(List<RecommendationCatalogItem> rows) {
         for (final entry in rows) {
           if (entry.recommendation.recommendationId == recommendationId) {
             return entry.recommendation;
@@ -485,17 +486,99 @@ final recommendationHubDetailProvider = FutureProvider.autoDispose
         return null;
       }
 
-      final first = await ref.read(recommendationCatalogProvider.future);
-      final cached = findIn(first);
+      Recommendation? findInList(List<Recommendation> rows) {
+        for (final item in rows) {
+          if (item.recommendationId == recommendationId) return item;
+        }
+        return null;
+      }
+
+      Future<Recommendation?> findInFutureList(
+        Future<List<Recommendation>> future,
+      ) async {
+        try {
+          return findInList(await future);
+        } on Failure catch (failure) {
+          if (failure is AuthFailure || failure is PermissionFailure) {
+            rethrow;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      Future<Recommendation?> findInPhaseSnapshot(
+        Future<RecommendationPhaseSnapshot> future,
+      ) async {
+        try {
+          return findInList((await future).items);
+        } on Failure catch (failure) {
+          if (failure is AuthFailure || failure is PermissionFailure) {
+            rethrow;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      Future<Recommendation?> findInCatalogFuture(
+        Future<List<RecommendationCatalogItem>> future,
+      ) async {
+        try {
+          return findInCatalog(await future);
+        } on Failure catch (failure) {
+          if (failure is AuthFailure || failure is PermissionFailure) {
+            rethrow;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      Future<Recommendation?> findInSecondaryFeeds() async {
+        final sources = <Future<Recommendation?> Function()>[
+          () =>
+              findInFutureList(ref.read(recommendationSiteFeedProvider.future)),
+          () => findInFutureList(
+            ref.read(recommendationPlantFeedProvider.future),
+          ),
+          () =>
+              findInFutureList(ref.read(recommendationHistoryProvider.future)),
+          () => findInPhaseSnapshot(
+            ref.read(recommendationPhaseFeedProvider.future),
+          ),
+          () => findInPhaseSnapshot(
+            ref.read(recommendationActivePhaseFeedProvider.future),
+          ),
+        ];
+
+        for (final source in sources) {
+          final found = await source();
+          if (found != null) return found;
+        }
+        return null;
+      }
+
+      final firstCatalog = await findInCatalogFuture(
+        ref.read(recommendationCatalogProvider.future),
+      );
+      final cached = firstCatalog ?? await findInSecondaryFeeds();
       if (cached != null) return cached;
 
       ref.invalidate(recommendationSiteFeedProvider);
       ref.invalidate(recommendationPlantFeedProvider);
+      ref.invalidate(recommendationHistoryProvider);
       ref.invalidate(recommendationPhaseSelectionProvider);
       ref.invalidate(recommendationPhaseFeedProvider);
+      ref.invalidate(recommendationActivePhaseFeedProvider);
       ref.invalidate(recommendationCatalogProvider);
-      final refreshed = await ref.read(recommendationCatalogProvider.future);
-      final loaded = findIn(refreshed);
+      final refreshedCatalog = await findInCatalogFuture(
+        ref.read(recommendationCatalogProvider.future),
+      );
+      final loaded = refreshedCatalog ?? await findInSecondaryFeeds();
       if (loaded != null) return loaded;
 
       throw const NotFoundFailure(

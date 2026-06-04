@@ -4,9 +4,12 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../utils/plant_phase_display.dart';
 import '../widgets/plant_detail_card_widget.dart';
 import '../widgets/plant_empty_state_widget.dart';
 import '../widgets/plant_input_form_widget.dart';
@@ -78,7 +81,43 @@ class PlantScreen extends ConsumerWidget {
           ),
           data: (plants) => RefreshIndicator(
             color: AppColors.primary,
-            onRefresh: () => ref.read(plantsProvider.notifier).refresh(),
+            onRefresh: () async {
+              Plant? activePlant;
+              for (final plant in plants) {
+                if (plant.isCurrentPlanting) {
+                  activePlant = plant;
+                  break;
+                }
+              }
+
+              if (activePlant != null) {
+                final recommendationSiteId = phaseSiteIdForPlant(activePlant);
+                final activePhase = ref
+                    .read(currentPhaseProvider(recommendationSiteId))
+                    .valueOrNull;
+                ref.invalidate(
+                  recommendationsByPlantForSiteProvider((
+                    siteId: recommendationSiteId,
+                    plantId: activePlant.plantId,
+                  )),
+                );
+                if (activePhase != null) {
+                  ref.invalidate(
+                    recommendationsBySitePhaseProvider((
+                      siteId: recommendationSiteId,
+                      phaseId: activePhase.id,
+                    )),
+                  );
+                }
+              }
+
+              ref.invalidate(currentPhaseProvider(siteId));
+              ref.invalidate(phaseListProvider(siteId));
+              ref.invalidate(phaseHistoryProvider(siteId));
+              ref.invalidate(phaseStatsProvider(siteId));
+              ref.invalidate(phasesForSelectedSiteProvider);
+              await ref.read(plantsProvider.notifier).refresh();
+            },
             child: _PlantContent(
               plants: plants,
               siteId: siteId,

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
+import '../../../../shared/widgets/icon_badge_widget.dart';
+import '../../../../shared/widgets/status_chip_widget.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../domain/entities/plant.dart';
+import '../utils/plant_phase_display.dart';
 
 class PlantHeaderCardWidget extends StatelessWidget {
   final Plant plant;
@@ -14,63 +20,60 @@ class PlantHeaderCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final statusColor = _statusColor(plant);
+    final typeLabel = plant.plantType?.displayName ?? l10n.plantTypeHint;
+    final subtitle = plant.varietasId?.isNotEmpty == true
+        ? '$typeLabel - ${plant.varietasId}'
+        : typeLabel;
 
     return AppCardWidget(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       radius: AppRadius.lg,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Text(
-              plant.plantType?.icon ?? '🌱',
-              style: const TextStyle(fontSize: 40),
-            ),
+          const IconBadgeWidget.icon(
+            icon: Icons.local_florist_outlined,
+            background: AppColors.softGreen,
+            tint: AppColors.primary,
+            size: 50,
+            iconSize: 22,
+            radius: AppRadius.sm,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   plant.displayName,
-                  style: AppTextStyles.cardTitle(context, context.sp(18)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.cardTitle(context, context.sp(17)),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  plant.plantType?.displayName ?? l10n.plantTypeHint,
-                  style: AppTextStyles.hint(context, size: 14),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: plant.isCurrentPlanting
-                        ? AppColors.success.withValues(alpha: 0.1)
-                        : AppColors.textTertiary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.xs),
-                  ),
-                  child: Text(
-                    plant.statusText,
-                    style: AppTextStyles.label(
-                      context,
-                      size: context.sp(12),
-                      color: plant.isCurrentPlanting
-                          ? AppColors.success
-                          : AppColors.textTertiary,
-                    ),
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption(
+                    context,
+                    size: context.sp(12),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: 10),
+          StatusChipWidget(
+            label: plant.statusText,
+            color: statusColor,
+            radius: AppRadius.xs,
+            fontSize: 11,
+            horizontalPadding: 10,
+            verticalPadding: 6,
           ),
         ],
       ),
@@ -78,48 +81,81 @@ class PlantHeaderCardWidget extends StatelessWidget {
   }
 }
 
-class PlantGrowthCardWidget extends StatelessWidget {
+class PlantGrowthCardWidget extends ConsumerWidget {
   final Plant plant;
   const PlantGrowthCardWidget({super.key, required this.plant});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final hst = plant.hst ?? 0;
-    final phase = plant.growthPhase ?? '-';
+    final phaseAsync = plant.isCurrentPlanting
+        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        : null;
+    final phase = phaseAsync?.valueOrNull;
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
+    final hst = plant.hst;
 
     return AppCardWidget(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.plantGrowthTitle, style: AppTextStyles.cardTitle(context)),
-          const SizedBox(height: 16),
           Row(
+            children: [
+              const IconBadgeWidget.icon(
+                icon: Icons.trending_up_rounded,
+                background: AppColors.softBlue,
+                tint: AppColors.infoDeep,
+                size: 38,
+                iconSize: 18,
+                padding: EdgeInsets.all(10),
+                radius: AppRadius.sm,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.plantGrowthTitle,
+                style: AppTextStyles.cardTitle(context, context.sp(16)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: _GrowthStat(
                   label: l10n.plantHstLabel,
-                  value: '$hst',
+                  value: hst == null ? '-' : '$hst',
                   subtitle: l10n.plantHstSubtitle,
-                  icon: Icons.calendar_today,
+                  icon: Icons.calendar_today_outlined,
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(width: 12),
+              Container(
+                width: 1,
+                height: 58,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                color: AppColors.divider,
+              ),
               Expanded(
                 child: _GrowthStat(
                   label: l10n.plantPhaseLabel,
-                  value: phase,
-                  subtitle: l10n.plantPhaseSubtitle,
-                  icon: Icons.eco,
+                  value: phaseLabel,
+                  subtitle: phase == null
+                      ? l10n.plantPhaseSubtitle
+                      : 'HST ${phase.hstMin}-${phase.hstMax}',
+                  icon: Icons.eco_outlined,
                   color: AppColors.success,
                 ),
               ),
             ],
           ),
+          if (phase != null) ...[
+            const SizedBox(height: 14),
+            _PhaseProgress(phaseProgress: phase.progressPercentage),
+          ],
         ],
       ),
     );
@@ -143,32 +179,97 @@ class _GrowthStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTextStyles.metric(context, size: context.sp(20), color: color),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppTextStyles.caption(
+                  context,
+                  size: context.sp(11),
+                  color: AppColors.textSecondary,
+                  weight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.metric(
+                  context,
+                  size: context.sp(18),
+                  color: color,
+                  weight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.caption(context, size: context.sp(10)),
+              ),
+            ],
           ),
-          Text(
-            label,
-            style: AppTextStyles.label(context, size: context.sp(12), color: color),
+        ),
+      ],
+    );
+  }
+}
+
+class _PhaseProgress extends StatelessWidget {
+  final double phaseProgress;
+
+  const _PhaseProgress({required this.phaseProgress});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = phaseProgress.clamp(0, 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Progress fase',
+              style: AppTextStyles.caption(
+                context,
+                size: context.sp(11),
+                color: AppColors.textSecondary,
+                weight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '$percent%',
+              style: AppTextStyles.caption(
+                context,
+                size: context.sp(11),
+                color: AppColors.textPrimary,
+                weight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: percent / 100,
+            minHeight: 6,
+            backgroundColor: AppColors.surfaceVariant,
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: AppTextStyles.caption(context, size: 10),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -180,84 +281,135 @@ class PlantInfoCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final statusColor = _statusColor(plant);
+    final rows = [
+      _PlantInfoData(
+        icon: Icons.tag_outlined,
+        label: 'ID Tanaman',
+        value: plant.plantId,
+      ),
+      _PlantInfoData(
+        icon: Icons.grass_outlined,
+        label: l10n.plantTypeLabel,
+        value: plant.plantType?.displayName ?? '-',
+      ),
+      _PlantInfoData(
+        icon: Icons.badge_outlined,
+        label: l10n.plantVarietasIdLabel,
+        value: plant.varietasId ?? '-',
+      ),
+      _PlantInfoData(
+        icon: Icons.science_outlined,
+        label: l10n.plantSpeciesLabel,
+        value: plant.plantSpecies ?? '-',
+      ),
+      _PlantInfoData(
+        icon: Icons.event_outlined,
+        label: l10n.plantPlantDateLabel,
+        value: DateFormatter.formatDate(plant.plantDate),
+      ),
+      if (plant.plantHarvest != null)
+        _PlantInfoData(
+          icon: Icons.agriculture_outlined,
+          label: plant.isHarvested
+              ? l10n.plantHarvestDateLabel
+              : l10n.plantTargetHarvestLabel,
+          value: DateFormatter.formatDate(plant.plantHarvest),
+        ),
+      _PlantInfoData(
+        icon: Icons.verified_outlined,
+        label: l10n.plantStatusLabel,
+        value: plant.statusText,
+        valueColor: statusColor,
+      ),
+    ];
 
     return AppCardWidget(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.plantInfoTitle, style: AppTextStyles.cardTitle(context)),
-          const SizedBox(height: 16),
-          if (plant.plantSpecies != null) ...[
-            _PlantInfoRow(
-              icon: Icons.science,
-              label: l10n.plantSpeciesLabel,
-              value: plant.plantSpecies!,
-            ),
-            const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          for (var i = 0; i < rows.length; i++) ...[
+            _PlantInfoRow(data: rows[i]),
+            if (i != rows.length - 1)
+              const Divider(height: 1, color: AppColors.divider),
           ],
-          if (plant.plantDate != null) ...[
-            _PlantInfoRow(
-              icon: Icons.event,
-              label: l10n.plantPlantDateLabel,
-              value: DateFormatter.formatDate(plant.plantDate),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (plant.plantHarvest != null)
-            _PlantInfoRow(
-              icon: Icons.agriculture,
-              label: plant.isHarvested
-                  ? l10n.plantHarvestDateLabel
-                  : l10n.plantTargetHarvestLabel,
-              value: DateFormatter.formatDate(plant.plantHarvest),
-            ),
         ],
       ),
     );
   }
 }
 
-class _PlantInfoRow extends StatelessWidget {
+class _PlantInfoData {
   final IconData icon;
   final String label;
   final String value;
-  const _PlantInfoRow({
+  final Color? valueColor;
+
+  const _PlantInfoData({
     required this.icon,
     required this.label,
     required this.value,
+    this.valueColor,
   });
+}
+
+class _PlantInfoRow extends StatelessWidget {
+  final _PlantInfoData data;
+
+  const _PlantInfoRow({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 20,
-          color: AppColors.textPrimary.withValues(alpha: 0.6),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: AppTextStyles.caption(context, size: 12)),
-              Text(
-                value,
-                style: AppTextStyles.label(context, size: context.sp(14)),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            data.icon,
+            size: 18,
+            color: AppColors.textPrimary.withValues(alpha: 0.54),
           ),
-        ),
-      ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.label,
+                  style: AppTextStyles.caption(
+                    context,
+                    size: context.sp(11),
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  data.value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.label(
+                    context,
+                    size: context.sp(13),
+                    color: data.valueColor ?? AppColors.textPrimary,
+                    weight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Action buttons for phase list, GDD tracking, and harvest.
 class PlantActionButtonsWidget extends StatelessWidget {
   final Plant plant;
   final VoidCallback onHarvest;
@@ -276,64 +428,70 @@ class PlantActionButtonsWidget extends StatelessWidget {
       children: [
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          child: FilledButton.icon(
             onPressed: () => context.push(
               '/phases/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
-            icon: const Icon(Icons.timeline),
-            label: Text(
-              l10n.plantViewPhases,
-              style: AppTextStyles.label(context, size: context.sp(14)),
-            ),
-            style: ElevatedButton.styleFrom(
+            icon: const Icon(Icons.timeline_outlined, size: 18),
+            label: Text(l10n.plantViewPhases),
+            style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(16),
+              foregroundColor: AppColors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              textStyle: AppTextStyles.label(
+                context,
+                size: context.sp(14),
+                weight: FontWeight.w700,
               ),
             ),
           ),
         ),
-        SizedBox(height: context.rh(0.014)),
+        SizedBox(height: context.rh(0.012)),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () => context.push(
               '/gdd-tracking/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
-            icon: const Icon(Icons.thermostat),
-            label: Text(
-              l10n.plantGddTracking,
-              style: AppTextStyles.label(context, size: context.sp(14)),
-            ),
+            icon: const Icon(Icons.thermostat_outlined, size: 18),
+            label: Text(l10n.plantGddTracking),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
               side: const BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              textStyle: AppTextStyles.label(
+                context,
+                size: context.sp(14),
+                weight: FontWeight.w700,
               ),
             ),
           ),
         ),
         if (plant.isCurrentPlanting) ...[
-          SizedBox(height: context.rh(0.014)),
+          SizedBox(height: context.rh(0.012)),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: FilledButton.icon(
               onPressed: onHarvest,
-              icon: const Icon(Icons.agriculture),
-              label: Text(
-                l10n.plantMarkHarvested,
-                style: AppTextStyles.label(context, size: context.sp(14)),
-              ),
-              style: ElevatedButton.styleFrom(
+              icon: const Icon(Icons.agriculture_outlined, size: 18),
+              label: Text(l10n.plantMarkHarvested),
+              style: FilledButton.styleFrom(
                 backgroundColor: AppColors.warning,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.all(16),
+                foregroundColor: AppColors.surface,
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                textStyle: AppTextStyles.label(
+                  context,
+                  size: context.sp(14),
+                  weight: FontWeight.w700,
                 ),
               ),
             ),
@@ -342,4 +500,10 @@ class PlantActionButtonsWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+Color _statusColor(Plant plant) {
+  if (plant.isHarvested) return AppColors.warning;
+  if (plant.isCurrentPlanting) return AppColors.success;
+  return AppColors.textTertiary;
 }

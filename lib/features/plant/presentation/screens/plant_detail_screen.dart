@@ -7,8 +7,10 @@ import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../utils/plant_phase_display.dart';
 import '../utils/plant_mutation_actions.dart';
 import '../widgets/plant_actions_sheet_widget.dart';
 import '../widgets/plant_detail_content_widget.dart';
@@ -21,9 +23,10 @@ class PlantDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plantAsync = ref.watch(plantDetailProvider(plantId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceVariant,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: plantAsync.when(
           skipLoadingOnReload: true,
@@ -38,6 +41,10 @@ class PlantDetailScreen extends ConsumerWidget {
           data: (plant) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
+              final siteId = phaseSiteIdForPlant(plant);
+              if (plant.isCurrentPlanting) {
+                ref.invalidate(currentPhaseProvider(siteId));
+              }
               await refreshPlantCache(ref, plantId: plantId);
             },
             child: Column(
@@ -53,12 +60,20 @@ class PlantDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: context.rh(0.01)),
+                        Text(
+                          l10n.plantDetailTitle,
+                          style: AppTextStyles.sectionTitle(
+                            context,
+                            context.sp(22),
+                          ),
+                        ),
+                        SizedBox(height: context.rh(0.016)),
                         PlantHeaderCardWidget(plant: plant),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: context.rh(0.012)),
                         PlantGrowthCardWidget(plant: plant),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: context.rh(0.012)),
                         PlantInfoCardWidget(plant: plant),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: context.rh(0.016)),
                         PlantActionButtonsWidget(
                           plant: plant,
                           onHarvest: () =>

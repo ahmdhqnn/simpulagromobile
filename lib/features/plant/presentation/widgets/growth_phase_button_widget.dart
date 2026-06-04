@@ -36,7 +36,7 @@ class GrowthPhaseButton extends StatelessWidget {
             const Text(
               'Growth Phase',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
                 height: 1.8,
               ),
