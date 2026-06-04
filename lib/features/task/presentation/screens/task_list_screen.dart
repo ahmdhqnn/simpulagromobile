@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -96,7 +97,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     },
                   ),
                 ),
-                SizedBox(height: context.rh(0.02)),
+                SizedBox(height: bottomNavigationContentSpace(context)),
               ],
             ),
           ),

@@ -55,6 +55,25 @@ final deletePlantUseCaseProvider = Provider<DeletePlantUseCase>((ref) {
   return DeletePlantUseCase(ref.watch(plantRepositoryProvider));
 });
 
+Plant _normalizeOpenLifecyclePlant(Plant plant) {
+  if (plant.plantHarvest == null && plant.plantSts != 1) {
+    return plant.copyWith(plantSts: 1);
+  }
+  return plant;
+}
+
+List<Plant> _normalizePlants(Iterable<Plant> plants) {
+  return [for (final plant in plants) _normalizeOpenLifecyclePlant(plant)];
+}
+
+Plant? _resolveCurrentPlant(Iterable<Plant> plants) {
+  for (final plant in plants) {
+    final normalized = _normalizeOpenLifecyclePlant(plant);
+    if (normalized.isCurrentPlanting) return normalized;
+  }
+  return null;
+}
+
 // ─── List plants (AsyncNotifier) ─────────────────────────────────────────────
 
 /// Mengelola daftar tanaman per site dengan polling otomatis.
@@ -116,7 +135,10 @@ class PlantsNotifier extends AsyncNotifier<List<Plant>> {
 
     final useCase = ref.read(getPlantsUseCaseProvider);
     final result = await useCase(siteId, isOnGoingPlant: isOnGoingPlant);
-    return result.fold((failure) => throw failure, (plants) => plants);
+    return result.fold(
+      (failure) => throw failure,
+      (plants) => _normalizePlants(plants),
+    );
   }
 
   /// Refresh manual (pull-to-refresh) — tampilkan loading di atas data lama.
@@ -146,7 +168,7 @@ class PlantsNotifier extends AsyncNotifier<List<Plant>> {
     // Jangan override saat user sedang di form input
     if (screenState == PlantScreenState.input) return;
 
-    final hasActive = plants.any((p) => p.isCurrentPlanting);
+    final hasActive = _resolveCurrentPlant(plants) != null;
     ref.read(plantScreenStateProvider.notifier).state = hasActive
         ? PlantScreenState.hasData
         : PlantScreenState.empty;
@@ -176,16 +198,22 @@ final plantsProvider = AsyncNotifierProvider<PlantsNotifier, List<Plant>>(
   PlantsNotifier.new,
 );
 
-/// Tanaman aktif via query `isOnGoingPlant=true` (sesuai Swagger).
+/// Tanaman aktif via query `isOnGoingPlant=true` dengan fallback ke semua data.
 final ongoingPlantProvider = FutureProvider<Plant?>((ref) async {
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
 
-  final result = await ref.read(getPlantsUseCaseProvider)(
-    siteId,
-    isOnGoingPlant: true,
+  final useCase = ref.read(getPlantsUseCaseProvider);
+  final filteredResult = await useCase(siteId, isOnGoingPlant: true);
+  final filteredPlants = filteredResult.fold(
+    (_) => const <Plant>[],
+    (plants) => _normalizePlants(plants),
   );
-  return result.fold((_) => null, (plants) => plants.firstOrNull);
+  final filteredActivePlant = _resolveCurrentPlant(filteredPlants);
+  if (filteredActivePlant != null) return filteredActivePlant;
+
+  final allResult = await useCase(siteId);
+  return allResult.fold((_) => null, (plants) => _resolveCurrentPlant(plants));
 });
 
 /// Tanaman aktif pertama — untuk guard form create & banner.
@@ -203,7 +231,10 @@ final plantDetailProvider = FutureProvider.family<Plant, String>((
 
   final useCase = ref.read(getPlantByIdUseCaseProvider);
   final result = await useCase(siteId, plantId);
-  return result.fold((failure) => throw failure, (plant) => plant);
+  return result.fold(
+    (failure) => throw failure,
+    (plant) => _normalizeOpenLifecyclePlant(plant),
+  );
 });
 
 // ─── Plant screen state ───────────────────────────────────────────────────────

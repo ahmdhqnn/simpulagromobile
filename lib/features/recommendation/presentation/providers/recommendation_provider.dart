@@ -210,6 +210,45 @@ final recommendationByPhaseProvider =
       });
     });
 
+typedef SitePlantRecommendationKey = ({String siteId, String plantId});
+typedef SitePhaseRecommendationKey = ({String siteId, String phaseId});
+
+final recommendationsByPlantForSiteProvider = FutureProvider.autoDispose
+    .family<List<Recommendation>, SitePlantRecommendationKey>((ref, key) async {
+      final siteId = key.siteId.trim();
+      final plantId = key.plantId.trim();
+      if (siteId.isEmpty || plantId.isEmpty) return [];
+
+      final useCase = ref.watch(getRecommendationsByPlantUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId, plantId);
+        return result.fold((failure) {
+          if (_isTransientRecommendationFailure(failure)) {
+            return <Recommendation>[];
+          }
+          throw failure;
+        }, (items) => List<Recommendation>.from(items));
+      });
+    });
+
+final recommendationsBySitePhaseProvider = FutureProvider.autoDispose
+    .family<List<Recommendation>, SitePhaseRecommendationKey>((ref, key) async {
+      final siteId = key.siteId.trim();
+      final phaseId = key.phaseId.trim();
+      if (siteId.isEmpty || phaseId.isEmpty) return [];
+
+      final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId, phaseId);
+        return result.fold((failure) {
+          if (_isTransientRecommendationFailure(failure)) {
+            return <Recommendation>[];
+          }
+          throw failure;
+        }, (items) => List<Recommendation>.from(items));
+      });
+    });
+
 // ─── Recommendation List for Selected Site ────────────────
 /// Mengambil rekomendasi untuk site yang sedang dipilih
 final recommendationListProvider =

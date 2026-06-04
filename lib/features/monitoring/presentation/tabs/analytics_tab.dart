@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
@@ -48,7 +49,7 @@ class AnalyticsTab extends ConsumerWidget {
           context.rw(0.051),
           0,
           context.rw(0.051),
-          context.rh(0.015),
+          bottomNavigationContentSpace(context),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,8 +213,6 @@ class AnalyticsTab extends ConsumerWidget {
               ),
             ),
             SizedBox(height: context.rh(0.025)),
-
-            SizedBox(height: context.rh(0.04)),
           ],
         ),
       ),

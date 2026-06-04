@@ -8,6 +8,7 @@ import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../varietas/domain/entities/varietas_item.dart';
 import '../../../varietas/presentation/providers/varietas_provider.dart';
 
@@ -527,6 +528,14 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     });
   }
 
+  void _invalidatePhaseCache(String siteId) {
+    ref.invalidate(currentPhaseProvider(siteId));
+    ref.invalidate(phaseListProvider(siteId));
+    ref.invalidate(phaseHistoryProvider(siteId));
+    ref.invalidate(phaseStatsProvider(siteId));
+    ref.invalidate(phasesForSelectedSiteProvider);
+  }
+
   Future<void> _submitForm() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -589,6 +598,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     setState(() => _isSubmitting = false);
 
     if (result.success) {
+      _invalidatePhaseCache(result.plant?.siteId ?? widget.siteId);
       SnackbarHelper.showSuccess(
         context,
         _isEditMode ? l10n.plantUpdateSuccess : l10n.plantCreateSuccess,

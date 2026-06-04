@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
@@ -74,6 +75,10 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     return (bottomInset > 0 ? bottomInset + 102 : 112).toDouble();
   }
 
+  double _forumBottomContentSpace(BuildContext context) {
+    return bottomNavigationContentSpace(context) + 86;
+  }
+
   @override
   Widget build(BuildContext context) {
     final forumState = ref.watch(forumProvider);
@@ -114,9 +119,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
                     hPad,
                   ),
                   SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: _floatingButtonBottom(context) + 78,
-                    ),
+                    child: SizedBox(height: _forumBottomContentSpace(context)),
                   ),
                 ],
               ),
