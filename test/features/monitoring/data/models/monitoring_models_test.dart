@@ -168,5 +168,21 @@ void main() {
       expect(model.dsMinValue, 4.0);
       expect(model.dsMaxValue, 9.0);
     });
+
+    test('DeviceModel assigns parent device id to nested sensors', () {
+      final model = DeviceModel.fromJson({
+        'site_id': 'SITE001',
+        'dev_id': 'DEV001',
+        'dev_name': 'Device 1',
+        'sensors': [
+          {'sens_id': 'SENS001', 'sens_name': 'Suhu Udara'},
+        ],
+      });
+
+      expect(model.siteId, 'SITE001');
+      expect(model.sensors, hasLength(1));
+      expect(model.sensors.first.devId, 'DEV001');
+      expect(model.sensors.first.siteId, 'SITE001');
+    });
   });
 }

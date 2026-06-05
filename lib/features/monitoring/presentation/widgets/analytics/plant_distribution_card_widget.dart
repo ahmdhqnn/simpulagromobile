@@ -3,6 +3,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../plant/domain/entities/plant.dart';
+import '../monitoring_card_header_widget.dart';
 
 class PlantDistributionCardWidget extends StatelessWidget {
   final dynamic plant;
@@ -22,19 +23,17 @@ class PlantDistributionCardWidget extends StatelessWidget {
       plantTypeDisplay = '-';
     }
 
-    return AppCardWidget(
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Distribusi Berdasarkan Jenis',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(22),
-              fontWeight: FontWeight.w300,
-              color: AppColors.textPrimary,
-              height: 1,
-            ),
+          const MonitoringCardHeaderWidget.icon(
+            icon: Icons.pie_chart_outline_rounded,
+            title: 'Distribusi Berdasarkan Jenis',
+            description: 'Komposisi tanaman site aktif',
+            background: AppColors.softGreen,
+            tint: AppColors.primary,
           ),
           const SizedBox(height: 12),
           Row(
@@ -57,11 +56,14 @@ class PlantDistributionCardWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                plantTypeDisplay,
-                style: AppTextStyles.label(context, weight: FontWeight.w500),
+              Expanded(
+                child: Text(
+                  plantTypeDisplay,
+                  style: AppTextStyles.label(context, weight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -93,7 +95,7 @@ class PlantDistributionCardWidget extends StatelessWidget {
           ),
           const SizedBox(height: 1),
           Text(
-            '$hst Days',
+            '$hst Hari',
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(22),

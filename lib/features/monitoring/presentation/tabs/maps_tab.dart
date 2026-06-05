@@ -76,7 +76,10 @@ class MapsTab extends ConsumerWidget {
                 onRetry: () => ref.invalidate(devicesProvider),
               ),
               data: (devices) {
-                if (devices.isEmpty) {
+                final mappedDevices = devices
+                    .where((device) => device.hasCoordinates)
+                    .toList();
+                if (mappedDevices.isEmpty) {
                   return const InfoStateWidget.svg(
                     svgIconPath: 'assets/icons/maps-dot-filled-icon.svg',
                     message: 'Belum ada lokasi device untuk ditampilkan',
@@ -85,16 +88,16 @@ class MapsTab extends ConsumerWidget {
                 }
                 final lat =
                     selectedSite?.siteLat ??
-                    (devices.isNotEmpty ? devices.first.devLat : null) ??
+                    mappedDevices.first.devLat ??
                     -6.9731;
                 final lon =
                     selectedSite?.siteLon ??
-                    (devices.isNotEmpty ? devices.first.devLon : null) ??
+                    mappedDevices.first.devLon ??
                     107.6338;
                 return MapsWebviewWidget(
                   centerLat: lat,
                   centerLon: lon,
-                  devices: devices,
+                  devices: mappedDevices,
                 );
               },
             ),
@@ -115,7 +118,7 @@ class MapsTab extends ConsumerWidget {
                       message: 'Belum ada device tersedia',
                       height: 73,
                     )
-                  : SensorByTypeCardWidget(devices: devices),
+                  : SensorByTypeCardWidget(devices: devices, showHeader: false),
             ),
           ],
         ),

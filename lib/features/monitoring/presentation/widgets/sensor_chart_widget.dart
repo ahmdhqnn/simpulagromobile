@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../data/models/monitoring_models.dart';
+import '../utils/monitoring_display_utils.dart';
+import 'monitoring_card_header_widget.dart';
 
 /// Reusable sensor chart widget with multiple chart types
 class SensorChartWidget extends StatefulWidget {
@@ -29,36 +32,33 @@ class SensorChartWidget extends StatefulWidget {
 }
 
 class _SensorChartWidgetState extends State<SensorChartWidget> {
-  List<SensorReadModel> get _validData =>
-      widget.data.where((item) => item.hasNumericValue).toList();
+  List<SensorReadModel> get _validData {
+    final rows = widget.data.where((item) => item.hasNumericValue).toList()
+      ..sort(
+        (a, b) =>
+            (a.readDate ?? DateTime(0)).compareTo(b.readDate ?? DateTime(0)),
+      );
+    return rows;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final data = _validData;
-    return Container(
+    final maxPoints = widget.chartType == ChartType.bar ? 60 : 140;
+    final data = sampleForChart(_validData, maxPoints: maxPoints);
+    return AppCardWidget.elevated(
       padding: EdgeInsets.all(context.rw(0.041)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.title,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(14),
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+          MonitoringCardHeaderWidget.icon(
+            icon: _iconFor(widget.chartType),
+            title: widget.title,
+            description: _descriptionFor(widget.chartType),
+            background: (widget.color ?? AppColors.primary).withValues(
+              alpha: 0.12,
             ),
+            tint: widget.color ?? AppColors.primary,
           ),
           SizedBox(height: context.rh(0.015)),
           SizedBox(
@@ -68,6 +68,28 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
         ],
       ),
     );
+  }
+
+  IconData _iconFor(ChartType type) {
+    switch (type) {
+      case ChartType.line:
+        return Icons.show_chart_rounded;
+      case ChartType.bar:
+        return Icons.bar_chart_rounded;
+      case ChartType.area:
+        return Icons.stacked_line_chart_rounded;
+    }
+  }
+
+  String _descriptionFor(ChartType type) {
+    switch (type) {
+      case ChartType.line:
+        return 'Tren sensor berdasarkan waktu';
+      case ChartType.bar:
+        return 'Perbandingan nilai sensor per waktu';
+      case ChartType.area:
+        return 'Perubahan sensor dengan area tren';
+    }
   }
 
   Widget _buildEmptyState() {
@@ -176,7 +198,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
             color: color,
             barWidth: 3,
             dotData: FlDotData(
-              show: true,
+              show: spots.length <= 30,
               getDotPainter: (spot, percent, barData, index) {
                 return FlDotCirclePainter(
                   radius: 3,
@@ -258,6 +280,10 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
+              interval: (data.length / 5).ceilToDouble().clamp(
+                1,
+                double.infinity,
+              ),
               getTitlesWidget: (v, _) {
                 final idx = v.toInt();
                 if (idx < 0 || idx >= data.length) {
@@ -286,7 +312,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
               BarChartRodData(
                 toY: e.value.numericValue,
                 color: color,
-                width: 12,
+                width: data.length > 40 ? 8 : 12,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(4),
                 ),

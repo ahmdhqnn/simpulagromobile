@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../data/models/monitoring_models.dart';
 import '../utils/sensor_metadata_adapter.dart';
+import 'monitoring_card_header_widget.dart';
 
 /// Daily aggregation widget showing min, max, avg values
 class DailyAggregationWidget extends StatelessWidget {
@@ -15,7 +17,7 @@ class DailyAggregationWidget extends StatelessWidget {
     super.key,
     required this.data,
     required this.metadataAdapter,
-    this.title = 'Daily Summary',
+    this.title = 'Ringkasan Harian',
     this.dateRange = DateRange.week,
   });
 
@@ -31,69 +33,21 @@ class DailyAggregationWidget extends StatelessWidget {
       grouped.putIfAbsent(item.dsId, () => []).add(item);
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: EdgeInsets.all(context.rw(0.041)),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(14),
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        _getDateRangeText(),
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(11),
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${grouped.length} sensors',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(11),
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
+            child: MonitoringCardHeaderWidget.icon(
+              icon: Icons.summarize_outlined,
+              title: title,
+              description: _getDateRangeText(),
+              background: AppColors.softGreen,
+              tint: AppColors.primary,
+              trailing: _SensorCountBadge(count: grouped.length),
             ),
           ),
           const Divider(height: 1, color: AppColors.divider),
@@ -118,29 +72,14 @@ class DailyAggregationWidget extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            size: 48,
-            color: AppColors.textTertiary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Belum ada data agregasi',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
+      child: const MonitoringCardHeaderWidget.icon(
+        icon: Icons.summarize_outlined,
+        title: 'Ringkasan Harian',
+        description: 'Belum ada data agregasi untuk rentang ini',
+        background: AppColors.softGreen,
+        tint: AppColors.primary,
       ),
     );
   }
@@ -148,14 +87,42 @@ class DailyAggregationWidget extends StatelessWidget {
   String _getDateRangeText() {
     switch (dateRange) {
       case DateRange.today:
-        return 'Today';
+        return 'Hari ini';
       case DateRange.week:
-        return 'Last 7 days';
+        return '7 hari terakhir';
       case DateRange.month:
-        return 'Last 30 days';
+        return '30 hari terakhir';
       case DateRange.custom:
-        return 'Custom range';
+        return 'Rentang custom';
     }
+  }
+}
+
+class _SensorCountBadge extends StatelessWidget {
+  final int count;
+
+  const _SensorCountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        '$count sensor',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.caption(
+          context,
+          size: 11,
+          color: AppColors.primary,
+          weight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 
@@ -207,7 +174,7 @@ class _SensorAggregationItem extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Average',
+                  label: 'Rata-rata',
                   value: avg.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.primary,
@@ -238,7 +205,7 @@ class _SensorAggregationItem extends StatelessWidget {
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            '${data.length} data points',
+            '${data.length} titik data',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(10),

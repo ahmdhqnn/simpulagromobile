@@ -103,13 +103,20 @@ class DeviceModel {
     // Backend bisa mengembalikan key 'sensor' atau 'sensors'
     final rawSensors =
         (json['sensor'] as List?) ?? (json['sensors'] as List?) ?? [];
+    final devId = json['dev_id']?.toString() ?? '';
     final sensorList = rawSensors
         .whereType<Map>()
-        .map((item) => SensorModel.fromJson(Map<String, dynamic>.from(item)))
+        .map(
+          (item) => SensorModel.fromJson(
+            Map<String, dynamic>.from(item),
+            fallbackDevId: devId,
+            fallbackSiteId: json['site_id']?.toString(),
+          ),
+        )
         .toList();
 
     return DeviceModel(
-      devId: json['dev_id']?.toString() ?? '',
+      devId: devId,
       siteId: json['site_id']?.toString(),
       devName: json['dev_name']?.toString(),
       devLocation: json['dev_location']?.toString(),
@@ -118,6 +125,30 @@ class DeviceModel {
       devAlt: _toDouble(json['dev_alt']),
       devSts: _toInt(json['dev_sts']),
       sensors: sensorList,
+    );
+  }
+
+  DeviceModel copyWith({
+    String? devId,
+    String? siteId,
+    String? devName,
+    String? devLocation,
+    double? devLon,
+    double? devLat,
+    double? devAlt,
+    int? devSts,
+    List<SensorModel>? sensors,
+  }) {
+    return DeviceModel(
+      devId: devId ?? this.devId,
+      siteId: siteId ?? this.siteId,
+      devName: devName ?? this.devName,
+      devLocation: devLocation ?? this.devLocation,
+      devLon: devLon ?? this.devLon,
+      devLat: devLat ?? this.devLat,
+      devAlt: devAlt ?? this.devAlt,
+      devSts: devSts ?? this.devSts,
+      sensors: sensors ?? this.sensors,
     );
   }
 
@@ -132,6 +163,7 @@ class DeviceModel {
 
 class SensorModel {
   final String sensId;
+  final String? siteId;
   final String? devId;
   final String? sensName;
   final String? sensAddress;
@@ -142,6 +174,7 @@ class SensorModel {
 
   const SensorModel({
     required this.sensId,
+    this.siteId,
     this.devId,
     this.sensName,
     this.sensAddress,
@@ -151,16 +184,45 @@ class SensorModel {
     this.sensAlt,
   });
 
-  factory SensorModel.fromJson(Map<String, dynamic> json) {
+  factory SensorModel.fromJson(
+    Map<String, dynamic> json, {
+    String? fallbackDevId,
+    String? fallbackSiteId,
+  }) {
     return SensorModel(
       sensId: json['sens_id']?.toString() ?? '',
-      devId: json['dev_id']?.toString(),
+      siteId: json['site_id']?.toString() ?? fallbackSiteId,
+      devId: json['dev_id']?.toString() ?? fallbackDevId,
       sensName: json['sens_name']?.toString(),
       sensAddress: json['sens_address']?.toString(),
       sensLocation: json['sens_location']?.toString(),
       sensLat: _toDouble(json['sens_lat']),
       sensLon: _toDouble(json['sens_lon']),
       sensAlt: _toDouble(json['sens_alt']),
+    );
+  }
+
+  SensorModel copyWith({
+    String? sensId,
+    String? siteId,
+    String? devId,
+    String? sensName,
+    String? sensAddress,
+    String? sensLocation,
+    double? sensLat,
+    double? sensLon,
+    double? sensAlt,
+  }) {
+    return SensorModel(
+      sensId: sensId ?? this.sensId,
+      siteId: siteId ?? this.siteId,
+      devId: devId ?? this.devId,
+      sensName: sensName ?? this.sensName,
+      sensAddress: sensAddress ?? this.sensAddress,
+      sensLocation: sensLocation ?? this.sensLocation,
+      sensLat: sensLat ?? this.sensLat,
+      sensLon: sensLon ?? this.sensLon,
+      sensAlt: sensAlt ?? this.sensAlt,
     );
   }
 

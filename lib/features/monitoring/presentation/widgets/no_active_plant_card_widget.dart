@@ -5,7 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
-import '../../../../shared/widgets/icon_badge_widget.dart';
+import 'monitoring_card_header_widget.dart';
 
 class NoActivePlantCardWidget extends StatelessWidget {
   const NoActivePlantCardWidget({super.key});
@@ -22,37 +22,12 @@ class NoActivePlantCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const IconBadgeWidget.icon(
-                icon: Icons.local_florist_outlined,
-                background: AppColors.surface,
-                tint: AppColors.warning,
-                radius: AppRadius.sm,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.monitoringNoActivePlantTitle,
-                      style: AppTextStyles.cardTitle(context, 16),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      l10n.monitoringNoActivePlantMessage,
-                      style: AppTextStyles.caption(
-                        context,
-                        size: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          MonitoringCardHeaderWidget.icon(
+            icon: Icons.local_florist_outlined,
+            title: l10n.monitoringNoActivePlantTitle,
+            description: l10n.monitoringNoActivePlantMessage,
+            background: AppColors.surface,
+            tint: AppColors.warning,
           ),
           SizedBox(height: context.rh(0.014)),
           Row(

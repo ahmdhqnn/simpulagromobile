@@ -7,10 +7,10 @@ import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
-import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../data/models/monitoring_models.dart';
 import '../../utils/monitoring_display_utils.dart';
 import '../../utils/sensor_metadata_adapter.dart';
+import '../monitoring_card_header_widget.dart';
 
 class DailySensorChartWidget extends StatefulWidget {
   final List<SensorDailyModel> data;
@@ -164,32 +164,12 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
 
   Widget _buildHeader(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        const IconBadgeWidget.icon(
-          icon: Icons.show_chart,
-          background: AppColors.softOrange,
-          tint: AppColors.warning,
-          radius: 10,
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.monitoringDailyAnalyticsTitle,
-                style: AppTextStyles.sectionTitle(context, 20),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.monitoringDailyAnalyticsSubtitle,
-                style: AppTextStyles.hint(context),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return MonitoringCardHeaderWidget.icon(
+      icon: Icons.show_chart_rounded,
+      title: l10n.monitoringDailyAnalyticsTitle,
+      description: l10n.monitoringDailyAnalyticsSubtitle,
+      background: AppColors.softOrange,
+      tint: AppColors.warning,
     );
   }
 

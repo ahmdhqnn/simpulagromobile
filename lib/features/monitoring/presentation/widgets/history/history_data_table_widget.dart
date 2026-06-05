@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../../data/models/monitoring_models.dart';
 import '../../utils/sensor_metadata_adapter.dart';
@@ -36,11 +37,9 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
         ? widget.reads.length
         : (widget.reads.length > 5 ? 5 : widget.reads.length);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           ListView.separated(

@@ -6,10 +6,10 @@ import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
-import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../phase/presentation/providers/phase_provider.dart';
 import '../../../../plant/domain/entities/plant.dart';
 import '../../../../plant/presentation/utils/plant_phase_display.dart';
+import '../monitoring_card_header_widget.dart';
 
 class GrowthPhaseCardWidget extends ConsumerWidget {
   final Plant plant;
@@ -24,47 +24,17 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
     final phase = phaseAsync?.valueOrNull;
     final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
 
-    return AppCardWidget(
+    return AppCardWidget.elevated(
       radius: AppRadius.lg,
-      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const IconBadgeWidget.icon(
-                icon: Icons.grass_outlined,
-                background: AppColors.softBlue,
-                tint: AppColors.infoDeep,
-                size: 42,
-                iconSize: 20,
-                radius: AppRadius.sm,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Fase Pertumbuhan Saat Ini',
-                      style: AppTextStyles.cardTitle(context, context.sp(16)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      phaseLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption(
-                        context,
-                        size: context.sp(12),
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          MonitoringCardHeaderWidget.icon(
+            icon: Icons.grass_outlined,
+            title: 'Fase Pertumbuhan Saat Ini',
+            description: phaseLabel,
+            background: AppColors.softBlue,
+            tint: AppColors.infoDeep,
           ),
           const SizedBox(height: 14),
           _InfoRow(

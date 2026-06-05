@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
-import '../../../../../shared/widgets/icon_badge_widget.dart';
+import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/section_header_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../monitoring_card_header_widget.dart';
 
 class SensorByTypeCardWidget extends StatelessWidget {
   final List<DeviceModel> devices;
-  const SensorByTypeCardWidget({super.key, required this.devices});
+  final bool showHeader;
+
+  const SensorByTypeCardWidget({
+    super.key,
+    required this.devices,
+    this.showHeader = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +24,10 @@ class SensorByTypeCardWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeaderWidget(title: 'Sensor Berdasarkan Jenis'),
-        SizedBox(height: context.rh(0.015)),
+        if (showHeader) ...[
+          const SectionHeaderWidget(title: 'Sensor Berdasarkan Jenis'),
+          SizedBox(height: context.rh(0.015)),
+        ],
         ...devices.map((d) => _ExpandableDeviceCard(device: d)),
       ],
     );
@@ -39,90 +48,58 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
   @override
   Widget build(BuildContext context) {
     final d = widget.device;
-    return Container(
-      margin: EdgeInsets.only(bottom: context.rh(0.012)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const IconBadgeWidget.svg(
-                    svgIconPath: 'assets/icons/device-filled-icon.svg',
-                    background: AppColors.softGreenAlt,
-                    tint: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          d.devName ?? d.devId,
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            fontSize: context.sp(22),
-                            fontWeight: FontWeight.w300,
-                            color: AppColors.textPrimary,
-                            height: 1,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          d.devLocation ?? '-',
-                          style: AppTextStyles.hint(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: d.isActive
-                          ? AppColors.softGreen
-                          : const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      d.isActive ? 'Aktif' : 'Offline',
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w500,
-                        color: d.isActive
-                            ? AppColors.success
-                            : AppColors.textTertiary,
-                        height: 1.0,
+    return Padding(
+      padding: EdgeInsets.only(bottom: context.rh(0.012)),
+      child: AppCardWidget.elevated(
+        radius: AppRadius.lg,
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: MonitoringCardHeaderWidget.svg(
+                  svgIconPath: 'assets/icons/device-filled-icon.svg',
+                  title: d.devName ?? d.devId,
+                  description: _deviceDescription(d),
+                  background: AppColors.softGreenAlt,
+                  tint: AppColors.primary,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _DeviceStatusBadge(active: d.isActive),
+                      const SizedBox(width: 8),
+                      Icon(
+                        _expanded
+                            ? Icons.keyboard_arrow_down_rounded
+                            : Icons.chevron_right_rounded,
+                        size: 24,
+                        color: AppColors.textSecondary,
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  SvgPicture.asset(
-                    _expanded
-                        ? 'assets/icons/chevron-down-icon.svg'
-                        : 'assets/icons/chevron-right-icon.svg',
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.contain,
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-          if (_expanded) _buildSensorList(context, d),
-        ],
+            if (_expanded) _buildSensorList(context, d),
+          ],
+        ),
       ),
     );
+  }
+
+  String _deviceDescription(DeviceModel device) {
+    final parts = <String>[];
+    final location = device.devLocation?.trim();
+    if (location != null && location.isNotEmpty) parts.add(location);
+    parts.add(
+      device.sensors.isEmpty
+          ? 'Belum ada sensor terdaftar'
+          : '${device.sensors.length} sensor terdaftar',
+    );
+    return parts.join(' - ');
   }
 
   Widget _buildSensorList(BuildContext context, DeviceModel d) {
@@ -176,6 +153,8 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
                 ),
                 Text(
                   s.sensAddress ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(11),
@@ -186,6 +165,35 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+}
+
+class _DeviceStatusBadge extends StatelessWidget {
+  final bool active;
+
+  const _DeviceStatusBadge({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active ? AppColors.success : AppColors.textTertiary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: active ? AppColors.softGreen : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        active ? 'Aktif' : 'Offline',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.caption(
+          context,
+          size: 11,
+          color: color,
+          weight: FontWeight.w700,
+        ),
       ),
     );
   }
