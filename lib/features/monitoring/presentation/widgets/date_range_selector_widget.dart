@@ -64,7 +64,7 @@ class DateRangeSelectorWidget extends StatelessWidget {
       case DateRange.month:
         return '30 Hari';
       case DateRange.custom:
-        return 'Custom';
+        return 'Kustom';
     }
   }
 }

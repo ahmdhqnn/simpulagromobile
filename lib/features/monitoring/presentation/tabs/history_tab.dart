@@ -111,6 +111,9 @@ class HistoryTab extends ConsumerWidget {
               loading: () => const LoadingCardWidget(height: 60),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) {
+                if (reads.isEmpty) {
+                  return const SizedBox.shrink();
+                }
                 final params =
                     reads
                         .map((r) => r.dsId ?? '')
@@ -125,7 +128,7 @@ class HistoryTab extends ConsumerWidget {
                 if (param == null) {
                   return InfoStateWidget.icon(
                     icon: Icons.table_chart_outlined,
-                    message: l10n.monitoringSelectSensor,
+                    message: 'Parameter sensor tidak tersedia pada data raw',
                     height: 60,
                   );
                 }

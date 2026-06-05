@@ -8,6 +8,7 @@ import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../data/models/monitoring_models.dart';
 import '../../utils/monitoring_display_utils.dart';
 import '../../utils/sensor_metadata_adapter.dart';
+import '../monitoring_card_header_widget.dart';
 
 class MonthlyTrendCardWidget extends StatefulWidget {
   final List<MonthlyRekapModel> data;
@@ -56,28 +57,14 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     if (widget.data.isEmpty) {
-      return AppCardWidget(
-        height: 120,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.bar_chart_rounded,
-                size: 28,
-                color: AppColors.textPrimary.withValues(alpha: 0.3),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.monitoringMonthlyCardEmpty,
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(12),
-                  color: AppColors.textPrimary.withValues(alpha: 0.5),
-                ),
-              ),
-            ],
-          ),
+      return AppCardWidget.elevated(
+        radius: AppRadius.lg,
+        child: MonitoringCardHeaderWidget.icon(
+          icon: Icons.bar_chart_rounded,
+          title: l10n.monitoringMonthlyCardTitle,
+          description: l10n.monitoringMonthlyCardEmpty,
+          background: AppColors.softBlue,
+          tint: AppColors.info,
         ),
       );
     }
@@ -155,34 +142,12 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
 
   Widget _buildHeader(BuildContext context, Color color) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-          child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.monitoringMonthlyCardTitle,
-                style: AppTextStyles.cardTitle(context),
-              ),
-              Text(
-                l10n.monitoringMonthlyCardSubtitle,
-                style: AppTextStyles.caption(context),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return MonitoringCardHeaderWidget.icon(
+      icon: Icons.bar_chart_rounded,
+      title: l10n.monitoringMonthlyCardTitle,
+      description: l10n.monitoringMonthlyCardSubtitle,
+      background: color.withValues(alpha: 0.12),
+      tint: color,
     );
   }
 

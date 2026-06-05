@@ -4,6 +4,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../data/models/monitoring_models.dart';
+import '../monitoring_card_header_widget.dart';
 
 class AlarmSummaryCardWidget extends StatelessWidget {
   final List<AlarmDataModel> alarms;
@@ -45,79 +46,25 @@ class AlarmSummaryCardWidget extends StatelessWidget {
   }
 
   Widget _buildNoAlarms(BuildContext context) {
-    return AppCardWidget(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: const Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.success,
-              size: 22,
-            ),
-          ),
-          SizedBox(width: context.rw(0.03)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tidak ada alarm aktif',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(14),
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.success,
-                  ),
-                ),
-                Text(
-                  'Semua sensor berjalan normal',
-                  style: AppTextStyles.caption(context),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
+      child: const MonitoringCardHeaderWidget.icon(
+        icon: Icons.check_circle_outline_rounded,
+        title: 'Tidak ada alarm aktif',
+        description: 'Semua sensor berjalan normal',
+        background: AppColors.softGreen,
+        tint: AppColors.success,
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context, int total) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-          child: const Icon(
-            Icons.notifications_rounded,
-            color: Color(0xFFFF9800),
-            size: 22,
-          ),
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Ringkasan Alarm', style: AppTextStyles.cardTitle(context)),
-              Text(
-                '$total total alarm tercatat',
-                style: AppTextStyles.caption(context),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return MonitoringCardHeaderWidget.icon(
+      icon: Icons.notifications_outlined,
+      title: 'Ringkasan Alarm',
+      description: '$total total alarm tercatat',
+      background: AppColors.softOrange,
+      tint: AppColors.warning,
     );
   }
 

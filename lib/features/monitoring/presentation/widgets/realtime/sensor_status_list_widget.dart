@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../data/models/monitoring_models.dart';
 import '../../utils/sensor_metadata_adapter.dart';
@@ -31,11 +32,9 @@ class _SensorStatusListWidgetState extends State<SensorStatusListWidget> {
         ? reads.length
         : (reads.length > 3 ? 3 : reads.length);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           ListView.separated(

@@ -10,6 +10,19 @@ Iterable<Map<String, dynamic>> _dataMaps(dynamic responseData) {
   ).whereType<Map>().map((item) => Map<String, dynamic>.from(item));
 }
 
+Iterable<Map<String, dynamic>> _siteDataMaps(
+  dynamic responseData,
+  String siteId,
+) {
+  return _dataMaps(responseData).where((item) => _matchesSite(item, siteId));
+}
+
+bool _matchesSite(Map<String, dynamic> item, String siteId) {
+  final rawSiteId = item['site_id'] ?? item['siteId'];
+  if (rawSiteId == null) return true;
+  return rawSiteId.toString() == siteId;
+}
+
 bool _isExpectedEmptyResponse(DioException e) {
   final status = e.response?.statusCode;
   if (status == 400 || status == 404 || status == 422) return true;
@@ -56,6 +69,28 @@ String _todayString() {
   return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 }
 
+String _monthKey(DateTime date) {
+  return '${date.year}-${date.month.toString().padLeft(2, '0')}';
+}
+
+double? _average(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a + b) / parsed.length;
+}
+
+double? _minValue(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a < b ? a : b);
+}
+
+double? _maxValue(Iterable<double?> values) {
+  final parsed = values.whereType<double>().toList();
+  if (parsed.isEmpty) return null;
+  return parsed.reduce((a, b) => a > b ? a : b);
+}
+
 class MonitoringRemoteDataSource {
   final Dio _dio;
 
@@ -78,7 +113,10 @@ class MonitoringRemoteDataSource {
       ApiEndpoints.readsUpdates(siteId),
       queryParameters: queryParameters.isEmpty ? null : queryParameters,
     );
-    return _dataMaps(res.data).map(SensorReadUpdate.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorReadUpdate.fromJson).toList();
   }
 
   // ── History ─────────────────────────────────────────────────────────────────
@@ -91,7 +129,10 @@ class MonitoringRemoteDataSource {
   /// GET /api/sites/:siteId/reads/seven-day
   Future<List<SensorReadModel>> getSevenDayReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsSevenDay(siteId));
-    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads?startDate=&endDate=
@@ -122,20 +163,29 @@ class MonitoringRemoteDataSource {
       ApiEndpoints.reads(siteId),
       queryParameters: queryParameters,
     );
-    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads/planting-date
   Future<List<SensorReadModel>> getPlantingDateReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsPlantingDate(siteId));
-    return _dataMaps(res.data).map(SensorReadModel.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorReadModel.fromJson).toList();
   }
 
   /// GET /api/sites/:siteId/reads/daily
   /// Agregasi harian (avg/min/max) per ds_id.
   Future<List<SensorDailyModel>> getDailyReads(String siteId) async {
     final res = await _dio.get(ApiEndpoints.readsDaily(siteId));
-    return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorDailyModel.fromJson).toList();
   }
 
   // ── Devices & Sensors ───────────────────────────────────────────────────────
@@ -144,14 +194,67 @@ class MonitoringRemoteDataSource {
   /// Device beserta nested sensor list (key 'sensor' atau 'sensors').
   Future<List<DeviceModel>> getDevices(String siteId) async {
     final res = await _dio.get(ApiEndpoints.devices(siteId));
-    return _dataMaps(res.data).map(DeviceModel.fromJson).toList();
+    final devices = _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(DeviceModel.fromJson).toList();
+    if (devices.isEmpty ||
+        devices.every((device) => device.sensors.isNotEmpty)) {
+      return devices;
+    }
+
+    try {
+      final sensors = await _loadSiteSensors(siteId);
+      return _mergeDevicesWithSiteSensors(devices, sensors);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e)) return devices;
+      rethrow;
+    }
   }
 
   /// GET /api/sites/:siteId/sensors
   /// Jumlah total sensor yang terdaftar di site.
   Future<int> getSensorCount(String siteId) async {
     final res = await _dio.get(ApiEndpoints.sensors(siteId));
-    return ResponseParser.extractDataList(res.data).length;
+    return _siteDataMaps(res.data, siteId).length;
+  }
+
+  Future<List<SensorModel>> _loadSiteSensors(String siteId) async {
+    final res = await _dio.get(ApiEndpoints.sensors(siteId));
+    return _siteDataMaps(res.data, siteId)
+        .map((item) => SensorModel.fromJson(item, fallbackSiteId: siteId))
+        .toList();
+  }
+
+  List<DeviceModel> _mergeDevicesWithSiteSensors(
+    List<DeviceModel> devices,
+    List<SensorModel> sensors,
+  ) {
+    if (sensors.isEmpty) return devices;
+
+    final sensorsByDevice = <String, List<SensorModel>>{};
+    for (final sensor in sensors) {
+      final devId = sensor.devId;
+      if (devId == null || devId.isEmpty) continue;
+      sensorsByDevice.putIfAbsent(devId, () => []).add(sensor);
+    }
+
+    return devices.map((device) {
+      final siteSensors =
+          sensorsByDevice[device.devId] ?? const <SensorModel>[];
+      if (siteSensors.isEmpty) return device;
+      if (device.sensors.isEmpty) {
+        return device.copyWith(sensors: siteSensors);
+      }
+
+      final merged = <String, SensorModel>{
+        for (final sensor in device.sensors) sensor.sensId: sensor,
+      };
+      for (final sensor in siteSensors) {
+        merged.putIfAbsent(sensor.sensId, () => sensor);
+      }
+      return device.copyWith(sensors: merged.values.toList());
+    }).toList();
   }
 
   /// GET /api/sites/:siteId/device-sensors/values
@@ -161,8 +264,9 @@ class MonitoringRemoteDataSource {
   ) async {
     try {
       final res = await _dio.get(ApiEndpoints.deviceSensorValues(siteId));
-      return _dataMaps(
+      return _siteDataMaps(
         res.data,
+        siteId,
       ).map(DeviceSensorThresholdModel.fromJson).toList();
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) return [];
@@ -190,9 +294,34 @@ class MonitoringRemoteDataSource {
   Future<Map<String, dynamic>> getPlantRecommendation(String siteId) async {
     try {
       final res = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
-      return ResponseParser.extractDataMap(res.data);
+      final data = _siteDataMap(res.data, siteId);
+      if (data.isNotEmpty) return data;
+      return _loadSiteRecommendation(siteId);
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) {
+        return _loadSiteRecommendationSafely(siteId);
+      }
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> _loadSiteRecommendation(String siteId) async {
+    final res = await _dio.get(ApiEndpoints.recommendations(siteId));
+    return _siteDataMap(res.data, siteId);
+  }
+
+  Map<String, dynamic> _siteDataMap(dynamic responseData, String siteId) {
+    final data = ResponseParser.extractDataMap(responseData);
+    return _matchesSite(data, siteId) ? data : <String, dynamic>{};
+  }
+
+  Future<Map<String, dynamic>> _loadSiteRecommendationSafely(
+    String siteId,
+  ) async {
+    try {
+      return await _loadSiteRecommendation(siteId);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e) || _isRecoverableDailyRecapError(e)) {
         return <String, dynamic>{};
       }
       rethrow;
@@ -214,13 +343,65 @@ class MonitoringRemoteDataSource {
   Future<List<MonthlyRekapModel>> getMonthlyReads(String siteId) async {
     try {
       final res = await _dio.get(ApiEndpoints.readsMonthly(siteId));
-      return _dataMaps(
+      return _siteDataMaps(
         res.data,
+        siteId,
       ).expand(MonthlyRekapModel.fromBackendJson).toList();
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) return [];
+      if (_isRecoverableDailyRecapError(e)) {
+        return _loadMonthlyFromDailyReads(siteId);
+      }
       rethrow;
     }
+  }
+
+  Future<List<MonthlyRekapModel>> _loadMonthlyFromDailyReads(
+    String siteId,
+  ) async {
+    try {
+      final dailyReads = await getDailyReads(siteId);
+      return _aggregateMonthlyFromDailyReads(dailyReads);
+    } on DioException catch (e) {
+      if (_isExpectedEmptyResponse(e) || _isRecoverableDailyRecapError(e)) {
+        return [];
+      }
+      rethrow;
+    }
+  }
+
+  List<MonthlyRekapModel> _aggregateMonthlyFromDailyReads(
+    List<SensorDailyModel> dailyReads,
+  ) {
+    final grouped = <String, List<SensorDailyModel>>{};
+    for (final item in dailyReads) {
+      final day = item.day;
+      if (day == null || item.dsId.isEmpty) continue;
+      final key = '${_monthKey(day)}|${item.devId}|${item.dsId}';
+      grouped.putIfAbsent(key, () => []).add(item);
+    }
+
+    final rows =
+        grouped.entries.map((entry) {
+          final first = entry.value.first;
+          final month = _monthKey(first.day!);
+          return MonthlyRekapModel(
+            month: month,
+            devId: first.devId,
+            dsId: first.dsId,
+            avgVal: _average(entry.value.map((row) => row.avgVal)),
+            minVal: _minValue(entry.value.map((row) => row.minVal)),
+            maxVal: _maxValue(entry.value.map((row) => row.maxVal)),
+          );
+        }).toList()..sort((a, b) {
+          final monthCompare = a.month.compareTo(b.month);
+          if (monthCompare != 0) return monthCompare;
+          final devCompare = a.devId.compareTo(b.devId);
+          if (devCompare != 0) return devCompare;
+          return a.dsId.compareTo(b.dsId);
+        });
+
+    return rows;
   }
 
   // ── Daily recap (today / by-day) ─────────────────────────────────────────────
@@ -230,7 +411,10 @@ class MonitoringRemoteDataSource {
     final day = _todayString();
     try {
       final res = await _dio.get(ApiEndpoints.readsDailyToday(siteId));
-      return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+      return _siteDataMaps(
+        res.data,
+        siteId,
+      ).map(SensorDailyModel.fromJson).toList();
     } on DioException catch (e) {
       if (_isExpectedEmptyResponse(e)) return [];
       if (_isRecoverableDailyRecapError(e)) {
@@ -282,7 +466,10 @@ class MonitoringRemoteDataSource {
       ApiEndpoints.readsDailyByDay(siteId),
       queryParameters: {'day': day},
     );
-    return _dataMaps(res.data).map(SensorDailyModel.fromJson).toList();
+    return _siteDataMaps(
+      res.data,
+      siteId,
+    ).map(SensorDailyModel.fromJson).toList();
   }
 
   bool _isSameDay(DateTime? date, String day) {

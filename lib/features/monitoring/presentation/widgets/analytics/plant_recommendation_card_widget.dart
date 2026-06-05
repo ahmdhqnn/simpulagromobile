@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
-import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../utils/sensor_metadata_adapter.dart';
+import '../monitoring_card_header_widget.dart';
 
 class PlantRecommendationCardWidget extends StatelessWidget {
   final Map<String, dynamic> data;
   final SensorMetadataAdapter metadataAdapter;
+
   const PlantRecommendationCardWidget({
     super.key,
     required this.data,
@@ -18,117 +19,74 @@ class PlantRecommendationCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recData = _extractMap(data['data']) ?? data;
+    final recommendations =
+        _extractMap(recData['recommendations']) ??
+        _extractMap(recData['recommendation']) ??
+        _extractMap(recData['recommended_plant']);
+    final sensorData =
+        _extractMap(recData['sensor_data']) ??
+        _extractMap(recData['sensorData']);
+    final items = _buildRecommendationItems(recommendations ?? recData);
 
-    if (recData.isEmpty) {
+    if (recData.isEmpty || (items.isEmpty && sensorData == null)) {
       return const InfoStateWidget.svg(
         svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
-        message: 'Belum ada rekomendasi untuk tanaman',
+        message: 'Belum ada rekomendasi untuk site ini',
         height: 195,
       );
     }
 
-    final recommendation =
-        _extractMap(recData['recommendation']) ??
-        _extractMap(recData['recommended_plant']) ??
-        recData;
-    final plantName =
-        _stringValue(
-          recommendation['plant'] ??
-              recommendation['plant_name'] ??
-              recommendation['plantName'] ??
-              recommendation['name'] ??
-              recommendation['label'],
-        ) ??
-        '-';
-    final confidence = _toConfidence(
-      recommendation['confidence'] ??
-          recommendation['confidence_score'] ??
-          recommendation['score'],
-    );
-    final sensorData =
-        _extractMap(recData['sensor_data']) ??
-        _extractMap(recData['sensorData']);
-
-    return AppCardWidget(
+    return AppCardWidget.elevated(
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const IconBadgeWidget.svg(
-                svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
-                background: Color(0xFFE8F5E9),
-                tint: Color(0xFF4CAF50),
-                padding: EdgeInsets.only(
-                  top: 11,
-                  left: 10,
-                  right: 10,
-                  bottom: 9,
-                ),
-              ),
-              SizedBox(width: context.rw(0.03)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Rekomendasi Tanaman',
-                      style: AppTextStyles.caption(context),
-                    ),
-                    Text(
-                      plantName,
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(18),
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (confidence != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${(confidence * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.success,
-                    ),
-                  ),
-                ),
-            ],
+          MonitoringCardHeaderWidget.svg(
+            svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
+            title: _titleFor(recData),
+            description: _subtitleFor(recData),
+            background: AppColors.softGreen,
+            tint: AppColors.success,
+            trailing: items.isNotEmpty
+                ? _CountBadge(label: '${items.length} aksi')
+                : null,
           ),
-          if (sensorData != null) ...[
-            SizedBox(height: context.rh(0.015)),
+          if (items.isNotEmpty) ...[
+            SizedBox(height: context.rh(0.016)),
+            ...items.take(5).map((item) => _RecommendationRow(item: item)),
+            if (items.length > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  '+${items.length - 5} rekomendasi lainnya',
+                  style: AppTextStyles.caption(
+                    context,
+                    size: 11,
+                    color: AppColors.textSecondary,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+          if (sensorData != null && sensorData.isNotEmpty) ...[
+            SizedBox(height: context.rh(0.014)),
             const Divider(color: AppColors.divider),
-            SizedBox(height: context.rh(0.01)),
+            SizedBox(height: context.rh(0.006)),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: sensorData.entries.map((e) {
+              children: sensorData.entries.map((entry) {
                 return Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 4,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: Text(
-                    '${metadataAdapter.labelFor(e.key)}: ${e.value}',
+                    '${_sensorLabel(entry.key)}: ${entry.value}',
                     style: AppTextStyles.caption(context, size: 11),
                   ),
                 );
@@ -138,6 +96,139 @@ class PlantRecommendationCardWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<_RecommendationItem> _buildRecommendationItems(
+    Map<String, dynamic> recommendations,
+  ) {
+    final result = <_RecommendationItem>[];
+
+    void addFromRaw(String key, String fallbackTitle, dynamic raw) {
+      if (raw == null) return;
+      if (raw is String) {
+        final text = raw.trim();
+        if (text.isEmpty) return;
+        result.add(_RecommendationItem(title: fallbackTitle, message: text));
+        return;
+      }
+      final map = _extractMap(raw);
+      if (map == null || map.isEmpty) return;
+
+      final nestedKeys = ['n', 'p', 'k'];
+      final hasNestedNpk = nestedKeys.any((nestedKey) {
+        return map[nestedKey] != null || map[nestedKey.toUpperCase()] != null;
+      });
+      if (key == 'npk' && hasNestedNpk) {
+        for (final nestedKey in nestedKeys) {
+          addFromRaw(
+            nestedKey,
+            'NPK ${nestedKey.toUpperCase()}',
+            map[nestedKey] ?? map[nestedKey.toUpperCase()],
+          );
+        }
+        return;
+      }
+
+      final message = _stringValue(
+        map['pesan'] ??
+            map['message'] ??
+            map['description'] ??
+            map['recommendation'] ??
+            map['action'] ??
+            map['title'],
+      );
+      if (message == null) return;
+
+      result.add(
+        _RecommendationItem(
+          title: _stringValue(map['name'] ?? map['title']) ?? fallbackTitle,
+          message: message,
+          status: _stringValue(map['status']),
+          dose: _doseText(map),
+        ),
+      );
+    }
+
+    addFromRaw('npk', 'Penyesuaian NPK', recommendations['npk']);
+    addFromRaw('ph', 'Penyesuaian pH Tanah', recommendations['ph']);
+
+    final lingkungan = _extractMap(recommendations['lingkungan']);
+    if (lingkungan != null) {
+      for (final entry in lingkungan.entries) {
+        addFromRaw(entry.key, _sensorLabel(entry.key), entry.value);
+      }
+    }
+
+    for (final entry in recommendations.entries) {
+      if (entry.key == 'npk' ||
+          entry.key == 'ph' ||
+          entry.key == 'lingkungan') {
+        continue;
+      }
+      addFromRaw(entry.key, _titleFromKey(entry.key), entry.value);
+    }
+
+    return result;
+  }
+
+  String _titleFor(Map<String, dynamic> data) {
+    return _stringValue(
+          data['plant_name'] ??
+              data['plantName'] ??
+              data['plant'] ??
+              data['name'] ??
+              data['label'],
+        ) ??
+        'Rekomendasi Site';
+  }
+
+  String _subtitleFor(Map<String, dynamic> data) {
+    final cached = data['cached'] == true;
+    return cached
+        ? 'Berdasarkan data sensor tersimpan'
+        : 'Berdasarkan sensor site aktif';
+  }
+
+  String _sensorLabel(String key) {
+    switch (key) {
+      case 'nitrogen':
+        return 'Nitrogen';
+      case 'phosphorus':
+        return 'Fosfor';
+      case 'potassium':
+        return 'Kalium';
+      case 'ph':
+        return 'pH Tanah';
+      default:
+        return metadataAdapter.labelFor(key);
+    }
+  }
+
+  String _titleFromKey(String key) {
+    return key
+        .split(RegExp(r'[_\s-]+'))
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+        .join(' ');
+  }
+
+  String? _doseText(Map<String, dynamic> map) {
+    final raw =
+        map['dosis_kg_ha'] ??
+        map['dosisKgHa'] ??
+        map['dose_kg_ha'] ??
+        map['doseKgHa'] ??
+        map['dose'] ??
+        map['dosis'];
+    if (raw == null) return null;
+    final value = raw is num
+        ? raw
+        : num.tryParse(raw.toString().replaceAll(',', '.'));
+    if (value == null || value <= 0) return null;
+    final display = value % 1 == 0
+        ? value.toInt().toString()
+        : value.toString();
+    return '$display kg/ha';
   }
 
   Map<String, dynamic>? _extractMap(dynamic value) {
@@ -150,13 +241,149 @@ class PlantRecommendationCardWidget extends StatelessWidget {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
   }
+}
 
-  double? _toConfidence(dynamic value) {
-    if (value == null) return null;
-    final raw = value is num
-        ? value.toDouble()
-        : double.tryParse(value.toString().replaceAll(',', '.'));
-    if (raw == null) return null;
-    return raw > 1 ? raw / 100 : raw;
+class _RecommendationItem {
+  final String title;
+  final String message;
+  final String? status;
+  final String? dose;
+
+  const _RecommendationItem({
+    required this.title,
+    required this.message,
+    this.status,
+    this.dose,
+  });
+}
+
+class _CountBadge extends StatelessWidget {
+  final String label;
+
+  const _CountBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.caption(
+          context,
+          size: 11,
+          color: AppColors.success,
+          weight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendationRow extends StatelessWidget {
+  final _RecommendationItem item;
+
+  const _RecommendationRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 6),
+            decoration: const BoxDecoration(
+              color: AppColors.success,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.label(
+                    context,
+                    size: 12,
+                    weight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                if (item.status != null || item.dose != null) ...[
+                  const SizedBox(height: 5),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      if (item.status != null)
+                        _SmallBadge(label: item.status!, color: AppColors.info),
+                      if (item.dose != null)
+                        _SmallBadge(
+                          label: item.dose!,
+                          color: AppColors.warning,
+                        ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 3),
+                Text(
+                  item.message,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption(
+                    context,
+                    size: 11,
+                    color: AppColors.textSecondary,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _SmallBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.caption(
+          context,
+          size: 9,
+          color: color,
+          weight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }

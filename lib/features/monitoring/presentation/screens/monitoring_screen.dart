@@ -39,18 +39,48 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     super.dispose();
   }
 
-  void _refreshAll() {
-    ref.invalidate(latestReadsProvider);
-    ref.invalidate(todayReadsProvider);
-    ref.invalidate(historyReadsProvider);
-    ref.invalidate(devicesProvider);
-    ref.invalidate(envHealthProvider);
-    ref.invalidate(plantRecommendationProvider);
-    ref.invalidate(dailyReadsProvider);
-    ref.invalidate(dailyTodayProvider);
-    ref.invalidate(dailyByDayProvider);
-    ref.invalidate(monthlyReadsProvider);
-    ref.invalidate(ongoingPlantProvider);
+  void _refreshCurrentTab() {
+    switch (_tabController.index) {
+      case 0:
+        ref.invalidate(latestReadsProvider);
+        ref.invalidate(todayReadsProvider);
+        ref.invalidate(envHealthProvider);
+        ref.invalidate(deviceSensorThresholdValuesProvider);
+        ref.invalidate(ongoingPlantProvider);
+        break;
+      case 1:
+        ref.invalidate(historyReadsProvider);
+        ref.invalidate(deviceSensorThresholdValuesProvider);
+        break;
+      case 2:
+        ref.invalidate(dailyTodayProvider);
+        ref.invalidate(dailyByDayProvider);
+        break;
+      case 3:
+        ref.invalidate(monthlyReadsProvider);
+        ref.invalidate(deviceSensorThresholdValuesProvider);
+        break;
+      case 4:
+        ref.invalidate(devicesProvider);
+        ref.invalidate(monitoringSensorCountProvider);
+        break;
+      case 5:
+        ref.invalidate(envHealthProvider);
+        ref.invalidate(plantRecommendationProvider);
+        ref.invalidate(dailyReadsProvider);
+        ref.invalidate(devicesProvider);
+        ref.invalidate(monitoringSensorCountProvider);
+        ref.invalidate(monthlyReadsProvider);
+        ref.invalidate(deviceSensorThresholdValuesProvider);
+        ref.invalidate(ongoingPlantProvider);
+        break;
+      case 6:
+        ref.invalidate(historyReadsProvider);
+        ref.invalidate(dailyTodayProvider);
+        ref.invalidate(dailyByDayProvider);
+        ref.invalidate(dailyReadsProvider);
+        break;
+    }
   }
 
   @override
@@ -126,7 +156,8 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
         borderRadius: BorderRadius.circular(29),
       ),
       child: IconButton(
-        onPressed: _refreshAll,
+        tooltip: 'Refresh tab aktif',
+        onPressed: _refreshCurrentTab,
         icon: SvgPicture.asset(
           'assets/icons/arrow-rotate-left.svg',
           width: 24,
@@ -254,13 +285,18 @@ class _MonitoringSyncStatusBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            subtitle,
-            style: AppTextStyles.caption(
-              context,
-              size: 10,
-              color: AppColors.textSecondary,
-              weight: FontWeight.w500,
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: context.rw(0.34)),
+            child: Text(
+              subtitle,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.caption(
+                context,
+                size: 10,
+                color: AppColors.textSecondary,
+                weight: FontWeight.w500,
+              ),
             ),
           ),
         ],

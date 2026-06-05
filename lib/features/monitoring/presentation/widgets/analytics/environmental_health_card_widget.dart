@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
-import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../dashboard/data/models/environmental_health_model.dart';
+import '../monitoring_card_header_widget.dart';
 
 class EnvironmentalHealthCardWidget extends StatelessWidget {
   final EnvironmentalHealth health;
@@ -17,36 +17,17 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
 
     final (healthColor, healthLabel) = _resolveHealth(overall);
 
-    return AppCardWidget(
+    return AppCardWidget.elevated(
+      radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const IconBadgeWidget.icon(
-                icon: Icons.eco,
-                background: AppColors.softGreen,
-                tint: AppColors.primary,
-                radius: 10,
-              ),
-              SizedBox(width: context.rw(0.03)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Environmental Health',
-                      style: AppTextStyles.sectionTitle(context, 20),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Environmental Score',
-                      style: AppTextStyles.hint(context),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const MonitoringCardHeaderWidget.icon(
+            icon: Icons.eco_outlined,
+            title: 'Kesehatan Lingkungan',
+            description: 'Skor kondisi sensor site aktif',
+            background: AppColors.softGreen,
+            tint: AppColors.primary,
           ),
           const SizedBox(height: 20),
           Center(
@@ -108,7 +89,7 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  '$total Sensor tersedia, ${total == 0 ? 'Silahkan konfigurasi untuk menghasilkan monitoring.' : 'Monitoring berjalan normal.'}',
+                  '$total sensor tersedia, ${total == 0 ? 'silakan konfigurasi untuk mulai monitoring.' : 'monitoring berjalan normal.'}',
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(9),
@@ -126,7 +107,7 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
   }
 
   (Color, String) _resolveHealth(double overall) {
-    if (overall == 0) return (AppColors.warning, 'Setup Required');
+    if (overall == 0) return (AppColors.warning, 'Perlu Konfigurasi');
     if (overall >= 80) return (AppColors.success, 'Sangat Baik');
     if (overall >= 60) return (AppColors.primaryLight, 'Baik');
     if (overall >= 40) return (AppColors.warning, 'Cukup');

@@ -62,6 +62,75 @@ void main() {
       },
     );
 
+    test('historyReadsProvider defaults to today raw reads', () async {
+      final repository = _MockMonitoringRepository();
+      when(() => repository.getTodayReads('SITE_1')).thenAnswer(
+        (_) async => const Right([
+          SensorReadModel(
+            readId: 'READ_1',
+            dsId: 'env_temp',
+            devId: 'DEV_1',
+            readValue: '29.1',
+          ),
+        ]),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          monitoringRepositoryProvider.overrideWithValue(repository),
+          selectedSiteIdProvider.overrideWith((_) => 'SITE_1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(historyReadsProvider.future);
+
+      expect(result, hasLength(1));
+      verify(() => repository.getTodayReads('SITE_1')).called(1);
+      verifyNever(() => repository.getSevenDayReads(any()));
+    });
+
+    test(
+      'historyReadsProvider uses raw date range for seven day filter',
+      () async {
+        final repository = _MockMonitoringRepository();
+        when(
+          () => repository.getDateRangeReads(
+            'SITE_1',
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+          ),
+        ).thenAnswer((_) async => const Right(<SensorReadModel>[]));
+
+        final container = ProviderContainer(
+          overrides: [
+            monitoringRepositoryProvider.overrideWithValue(repository),
+            selectedSiteIdProvider.overrideWith((_) => 'SITE_1'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(historyFilterProvider.notifier).state =
+            HistoryFilter.sevenDay;
+        await container.read(historyReadsProvider.future);
+
+        final now = DateTime.now();
+        String fmt(DateTime d) =>
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        final captured = verify(
+          () => repository.getDateRangeReads(
+            'SITE_1',
+            startDate: captureAny(named: 'startDate'),
+            endDate: captureAny(named: 'endDate'),
+          ),
+        ).captured;
+
+        expect(captured[0], fmt(now.subtract(const Duration(days: 6))));
+        expect(captured[1], fmt(now));
+        verifyNever(() => repository.getSevenDayReads(any()));
+      },
+    );
+
     test('historyReadsProvider bounds date range to maximum 31 days', () async {
       final repository = _MockMonitoringRepository();
       when(
