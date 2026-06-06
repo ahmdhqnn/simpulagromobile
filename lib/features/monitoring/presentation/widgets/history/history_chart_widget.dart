@@ -61,6 +61,7 @@ class HistoryChartWidget extends StatelessWidget {
     final unit = metadataAdapter.unitFor(param);
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

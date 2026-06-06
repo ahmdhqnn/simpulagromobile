@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
@@ -52,15 +53,16 @@ class DashboardScreen extends ConsumerWidget {
         child: RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
-            ref.invalidate(environmentalHealthProvider);
-            ref.invalidate(dashboardSummaryProvider);
-            ref.invalidate(latestSensorReadsProvider);
-            ref.invalidate(sitesProvider);
-            ref.invalidate(taskListProvider);
-            ref.invalidate(latestNotesProvider);
-            ref.invalidate(dailyTodayProvider);
-            invalidateRecommendationHubData(ref);
-            await Future.delayed(const Duration(milliseconds: 500));
+            await runSpacedInvalidations([
+              () => ref.invalidate(environmentalHealthProvider),
+              () => ref.invalidate(dashboardSummaryProvider),
+              () => ref.invalidate(latestSensorReadsProvider),
+              () => ref.invalidate(sitesProvider),
+              () => ref.invalidate(taskListProvider),
+              () => ref.invalidate(latestNotesProvider),
+              () => ref.invalidate(dailyTodayProvider),
+            ]);
+            await invalidateRecommendationHubDataSpaced(ref);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

@@ -31,4 +31,7 @@ class ApiConfig {
   // Retry config
   static const int maxRetries = 2;
   static const Duration retryDelay = Duration(seconds: 2);
+
+  // Single-core backend protection: keep mobile request bursts bounded.
+  static const int maxConcurrentRequests = 3;
 }

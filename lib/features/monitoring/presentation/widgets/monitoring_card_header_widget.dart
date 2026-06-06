@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 
 class MonitoringCardHeaderWidget extends StatelessWidget {
@@ -26,7 +27,7 @@ class MonitoringCardHeaderWidget extends StatelessWidget {
     this.trailing,
     this.iconBoxSize = 50,
     this.iconSize = 20,
-    this.titleMaxLines = 1,
+    this.titleMaxLines = 2,
     this.descriptionMaxLines = 2,
   }) : svgIconPath = null;
 
@@ -40,7 +41,7 @@ class MonitoringCardHeaderWidget extends StatelessWidget {
     this.trailing,
     this.iconBoxSize = 50,
     this.iconSize = 20,
-    this.titleMaxLines = 1,
+    this.titleMaxLines = 2,
     this.descriptionMaxLines = 2,
   }) : icon = null;
 
@@ -68,10 +69,10 @@ class MonitoringCardHeaderWidget extends StatelessWidget {
           );
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         badge,
-        const SizedBox(width: 12),
+        SizedBox(width: context.rw(0.02)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,19 +81,21 @@ class MonitoringCardHeaderWidget extends StatelessWidget {
                 title,
                 maxLines: titleMaxLines,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.cardTitle(context, 16),
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(22),
+                  fontWeight: FontWeight.w300,
+                  color: AppColors.textPrimary,
+                  height: 1,
+                ),
               ),
               if (description != null && description!.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   description!,
                   maxLines: descriptionMaxLines,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption(
-                    context,
-                    size: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTextStyles.hint(context),
                 ),
               ],
             ],

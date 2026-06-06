@@ -28,9 +28,17 @@ class ResponseParser {
       if (first is List && first.isEmpty) {
         return <String, dynamic>{};
       }
+      if (first is List && first.isNotEmpty && first.first is Map) {
+        return Map<String, dynamic>.from(first.first as Map);
+      }
     }
     if (responseData is List && responseData.isEmpty) {
       return <String, dynamic>{};
+    }
+    if (responseData is List &&
+        responseData.isNotEmpty &&
+        responseData.first is Map) {
+      return Map<String, dynamic>.from(responseData.first as Map);
     }
     throw const ServerException('Invalid response structure: expected Map');
   }

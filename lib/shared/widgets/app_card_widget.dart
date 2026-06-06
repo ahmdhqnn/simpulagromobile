@@ -32,11 +32,12 @@ class AppCardWidget extends StatelessWidget {
     this.padding = AppSpacing.card,
     this.radius = AppRadius.xl,
     this.color,
+    this.boxShadow = AppShadows.card,
     this.border,
     this.height,
     this.width,
     this.onTap,
-  }) : boxShadow = AppShadows.card;
+  });
 
   @override
   Widget build(BuildContext context) {

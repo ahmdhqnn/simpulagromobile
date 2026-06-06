@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -32,10 +33,12 @@ class RealtimeTab extends ConsumerWidget {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        ref.invalidate(latestReadsProvider);
-        ref.invalidate(todayReadsProvider);
-        ref.invalidate(envHealthProvider);
-        ref.invalidate(ongoingPlantProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(latestReadsProvider),
+          () => ref.invalidate(todayReadsProvider),
+          () => ref.invalidate(envHealthProvider),
+          () => ref.invalidate(ongoingPlantProvider),
+        ]);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

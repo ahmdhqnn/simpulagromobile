@@ -25,6 +25,7 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
     final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

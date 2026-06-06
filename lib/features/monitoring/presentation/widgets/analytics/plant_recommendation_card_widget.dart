@@ -37,6 +37,7 @@ class PlantRecommendationCardWidget extends StatelessWidget {
     }
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

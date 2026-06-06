@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
@@ -39,46 +42,60 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     super.dispose();
   }
 
-  void _refreshCurrentTab() {
+  Future<void> _refreshCurrentTab() async {
     switch (_tabController.index) {
       case 0:
-        ref.invalidate(latestReadsProvider);
-        ref.invalidate(todayReadsProvider);
-        ref.invalidate(envHealthProvider);
-        ref.invalidate(deviceSensorThresholdValuesProvider);
-        ref.invalidate(ongoingPlantProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(latestReadsProvider),
+          () => ref.invalidate(todayReadsProvider),
+          () => ref.invalidate(envHealthProvider),
+          () => ref.invalidate(deviceSensorThresholdValuesProvider),
+          () => ref.invalidate(ongoingPlantProvider),
+        ]);
         break;
       case 1:
-        ref.invalidate(historyReadsProvider);
-        ref.invalidate(deviceSensorThresholdValuesProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(historyReadsProvider),
+          () => ref.invalidate(deviceSensorThresholdValuesProvider),
+        ]);
         break;
       case 2:
-        ref.invalidate(dailyTodayProvider);
-        ref.invalidate(dailyByDayProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(dailyTodayProvider),
+          () => ref.invalidate(dailyByDayProvider),
+        ]);
         break;
       case 3:
-        ref.invalidate(monthlyReadsProvider);
-        ref.invalidate(deviceSensorThresholdValuesProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(monthlyReadsProvider),
+          () => ref.invalidate(deviceSensorThresholdValuesProvider),
+        ]);
         break;
       case 4:
-        ref.invalidate(devicesProvider);
-        ref.invalidate(monitoringSensorCountProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(devicesProvider),
+          () => ref.invalidate(monitoringSensorCountProvider),
+        ]);
         break;
       case 5:
-        ref.invalidate(envHealthProvider);
-        ref.invalidate(plantRecommendationProvider);
-        ref.invalidate(dailyReadsProvider);
-        ref.invalidate(devicesProvider);
-        ref.invalidate(monitoringSensorCountProvider);
-        ref.invalidate(monthlyReadsProvider);
-        ref.invalidate(deviceSensorThresholdValuesProvider);
-        ref.invalidate(ongoingPlantProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(envHealthProvider),
+          () => ref.invalidate(plantRecommendationProvider),
+          () => ref.invalidate(dailyReadsProvider),
+          () => ref.invalidate(devicesProvider),
+          () => ref.invalidate(monitoringSensorCountProvider),
+          () => ref.invalidate(monthlyReadsProvider),
+          () => ref.invalidate(deviceSensorThresholdValuesProvider),
+          () => ref.invalidate(ongoingPlantProvider),
+        ]);
         break;
       case 6:
-        ref.invalidate(historyReadsProvider);
-        ref.invalidate(dailyTodayProvider);
-        ref.invalidate(dailyByDayProvider);
-        ref.invalidate(dailyReadsProvider);
+        await runSpacedInvalidations([
+          () => ref.invalidate(historyReadsProvider),
+          () => ref.invalidate(dailyTodayProvider),
+          () => ref.invalidate(dailyByDayProvider),
+          () => ref.invalidate(dailyReadsProvider),
+        ]);
         break;
     }
   }
@@ -157,7 +174,9 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
       ),
       child: IconButton(
         tooltip: 'Refresh tab aktif',
-        onPressed: _refreshCurrentTab,
+        onPressed: () {
+          unawaited(_refreshCurrentTab());
+        },
         icon: SvgPicture.asset(
           'assets/icons/arrow-rotate-left.svg',
           width: 24,

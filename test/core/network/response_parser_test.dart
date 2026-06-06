@@ -49,6 +49,17 @@ void main() {
         final result = ResponseParser.extractDataMap(raw);
         expect(result, isEmpty);
       });
+
+      test('extracts first map from singleton data list envelope', () {
+        final raw = {
+          'success': true,
+          'data': [
+            {'foo': 'bar'},
+          ],
+        };
+        final result = ResponseParser.extractDataMap(raw);
+        expect(result, equals({'foo': 'bar'}));
+      });
     });
 
     group('extractDataList', () {

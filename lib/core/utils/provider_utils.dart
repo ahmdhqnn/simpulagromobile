@@ -61,3 +61,14 @@ extension CacheForExtension on Ref {
   }
 }
 
+Future<void> runSpacedInvalidations(
+  List<void Function()> invalidations, {
+  Duration spacing = const Duration(milliseconds: 140),
+}) async {
+  for (var i = 0; i < invalidations.length; i++) {
+    invalidations[i]();
+    if (i < invalidations.length - 1) {
+      await Future<void>.delayed(spacing);
+    }
+  }
+}

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
@@ -14,10 +13,24 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final overall = health.overallHealth;
     final total = health.totalSensors;
+    final hasSensors = total > 0;
 
     final (healthColor, healthLabel) = _resolveHealth(overall);
+    final healthProgress = (overall / 100).clamp(0.0, 1.0).toDouble();
+    final statusColor = hasSensors ? healthColor : AppColors.warning;
+    final statusIcon = !hasSensors
+        ? Icons.settings_suggest_outlined
+        : overall >= 60
+        ? Icons.check_circle_outline_rounded
+        : Icons.error_outline_rounded;
+    final statusText = !hasSensors
+        ? 'Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.'
+        : overall >= 60
+        ? '$total sensor tersedia, kondisi monitoring stabil.'
+        : '$total sensor tersedia, beberapa parameter perlu perhatian.';
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +57,7 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
                         context,
                         size: 44,
                         color: healthColor,
-                      ).copyWith(height: 0.50),
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -74,32 +87,41 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              SvgPicture.asset(
-                'assets/icons/warning-outline-icon.svg',
-                width: 20,
-                height: 20,
-                colorFilter: ColorFilter.mode(
-                  total == 0 ? AppColors.error : AppColors.success,
-                  BlendMode.srcIn,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  '$total sensor tersedia, ${total == 0 ? 'silakan konfigurasi untuk mulai monitoring.' : 'monitoring berjalan normal.'}',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(9),
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textPrimary,
-                    height: 1.33,
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: healthProgress,
+              minHeight: 6,
+              backgroundColor: AppColors.surfaceVariant,
+              valueColor: AlwaysStoppedAnimation<Color>(healthColor),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              children: [
+                Icon(statusIcon, size: 18, color: statusColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    statusText,
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(11),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                      height: 1.35,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

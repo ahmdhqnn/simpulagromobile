@@ -85,6 +85,7 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
         : 0.0;
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

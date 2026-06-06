@@ -38,6 +38,7 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
         : (widget.reads.length > 5 ? 5 : widget.reads.length);
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       padding: EdgeInsets.zero,
       child: Column(

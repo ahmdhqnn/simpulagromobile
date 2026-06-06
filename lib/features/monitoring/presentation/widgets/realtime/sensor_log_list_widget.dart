@@ -24,6 +24,7 @@ class _SensorLogListWidgetState extends State<SensorLogListWidget> {
         : (logs.length > 3 ? 3 : logs.length);
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       padding: EdgeInsets.zero,
       child: Column(

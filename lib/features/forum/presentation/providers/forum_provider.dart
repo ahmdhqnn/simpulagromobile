@@ -59,6 +59,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
   static const _pollingInterval = Duration(seconds: 30);
   static const _pageLimit = 20;
+  static const _commentHydrationLimit = 8;
 
   ForumNotifier(this._repository) : super(const ForumState());
 
@@ -105,7 +106,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
 
         final mergedPosts = [...addedPosts, ...filteredExisting];
         state = state.copyWith(posts: mergedPosts);
-        unawaited(_hydrateCommentCounts(mergedPosts));
+        unawaited(_hydrateCommentCounts(addedPosts));
       });
     } catch (_) {
       // Silent polling must never crash the app.
@@ -144,7 +145,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
         if (mounted) {
           state = state.copyWith(isLoading: false, error: failure.message);
 
-          Future.delayed(const Duration(seconds: 5), () {
+          Future.delayed(const Duration(seconds: 20), () {
             if (mounted && state.error != null && !state.isLoading) {
               loadPosts(refresh: refresh);
             }
@@ -303,19 +304,31 @@ class ForumNotifier extends StateNotifier<ForumState> {
   Future<void> _hydrateCommentCounts(List<Post> posts) async {
     if (posts.isEmpty) return;
 
-    final results = await Future.wait(
-      posts.map((post) async {
+    final results = <MapEntry<String, int>?>[];
+    final targets = posts.take(_commentHydrationLimit).toList();
+    for (var i = 0; i < targets.length; i++) {
+      if (!mounted) return;
+      if (i > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 90));
+      }
+
+      final post = targets[i];
+      try {
         final response = await _repository.getPaginatedComments(
           postId: post.postId,
           page: 1,
           limit: 1,
         );
-        return response.fold<MapEntry<String, int>?>((_) => null, (page) {
-          final count = _resolveHydratedCommentCount(page);
-          return MapEntry(post.postId, count);
-        });
-      }),
-    );
+        results.add(
+          response.fold<MapEntry<String, int>?>((_) => null, (page) {
+            final count = _resolveHydratedCommentCount(page);
+            return MapEntry(post.postId, count);
+          }),
+        );
+      } catch (_) {
+        // Comment count hydration is non-critical; posts must remain visible.
+      }
+    }
 
     if (!mounted) return;
 
@@ -457,7 +470,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
         if (mounted) {
           state = state.copyWith(isLoading: false, error: failure.message);
 
-          Future.delayed(const Duration(seconds: 5), () {
+          Future.delayed(const Duration(seconds: 20), () {
             if (mounted && state.error != null && !state.isLoading) {
               loadComments(refresh: refresh);
             }

@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
-import 'package:dio/dio.dart';
-import '../config/api_config.dart';
-import '../auth/token_manager.dart';
+import 'dart:async';
+import 'dart:collection';
 
-/// Callback dipanggil saat session benar-benar expired (refresh gagal)
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
+import '../auth/token_manager.dart';
+import '../config/api_config.dart';
+
 typedef OnSessionExpired = void Function();
 
 class DioClient {
@@ -26,6 +29,7 @@ class DioClient {
       ) {
     _dio.interceptors.addAll([
       _AuthInterceptor(_tokenManager, _handleSessionExpired),
+      _RequestQueueInterceptor(maxConcurrent: ApiConfig.maxConcurrentRequests),
       _RetryInterceptor(_dio),
       if (kDebugMode)
         LogInterceptor(
@@ -38,7 +42,7 @@ class DioClient {
             if (msg.contains('uri') ||
                 msg.contains('statusCode') ||
                 msg.contains('Error')) {
-              debugPrint('📡 $msg');
+              debugPrint('HTTP $msg');
             }
           },
         ),
@@ -52,10 +56,6 @@ class DioClient {
   }
 }
 
-/// Interceptor yang menangani:
-/// 1. Inject access token ke setiap request
-/// 2. Proactive refresh jika token hampir expired
-/// 3. Reactive refresh pada 401 response (silent retry)
 class _AuthInterceptor extends Interceptor {
   final TokenManager _tokenManager;
   final VoidCallback _onSessionExpired;
@@ -67,22 +67,19 @@ class _AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Skip auth header for refresh endpoint to avoid loops
     if (options.path.contains('refresh') || options.path.contains('login')) {
       handler.next(options);
       return;
     }
 
-    // Proactive refresh: jika token hampir expired, refresh dulu
     final isExpired = await _tokenManager.isAccessTokenExpired();
     if (isExpired) {
       final refreshed = await _tokenManager.refreshAccessToken();
       if (!refreshed) {
-        debugPrint('🔒 Proactive refresh failed — proceeding with old token');
+        debugPrint('Proactive token refresh failed; continuing request.');
       }
     }
 
-    // Inject current access token
     final token = await _tokenManager.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -93,7 +90,6 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    // Only handle 401 for non-auth endpoints
     if (err.response?.statusCode != 401) {
       handler.next(err);
       return;
@@ -105,13 +101,10 @@ class _AuthInterceptor extends Interceptor {
       return;
     }
 
-    debugPrint('🔒 Got 401 on $requestPath — attempting silent refresh');
-
-    // Attempt silent refresh
+    debugPrint('Got 401 on $requestPath; attempting silent refresh.');
     final refreshed = await _tokenManager.refreshAccessToken();
 
     if (refreshed) {
-      // Retry the original request with new token
       try {
         final token = await _tokenManager.getAccessToken();
         final opts = err.requestOptions;
@@ -122,13 +115,14 @@ class _AuthInterceptor extends Interceptor {
             baseUrl: opts.baseUrl,
             connectTimeout: ApiConfig.connectTimeout,
             receiveTimeout: ApiConfig.receiveTimeout,
+            sendTimeout: ApiConfig.sendTimeout,
           ),
         ).fetch(opts);
 
         handler.resolve(response);
         return;
       } catch (retryError) {
-        debugPrint('❌ Retry after refresh failed');
+        debugPrint('Retry after token refresh failed.');
         if (retryError is DioException) {
           handler.next(retryError);
           return;
@@ -136,54 +130,122 @@ class _AuthInterceptor extends Interceptor {
       }
     }
 
-    // Refresh failed — session is truly expired
-    debugPrint('🔒 Session expired — triggering logout');
+    debugPrint('Session expired; triggering logout.');
     _onSessionExpired();
     handler.next(err);
   }
 }
 
-/// Interceptor untuk retry otomatis saat timeout/koneksi gagal.
+class _QueuedRequest {
+  final RequestOptions options;
+  final RequestInterceptorHandler handler;
+
+  const _QueuedRequest(this.options, this.handler);
+}
+
+/// Keeps request bursts bounded for small backend instances.
+class _RequestQueueInterceptor extends Interceptor {
+  final int maxConcurrent;
+  final Queue<_QueuedRequest> _queue = Queue<_QueuedRequest>();
+  int _running = 0;
+
+  _RequestQueueInterceptor({required this.maxConcurrent});
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (maxConcurrent <= 0 || options.extra['skipRequestQueue'] == true) {
+      handler.next(options);
+      return;
+    }
+
+    final request = _QueuedRequest(options, handler);
+    if (_running < maxConcurrent) {
+      _start(request);
+    } else {
+      _queue.addLast(request);
+    }
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    _completeOne();
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    _completeOne();
+    handler.next(err);
+  }
+
+  void _start(_QueuedRequest request) {
+    _running++;
+    request.handler.next(request.options);
+  }
+
+  void _completeOne() {
+    if (_running > 0) _running--;
+    if (_queue.isEmpty || _running >= maxConcurrent) return;
+
+    final next = _queue.removeFirst();
+    scheduleMicrotask(() => _start(next));
+  }
+}
+
 class _RetryInterceptor extends Interceptor {
+  static const _retryAttemptKey = 'retryAttempt';
+
   final Dio _dio;
-  int _retryCount = 0;
 
   _RetryInterceptor(this._dio);
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    final shouldRetry = _shouldRetry(err);
+    final retryCount =
+        (err.requestOptions.extra[_retryAttemptKey] as int?) ?? 0;
 
-    if (shouldRetry && _retryCount < ApiConfig.maxRetries) {
-      _retryCount++;
+    if (_shouldRetry(err) && retryCount < ApiConfig.maxRetries) {
+      final nextRetry = retryCount + 1;
+      err.requestOptions.extra[_retryAttemptKey] = nextRetry;
       debugPrint(
-        '🔄 Retrying request ($_retryCount/${ApiConfig.maxRetries}): '
+        'Retrying request ($nextRetry/${ApiConfig.maxRetries}): '
         '${err.requestOptions.path}',
       );
 
-      await Future.delayed(
-        Duration(seconds: ApiConfig.retryDelay.inSeconds * _retryCount),
-      );
+      await Future.delayed(_retryDelay(err, nextRetry));
 
       try {
         final response = await _dio.fetch(err.requestOptions);
-        _retryCount = 0;
         handler.resolve(response);
         return;
-      } catch (e) {
-        // Retry gagal, lanjut ke error handler
+      } catch (retryError) {
+        if (retryError is DioException) {
+          handler.next(retryError);
+          return;
+        }
       }
     }
 
-    _retryCount = 0;
     handler.next(err);
   }
 
+  Duration _retryDelay(DioException err, int attempt) {
+    final retryAfter = err.response?.headers.value('retry-after');
+    final retryAfterSeconds = retryAfter == null
+        ? null
+        : int.tryParse(retryAfter.trim());
+    if (retryAfterSeconds != null && retryAfterSeconds > 0) {
+      return Duration(seconds: retryAfterSeconds.clamp(1, 10));
+    }
+
+    final baseMs = ApiConfig.retryDelay.inMilliseconds * attempt;
+    final jitterMs = 125 * attempt;
+    return Duration(milliseconds: baseMs + jitterMs);
+  }
+
   bool _shouldRetry(DioException err) {
-    // Don't retry if it was already handled by auth interceptor
     if (err.response?.statusCode == 401) return false;
 
-    // Jangan retry POST/PUT/PATCH/DELETE — bisa memicu duplikasi / 500 berulang
     final method = err.requestOptions.method.toUpperCase();
     if (method != 'GET' && method != 'HEAD') return false;
 
@@ -194,7 +256,13 @@ class _RetryInterceptor extends Interceptor {
       case DioExceptionType.connectionError:
         return true;
       default:
-        return false;
+        break;
     }
+
+    final statusCode = err.response?.statusCode;
+    return statusCode == 429 ||
+        statusCode == 502 ||
+        statusCode == 503 ||
+        statusCode == 504;
   }
 }

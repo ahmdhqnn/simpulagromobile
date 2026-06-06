@@ -18,6 +18,7 @@ class AlarmSummaryCardWidget extends StatelessWidget {
     final total = alarms.length;
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -47,6 +48,7 @@ class AlarmSummaryCardWidget extends StatelessWidget {
 
   Widget _buildNoAlarms(BuildContext context) {
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       child: const MonitoringCardHeaderWidget.icon(
         icon: Icons.check_circle_outline_rounded,

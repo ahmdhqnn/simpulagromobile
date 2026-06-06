@@ -174,6 +174,18 @@ void invalidateRecommendationHubData(WidgetRef ref) {
   ref.invalidate(recommendationCatalogProvider);
 }
 
+Future<void> invalidateRecommendationHubDataSpaced(WidgetRef ref) {
+  return runSpacedInvalidations([
+    () => ref.invalidate(recommendationSiteFeedProvider),
+    () => ref.invalidate(recommendationPlantFeedProvider),
+    () => ref.invalidate(recommendationPhaseSelectionProvider),
+    () => ref.invalidate(recommendationPhaseFeedProvider),
+    () => ref.invalidate(recommendationActivePhaseFeedProvider),
+    () => ref.invalidate(recommendationHubDashboardSnapshotProvider),
+    () => ref.invalidate(recommendationCatalogProvider),
+  ]);
+}
+
 bool _isTransientRecommendationFailure(Failure failure) {
   if (failure is NetworkFailure) return true;
   if (failure is ServerFailure) {
