@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../domain/entities/post.dart';
 import '../providers/forum_provider.dart';
+import '../widgets/forum_action_widgets.dart';
 import '../widgets/post_card.dart';
 
 class LikedPostsScreen extends ConsumerWidget {
@@ -15,104 +18,93 @@ class LikedPostsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final likedPostsAsync = ref.watch(likedPostsProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Postingan Disukai',
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+    return ForumActionScaffold(
+      title: 'Postingan Disukai',
+      trailing: CircularIconActionWidget(
+        onPressed: () => ref.invalidate(likedPostsProvider),
+        icon: Icons.refresh,
       ),
       body: likedPostsAsync.when(
         data: (posts) {
           if (posts.isEmpty) {
-            return const EmptyStateWidget(
+            return const ForumActionState(
               icon: Icons.favorite_border,
               title: 'Belum ada postingan disukai',
-              message: 'Like postingan untuk menyimpannya di sini',
+              message: 'Postingan yang Anda sukai akan tersimpan di sini.',
             );
           }
 
-          return RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              ref.invalidate(likedPostsProvider);
-            },
-            child: ListView.builder(
-              padding: EdgeInsets.all(context.rw(0.051)),
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                final post = posts[index];
-                return PostCard(
-                  post: post,
-                  onLike: () async {
-                    await ref.read(forumProvider.notifier).toggleLike(post.postId);
-                    ref.invalidate(likedPostsProvider);
-                  },
-                  onComment: () {
-                    context.push('/forum/post/${post.postId}');
-                  },
-                  onShare: () => _sharePost(context, ref, post.postId),
-                  onTap: () {
-                    context.push('/forum/post/${post.postId}');
-                  },
-                );
-              },
-            ),
-          );
+          return _buildPostList(context, ref, posts);
         },
-        loading: () => ListView.builder(
-          padding: EdgeInsets.all(context.rw(0.051)),
-          itemCount: 4,
-          itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
-        ),
+        loading: () => _buildLoadingList(context),
         error: (error, _) => _buildErrorState(context, ref, error),
       ),
     );
   }
 
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.textPrimary.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              error.toString().replaceAll('Exception: ', ''),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption(context),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => ref.invalidate(likedPostsProvider),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-              ),
-            ),
-          ],
+  Widget _buildPostList(BuildContext context, WidgetRef ref, List<Post> posts) {
+    final hPad = context.rw(0.051);
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async => ref.invalidate(likedPostsProvider),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          hPad,
+          0,
+          hPad,
+          context.rh(0.02) + MediaQuery.paddingOf(context).bottom,
         ),
+        itemCount: posts.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ForumActionSummaryCard(
+                icon: Icons.favorite_border,
+                title: '${posts.length} postingan disukai',
+                subtitle: 'Daftar postingan yang pernah Anda sukai.',
+                color: AppColors.error,
+                background: AppColors.softOrange,
+              ),
+            );
+          }
+
+          final post = posts[index - 1];
+          return PostCard(
+            post: post,
+            onLike: () async {
+              await ref.read(forumProvider.notifier).toggleLike(post.postId);
+              ref.invalidate(likedPostsProvider);
+            },
+            onComment: () => context.push('/forum/post/${post.postId}'),
+            onShare: () => _sharePost(context, ref, post.postId),
+            onTap: () => context.push('/forum/post/${post.postId}'),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingList(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      itemCount: 4,
+      itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
+    return ForumActionState(
+      icon: Icons.wifi_off_rounded,
+      title: 'Gagal memuat postingan',
+      message: error.toString().replaceAll('Exception: ', ''),
+      action: ForumActionPrimaryButton(
+        icon: Icons.refresh,
+        label: 'Coba Lagi',
+        onPressed: () => ref.invalidate(likedPostsProvider),
       ),
     );
   }
@@ -124,16 +116,18 @@ class LikedPostsScreen extends ConsumerWidget {
   ) async {
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(likedPostsProvider);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Postingan berhasil dibagikan',
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-          ),
-          backgroundColor: AppColors.success,
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Postingan berhasil dibagikan',
+          style: TextStyle(fontFamily: AppTextStyles.fontFamily),
         ),
-      );
-    }
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
