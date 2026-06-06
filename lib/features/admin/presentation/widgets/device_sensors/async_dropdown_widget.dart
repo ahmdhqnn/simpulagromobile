@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_elements.dart';
 
 class AsyncDropdownWidget<T, V> extends ConsumerWidget {
   final AsyncValue<List<T>> async;
@@ -41,14 +42,13 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
         onChanged: onChanged,
         validator: validator,
       ),
-      loading: () => _placeholder(
-        const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.primary,
+      loading: () => SkeletonContainer(
+        child: _placeholder(
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SkeletonLine(width: 160, height: 14),
             ),
           ),
         ),

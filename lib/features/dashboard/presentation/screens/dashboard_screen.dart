@@ -8,6 +8,7 @@ import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../task/presentation/providers/task_provider.dart';
@@ -93,9 +94,7 @@ class DashboardScreen extends ConsumerWidget {
                                 .selectSite(site),
                           );
                         },
-                        loading: () => LoadingCardWidget(
-                          height: context.rh(0.07).clamp(52.0, 72.0),
-                        ),
+                        loading: () => const SiteSelectorSkeleton(),
                         error: (e, _) => ErrorStateCardWidget(
                           message: l10n.errorLoadSite,
                           onRetry: () => ref.invalidate(sitesProvider),
@@ -126,9 +125,7 @@ class DashboardScreen extends ConsumerWidget {
                             }
                             return HealthCardWidget(health: health);
                           },
-                          loading: () => LoadingCardWidget(
-                            height: context.rh(0.3).clamp(220.0, 280.0),
-                          ),
+                          loading: () => const HealthCardSkeleton(),
                           error: (e, _) => ErrorStateCardWidget(
                             message: l10n.errorLoadHealth,
                             onRetry: () =>
@@ -156,9 +153,7 @@ class DashboardScreen extends ConsumerWidget {
                               metadataAdapter: metadataAdapter,
                             );
                           },
-                          loading: () => LoadingCardWidget(
-                            height: context.rh(0.25).clamp(180.0, 240.0),
-                          ),
+                          loading: () => const SensorStatusGridSkeleton(),
                           error: (_, __) => InfoStateWidget.svg(
                             svgIconPath: 'assets/icons/sensor-icon.svg',
                             message: l10n.emptySensor,
@@ -187,8 +182,10 @@ class DashboardScreen extends ConsumerWidget {
                           skipError: true,
                           data: (reads) =>
                               LatestSensorReadsWidget(reads: reads),
-                          loading: () => LoadingCardWidget(
-                            height: context.rh(0.2).clamp(120.0, 180.0),
+                          loading: () => const SimpleRowsCardSkeleton(
+                            rowCount: 5,
+                            rowHeight: 40,
+                            iconSize: 40,
                           ),
                           error: (_, __) => ErrorStateCardWidget(
                             message: 'Gagal memuat aktivitas',
@@ -207,6 +204,11 @@ class DashboardScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.014)),
                         LayoutBuilder(
                           builder: (context, constraints) {
+                            if (dashboardSummaryAsync.isLoading &&
+                                dashboardSummaryAsync.valueOrNull == null) {
+                              return const SummaryGridSkeleton();
+                            }
+
                             final spacing = context.rw(0.025).clamp(8.0, 12.0);
                             final cardWidth =
                                 (constraints.maxWidth - spacing) / 2;

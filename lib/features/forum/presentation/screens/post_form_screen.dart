@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/forum_provider.dart';
 
@@ -393,29 +394,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     );
   }
 
-  Widget _buildLoadingCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.05),
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        children: [
-          const CircularProgressIndicator(color: AppColors.primary),
-          SizedBox(height: context.rh(0.018)),
-          Text(
-            'Memuat detail postingan',
-            style: AppTextStyles.cardTitle(context, context.sp(16)),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoadingCard() =>
+      const FormCardSkeleton(fieldCount: 3, hasLargeField: true);
 
   Widget _buildMessageCard({
     required IconData icon,

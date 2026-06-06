@@ -7,7 +7,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
-import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../phase/domain/entities/phase.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
@@ -44,8 +44,7 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
             items: _filterForPlant(items, plant),
             onViewAll: () => _openHub(context, ref, RecommendationScope.plant),
           ),
-          loading: () =>
-              const LoadingCardWidget(height: 210, radius: AppRadius.lg),
+          loading: () => const RecommendationOverviewCardSkeleton(),
           error: (error, _) => _RecommendationErrorCard(
             title: 'Gagal memuat rekomendasi tanaman',
             message: toUiErrorMessage(error),
@@ -114,8 +113,7 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
             items: items,
             onViewAll: () => _openHub(context, ref, RecommendationScope.phase),
           ),
-          loading: () =>
-              const LoadingCardWidget(height: 210, radius: AppRadius.lg),
+          loading: () => const RecommendationOverviewCardSkeleton(),
           error: (error, _) => _RecommendationErrorCard(
             title: 'Gagal memuat rekomendasi fase',
             message: toUiErrorMessage(error),
@@ -126,7 +124,7 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const LoadingCardWidget(height: 210, radius: AppRadius.lg),
+      loading: () => const RecommendationOverviewCardSkeleton(),
       error: (error, _) => _RecommendationErrorCard(
         title: 'Gagal memuat fase aktif',
         message: toUiErrorMessage(error),

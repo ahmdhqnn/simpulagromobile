@@ -7,7 +7,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../domain/entities/recommendation.dart';
@@ -467,7 +466,7 @@ class _RecommendationHubScreenState
           ],
         ),
       ),
-      loading: () => const LoadingCardWidget(height: 64),
+      loading: () => const CompactStatsCardSkeleton(itemCount: 4, height: 64),
       error: (_, __) => const SizedBox.shrink(),
     );
   }

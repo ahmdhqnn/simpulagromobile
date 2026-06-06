@@ -6,6 +6,7 @@ import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/analytics/sensor_by_type_card_widget.dart';
@@ -61,7 +62,7 @@ class MapsTab extends ConsumerWidget {
                   totalSensors: sensorCount,
                 );
               },
-              loading: () => const LoadingCardWidget(height: 70),
+              loading: () => const CompactStatsCardSkeleton(height: 70),
               error: (_, __) => const SizedBox.shrink(),
             ),
             SizedBox(height: context.rh(0.024)),
@@ -73,7 +74,7 @@ class MapsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 195),
+              loading: () => const MapCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(devicesProvider),
@@ -113,7 +114,7 @@ class MapsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 73),
+              loading: () => const SimpleRowsCardSkeleton(rowCount: 2),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => devices.isEmpty
                   ? const InfoStateWidget.svg(

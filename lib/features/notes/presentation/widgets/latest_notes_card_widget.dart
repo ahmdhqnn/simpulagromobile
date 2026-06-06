@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site_note.dart';
 import '../providers/notes_provider.dart';
 
@@ -28,12 +28,7 @@ class LatestNotesCardWidget extends ConsumerWidget {
         }
         return Column(children: notes.map((n) => _NoteTile(note: n)).toList());
       },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      ),
+      loading: () => const CompactTextRowsSkeleton(rowCount: 3),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
         message: toUiErrorMessage(e),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/unit_provider.dart';
@@ -9,6 +8,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/unit.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class UnitFormScreen extends ConsumerStatefulWidget {
   final String? unitId;
@@ -63,8 +63,9 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
       if (unitAsync.isLoading) {
         return AdminFormScaffold(
           title: 'Memuat...',
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          body: const Padding(
+            padding: EdgeInsets.all(16),
+            child: FormCardSkeleton(fieldCount: 4),
           ),
         );
       }

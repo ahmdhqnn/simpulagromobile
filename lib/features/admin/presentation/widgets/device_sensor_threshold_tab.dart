@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_sensor_provider.dart';
 
 class DeviceSensorThresholdTab extends ConsumerWidget {
@@ -38,7 +39,7 @@ class DeviceSensorThresholdTab extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => buildListSkeleton(count: 6),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }

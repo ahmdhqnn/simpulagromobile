@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
-import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 
@@ -29,15 +29,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
           _buildPhaseCard(context, ref, snapshot.phaseSnapshot),
         ],
       ),
-      loading: () => Column(
-        children: [
-          const LoadingCardWidget(height: 148),
-          SizedBox(height: context.rh(0.012)),
-          const LoadingCardWidget(height: 148),
-          SizedBox(height: context.rh(0.012)),
-          const LoadingCardWidget(height: 148),
-        ],
-      ),
+      loading: () => const RecommendationOverviewListSkeleton(),
       error: (error, _) => _buildErrorCard(context, toUiErrorMessage(error)),
     );
   }

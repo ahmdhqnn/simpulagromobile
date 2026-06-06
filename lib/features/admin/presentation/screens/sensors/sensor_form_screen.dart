@@ -9,6 +9,8 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/sensor.dart';
 import 'package:simpulagromobile/features/monitoring/presentation/providers/monitoring_provider.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_elements.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class SensorFormScreen extends ConsumerStatefulWidget {
   final String? sensorId;
@@ -75,8 +77,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       if (sensorAsync.isLoading) {
         return AdminFormScaffold(
           title: 'Memuat...',
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          body: const Padding(
+            padding: EdgeInsets.all(16),
+            child: FormCardSkeleton(fieldCount: 7),
           ),
         );
       }
@@ -417,13 +420,12 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.primary,
+        child: const SkeletonContainer(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SkeletonLine(width: 160, height: 14),
             ),
           ),
         ),

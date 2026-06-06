@@ -10,6 +10,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/models/monitoring_models.dart';
 import '../providers/monitoring_provider.dart';
@@ -64,7 +65,7 @@ class DailyRecapTab extends ConsumerWidget {
                 items: items,
                 metadataAdapter: metadataAdapter,
               ),
-              loading: () => const LoadingCardWidget(height: 160),
+              loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: toUiErrorMessage(e),
                 onRetry: () => ref.invalidate(dailyTodayProvider),
@@ -97,7 +98,7 @@ class DailyRecapTab extends ConsumerWidget {
                 items: items,
                 metadataAdapter: metadataAdapter,
               ),
-              loading: () => const LoadingCardWidget(height: 160),
+              loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: toUiErrorMessage(e),
                 onRetry: () => ref.invalidate(dailyByDayProvider),

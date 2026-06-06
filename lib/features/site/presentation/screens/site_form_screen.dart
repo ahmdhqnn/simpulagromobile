@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
 
@@ -92,8 +93,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
       ),
       body: _isLoadingData
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+          ? Padding(
+              padding: EdgeInsets.all(context.rw(0.051)),
+              child: const FormCardSkeleton(fieldCount: 6, hasLargeField: true),
             )
           : Form(
               key: _formKey,

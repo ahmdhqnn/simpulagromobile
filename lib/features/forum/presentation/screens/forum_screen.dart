@@ -237,10 +237,8 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           (context, index) {
             if (index == forumState.posts.length) {
               return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: PostCardSkeleton(hasImage: true),
               );
             }
 

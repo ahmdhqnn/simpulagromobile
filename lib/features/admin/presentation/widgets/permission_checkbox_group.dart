@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/permission.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 /// Widget untuk memilih permissions dalam form Role
 /// Menampilkan permissions yang dikelompokkan berdasarkan resource
@@ -39,11 +40,10 @@ class PermissionCheckboxGroup extends ConsumerWidget {
           }).toList(),
         );
       },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: CircularProgressIndicator(),
-        ),
+      loading: () => const SimpleRowsCardSkeleton(
+        rowCount: 4,
+        rowHeight: 48,
+        iconSize: 24,
       ),
       error: (error, _) => Center(
         child: Text(
