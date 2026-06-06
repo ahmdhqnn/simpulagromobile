@@ -58,6 +58,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
     final l10n = AppLocalizations.of(context)!;
     if (widget.data.isEmpty) {
       return AppCardWidget.elevated(
+        boxShadow: null,
         radius: AppRadius.lg,
         child: MonitoringCardHeaderWidget.icon(
           icon: Icons.bar_chart_rounded,
@@ -103,6 +104,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
     }).toList();
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -9,9 +9,10 @@ class ActionRequiredCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
-      child: const MonitoringCardHeaderWidget.svg(
-        svgIconPath: 'assets/icons/recomendation-action-outline-icon.svg',
+      child: const MonitoringCardHeaderWidget.icon(
+        icon: Icons.settings_suggest_outlined,
         title: 'Tindakan Diperlukan',
         description:
             '0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring',

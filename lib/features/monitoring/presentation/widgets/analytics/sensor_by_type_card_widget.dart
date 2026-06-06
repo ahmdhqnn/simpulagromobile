@@ -51,6 +51,7 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
     return Padding(
       padding: EdgeInsets.only(bottom: context.rh(0.012)),
       child: AppCardWidget.elevated(
+        boxShadow: null,
         radius: AppRadius.lg,
         padding: EdgeInsets.zero,
         child: Column(
@@ -71,12 +72,18 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
                     children: [
                       _DeviceStatusBadge(active: d.isActive),
                       const SizedBox(width: 8),
-                      Icon(
-                        _expanded
-                            ? Icons.keyboard_arrow_down_rounded
-                            : Icons.chevron_right_rounded,
-                        size: 24,
-                        color: AppColors.textSecondary,
+                      AnimatedRotation(
+                        turns: _expanded ? 0.25 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        child: SvgPicture.asset(
+                          'assets/icons/chevron-right-icon.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.textSecondary,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
                     ],
                   ),

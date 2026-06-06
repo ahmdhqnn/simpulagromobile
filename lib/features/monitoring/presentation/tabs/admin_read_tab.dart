@@ -79,6 +79,7 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCardWidget.elevated(
+            boxShadow: null,
             radius: AppRadius.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -148,6 +149,7 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
           ),
           const SizedBox(height: 32),
           AppCardWidget.elevated(
+            boxShadow: null,
             radius: AppRadius.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

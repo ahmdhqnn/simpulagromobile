@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/locale_formatters.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -37,10 +38,10 @@ class DailyRecapTab extends ConsumerWidget {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        ref.invalidate(dailyTodayProvider);
-        if (!selectedToday) {
-          ref.invalidate(dailyByDayProvider);
-        }
+        await runSpacedInvalidations([
+          () => ref.invalidate(dailyTodayProvider),
+          if (!selectedToday) () => ref.invalidate(dailyByDayProvider),
+        ]);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -152,6 +153,7 @@ class _DailyRecapListState extends State<_DailyRecapList> {
         : sorted.length.clamp(0, 8).toInt();
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       padding: EdgeInsets.zero,
       child: Column(

@@ -46,6 +46,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
     final maxPoints = widget.chartType == ChartType.bar ? 60 : 140;
     final data = sampleForChart(_validData, maxPoints: maxPoints);
     return AppCardWidget.elevated(
+      boxShadow: null,
       padding: EdgeInsets.all(context.rw(0.041)),
       radius: AppRadius.lg,
       child: Column(

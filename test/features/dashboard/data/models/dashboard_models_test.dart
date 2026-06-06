@@ -53,5 +53,23 @@ void main() {
         expect(model.sensors.first.persentase, 91.5);
       },
     );
+
+    test('EnvironmentalHealthModel accepts alternate score keys', () {
+      final model = EnvironmentalHealthModel.fromJson({
+        'score': '76.5',
+        'sensors': [
+          <dynamic, dynamic>{
+            'dev_id': 'DEV_001',
+            'ds_id': 'env_temp',
+            'value': '28.2',
+            'percentage': '80',
+          },
+        ],
+      });
+
+      expect(model.overallHealth, 76.5);
+      expect(model.totalSensors, 1);
+      expect(model.sensors.single.dsId, 'env_temp');
+    });
   });
 }

@@ -95,6 +95,7 @@ Future<void> _watchMonitoringRealtimeRefresh(
 final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(seconds: 45));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   await _watchMonitoringRealtimeRefresh(ref, 0);
@@ -152,6 +153,7 @@ final sensorMetadataAdapterProvider =
 final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 2));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   await _watchMonitoringRealtimeRefresh(ref, 1, intervalMultiplier: 4);
@@ -170,6 +172,7 @@ final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 /// Log payload MQTT terbaru.
 /// GET /api/sites/logs
 final logsProvider = FutureProvider.autoDispose<List<LogModel>>((ref) async {
+  ref.cacheFor(const Duration(minutes: 2));
   return ref.retryOnError(() async {
     final result = await ref.read(monitoringRepositoryProvider).getLogs();
     return result.fold((f) => throw f, (data) => data);
@@ -370,6 +373,7 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 2));
   return ref.retryOnError(() async {
     final result = await ref.read(monitoringRepositoryProvider).getAlarmData();
     return result.fold((f) => throw f, (data) => data);

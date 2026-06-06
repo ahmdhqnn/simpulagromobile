@@ -86,12 +86,21 @@ class EnvironmentalHealthModel {
   }
 
   factory EnvironmentalHealthModel.fromJson(Map<String, dynamic> json) {
-    final health = _toDouble(json['overall_health'] ?? json['overallHealth']);
+    final health = _toDouble(
+      json['overall_health'] ??
+          json['overallHealth'] ??
+          json['overall_score'] ??
+          json['overallScore'] ??
+          json['health'] ??
+          json['score'],
+    );
     final total = _toInt(json['total_sensors'] ?? json['totalSensors']);
 
     final sensorList = ((json['sensors'] ?? json['sensor']) as List? ?? [])
-        .whereType<Map<String, dynamic>>()
-        .map(SensorHealthModel.fromJson)
+        .whereType<Map>()
+        .map(
+          (item) => SensorHealthModel.fromJson(Map<String, dynamic>.from(item)),
+        )
         .toList();
 
     return EnvironmentalHealthModel(

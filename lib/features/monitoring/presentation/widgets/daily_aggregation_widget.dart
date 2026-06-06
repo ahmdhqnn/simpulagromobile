@@ -34,6 +34,7 @@ class DailyAggregationWidget extends StatelessWidget {
     }
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       padding: EdgeInsets.zero,
       child: Column(
@@ -73,6 +74,7 @@ class DailyAggregationWidget extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return AppCardWidget.elevated(
+      boxShadow: null,
       radius: AppRadius.lg,
       child: const MonitoringCardHeaderWidget.icon(
         icon: Icons.summarize_outlined,

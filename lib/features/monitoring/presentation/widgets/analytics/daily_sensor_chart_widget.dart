@@ -101,6 +101,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         .toList();
 
     return AppCardWidget.elevated(
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
