@@ -72,10 +72,12 @@ class AgroRecommendationWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          ...recommendations.map((rec) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildRecommendationCard(context, rec),
-          )),
+          ...recommendations.map(
+            (rec) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildRecommendationCard(context, rec),
+            ),
+          ),
         ],
       ),
     );
@@ -85,7 +87,9 @@ class AgroRecommendationWidget extends StatelessWidget {
     // Parse color strings like "#EF5350" to Color objects
     Color priorityColor = AppColors.info;
     try {
-      priorityColor = Color(int.parse(rec.priorityColor.replaceAll('#', '0xFF')));
+      priorityColor = Color(
+        int.parse(rec.priorityColor.replaceAll('#', '0xFF')),
+      );
     } catch (_) {}
 
     return Container(
@@ -93,7 +97,6 @@ class AgroRecommendationWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: priorityColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: priorityColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,26 +161,34 @@ class AgroRecommendationWidget extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: rec.actionItems!.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.check_circle, size: 16, color: priorityColor),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(12),
-                            color: const Color(0xFF1D1D1D),
-                          ),
+                children: rec.actionItems!
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: priorityColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                item,
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontSize: context.sp(12),
+                                  color: const Color(0xFF1D1D1D),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                )).toList(),
+                    )
+                    .toList(),
               ),
             ),
           ],

@@ -14,6 +14,130 @@ void _debugLog(String message) {
   }());
 }
 
+double? _parseNullableDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    final normalized = value.trim().replaceAll(',', '.');
+    if (normalized.isEmpty) return null;
+
+    final parsed = double.tryParse(normalized);
+    if (parsed != null) return parsed;
+
+    final match = RegExp(
+      r'[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?',
+    ).firstMatch(normalized);
+    if (match == null) return null;
+    return double.tryParse(match.group(0)!);
+  }
+  return null;
+}
+
+String _normalizeJsonKey(String key) =>
+    key.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase();
+
+dynamic _readRaw(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    if (json.containsKey(key) && json[key] != null) return json[key];
+  }
+
+  final normalizedKeys = keys.map(_normalizeJsonKey).toSet();
+  for (final entry in json.entries) {
+    if (entry.value == null) continue;
+    if (normalizedKeys.contains(_normalizeJsonKey(entry.key))) {
+      return entry.value;
+    }
+  }
+
+  return null;
+}
+
+double? _readDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = _parseNullableDouble(json[key]);
+    if (value != null) return value;
+  }
+
+  final normalizedKeys = keys.map(_normalizeJsonKey).toSet();
+  for (final entry in json.entries) {
+    if (entry.value == null) continue;
+    if (!normalizedKeys.contains(_normalizeJsonKey(entry.key))) continue;
+
+    final value = _parseNullableDouble(entry.value);
+    if (value != null) return value;
+  }
+
+  return null;
+}
+
+String? _readString(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value == null) continue;
+    final text = value.toString().trim();
+    if (text.isNotEmpty) return text;
+  }
+
+  final normalizedKeys = keys.map(_normalizeJsonKey).toSet();
+  for (final entry in json.entries) {
+    if (entry.value == null) continue;
+    if (!normalizedKeys.contains(_normalizeJsonKey(entry.key))) continue;
+
+    final text = entry.value.toString().trim();
+    if (text.isNotEmpty) return text;
+  }
+
+  return null;
+}
+
+const _vdpValueKeys = [
+  'vdp',
+  'vpd',
+  'v',
+  'value',
+  'vdpValue',
+  'vpdValue',
+  'vdp_value',
+  'vpd_value',
+  'vaporPressureDeficit',
+  'vapor_pressure_deficit',
+  'vaporPressureDeficitKpa',
+  'vapor_pressure_deficit_kpa',
+];
+
+const _vdpEsKeys = [
+  'es',
+  'e_s',
+  'svp',
+  'saturationVaporPressure',
+  'saturation_vapor_pressure',
+  'saturationVaporPressureKpa',
+  'saturation_vapor_pressure_kpa',
+  'deficit',
+  'deficitPressure',
+  'deficit_pressure',
+  'd',
+];
+
+const _vdpEaKeys = [
+  'ea',
+  'e_a',
+  'avp',
+  'actualVaporPressure',
+  'actual_vapor_pressure',
+  'actualVaporPressureKpa',
+  'actual_vapor_pressure_kpa',
+  'pressure',
+  'vaporPressure',
+  'vapor_pressure',
+  'p',
+];
+
+bool _hasAnyVdpMetric(Map<String, dynamic> json) =>
+    _readDouble(json, _vdpValueKeys) != null ||
+    _readDouble(json, _vdpEsKeys) != null ||
+    _readDouble(json, _vdpEaKeys) != null;
+
 @freezed
 class VdpModel with _$VdpModel {
   const VdpModel._();
@@ -29,21 +153,35 @@ class VdpModel with _$VdpModel {
   }) = _VdpModel;
 
   factory VdpModel.fromJson(Map<String, dynamic> json) {
-    double? parseD(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
-
     return VdpModel(
-      vdp: parseD(json['vdp']) ?? parseD(json['v']),
-      status: json['status'] as String?,
-      temperature: parseD(json['temperature']) ?? parseD(json['d']),
-      humidity: parseD(json['humidity']) ?? parseD(json['p']),
-      es: parseD(json['es']) ?? parseD(json['d']),
-      ea: parseD(json['ea']) ?? parseD(json['p']),
-      description: json['description'] as String?,
+      vdp: _readDouble(json, _vdpValueKeys),
+      status: _readString(json, ['status', 'condition', 'category']),
+      temperature: _readDouble(json, [
+        'temperature',
+        'temp',
+        'tempAvg',
+        'temp_avg',
+        'airTemperature',
+        'air_temperature',
+        'temperatureC',
+        'temperature_c',
+        'env_temp',
+        't',
+      ]),
+      humidity: _readDouble(json, [
+        'humidity',
+        'hum',
+        'relativeHumidity',
+        'relative_humidity',
+        'rh',
+        'rhAvg',
+        'rh_avg',
+        'env_hum',
+        'h',
+      ]),
+      es: _readDouble(json, _vdpEsKeys),
+      ea: _readDouble(json, _vdpEaKeys),
+      description: _readString(json, ['description', 'desc', 'message']),
     );
   }
 
@@ -86,23 +224,18 @@ class GddDailyModel with _$GddDailyModel {
   }) = _GddDailyModel;
 
   factory GddDailyModel.fromJson(Map<String, dynamic> json) {
-    double? parseD(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
-
     double? readGdd() {
       if (json['gdd'] is num) return (json['gdd'] as num).toDouble();
-      if (json['gdd'] is Map) return parseD((json['gdd'] as Map)['gdd']);
-      return null;
+      if (json['gdd'] is Map) {
+        return _parseNullableDouble((json['gdd'] as Map)['gdd']);
+      }
+      return _parseNullableDouble(json['gdd']);
     }
 
     return GddDailyModel(
       day: json['day'] as String?,
-      tempMin: parseD(json['tempMin']),
-      tempMax: parseD(json['tempMax']),
+      tempMin: _parseNullableDouble(json['tempMin']),
+      tempMax: _parseNullableDouble(json['tempMax']),
       gdd: readGdd(),
     );
   }
@@ -137,15 +270,8 @@ class GddModel with _$GddModel {
   }) = _GddModel;
 
   factory GddModel.fromJson(Map<String, dynamic> json) {
-    double? parseD(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
-
     return GddModel(
-      totalGDD: parseD(json['totalGDD']),
+      totalGDD: _readDouble(json, ['totalGDD', 'totalGdd', 'total_gdd']),
       daily:
           (json['daily'] as List?)
               ?.map((e) => GddDailyModel.fromJson(e as Map<String, dynamic>))
@@ -193,41 +319,34 @@ class EtcDailyModel with _$EtcDailyModel {
   }) = _EtcDailyModel;
 
   factory EtcDailyModel.fromJson(Map<String, dynamic> json) {
-    double? parseD(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
-
     double? readEtc() {
       final etcField = json['etc'];
-      if (etcField is Map) return parseD(etcField['etc']);
-      return parseD(etcField);
+      if (etcField is Map) return _parseNullableDouble(etcField['etc']);
+      return _parseNullableDouble(etcField);
     }
 
     double? readKc() {
       final etcField = json['etc'];
       if (etcField is Map && etcField['kc'] != null) {
-        return parseD(etcField['kc']);
+        return _parseNullableDouble(etcField['kc']);
       }
-      return parseD(json['kc']);
+      return _parseNullableDouble(json['kc']);
     }
 
     double? readWaterNeeds() {
       final etcField = json['etc'];
       if (etcField is Map && etcField['waterNeeds'] != null) {
-        return parseD(etcField['waterNeeds']);
+        return _parseNullableDouble(etcField['waterNeeds']);
       }
-      return parseD(json['waterNeeds']);
+      return _parseNullableDouble(json['waterNeeds']);
     }
 
     return EtcDailyModel(
       day: json['day'] as String?,
-      tempMin: parseD(json['tempMin']),
-      tempMax: parseD(json['tempMax']),
-      rhMin: parseD(json['rhMin']),
-      rhMax: parseD(json['rhMax']),
+      tempMin: _parseNullableDouble(json['tempMin']),
+      tempMax: _parseNullableDouble(json['tempMax']),
+      rhMin: _parseNullableDouble(json['rhMin']),
+      rhMax: _parseNullableDouble(json['rhMax']),
       etc: readEtc(),
       kc: readKc(),
       waterNeeds: readWaterNeeds(),
@@ -272,10 +391,16 @@ class AgroModel with _$AgroModel {
 
   factory AgroModel.fromJson(Map<String, dynamic> json) {
     VdpModel? vdp;
-    if (json['vdp'] is Map<String, dynamic>) {
-      vdp = VdpModel.fromJson(json['vdp'] as Map<String, dynamic>);
-    } else if (json['vdp'] is num) {
-      vdp = VdpModel(vdp: (json['vdp'] as num).toDouble());
+    final vdpField = _readRaw(json, ['vdp', 'vpd']);
+    if (vdpField is Map) {
+      vdp = VdpModel.fromJson(Map<String, dynamic>.from(vdpField));
+    } else {
+      final parsedVdp = _parseNullableDouble(vdpField);
+      if (parsedVdp != null) {
+        vdp = VdpModel.fromJson({...json, 'vdp': parsedVdp});
+      } else if (_hasAnyVdpMetric(json)) {
+        vdp = VdpModel.fromJson(json);
+      }
     }
 
     GddModel? gdd;

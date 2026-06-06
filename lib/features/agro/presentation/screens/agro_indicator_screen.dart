@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../domain/entities/agro_entity.dart';
 import '../providers/agro_provider.dart';
 import '../widgets/vdp_widget.dart';
 import '../widgets/gdd_widget.dart';
@@ -13,7 +14,10 @@ import '../widgets/environmental_health_widget.dart';
 import '../widgets/agro_recommendation_widget.dart';
 import '../widgets/agro_phase_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../dashboard/domain/entities/dashboard_entity.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
+import '../../../phase/domain/entities/phase.dart';
+import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../recommendation/presentation/providers/recommendation_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
@@ -64,150 +68,220 @@ class AgroIndicatorScreen extends ConsumerWidget {
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
           skipError: true,
-          loading: () => Column(
-            children: [
-              _buildHeader(context, ref),
-              const Expanded(
-                child: DetailScreenSkeleton(
-                  infoRowCount: 4,
-                  hasDescription: true,
-                  headerHeight: 120,
-                ),
-              ),
-            ],
-          ),
+          loading: () => _buildLoadingState(context, ref),
           error: (error, stack) => _buildErrorState(context, ref, error),
-          data: (agroData) => RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              ref.invalidate(agroDataProvider);
-              ref.invalidate(environmentalHealthProvider);
-              final sid = ref.read(selectedSiteIdProvider);
-              if (sid != null) {
-                ref.invalidate(currentPhaseProvider(sid));
-                ref.invalidate(recommendationsBySiteProvider(sid));
-              }
-              await Future.delayed(const Duration(milliseconds: 500));
-            },
-            child: Column(
-              children: [
-                _buildHeader(context, ref),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.rw(0.051),
+          data: (agroData) => LayoutBuilder(
+            builder: (context, constraints) {
+              return RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () => _refreshAgroData(ref),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        recommendationsAsync.when(
-                          skipLoadingOnReload: true,
-                          skipLoadingOnRefresh: true,
-                          skipError: true,
-                          data: (recommendations) {
-                            return Column(
-                              children: [
-                                const SectionHeaderWidget(
-                                  title: 'Rekomendasi Tindakan',
-                                ),
-                                SizedBox(height: context.rh(0.014)),
-                                AgroRecommendationWidget(
-                                  recommendations: recommendations,
-                                ),
-                                SizedBox(height: context.rh(0.024)),
-                              ],
-                            );
-                          },
-                          loading: () => Column(
-                            children: [
-                              const SectionHeaderWidget(
-                                title: 'Rekomendasi Tindakan',
-                              ),
-                              SizedBox(height: context.rh(0.014)),
-                              const RecommendationOverviewCardSkeleton(),
-                              SizedBox(height: context.rh(0.024)),
-                            ],
+                        _buildHeader(context, ref),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: context.rw(0.051),
                           ),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-
-                        phaseAsync.when(
-                          skipLoadingOnReload: true,
-                          skipLoadingOnRefresh: true,
-                          skipError: true,
-                          data: (phase) {
-                            return Column(
-                              children: [
-                                const SectionHeaderWidget(title: 'Fase Tanam'),
-                                SizedBox(height: context.rh(0.014)),
-                                AgroPhaseWidget(phase: phase),
-                                SizedBox(height: context.rh(0.024)),
-                              ],
-                            );
-                          },
-                          loading: () => Column(
-                            children: [
-                              const SectionHeaderWidget(title: 'Fase Tanam'),
-                              SizedBox(height: context.rh(0.014)),
-                              const ChartCardSkeleton(
-                                chartHeight: 110,
-                                hasSelector: false,
-                                hasStats: false,
-                                hasLegend: false,
-                              ),
-                              SizedBox(height: context.rh(0.024)),
-                            ],
+                          child: _buildAgroSections(
+                            context,
+                            agroData,
+                            healthAsync,
+                            recommendationsAsync,
+                            phaseAsync,
                           ),
-                          error: (_, __) => const SizedBox.shrink(),
                         ),
-
-                        const SectionHeaderWidget(
-                          title: 'Kesehatan Lingkungan',
-                        ),
-                        SizedBox(height: context.rh(0.014)),
-                        EnvironmentalHealthWidget(
-                          agroData: agroData,
-                          healthData: healthAsync.valueOrNull,
-                        ),
-
-                        SizedBox(height: context.rh(0.024)),
-
-                        const SectionHeaderWidget(
-                          title: 'Vapor Pressure Deficit',
-                        ),
-                        SizedBox(height: context.rh(0.014)),
-                        VdpWidget(vdpData: agroData.vdp),
-
-                        SizedBox(height: context.rh(0.024)),
-
-                        const SectionHeaderWidget(title: 'Growing Degree Days'),
-                        SizedBox(height: context.rh(0.014)),
-                        GddWidget(gddData: agroData.gdd),
-
-                        SizedBox(height: context.rh(0.024)),
-
-                        const SectionHeaderWidget(title: 'Evapotranspiration'),
-                        SizedBox(height: context.rh(0.014)),
-                        EtcWidget(etcData: agroData.etc),
-
-                        SizedBox(height: context.rh(0.024)),
-
-                        const SectionHeaderWidget(title: 'Informasi'),
-                        SizedBox(height: context.rh(0.014)),
-                        _buildInfoCard(context),
-
-                        SizedBox(height: context.rh(0.02)),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _refreshAgroData(WidgetRef ref) async {
+    ref.invalidate(agroDataProvider);
+    ref.invalidate(environmentalHealthProvider);
+    final sid = ref.read(selectedSiteIdProvider);
+    if (sid != null) {
+      ref.invalidate(currentPhaseProvider(sid));
+      ref.invalidate(recommendationsBySiteProvider(sid));
+    }
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
+  Widget _buildAgroSections(
+    BuildContext context,
+    AgroEntity agroData,
+    AsyncValue<EnvironmentalHealthEntity?> healthAsync,
+    AsyncValue<List<Recommendation>> recommendationsAsync,
+    AsyncValue<Phase?> phaseAsync,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        recommendationsAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
+          data: (recommendations) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+                SizedBox(height: context.rh(0.014)),
+                AgroRecommendationWidget(recommendations: recommendations),
+                SizedBox(height: context.rh(0.024)),
+              ],
+            );
+          },
+          loading: () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+              SizedBox(height: context.rh(0.014)),
+              const AgroRecommendationCardSkeleton(),
+              SizedBox(height: context.rh(0.024)),
+            ],
+          ),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+
+        phaseAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
+          data: (phase) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeaderWidget(title: 'Fase Tanam'),
+                SizedBox(height: context.rh(0.014)),
+                AgroPhaseWidget(phase: phase),
+                SizedBox(height: context.rh(0.024)),
+              ],
+            );
+          },
+          loading: () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeaderWidget(title: 'Fase Tanam'),
+              SizedBox(height: context.rh(0.014)),
+              const AgroPhaseCardSkeleton(),
+              SizedBox(height: context.rh(0.024)),
+            ],
+          ),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+
+        const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
+        SizedBox(height: context.rh(0.014)),
+        EnvironmentalHealthWidget(
+          agroData: agroData,
+          healthData: healthAsync.valueOrNull,
+        ),
+
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Vapor Pressure Deficit'),
+        SizedBox(height: context.rh(0.014)),
+        VdpWidget(vdpData: agroData.vdp),
+
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Growing Degree Days'),
+        SizedBox(height: context.rh(0.014)),
+        GddWidget(gddData: agroData.gdd),
+
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Evapotranspiration'),
+        SizedBox(height: context.rh(0.014)),
+        EtcWidget(etcData: agroData.etc),
+
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Informasi'),
+        SizedBox(height: context.rh(0.014)),
+        _buildInfoCard(context),
+
+        SizedBox(height: context.rh(0.02)),
+      ],
+    );
+  }
+
+  Widget _buildLoadingState(BuildContext context, WidgetRef ref) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context, ref),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+                  child: _buildLoadingSections(context),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingSections(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroRecommendationCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Fase Tanam'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroPhaseCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroEnvironmentalHealthCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Vapor Pressure Deficit'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroVdpCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Growing Degree Days'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroGddCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Evapotranspiration'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroEtcCardSkeleton(),
+        SizedBox(height: context.rh(0.024)),
+
+        const SectionHeaderWidget(title: 'Informasi'),
+        SizedBox(height: context.rh(0.014)),
+        const AgroInfoCardSkeleton(),
+        SizedBox(height: context.rh(0.02)),
+      ],
     );
   }
 
@@ -222,16 +296,8 @@ class AgroIndicatorScreen extends ConsumerWidget {
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           CircularIconActionWidget(
-            onPressed: () {
-              ref.invalidate(agroDataProvider);
-              ref.invalidate(environmentalHealthProvider);
-              final sid = ref.read(selectedSiteIdProvider);
-              if (sid != null) {
-                ref.invalidate(currentPhaseProvider(sid));
-                ref.invalidate(recommendationsBySiteProvider(sid));
-              }
-            },
-            icon: Icons.refresh,
+            onPressed: () => _refreshAgroData(ref),
+            svgIconPath: 'assets/icons/arrow-rotate-left.svg',
           ),
         ],
       ),

@@ -33,20 +33,34 @@ class CircularBackButtonWidget extends StatelessWidget {
 
 class CircularIconActionWidget extends StatelessWidget {
   final VoidCallback onPressed;
-  final IconData icon;
+  final IconData? icon;
+  final String? svgIconPath;
   final double size;
   final double iconSize;
 
   const CircularIconActionWidget({
     super.key,
     required this.onPressed,
-    required this.icon,
+    this.icon,
+    this.svgIconPath,
     this.size = 58,
     this.iconSize = 24,
-  });
+  }) : assert(icon != null || svgIconPath != null);
 
   @override
   Widget build(BuildContext context) {
+    final iconWidget = svgIconPath != null
+        ? SvgPicture.asset(
+            svgIconPath!,
+            width: iconSize,
+            height: iconSize,
+            colorFilter: const ColorFilter.mode(
+              AppColors.textPrimary,
+              BlendMode.srcIn,
+            ),
+          )
+        : Icon(icon, size: iconSize);
+
     return Container(
       width: size,
       height: size,
@@ -54,10 +68,7 @@ class CircularIconActionWidget extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(size / 2),
       ),
-      child: IconButton(
-        icon: Icon(icon, size: iconSize),
-        onPressed: onPressed,
-      ),
+      child: IconButton(icon: iconWidget, onPressed: onPressed),
     );
   }
 }

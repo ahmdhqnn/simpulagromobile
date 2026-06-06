@@ -838,6 +838,516 @@ class EnvironmentalHealthCardSkeleton extends StatelessWidget {
   }
 }
 
+class AgroRecommendationCardSkeleton extends StatelessWidget {
+  const AgroRecommendationCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 192, descriptionWidth: 166),
+          SizedBox(height: 20),
+          _AgroRecommendationItemSkeleton(),
+          SizedBox(height: 12),
+          _AgroRecommendationItemSkeleton(compact: true),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroPhaseCardSkeleton extends StatelessWidget {
+  const AgroPhaseCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 184, descriptionWidth: 150),
+          SizedBox(height: 20),
+          _AgroSummaryPanelSkeleton(
+            height: 88,
+            trailingPillWidth: 64,
+            lineWidths: [138, 220, 168],
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SkeletonLine(width: 130, height: 12),
+              SkeletonLine(width: 72, height: 12),
+            ],
+          ),
+          SizedBox(height: 8),
+          SkeletonBox(width: double.infinity, height: 8, borderRadius: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroEnvironmentalHealthCardSkeleton extends StatelessWidget {
+  const AgroEnvironmentalHealthCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 210, descriptionWidth: 172),
+          SizedBox(height: 24),
+          SkeletonBox(
+            width: double.infinity,
+            height: 144,
+            borderRadius: AppRadius.md,
+          ),
+          SizedBox(height: 16),
+          _AgroSensorPanelSkeleton(),
+          SizedBox(height: 24),
+          SkeletonLine(width: 112, height: 14),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _AgroCircleMetricSkeleton(),
+              _AgroCircleMetricSkeleton(),
+              _AgroCircleMetricSkeleton(),
+            ],
+          ),
+          SizedBox(height: 16),
+          SkeletonBox(
+            width: double.infinity,
+            height: 72,
+            borderRadius: AppRadius.sm,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroVdpCardSkeleton extends StatelessWidget {
+  const AgroVdpCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 60, descriptionWidth: 142),
+          SizedBox(height: 20),
+          _AgroSummaryPanelSkeleton(
+            height: 84,
+            trailingValueWidth: 76,
+            lineWidths: [82, 74],
+          ),
+          SizedBox(height: 20),
+          SkeletonLine(width: 76, height: 12),
+          SizedBox(height: 8),
+          SkeletonBox(width: double.infinity, height: 8, borderRadius: 4),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SkeletonLine(width: 10, height: 10),
+              SkeletonLine(width: 22, height: 10),
+              SkeletonLine(width: 22, height: 10),
+              SkeletonLine(width: 28, height: 10),
+            ],
+          ),
+          SizedBox(height: 16),
+          SkeletonBox(
+            width: double.infinity,
+            height: 72,
+            borderRadius: AppRadius.xs,
+          ),
+          SizedBox(height: 16),
+          SkeletonLine(width: 84, height: 14),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: SkeletonBox(width: double.infinity, height: 64)),
+              SizedBox(width: 8),
+              Expanded(child: SkeletonBox(width: double.infinity, height: 64)),
+              SizedBox(width: 8),
+              Expanded(child: SkeletonBox(width: double.infinity, height: 64)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroGddCardSkeleton extends StatelessWidget {
+  const AgroGddCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 62, descriptionWidth: 178),
+          SizedBox(height: 20),
+          _AgroSummaryPanelSkeleton(
+            height: 86,
+            trailingValueWidth: 92,
+            lineWidths: [82, 66],
+          ),
+          SizedBox(height: 20),
+          SkeletonLine(width: 176, height: 14),
+          SizedBox(height: 12),
+          _ChartAreaSkeleton(height: 160),
+          SizedBox(height: 16),
+          _AgroTableSkeleton(rowCount: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroEtcCardSkeleton extends StatelessWidget {
+  const AgroEtcCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CardHeaderSkeleton(titleWidth: 62, descriptionWidth: 150),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _AgroMetricBoxSkeleton()),
+              SizedBox(width: 12),
+              Expanded(child: _AgroMetricBoxSkeleton()),
+              SizedBox(width: 12),
+              Expanded(child: _AgroMetricBoxSkeleton()),
+            ],
+          ),
+          SizedBox(height: 20),
+          SkeletonLine(width: 118, height: 14),
+          SizedBox(height: 12),
+          _ChartAreaSkeleton(height: 160),
+          SizedBox(height: 16),
+          SkeletonBox(
+            width: double.infinity,
+            height: 72,
+            borderRadius: AppRadius.xs,
+          ),
+          SizedBox(height: 16),
+          _AgroTableSkeleton(rowCount: 3),
+        ],
+      ),
+    );
+  }
+}
+
+class AgroInfoCardSkeleton extends StatelessWidget {
+  const AgroInfoCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AgroSkeletonCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SkeletonBox(width: 36, height: 36, borderRadius: AppRadius.xs),
+              SizedBox(width: 12),
+              SkeletonLine(width: 170, height: 16),
+            ],
+          ),
+          SizedBox(height: 16),
+          _AgroInfoItemSkeleton(width: 174),
+          SizedBox(height: 12),
+          _AgroInfoItemSkeleton(width: 154),
+          SizedBox(height: 12),
+          _AgroInfoItemSkeleton(width: 166),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgroSkeletonCard extends StatelessWidget {
+  final Widget child;
+
+  const _AgroSkeletonCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCardWidget(
+      radius: AppRadius.lg,
+      padding: AppSpacing.card,
+      child: SkeletonContainer(child: child),
+    );
+  }
+}
+
+class _AgroRecommendationItemSkeleton extends StatelessWidget {
+  final bool compact;
+
+  const _AgroRecommendationItemSkeleton({this.compact = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              SkeletonBox(width: 62, height: 22, borderRadius: 11),
+              SizedBox(width: 8),
+              SkeletonLine(width: 74, height: 12),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SkeletonLine(width: compact ? 150 : 190, height: 16),
+          const SizedBox(height: 8),
+          const SkeletonLine(width: double.infinity, height: 12),
+          const SizedBox(height: 6),
+          SkeletonLine(width: compact ? 176 : 230, height: 12),
+          if (!compact) ...[
+            const SizedBox(height: 12),
+            const SkeletonBox(
+              width: double.infinity,
+              height: 48,
+              borderRadius: AppRadius.xs,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _AgroSummaryPanelSkeleton extends StatelessWidget {
+  final double height;
+  final double trailingValueWidth;
+  final double trailingPillWidth;
+  final List<double> lineWidths;
+
+  const _AgroSummaryPanelSkeleton({
+    required this.height,
+    this.trailingValueWidth = 78,
+    this.trailingPillWidth = 0,
+    required this.lineWidths,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final width in lineWidths) ...[
+                  SkeletonLine(
+                    width: width,
+                    height: width == lineWidths.first ? 14 : 12,
+                  ),
+                  if (width != lineWidths.last) const SizedBox(height: 8),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (trailingPillWidth > 0)
+                SkeletonBox(
+                  width: trailingPillWidth,
+                  height: 26,
+                  borderRadius: 13,
+                )
+              else ...[
+                SkeletonLine(width: trailingValueWidth, height: 30),
+                const SizedBox(height: 5),
+                const SkeletonLine(width: 42, height: 11),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgroSensorPanelSkeleton extends StatelessWidget {
+  const _AgroSensorPanelSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: const Column(
+        children: [
+          Row(
+            children: [
+              SkeletonBox(width: 18, height: 18, borderRadius: 5),
+              SizedBox(width: 8),
+              Expanded(child: SkeletonLine(width: 144, height: 13)),
+              SizedBox(width: 12),
+              SkeletonLine(width: 56, height: 12),
+            ],
+          ),
+          SizedBox(height: 12),
+          _AgroCompactRowSkeleton(),
+          SizedBox(height: 8),
+          _AgroCompactRowSkeleton(),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgroCompactRowSkeleton extends StatelessWidget {
+  const _AgroCompactRowSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonLine(width: 112, height: 12),
+              SizedBox(height: 4),
+              SkeletonLine(width: 156, height: 10),
+            ],
+          ),
+        ),
+        SizedBox(width: 12),
+        SkeletonBox(width: 42, height: 22, borderRadius: 11),
+      ],
+    );
+  }
+}
+
+class _AgroCircleMetricSkeleton extends StatelessWidget {
+  const _AgroCircleMetricSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        SkeletonCircle(size: 72),
+        SizedBox(height: 8),
+        SkeletonLine(width: 32, height: 12),
+      ],
+    );
+  }
+}
+
+class _AgroMetricBoxSkeleton extends StatelessWidget {
+  const _AgroMetricBoxSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonBox(
+      width: double.infinity,
+      height: 94,
+      borderRadius: AppRadius.sm,
+    );
+  }
+}
+
+class _AgroTableSkeleton extends StatelessWidget {
+  final int rowCount;
+
+  const _AgroTableSkeleton({required this.rowCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SkeletonLine(width: 126, height: 14),
+        const SizedBox(height: 12),
+        const SkeletonBox(
+          width: double.infinity,
+          height: 40,
+          borderRadius: AppRadius.xs,
+        ),
+        for (var index = 0; index < rowCount; index++) ...[
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              Expanded(flex: 2, child: SkeletonLine(width: 90, height: 12)),
+              Expanded(
+                child: Center(child: SkeletonLine(width: 44, height: 12)),
+              ),
+              Expanded(
+                child: Center(child: SkeletonLine(width: 44, height: 12)),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SkeletonLine(width: 38, height: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AgroInfoItemSkeleton extends StatelessWidget {
+  final double width;
+
+  const _AgroInfoItemSkeleton({required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SkeletonLine(width: width, height: 14),
+        const SizedBox(height: 6),
+        const SkeletonLine(width: double.infinity, height: 12),
+        const SizedBox(height: 5),
+        const SkeletonLine(width: 260, height: 12),
+      ],
+    );
+  }
+}
+
 class MapCardSkeleton extends StatelessWidget {
   final double height;
 

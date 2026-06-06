@@ -75,12 +75,127 @@ class EnvironmentalHealthWidget extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           _buildHealthScore(context, healthScore, healthStatus),
+          if (healthData != null && !healthData!.isEmpty) ...[
+            const SizedBox(height: 16),
+            _buildBackendHealthData(context),
+          ],
           const SizedBox(height: 24),
           _buildParameterScores(context),
           const SizedBox(height: 16),
           _buildRecommendations(context, healthStatus),
         ],
       ),
+    );
+  }
+
+  Widget _buildBackendHealthData(BuildContext context) {
+    final sensors = healthData!.sensors.take(4).toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.sensors, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${healthData!.totalSensors} sensor dipantau',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(13),
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              Text(
+                '${healthData!.overallHealth.toStringAsFixed(1)}/100',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          if (sensors.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...sensors.map(
+              (sensor) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildSensorHealthRow(context, sensor),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSensorHealthRow(
+    BuildContext context,
+    SensorHealthEntity sensor,
+  ) {
+    final color = _getScoreColor(sensor.persentase);
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                sensor.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${sensor.devId} - ${_formatSensorValue(sensor)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(11),
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            '${sensor.persentase.toStringAsFixed(0)}%',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(11),
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -273,7 +388,6 @@ class EnvironmentalHealthWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: status.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: status.color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +415,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '• ',
+                    '- ',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(12),
@@ -364,7 +478,15 @@ class EnvironmentalHealthWidget extends StatelessWidget {
 
     final latestEtc = agroData!.etc.first;
     final waterNeeds = latestEtc.waterNeeds;
-    if (waterNeeds == null) return 50;
+    if (waterNeeds == null) {
+      final etc = latestEtc.etc;
+      if (etc == null) return 50;
+      if (etc >= 3 && etc <= 6) return 100;
+      if (etc < 3) {
+        return (70 + (etc / 3 * 30)).clamp(0, 100);
+      }
+      return (100 - ((etc - 6) / 6 * 50)).clamp(0, 100);
+    }
 
     if (waterNeeds >= 3 && waterNeeds <= 6) return 100;
     if (waterNeeds < 3) {
@@ -419,9 +541,14 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     }
 
     if (agroData?.etc.isNotEmpty ?? false) {
-      final waterNeeds = agroData!.etc.first.waterNeeds;
+      final latestEtc = agroData!.etc.first;
+      final waterNeeds = latestEtc.waterNeeds;
       if (waterNeeds != null && waterNeeds > 6) {
         recommendations.add('Tingkatkan frekuensi penyiraman');
+      } else if (waterNeeds == null &&
+          latestEtc.etc != null &&
+          latestEtc.etc! > 6) {
+        recommendations.add('ETC tinggi, periksa kelembaban tanah dan irigasi');
       }
     }
 
@@ -431,6 +558,19 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     }
 
     return recommendations;
+  }
+
+  String _formatSensorValue(SensorHealthEntity sensor) {
+    final unit = sensor.unit;
+    if (unit.isEmpty) return sensor.readUpdateValue;
+    return '${sensor.readUpdateValue} $unit';
+  }
+
+  Color _getScoreColor(double score) {
+    if (score >= 80) return AppColors.success;
+    if (score >= 60) return AppColors.accent;
+    if (score >= 40) return AppColors.warning;
+    return AppColors.error;
   }
 }
 
