@@ -133,7 +133,7 @@ class GddWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '°C-days',
+                'C-days',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -183,7 +183,7 @@ class GddWidget extends StatelessWidget {
                         dailyData[group.x.toInt()].gdd?.toStringAsFixed(1) ??
                         '0';
                     return BarTooltipItem(
-                      '$day\n$gdd °C-days',
+                      '$day\n$gdd C-days',
                       const TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         color: Colors.white,
@@ -292,10 +292,7 @@ class GddWidget extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.divider),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
               Container(
@@ -384,7 +381,7 @@ class GddWidget extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '${data.tempMin?.toStringAsFixed(1) ?? '-'}°',
+                          _formatTemperature(data.tempMin),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
@@ -395,7 +392,7 @@ class GddWidget extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '${data.tempMax?.toStringAsFixed(1) ?? '-'}°',
+                          _formatTemperature(data.tempMax),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
@@ -455,5 +452,10 @@ class GddWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTemperature(double? value) {
+    if (value == null) return '-';
+    return '${value.toStringAsFixed(1)} C';
   }
 }

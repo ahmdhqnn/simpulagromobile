@@ -16,6 +16,13 @@ class VdpEntity with _$VdpEntity {
   }) = _VdpEntity;
 
   bool get isEmpty => vdp == null;
+
+  bool get hasDisplayData =>
+      vdp != null ||
+      temperature != null ||
+      humidity != null ||
+      es != null ||
+      ea != null;
 }
 
 @freezed

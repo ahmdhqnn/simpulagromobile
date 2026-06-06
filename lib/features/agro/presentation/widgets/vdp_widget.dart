@@ -10,7 +10,7 @@ class VdpWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vdpData == null) {
+    if (vdpData == null || !vdpData!.hasDisplayData) {
       return _buildEmptyState(context);
     }
 
@@ -71,36 +71,91 @@ class VdpWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Center(
+          if (vdpData!.vdp != null) ...[
+            const SizedBox(height: 20),
+            _buildLatestVdp(context),
+            const SizedBox(height: 20),
+            _buildVdpIndicator(context, vdpData!.vdp),
+            const SizedBox(height: 16),
+            _buildVdpInfo(context, vdpData!.vdp),
+            const SizedBox(height: 16),
+            _buildVdpDetails(context),
+          ] else ...[
+            const SizedBox(height: 16),
+            _buildVdpDetails(context),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLatestVdp(BuildContext context) {
+    final vdp = vdpData!.vdp!;
+    final color = _getVdpColor(vdp);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.12),
+            AppColors.primary.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  vdpData!.vdp?.toStringAsFixed(2) ?? '-',
+                  'Nilai VPD',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(48),
-                    fontWeight: FontWeight.bold,
-                    color: _getVdpColor(vdpData!.vdp),
+                    fontSize: context.sp(14),
+                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  'kPa',
+                  vdpData!.status ?? _getVdpStatusLabel(vdp),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(16),
+                    fontSize: context.sp(12),
                     color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          _buildVdpIndicator(context, vdpData!.vdp),
-          const SizedBox(height: 16),
-          _buildVdpInfo(context, vdpData!.vdp),
-          const SizedBox(height: 16),
-          _buildVdpDetails(context),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                vdp.toStringAsFixed(2),
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(32),
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                'kPa',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: context.sp(12),
+                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -162,49 +217,32 @@ class VdpWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '0',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(10),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
-            Text(
-              '0.4',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(10),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
-            Text(
-              '1.2',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(10),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
-            Text(
-              '2.0+',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(10),
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
+            _buildScaleLabel(context, '0'),
+            _buildScaleLabel(context, '0.4'),
+            _buildScaleLabel(context, '1.2'),
+            _buildScaleLabel(context, '2.0+'),
           ],
         ),
       ],
     );
   }
 
+  Widget _buildScaleLabel(BuildContext context, String label) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(10),
+        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      ),
+    );
+  }
+
   Widget _buildVdpInfo(BuildContext context, double? vdp) {
     if (vdp == null) return const SizedBox.shrink();
 
-    String title = vdpData!.status ?? '-';
-    String description = vdpData!.description ?? '-';
+    final title = vdpData!.status ?? _getVdpStatusLabel(vdp);
+    final description = vdpData!.description ?? _getVdpDescription(vdp);
     IconData icon = Icons.info_outline;
     Color color = AppColors.info;
 
@@ -227,7 +265,6 @@ class VdpWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,62 +302,110 @@ class VdpWidget extends StatelessWidget {
   }
 
   Widget _buildVdpDetails(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(12),
+    final details = <_VdpDetailData>[
+      _VdpDetailData(
+        label: 'V (VDP)',
+        value: _formatNumberUnit(vdpData!.vdp, 2, 'kPa'),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildDetailItem(
-            context,
-            'Temp',
-            '${vdpData!.temperature?.toStringAsFixed(1) ?? '-'}°C',
-          ),
-          _buildDetailItem(
-            context,
-            'RH',
-            '${vdpData!.humidity?.toStringAsFixed(1) ?? '-'}%',
-          ),
-          _buildDetailItem(
-            context,
-            'Es',
-            '${vdpData!.es?.toStringAsFixed(2) ?? '-'} kPa',
-          ),
-          _buildDetailItem(
-            context,
-            'Ea',
-            '${vdpData!.ea?.toStringAsFixed(2) ?? '-'} kPa',
-          ),
-        ],
+      _VdpDetailData(
+        label: 'D (Es)',
+        value: _formatNumberUnit(vdpData!.es, 2, 'kPa'),
       ),
+      _VdpDetailData(
+        label: 'P (Ea)',
+        value: _formatNumberUnit(vdpData!.ea, 2, 'kPa'),
+      ),
+      if (vdpData!.temperature != null)
+        _VdpDetailData(
+          label: 'Temp',
+          value: _formatNumberUnit(vdpData!.temperature, 1, 'C'),
+        ),
+      if (vdpData!.humidity != null)
+        _VdpDetailData(
+          label: 'RH',
+          value: _formatNumberUnit(vdpData!.humidity, 1, '%'),
+        ),
+    ];
+
+    if (details.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Detail VPD',
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: context.sp(13),
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1D1D1D),
+          ),
+        ),
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final itemWidth = details.length <= 3
+                ? (constraints.maxWidth - ((details.length - 1) * 8)) /
+                      details.length
+                : (constraints.maxWidth - 8) / 2;
+
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final detail in details)
+                  SizedBox(
+                    width: itemWidth,
+                    child: _buildDetailItem(
+                      context,
+                      detail.label,
+                      detail.value,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildDetailItem(BuildContext context, String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(14),
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1D1D1D),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(10),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(10),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: context.sp(14),
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1D1D1D),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -361,4 +446,38 @@ class VdpWidget extends StatelessWidget {
     if (vdp <= 1.6) return AppColors.warning;
     return AppColors.error;
   }
+
+  String _formatNumberUnit(double? value, int fractionDigits, String unit) {
+    if (value == null) return 'Belum ada';
+    final number = value.toStringAsFixed(fractionDigits);
+    if (unit == '%') return '$number%';
+    return '$number $unit';
+  }
+
+  String _getVdpStatusLabel(double vdp) {
+    if (vdp < 0.4) return 'Terlalu Rendah';
+    if (vdp <= 1.2) return 'Optimal';
+    if (vdp <= 1.6) return 'Waspada';
+    return 'Terlalu Tinggi';
+  }
+
+  String _getVdpDescription(double vdp) {
+    if (vdp < 0.4) {
+      return 'Kelembaban relatif tinggi. Tingkatkan ventilasi agar risiko penyakit turun.';
+    }
+    if (vdp <= 1.2) {
+      return 'Kondisi defisit tekanan uap berada pada rentang ideal.';
+    }
+    if (vdp <= 1.6) {
+      return 'Tanaman mulai berisiko kehilangan air lebih cepat. Pantau irigasi dan kelembaban.';
+    }
+    return 'Defisit tekanan uap tinggi. Tingkatkan penyiraman dan jaga kelembaban area tanam.';
+  }
+}
+
+class _VdpDetailData {
+  final String label;
+  final String value;
+
+  const _VdpDetailData({required this.label, required this.value});
 }

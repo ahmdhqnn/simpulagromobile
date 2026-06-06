@@ -1,5 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simpulagromobile/features/agro/data/models/agro_model.dart';
+import 'package:simpulagromobile/features/agro/domain/entities/agro_entity.dart';
+import 'package:simpulagromobile/features/agro/presentation/widgets/environmental_health_widget.dart';
+import 'package:simpulagromobile/features/agro/presentation/widgets/etc_widget.dart';
+import 'package:simpulagromobile/features/agro/presentation/widgets/vdp_widget.dart';
+import 'package:simpulagromobile/features/dashboard/domain/entities/dashboard_entity.dart';
 
 void main() {
   group('VdpModel', () {
@@ -35,6 +41,142 @@ void main() {
       expect(vdp.temperature, equals(22.0));
       expect(vdp.humidity, equals(65.0));
     });
+
+    test('fromJson parses compact kPa fields and unit strings', () {
+      final json = {'v': '0,50 kPa', 'd': '0.30 kPa', 'p': '0.20 kPa'};
+      final vdp = VdpModel.fromJson(json);
+      expect(vdp.vdp, equals(0.5));
+      expect(vdp.es, equals(0.3));
+      expect(vdp.ea, equals(0.2));
+      expect(vdp.temperature, isNull);
+      expect(vdp.humidity, isNull);
+    });
+
+    test('fromJson parses VDP detail keys case-insensitively', () {
+      final json = {'V': '1.49 kPa', 'D': '1.80 kPa', 'P': '0.31 kPa'};
+      final vdp = VdpModel.fromJson(json);
+      expect(vdp.vdp, equals(1.49));
+      expect(vdp.es, equals(1.8));
+      expect(vdp.ea, equals(0.31));
+    });
+  });
+
+  group('VdpWidget', () {
+    testWidgets('renders kPa details without placeholder units', (
+      WidgetTester tester,
+    ) async {
+      const vdp = VdpEntity(vdp: 0.5, es: 0.3, ea: 0.2);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: VdpWidget(vdpData: vdp)),
+          ),
+        ),
+      );
+
+      expect(find.text('0.50'), findsOneWidget);
+      expect(find.text('0.50 kPa'), findsOneWidget);
+      expect(find.text('0.30 kPa'), findsOneWidget);
+      expect(find.text('0.20 kPa'), findsOneWidget);
+      expect(find.text('Detail VPD'), findsOneWidget);
+      expect(find.text('V (VDP)'), findsOneWidget);
+      expect(find.text('D (Es)'), findsOneWidget);
+      expect(find.text('P (Ea)'), findsOneWidget);
+      expect(find.text('- kPa'), findsNothing);
+      expect(find.text('-%'), findsNothing);
+      expect(find.text('- C'), findsNothing);
+    });
+
+    testWidgets('keeps D and P slots visible when backend only sends VDP', (
+      WidgetTester tester,
+    ) async {
+      const vdp = VdpEntity(vdp: 1.49);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: VdpWidget(vdpData: vdp)),
+          ),
+        ),
+      );
+
+      expect(find.text('V (VDP)'), findsOneWidget);
+      expect(find.text('D (Es)'), findsOneWidget);
+      expect(find.text('P (Ea)'), findsOneWidget);
+      expect(find.text('1.49 kPa'), findsOneWidget);
+      expect(find.text('Belum ada'), findsNWidgets(2));
+      expect(find.text('- kPa'), findsNothing);
+      expect(find.text('-%'), findsNothing);
+    });
+  });
+
+  group('EnvironmentalHealthWidget', () {
+    testWidgets('renders backend total sensors and sensor health rows', (
+      WidgetTester tester,
+    ) async {
+      const health = EnvironmentalHealthEntity(
+        overallHealth: 88.5,
+        totalSensors: 12,
+        sensors: [
+          SensorHealthEntity(
+            devId: 'DEV_001',
+            dsId: 'DS_001',
+            readUpdateValue: '25.3',
+            persentase: 85,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: EnvironmentalHealthWidget(healthData: health),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('12 sensor dipantau'), findsOneWidget);
+      expect(find.text('88.5/100'), findsOneWidget);
+      expect(find.text('DEV_001 - 25.3'), findsOneWidget);
+      expect(find.text('85%'), findsOneWidget);
+    });
+  });
+
+  group('EtcWidget', () {
+    testWidgets(
+      'renders Swagger ETC payload without missing optional metrics',
+      (WidgetTester tester) async {
+        const etc = [
+          EtcDailyEntity(
+            etc: 4.12,
+            day: '2026-05-13',
+            tempMin: 20.1,
+            tempMax: 28.7,
+            rhMin: 60,
+            rhMax: 85,
+          ),
+        ];
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(child: EtcWidget(etcData: etc)),
+            ),
+          ),
+        );
+
+        expect(find.text('4.12'), findsOneWidget);
+        expect(find.text('Kc'), findsNothing);
+        expect(find.text('Kebutuhan'), findsNothing);
+        expect(find.text('Kebutuhan Air'), findsNothing);
+        expect(find.text('Status ETC'), findsOneWidget);
+        expect(find.text('20.1 C - 28.7 C'), findsOneWidget);
+        expect(find.text('60.0% - 85.0%'), findsOneWidget);
+      },
+    );
   });
 
   group('GddDailyModel', () {
@@ -129,6 +271,18 @@ void main() {
       expect(agro.isEmpty, isFalse);
     });
 
+    test('fromJson keeps companion D and P when VDP is a scalar field', () {
+      final agro = AgroModel.fromJson({
+        'vdp': '1.49 kPa',
+        'D': '1.80 kPa',
+        'P': '0.31 kPa',
+      });
+
+      expect(agro.vdp?.vdp, equals(1.49));
+      expect(agro.vdp?.es, equals(1.8));
+      expect(agro.vdp?.ea, equals(0.31));
+    });
+
     test('isValid returns false when all fields are empty', () {
       final agro = AgroModel();
       expect(agro.isValid(), isFalse);
@@ -206,6 +360,11 @@ void main() {
       expect(agro.vdp, isNotNull);
       expect(agro.gdd, isNotNull);
       expect(agro.etc, isNotEmpty);
+    });
+
+    test('fromJson accepts vpd alias for agro response', () {
+      final agro = AgroModel.fromJson({'vpd': '0.75 kPa'});
+      expect(agro.vdp?.vdp, equals(0.75));
     });
   });
 }

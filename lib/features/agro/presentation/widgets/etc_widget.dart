@@ -89,41 +89,58 @@ class EtcWidget extends StatelessWidget {
   }
 
   Widget _buildLatestEtc(BuildContext context, EtcDailyEntity data) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildMetricCard(
-            context,
-            'ETC',
-            data.etc?.toStringAsFixed(2) ?? '-',
-            'mm/hari',
-            AppColors.primary,
-            Icons.water_drop,
-          ),
+    final metrics = <_EtcMetricData>[
+      _EtcMetricData(
+        label: 'ETC',
+        value: data.etc?.toStringAsFixed(2) ?? '-',
+        unit: 'mm/hari',
+        color: AppColors.primary,
+        icon: Icons.water_drop,
+      ),
+      if (data.kc != null)
+        _EtcMetricData(
+          label: 'Kc',
+          value: data.kc!.toStringAsFixed(2),
+          unit: 'koefisien',
+          color: AppColors.accent,
+          icon: Icons.eco,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricCard(
-            context,
-            'Kc',
-            data.kc?.toStringAsFixed(2) ?? '-',
-            'koefisien',
-            AppColors.accent,
-            Icons.eco,
-          ),
+      if (data.waterNeeds != null)
+        _EtcMetricData(
+          label: 'Kebutuhan',
+          value: data.waterNeeds!.toStringAsFixed(1),
+          unit: 'L/m2',
+          color: AppColors.info,
+          icon: Icons.local_drink,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricCard(
-            context,
-            'Kebutuhan',
-            data.waterNeeds?.toStringAsFixed(1) ?? '-',
-            'L/m²',
-            AppColors.info,
-            Icons.local_drink,
-          ),
-        ),
-      ],
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = metrics.length == 1
+            ? 1
+            : metrics.length.clamp(2, 3).toInt();
+        final width = (constraints.maxWidth - ((columns - 1) * 12)) / columns;
+
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final metric in metrics)
+              SizedBox(
+                width: width,
+                child: _buildMetricCard(
+                  context,
+                  metric.label,
+                  metric.value,
+                  metric.unit,
+                  metric.color,
+                  metric.icon,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -180,6 +197,7 @@ class EtcWidget extends StatelessWidget {
 
   Widget _buildEtcChart(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
+    final hasWaterNeeds = weekData.any((data) => data.waterNeeds != null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,21 +299,22 @@ class EtcWidget extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.1),
                   ),
                 ),
-                LineChartBarData(
-                  spots: List.generate(
-                    weekData.length,
-                    (index) => FlSpot(
-                      index.toDouble(),
-                      weekData[index].waterNeeds ?? 0,
+                if (hasWaterNeeds)
+                  LineChartBarData(
+                    spots: List.generate(
+                      weekData.length,
+                      (index) => FlSpot(
+                        index.toDouble(),
+                        weekData[index].waterNeeds ?? 0,
+                      ),
                     ),
+                    isCurved: true,
+                    color: AppColors.info,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dashArray: [5, 5],
+                    dotData: const FlDotData(show: false),
                   ),
-                  isCurved: true,
-                  color: AppColors.info,
-                  barWidth: 2,
-                  isStrokeCapRound: true,
-                  dashArray: [5, 5],
-                  dotData: const FlDotData(show: false),
-                ),
               ],
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
@@ -323,8 +342,10 @@ class EtcWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildLegendItem(context, 'ETC', AppColors.primary, false),
-            const SizedBox(width: 16),
-            _buildLegendItem(context, 'Kebutuhan Air', AppColors.info, true),
+            if (hasWaterNeeds) ...[
+              const SizedBox(width: 16),
+              _buildLegendItem(context, 'Kebutuhan Air', AppColors.info, true),
+            ],
           ],
         ),
       ],
@@ -364,30 +385,58 @@ class EtcWidget extends StatelessWidget {
   }
 
   Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyEntity data) {
-    final waterNeeds = data.waterNeeds ?? 0;
+    if (data.waterNeeds == null && data.etc == null) {
+      return const SizedBox.shrink();
+    }
+
+    final waterNeeds = data.waterNeeds;
+    final etc = data.etc;
     String recommendation;
     Color color;
     IconData icon;
+    String title;
 
-    if (waterNeeds < 3) {
-      recommendation =
-          'Kebutuhan air rendah. Penyiraman minimal atau tidak diperlukan.';
-      color = AppColors.success;
-      icon = Icons.check_circle_outline;
-    } else if (waterNeeds < 6) {
-      recommendation =
-          'Kebutuhan air sedang. Lakukan penyiraman rutin sesuai jadwal.';
-      color = AppColors.info;
-      icon = Icons.info_outline;
-    } else if (waterNeeds < 10) {
-      recommendation = 'Kebutuhan air tinggi. Tingkatkan frekuensi penyiraman.';
-      color = AppColors.warning;
-      icon = Icons.warning_amber_outlined;
+    if (waterNeeds != null) {
+      title = 'Rekomendasi Penyiraman';
+      if (waterNeeds < 3) {
+        recommendation =
+            'Kebutuhan air rendah. Penyiraman minimal atau tidak diperlukan.';
+        color = AppColors.success;
+        icon = Icons.check_circle_outline;
+      } else if (waterNeeds < 6) {
+        recommendation =
+            'Kebutuhan air sedang. Lakukan penyiraman rutin sesuai jadwal.';
+        color = AppColors.info;
+        icon = Icons.info_outline;
+      } else if (waterNeeds < 10) {
+        recommendation =
+            'Kebutuhan air tinggi. Tingkatkan frekuensi penyiraman.';
+        color = AppColors.warning;
+        icon = Icons.warning_amber_outlined;
+      } else {
+        recommendation =
+            'Kebutuhan air sangat tinggi! Penyiraman intensif diperlukan.';
+        color = AppColors.error;
+        icon = Icons.error_outline;
+      }
     } else {
-      recommendation =
-          'Kebutuhan air sangat tinggi! Penyiraman intensif diperlukan.';
-      color = AppColors.error;
-      icon = Icons.error_outline;
+      title = 'Status ETC';
+      if (etc! < 3) {
+        recommendation =
+            'ETC rendah. Kebutuhan evapotranspirasi tanaman sedang ringan.';
+        color = AppColors.success;
+        icon = Icons.check_circle_outline;
+      } else if (etc <= 6) {
+        recommendation =
+            'ETC berada pada rentang sedang. Pantau kelembaban dan jadwal irigasi.';
+        color = AppColors.info;
+        icon = Icons.info_outline;
+      } else {
+        recommendation =
+            'ETC tinggi. Periksa kelembaban tanah dan kesiapan irigasi.';
+        color = AppColors.warning;
+        icon = Icons.warning_amber_outlined;
+      }
     }
 
     return Container(
@@ -395,7 +444,6 @@ class EtcWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,7 +455,7 @@ class EtcWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Rekomendasi Penyiraman',
+                  title,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(14),
@@ -449,10 +497,7 @@ class EtcWidget extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.divider),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
               Container(
@@ -532,7 +577,7 @@ class EtcWidget extends StatelessWidget {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          '${data.tempMin?.toStringAsFixed(1) ?? '-'}° - ${data.tempMax?.toStringAsFixed(1) ?? '-'}°',
+                          _formatRange(data.tempMin, data.tempMax, 'C'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
@@ -544,7 +589,7 @@ class EtcWidget extends StatelessWidget {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          '${data.rhMin?.toStringAsFixed(1) ?? '-'}% - ${data.rhMax?.toStringAsFixed(1) ?? '-'}%',
+                          _formatRange(data.rhMin, data.rhMax, '%'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
@@ -594,6 +639,22 @@ class EtcWidget extends StatelessWidget {
       ),
     );
   }
+
+  String _formatRange(double? min, double? max, String unit) {
+    final minText = _formatValue(min, 1, unit);
+    final maxText = _formatValue(max, 1, unit);
+    if (min == null && max == null) return '-';
+    if (min == null) return maxText;
+    if (max == null) return minText;
+    return '$minText - $maxText';
+  }
+
+  String _formatValue(double? value, int fractionDigits, String unit) {
+    if (value == null) return '-';
+    final number = value.toStringAsFixed(fractionDigits);
+    if (unit == '%') return '$number%';
+    return '$number $unit';
+  }
 }
 
 class DashedLinePainter extends CustomPainter {
@@ -624,4 +685,20 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _EtcMetricData {
+  final String label;
+  final String value;
+  final String unit;
+  final Color color;
+  final IconData icon;
+
+  const _EtcMetricData({
+    required this.label,
+    required this.value,
+    required this.unit,
+    required this.color,
+    required this.icon,
+  });
 }
