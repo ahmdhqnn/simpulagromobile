@@ -6,6 +6,7 @@ import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/analytics/action_required_card_widget.dart';
@@ -65,7 +66,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 166),
+              loading: () => const EnvironmentalHealthCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(envHealthProvider),
@@ -126,7 +127,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 195),
+              loading: () => const RecommendationOverviewCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(plantRecommendationProvider),
@@ -145,7 +146,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 74),
+              loading: () => const SplitMetricCardsSkeleton(),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) {
                 final sensorCountAsync = ref.watch(
@@ -173,7 +174,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 98),
+              loading: () => const SimpleRowsCardSkeleton(rowCount: 2),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => SensorByTypeCardWidget(devices: devices),
             ),
@@ -186,7 +187,8 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 290),
+              loading: () =>
+                  const ChartCardSkeleton(chartHeight: 250, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(dailyReadsProvider),
@@ -205,7 +207,8 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 260),
+              loading: () =>
+                  const ChartCardSkeleton(chartHeight: 200, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(monthlyReadsProvider),

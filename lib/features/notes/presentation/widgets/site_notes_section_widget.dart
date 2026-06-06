@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site_note.dart';
 import '../providers/notes_provider.dart';
 
@@ -23,9 +24,7 @@ class SiteNotesSectionWidget extends ConsumerWidget {
             onPressed: () => _showCreateDialog(context, ref),
             icon: const Icon(Icons.add, size: 18),
             label: const Text('Catatan Baru'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
           ),
         ),
         const SizedBox(height: 12),
@@ -48,7 +47,11 @@ class SiteNotesSectionWidget extends ConsumerWidget {
                 ),
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const SimpleRowsCardSkeleton(
+              rowCount: 5,
+              iconSize: 36,
+              rowHeight: 44,
+            ),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
         ),
@@ -89,7 +92,9 @@ class SiteNotesSectionWidget extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? 'Catatan tersimpan' : 'Gagal menyimpan catatan'),
+          content: Text(
+            success ? 'Catatan tersimpan' : 'Gagal menyimpan catatan',
+          ),
         ),
       );
     }

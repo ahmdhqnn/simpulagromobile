@@ -202,10 +202,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           const SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
+                              child: SimpleRowsCardSkeleton(
+                                rowCount: 2,
+                                rowHeight: 42,
+                                iconSize: 32,
                               ),
                             ),
                           ),
@@ -1022,7 +1022,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ],
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SimpleRowsCardSkeleton(
+                rowCount: 3,
+                rowHeight: 40,
+                iconSize: 32,
+              ),
               error: (error, _) => Text('Error: $error'),
             ),
           ),

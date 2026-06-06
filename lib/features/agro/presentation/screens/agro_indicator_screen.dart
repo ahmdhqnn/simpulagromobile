@@ -120,9 +120,15 @@ class AgroIndicatorScreen extends ConsumerWidget {
                               ],
                             );
                           },
-                          loading: () => const Padding(
-                            padding: EdgeInsets.only(bottom: 24),
-                            child: Center(child: CircularProgressIndicator()),
+                          loading: () => Column(
+                            children: [
+                              const SectionHeaderWidget(
+                                title: 'Rekomendasi Tindakan',
+                              ),
+                              SizedBox(height: context.rh(0.014)),
+                              const RecommendationOverviewCardSkeleton(),
+                              SizedBox(height: context.rh(0.024)),
+                            ],
                           ),
                           error: (_, __) => const SizedBox.shrink(),
                         ),
@@ -141,9 +147,18 @@ class AgroIndicatorScreen extends ConsumerWidget {
                               ],
                             );
                           },
-                          loading: () => const Padding(
-                            padding: EdgeInsets.only(bottom: 24),
-                            child: Center(child: CircularProgressIndicator()),
+                          loading: () => Column(
+                            children: [
+                              const SectionHeaderWidget(title: 'Fase Tanam'),
+                              SizedBox(height: context.rh(0.014)),
+                              const ChartCardSkeleton(
+                                chartHeight: 110,
+                                hasSelector: false,
+                                hasStats: false,
+                                hasLegend: false,
+                              ),
+                              SizedBox(height: context.rh(0.024)),
+                            ],
                           ),
                           error: (_, __) => const SizedBox.shrink(),
                         ),

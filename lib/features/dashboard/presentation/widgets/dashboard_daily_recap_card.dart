@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../monitoring/presentation/providers/monitoring_provider.dart';
 
 class DashboardDailyRecapCard extends ConsumerWidget {
@@ -63,7 +64,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
           }).toList(),
         );
       },
-      loading: () => const LoadingCardWidget(height: 80),
+      loading: () => const CompactTextRowsSkeleton(rowCount: 4),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
         message: toUiErrorMessage(e),

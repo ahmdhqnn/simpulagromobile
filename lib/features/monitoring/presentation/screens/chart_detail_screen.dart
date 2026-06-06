@@ -6,6 +6,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/chart_detail_header_widget.dart';
 import '../widgets/chart_type_selector_widget.dart';
@@ -79,7 +80,10 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                         skipLoadingOnReload: true,
                         skipLoadingOnRefresh: true,
                         skipError: true,
-                        loading: () => const LoadingCardWidget(height: 250),
+                        loading: () => const ChartCardSkeleton(
+                          chartHeight: 220,
+                          hasSelector: false,
+                        ),
                         error: (e, _) => ErrorStateCardWidget(
                           message: e.toString(),
                           onRetry: () {
@@ -117,7 +121,10 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                         skipLoadingOnReload: true,
                         skipLoadingOnRefresh: true,
                         skipError: true,
-                        loading: () => const LoadingCardWidget(height: 200),
+                        loading: () => const ChartCardSkeleton(
+                          chartHeight: 220,
+                          hasStats: false,
+                        ),
                         error: (e, _) => ErrorStateCardWidget(
                           message: e.toString(),
                           onRetry: () {

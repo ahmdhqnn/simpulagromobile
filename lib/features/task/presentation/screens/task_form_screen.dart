@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_elements.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/domain/entities/site.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
@@ -136,29 +138,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     );
   }
 
-  Widget _buildLoadingCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.05),
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        children: [
-          const CircularProgressIndicator(color: AppColors.primary),
-          SizedBox(height: context.rh(0.018)),
-          Text(
-            'Memuat detail task',
-            style: AppTextStyles.cardTitle(context, context.sp(16)),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoadingCard() =>
+      const FormCardSkeleton(fieldCount: 5, hasLargeField: true);
 
   Widget _buildMessageCard({
     required IconData icon,
@@ -356,11 +337,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
-        child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+        child: const SkeletonContainer(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SkeletonLine(width: 140, height: 13),
+            ),
           ),
         ),
       ),

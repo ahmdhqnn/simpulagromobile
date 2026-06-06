@@ -6,6 +6,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/monitoring_provider.dart';
 import '../utils/sensor_metadata_adapter.dart';
 import '../widgets/history/history_chart_widget.dart';
@@ -46,7 +47,8 @@ class HistoryTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 195),
+              loading: () =>
+                  const ChartCardSkeleton(chartHeight: 220, hasSelector: false),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(historyReadsProvider),
@@ -108,7 +110,7 @@ class HistoryTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const LoadingCardWidget(height: 60),
+              loading: () => const KeyValueRowsCardSkeleton(),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) {
                 if (reads.isEmpty) {

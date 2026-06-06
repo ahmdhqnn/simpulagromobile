@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/recommendation.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../providers/recommendation_automation_provider.dart';
@@ -117,7 +118,7 @@ class _LiveTab extends ConsumerWidget {
       skipLoadingOnRefresh: true,
       skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const RecommendationListSkeleton(),
       error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
     );
   }
@@ -134,7 +135,7 @@ class _HistoryTab extends ConsumerWidget {
       skipLoadingOnRefresh: true,
       skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const RecommendationListSkeleton(),
       error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
     );
   }
@@ -175,7 +176,7 @@ class _ByPhaseTab extends ConsumerWidget {
               },
             ),
           ),
-          loading: () => const LinearProgressIndicator(),
+          loading: () => const DropdownFieldSkeleton(),
           error: (_, __) => const SizedBox.shrink(),
         ),
         Expanded(
@@ -187,8 +188,7 @@ class _ByPhaseTab extends ConsumerWidget {
                   skipError: true,
                   data: (list) =>
                       _RecommendationSimpleList(recommendations: list),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const RecommendationListSkeleton(),
                   error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
                 ),
         ),

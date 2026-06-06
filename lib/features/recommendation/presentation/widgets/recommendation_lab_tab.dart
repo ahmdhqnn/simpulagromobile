@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/recommendation_request.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/recommendation_provider.dart';
@@ -144,7 +145,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
           ),
           if (state.isLoading) ...[
             const SizedBox(height: 16),
-            const Center(child: CircularProgressIndicator()),
+            const KeyValueRowsCardSkeleton(rowCount: 3),
           ],
           if (state.error != null) ...[
             const SizedBox(height: 16),

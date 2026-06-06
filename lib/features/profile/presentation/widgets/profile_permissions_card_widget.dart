@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class ProfilePermissionsCardWidget extends StatefulWidget {
   final AsyncValue<List<String>> permissionsAsync;
@@ -25,15 +26,10 @@ class _ProfilePermissionsCardWidgetState
   Widget build(BuildContext context) {
     return widget.permissionsAsync.when(
       data: (permissions) => _buildCard(context, permissions),
-      loading: () => Container(
-        height: 82,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+      loading: () => const SimpleRowsCardSkeleton(
+        rowCount: 1,
+        rowHeight: 58,
+        iconSize: 50,
       ),
       error: (_, __) => _buildErrorState(context),
     );

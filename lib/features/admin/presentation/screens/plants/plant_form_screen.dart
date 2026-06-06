@@ -13,6 +13,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/device_sens
 import 'package:simpulagromobile/features/admin/domain/entities/plant.dart';
 import 'package:simpulagromobile/features/varietas/domain/entities/varietas_item.dart';
 import 'package:simpulagromobile/features/varietas/presentation/providers/varietas_provider.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class PlantFormScreen extends ConsumerStatefulWidget {
   final String? plantId;
@@ -69,8 +70,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
       if (plantAsync.isLoading) {
         return AdminFormScaffold(
           title: 'Memuat...',
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          body: const Padding(
+            padding: EdgeInsets.all(16),
+            child: FormCardSkeleton(fieldCount: 5),
           ),
         );
       }

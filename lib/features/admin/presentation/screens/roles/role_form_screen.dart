@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/role_provider.dart';
@@ -11,6 +10,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaff
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_checkbox_group.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/role.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class RoleFormScreen extends ConsumerStatefulWidget {
   final String? roleId;
@@ -63,8 +63,9 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
       if (roleAsync.isLoading) {
         return AdminFormScaffold(
           title: 'Memuat...',
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          body: const Padding(
+            padding: EdgeInsets.all(16),
+            child: FormCardSkeleton(fieldCount: 4),
           ),
         );
       }

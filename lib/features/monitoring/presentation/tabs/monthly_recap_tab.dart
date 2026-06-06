@@ -6,6 +6,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/analytics/monthly_trend_card_widget.dart';
 
@@ -42,7 +43,8 @@ class MonthlyRecapTab extends ConsumerWidget {
                 data: items,
                 metadataAdapter: metadataAdapter,
               ),
-              loading: () => const LoadingCardWidget(height: 200),
+              loading: () =>
+                  const ChartCardSkeleton(chartHeight: 200, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(monthlyReadsProvider),

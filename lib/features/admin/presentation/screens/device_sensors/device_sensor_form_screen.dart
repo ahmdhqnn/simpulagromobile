@@ -14,6 +14,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/device_sens
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class DeviceSensorFormScreen extends ConsumerStatefulWidget {
   final String? dsId;
@@ -74,9 +75,7 @@ class _DeviceSensorFormScreenState
     final formState = ref.watch(adminDeviceSensorFormProvider);
 
     if (_isEditMode && !_isInitialized) {
-      final dsAsync = ref.watch(
-        adminDeviceSensorDetailProvider(widget.dsId!),
-      );
+      final dsAsync = ref.watch(adminDeviceSensorDetailProvider(widget.dsId!));
       dsAsync.whenData((ds) {
         if (!_isInitialized) _initializeForm(ds);
       });
@@ -84,8 +83,9 @@ class _DeviceSensorFormScreenState
       if (dsAsync.isLoading) {
         return AdminFormScaffold(
           title: 'Memuat...',
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          body: const Padding(
+            padding: EdgeInsets.all(16),
+            child: FormCardSkeleton(fieldCount: 8),
           ),
         );
       }
@@ -94,9 +94,8 @@ class _DeviceSensorFormScreenState
           title: 'Error',
           body: AdminErrorState(
             error: dsAsync.error!,
-            onRetry: () => ref.invalidate(
-              adminDeviceSensorDetailProvider(widget.dsId!),
-            ),
+            onRetry: () =>
+                ref.invalidate(adminDeviceSensorDetailProvider(widget.dsId!)),
           ),
         );
       }
@@ -211,47 +210,74 @@ class _DeviceSensorFormScreenState
     final maxWarn = _parseDouble(_maxWarnController.text);
 
     if (minNorm != null && maxNorm != null && minNorm > maxNorm) {
-      SnackbarHelper.showError(context, 'Min Normal tidak boleh lebih besar dari Max Normal');
+      SnackbarHelper.showError(
+        context,
+        'Min Normal tidak boleh lebih besar dari Max Normal',
+      );
       return;
     }
     if (minValue != null && maxValue != null && minValue > maxValue) {
-      SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Max Absolut');
+      SnackbarHelper.showError(
+        context,
+        'Min Absolut tidak boleh lebih besar dari Max Absolut',
+      );
       return;
     }
     if (minWarn != null && maxWarn != null && minWarn > maxWarn) {
-      SnackbarHelper.showError(context, 'Min Warning tidak boleh lebih besar dari Max Warning');
+      SnackbarHelper.showError(
+        context,
+        'Min Warning tidak boleh lebih besar dari Max Warning',
+      );
       return;
     }
 
     if (minValue != null) {
       if (minNorm != null && minValue > minNorm) {
-        SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Min Normal');
+        SnackbarHelper.showError(
+          context,
+          'Min Absolut tidak boleh lebih besar dari Min Normal',
+        );
         return;
       }
       if (minWarn != null && minValue > minWarn) {
-        SnackbarHelper.showError(context, 'Min Absolut tidak boleh lebih besar dari Min Warning');
+        SnackbarHelper.showError(
+          context,
+          'Min Absolut tidak boleh lebih besar dari Min Warning',
+        );
         return;
       }
     }
 
     if (maxValue != null) {
       if (maxNorm != null && maxValue < maxNorm) {
-        SnackbarHelper.showError(context, 'Max Absolut tidak boleh lebih kecil dari Max Normal');
+        SnackbarHelper.showError(
+          context,
+          'Max Absolut tidak boleh lebih kecil dari Max Normal',
+        );
         return;
       }
       if (maxWarn != null && maxValue < maxWarn) {
-        SnackbarHelper.showError(context, 'Max Absolut tidak boleh lebih kecil dari Max Warning');
+        SnackbarHelper.showError(
+          context,
+          'Max Absolut tidak boleh lebih kecil dari Max Warning',
+        );
         return;
       }
     }
 
     if (minWarn != null && minNorm != null && minWarn > minNorm) {
-      SnackbarHelper.showError(context, 'Min Warning tidak boleh lebih besar dari Min Normal');
+      SnackbarHelper.showError(
+        context,
+        'Min Warning tidak boleh lebih besar dari Min Normal',
+      );
       return;
     }
 
     if (maxWarn != null && maxNorm != null && maxWarn < maxNorm) {
-      SnackbarHelper.showError(context, 'Max Warning tidak boleh lebih kecil dari Max Normal');
+      SnackbarHelper.showError(
+        context,
+        'Max Warning tidak boleh lebih kecil dari Max Normal',
+      );
       return;
     }
 

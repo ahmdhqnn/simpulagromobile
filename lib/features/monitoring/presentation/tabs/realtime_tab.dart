@@ -7,6 +7,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../dashboard/domain/entities/dashboard_entity.dart';
 import '../../../dashboard/presentation/widgets/sensor_status_card.dart';
@@ -77,8 +78,7 @@ class RealtimeTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () =>
-                  const LoadingCardWidget(height: 220, radius: AppRadius.lg),
+              loading: () => const SensorStatusGridSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(latestReadsProvider),
@@ -104,8 +104,7 @@ class RealtimeTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () =>
-                  const LoadingCardWidget(height: 260, radius: AppRadius.lg),
+              loading: () => const ChartCardSkeleton(chartHeight: 230),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(todayReadsProvider),
@@ -130,8 +129,7 @@ class RealtimeTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () =>
-                  const LoadingCardWidget(height: 60, radius: AppRadius.lg),
+              loading: () => const SimpleRowsCardSkeleton(rowCount: 3),
               error: (_, __) => const SizedBox.shrink(),
               data: (reads) => reads.isEmpty
                   ? InfoStateWidget.svg(

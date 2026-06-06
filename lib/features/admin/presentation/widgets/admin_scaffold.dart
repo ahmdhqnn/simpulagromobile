@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class AdminScaffold extends StatelessWidget {
   final String title;
@@ -176,9 +177,7 @@ class AdminLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.primary),
-    );
+    return buildListSkeleton(count: 6);
   }
 }
 

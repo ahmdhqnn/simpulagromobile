@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
+import '../../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../../shared/widgets/stat_item_widget.dart';
 import '../../../../plant/presentation/providers/plant_provider.dart';
 
@@ -26,16 +27,7 @@ class PlantStatisticsCardWidget extends ConsumerWidget {
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
       skipError: true,
-      loading: () => Container(
-        height: 74,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      ),
+      loading: () => const CompactStatsCardSkeleton(),
       error: (_, __) => _buildCard(
         context,
         total: 1,
