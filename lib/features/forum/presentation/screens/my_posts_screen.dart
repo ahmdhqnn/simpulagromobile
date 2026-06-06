@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../domain/entities/post.dart';
 import '../providers/forum_provider.dart';
+import '../widgets/forum_action_widgets.dart';
 import '../widgets/post_card.dart';
 
 class MyPostsScreen extends ConsumerWidget {
@@ -15,193 +18,135 @@ class MyPostsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final myPostsAsync = ref.watch(myPostsProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Postingan Saya',
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+    return ForumActionScaffold(
+      title: 'Postingan Saya',
+      floatingAction: CircularBackButtonWidget(
+        onPressed: () => _openCreatePost(context, ref),
+        svgIconPath: 'assets/icons/plus-outline-icon.svg',
       ),
       body: myPostsAsync.when(
         data: (posts) {
           if (posts.isEmpty) {
-            return EmptyStateWidget(
+            return ForumActionState(
               icon: Icons.article_outlined,
               title: 'Belum ada postingan',
-              message: 'Buat postingan pertama Anda untuk berbagi dengan komunitas',
-              action: ElevatedButton.icon(
-                onPressed: () => context.push('/forum/create'),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text(
-                  'Buat Postingan',
-                  style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                ),
-              ),
+              message:
+                  'Buat postingan pertama Anda untuk berbagi dengan komunitas.',
             );
           }
 
-          return RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              ref.invalidate(myPostsProvider);
-            },
-            child: ListView.builder(
-              padding: EdgeInsets.all(context.rw(0.051)),
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                final post = posts[index];
-                return PostCard(
-                  post: post,
-                  onLike: () async {
-                    await ref.read(forumProvider.notifier).toggleLike(post.postId);
-                    ref.invalidate(myPostsProvider);
-                  },
-                  onComment: () {
-                    context.push('/forum/post/${post.postId}');
-                  },
-                  onShare: () => _sharePost(context, ref, post.postId),
-                  onTap: () {
-                    context.push('/forum/post/${post.postId}');
-                  },
-                  onMorePressed: () =>
-                      _showPostOptions(context, ref, post.postId),
-                );
-              },
-            ),
-          );
+          return _buildPostList(context, ref, posts);
         },
-        loading: () => ListView.builder(
-          padding: EdgeInsets.all(context.rw(0.051)),
-          itemCount: 4,
-          itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
-        ),
+        loading: () => _buildLoadingList(context),
         error: (error, _) => _buildErrorState(context, ref, error),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/forum/create'),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.textPrimary.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              error.toString().replaceAll('Exception: ', ''),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption(context),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => ref.invalidate(myPostsProvider),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-              ),
-            ),
-          ],
+  Widget _buildPostList(BuildContext context, WidgetRef ref, List<Post> posts) {
+    final hPad = context.rw(0.051);
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async => ref.invalidate(myPostsProvider),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          hPad,
+          0,
+          hPad,
+          context.rh(0.02) + MediaQuery.paddingOf(context).bottom + 118,
         ),
+        itemCount: posts.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ForumActionSummaryCard(
+                icon: Icons.article_outlined,
+                title: '${posts.length} postingan',
+                subtitle: 'Postingan yang Anda buat di forum komunitas.',
+              ),
+            );
+          }
+
+          final post = posts[index - 1];
+          return PostCard(
+            post: post,
+            onLike: () async {
+              await ref.read(forumProvider.notifier).toggleLike(post.postId);
+              ref.invalidate(myPostsProvider);
+            },
+            onComment: () => context.push('/forum/post/${post.postId}'),
+            onShare: () => _sharePost(context, ref, post.postId),
+            onTap: () => context.push('/forum/post/${post.postId}'),
+            onMorePressed: () => _showPostOptions(context, ref, post.postId),
+          );
+        },
       ),
     );
+  }
+
+  Widget _buildLoadingList(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+      itemCount: 4,
+      itemBuilder: (_, __) => const PostCardSkeleton(hasImage: true),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
+    return ForumActionState(
+      icon: Icons.wifi_off_rounded,
+      title: 'Gagal memuat postingan',
+      message: error.toString().replaceAll('Exception: ', ''),
+      action: ForumActionPrimaryButton(
+        icon: Icons.refresh,
+        label: 'Coba Lagi',
+        onPressed: () => ref.invalidate(myPostsProvider),
+      ),
+    );
+  }
+
+  Future<void> _openCreatePost(BuildContext context, WidgetRef ref) async {
+    await context.push('/forum/create');
+    ref.invalidate(myPostsProvider);
   }
 
   void _showPostOptions(BuildContext context, WidgetRef ref, String postId) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (sheetCtx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.edit_outlined,
-                  color: AppColors.textPrimary,
-                ),
-                title: Text(
-                  'Edit Postingan',
-                  style: AppTextStyles.label(
-                    context,
-                    size: 14,
-                    weight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetCtx);
-                  context.push('/forum/edit/$postId');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline,
-                  color: AppColors.error,
-                ),
-                title: Text(
-                  'Hapus Postingan',
-                  style: AppTextStyles.label(
-                    context,
-                    size: 14,
-                    weight: FontWeight.w500,
-                    color: AppColors.error,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetCtx);
-                  _confirmDelete(context, ref, postId);
-                },
-              ),
-            ],
+      builder: (sheetCtx) => ForumActionBottomSheet(
+        title: 'Kelola Postingan',
+        children: [
+          ForumActionSheetItem(
+            icon: Icons.edit_outlined,
+            iconColor: AppColors.primary,
+            backgroundColor: AppColors.softGreen,
+            label: 'Edit Postingan',
+            onTap: () async {
+              Navigator.pop(sheetCtx);
+              await context.push('/forum/edit/$postId');
+              ref.invalidate(myPostsProvider);
+            },
           ),
-        ),
+          ForumActionSheetItem(
+            icon: Icons.delete_outline,
+            iconColor: AppColors.error,
+            backgroundColor: AppColors.softOrange,
+            label: 'Hapus Postingan',
+            labelColor: AppColors.error,
+            onTap: () {
+              Navigator.pop(sheetCtx);
+              _confirmDelete(context, ref, postId);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -218,7 +163,7 @@ class MyPostsScreen extends ConsumerWidget {
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Apakah Anda yakin ingin menghapus postingan ini?',
+          'Postingan ini akan dihapus permanen.',
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -241,17 +186,12 @@ class MyPostsScreen extends ConsumerWidget {
               Navigator.pop(dialogCtx);
               await ref.read(forumProvider.notifier).deletePost(postId);
               ref.invalidate(myPostsProvider);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Postingan berhasil dihapus',
-                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-                    ),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-              }
+              if (!context.mounted) return;
+              _showSnackBar(
+                context,
+                'Postingan berhasil dihapus',
+                backgroundColor: AppColors.success,
+              );
             },
             child: Text(
               'Hapus',
@@ -274,16 +214,30 @@ class MyPostsScreen extends ConsumerWidget {
   ) async {
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(myPostsProvider);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Postingan berhasil dibagikan',
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-          ),
-          backgroundColor: AppColors.success,
+    if (!context.mounted) return;
+    _showSnackBar(
+      context,
+      'Postingan berhasil dibagikan',
+      backgroundColor: AppColors.success,
+    );
+  }
+
+  void _showSnackBar(
+    BuildContext context,
+    String message, {
+    required Color backgroundColor,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
         ),
-      );
-    }
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
