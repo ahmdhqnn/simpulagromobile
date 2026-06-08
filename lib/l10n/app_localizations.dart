@@ -794,6 +794,162 @@ abstract class AppLocalizations {
   /// **'Tandai Sudah Panen'**
   String get plantMarkHarvested;
 
+  /// No description provided for @phaseGrowthTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Fase Pertumbuhan'**
+  String get phaseGrowthTitle;
+
+  /// No description provided for @phaseOverallProgressTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Progress Keseluruhan'**
+  String get phaseOverallProgressTitle;
+
+  /// No description provided for @phaseOverallProgressSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Progress fase keseluruhan'**
+  String get phaseOverallProgressSubtitle;
+
+  /// No description provided for @phaseStatusCompleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Selesai'**
+  String get phaseStatusCompleted;
+
+  /// No description provided for @phaseStatusActive.
+  ///
+  /// In id, this message translates to:
+  /// **'Aktif'**
+  String get phaseStatusActive;
+
+  /// No description provided for @phaseStatusUpcoming.
+  ///
+  /// In id, this message translates to:
+  /// **'Mendatang'**
+  String get phaseStatusUpcoming;
+
+  /// No description provided for @phaseEmptyTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada data fase'**
+  String get phaseEmptyTitle;
+
+  /// No description provided for @phaseEmptyMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Data fase pertumbuhan akan muncul setelah tanaman aktif terdaftar di site ini.'**
+  String get phaseEmptyMessage;
+
+  /// No description provided for @phaseReload.
+  ///
+  /// In id, this message translates to:
+  /// **'Muat Ulang'**
+  String get phaseReload;
+
+  /// No description provided for @phaseHstLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'HST'**
+  String get phaseHstLabel;
+
+  /// No description provided for @phaseDurationLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Durasi'**
+  String get phaseDurationLabel;
+
+  /// No description provided for @phaseDaysValue.
+  ///
+  /// In id, this message translates to:
+  /// **'{count} hari'**
+  String phaseDaysValue(String count);
+
+  /// No description provided for @phaseProgressDone.
+  ///
+  /// In id, this message translates to:
+  /// **'{percent}% selesai'**
+  String phaseProgressDone(String percent);
+
+  /// No description provided for @phaseDetailProgressTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Progress Fase'**
+  String get phaseDetailProgressTitle;
+
+  /// No description provided for @phaseDetailProgressSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Pelacakan progress fase'**
+  String get phaseDetailProgressSubtitle;
+
+  /// No description provided for @phaseCurrentHstLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'HST Saat Ini'**
+  String get phaseCurrentHstLabel;
+
+  /// No description provided for @phaseRemainingDaysLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Sisa Hari'**
+  String get phaseRemainingDaysLabel;
+
+  /// No description provided for @phaseTargetHstLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Target HST'**
+  String get phaseTargetHstLabel;
+
+  /// No description provided for @phaseHstRangeTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Rentang HST'**
+  String get phaseHstRangeTitle;
+
+  /// No description provided for @phaseHstRangeSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari Setelah Tanam'**
+  String get phaseHstRangeSubtitle;
+
+  /// No description provided for @phaseTimelineStartLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai'**
+  String get phaseTimelineStartLabel;
+
+  /// No description provided for @phaseTimelineEndLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Selesai'**
+  String get phaseTimelineEndLabel;
+
+  /// No description provided for @phaseTimelineStartSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Awal fase'**
+  String get phaseTimelineStartSubtitle;
+
+  /// No description provided for @phaseTimelineCompleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Sudah selesai'**
+  String get phaseTimelineCompleted;
+
+  /// No description provided for @phaseTimelineNotStarted.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum dimulai'**
+  String get phaseTimelineNotStarted;
+
+  /// No description provided for @phaseDaysRemaining.
+  ///
+  /// In id, this message translates to:
+  /// **'~{count} hari lagi'**
+  String phaseDaysRemaining(String count);
+
   /// No description provided for @plantDetailHarvestTitle.
   ///
   /// In id, this message translates to:

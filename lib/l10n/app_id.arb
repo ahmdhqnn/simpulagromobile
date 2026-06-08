@@ -163,6 +163,47 @@
   "plantViewPhases": "Lihat Fase Pertumbuhan",
   "plantGddTracking": "Pelacakan GDD",
   "plantMarkHarvested": "Tandai Sudah Panen",
+  "phaseGrowthTitle": "Fase Pertumbuhan",
+  "phaseOverallProgressTitle": "Progress Keseluruhan",
+  "phaseOverallProgressSubtitle": "Progress fase keseluruhan",
+  "phaseStatusCompleted": "Selesai",
+  "phaseStatusActive": "Aktif",
+  "phaseStatusUpcoming": "Mendatang",
+  "phaseEmptyTitle": "Belum ada data fase",
+  "phaseEmptyMessage": "Data fase pertumbuhan akan muncul setelah tanaman aktif terdaftar di site ini.",
+  "phaseReload": "Muat Ulang",
+  "phaseHstLabel": "HST",
+  "phaseDurationLabel": "Durasi",
+  "phaseDaysValue": "{count} hari",
+  "@phaseDaysValue": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "phaseProgressDone": "{percent}% selesai",
+  "@phaseProgressDone": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "phaseDetailProgressTitle": "Progress Fase",
+  "phaseDetailProgressSubtitle": "Pelacakan progress fase",
+  "phaseCurrentHstLabel": "HST Saat Ini",
+  "phaseRemainingDaysLabel": "Sisa Hari",
+  "phaseTargetHstLabel": "Target HST",
+  "phaseHstRangeTitle": "Rentang HST",
+  "phaseHstRangeSubtitle": "Hari Setelah Tanam",
+  "phaseTimelineStartLabel": "Mulai",
+  "phaseTimelineEndLabel": "Selesai",
+  "phaseTimelineStartSubtitle": "Awal fase",
+  "phaseTimelineCompleted": "Sudah selesai",
+  "phaseTimelineNotStarted": "Belum dimulai",
+  "phaseDaysRemaining": "~{count} hari lagi",
+  "@phaseDaysRemaining": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
   "plantDetailHarvestTitle": "Konfirmasi Panen",
   "plantDetailHarvestMessage": "Tandai \"{name}\" sudah dipanen?",
   "@plantDetailHarvestMessage": {

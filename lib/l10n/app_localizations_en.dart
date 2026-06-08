@@ -383,6 +383,91 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plantMarkHarvested => 'Mark as harvested';
 
   @override
+  String get phaseGrowthTitle => 'Growth Phase';
+
+  @override
+  String get phaseOverallProgressTitle => 'Overall Progress';
+
+  @override
+  String get phaseOverallProgressSubtitle => 'Overall phase progress';
+
+  @override
+  String get phaseStatusCompleted => 'Completed';
+
+  @override
+  String get phaseStatusActive => 'Active';
+
+  @override
+  String get phaseStatusUpcoming => 'Upcoming';
+
+  @override
+  String get phaseEmptyTitle => 'No phase data yet';
+
+  @override
+  String get phaseEmptyMessage =>
+      'Growth phase data will appear after an active plant is registered on this site.';
+
+  @override
+  String get phaseReload => 'Reload';
+
+  @override
+  String get phaseHstLabel => 'DAP';
+
+  @override
+  String get phaseDurationLabel => 'Duration';
+
+  @override
+  String phaseDaysValue(String count) {
+    return '$count days';
+  }
+
+  @override
+  String phaseProgressDone(String percent) {
+    return '$percent% complete';
+  }
+
+  @override
+  String get phaseDetailProgressTitle => 'Phase Progress';
+
+  @override
+  String get phaseDetailProgressSubtitle => 'Phase progress tracking';
+
+  @override
+  String get phaseCurrentHstLabel => 'Current DAP';
+
+  @override
+  String get phaseRemainingDaysLabel => 'Days Left';
+
+  @override
+  String get phaseTargetHstLabel => 'Target DAP';
+
+  @override
+  String get phaseHstRangeTitle => 'DAP Range';
+
+  @override
+  String get phaseHstRangeSubtitle => 'Days After Planting';
+
+  @override
+  String get phaseTimelineStartLabel => 'Start';
+
+  @override
+  String get phaseTimelineEndLabel => 'Finish';
+
+  @override
+  String get phaseTimelineStartSubtitle => 'Phase start';
+
+  @override
+  String get phaseTimelineCompleted => 'Completed';
+
+  @override
+  String get phaseTimelineNotStarted => 'Not started';
+
+  @override
+  String phaseDaysRemaining(String count) {
+    return '~$count days left';
+  }
+
+  @override
   String get plantDetailHarvestTitle => 'Confirm harvest';
 
   @override

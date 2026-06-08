@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../phase/presentation/screens/phase_list_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class GrowthPhaseButton extends StatelessWidget {
   final String siteId;
@@ -15,30 +16,31 @@ class GrowthPhaseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              PhaseListScreen(plantId: siteId, plantName: plantName),
-        ),
+      onTap: () => context.push(
+        '/phases/${Uri.encodeComponent(siteId)}/${Uri.encodeComponent(plantName)}',
       ),
       child: Container(
-        width: 130,
+        width: 160,
         height: 38,
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Growth Phase',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                height: 1.8,
+            Text(
+              l10n.phaseGrowthTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.label(
+                context,
+                size: 12,
+                weight: FontWeight.w400,
               ),
             ),
             const SizedBox(width: 4),
