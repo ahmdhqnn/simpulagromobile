@@ -50,7 +50,6 @@ import '../../features/plant/presentation/screens/plant_detail_screen.dart'
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
-// Monitoring Devices
 import '../../features/device/presentation/screens/device_list_screen.dart'
     as monitoring_device_list;
 import '../../features/device/presentation/screens/device_detail_screen.dart'
@@ -58,7 +57,6 @@ import '../../features/device/presentation/screens/device_detail_screen.dart'
 import '../../features/device/presentation/screens/device_form_screen.dart'
     as monitoring_device_form;
 
-// Monitoring Sensors
 import '../../features/sensor/presentation/screens/sensor_list_screen.dart'
     as monitoring_sensor_list;
 import '../../features/sensor/presentation/screens/sensor_detail_screen.dart'
@@ -66,10 +64,7 @@ import '../../features/sensor/presentation/screens/sensor_detail_screen.dart'
 import '../../features/sensor/presentation/screens/sensor_form_screen.dart'
     as monitoring_sensor_form;
 
-/// GoRouter dibuat sekali dan tidak di-recreate.
-/// Perubahan auth state ditangani via `refreshListenable`.
 final routerProvider = Provider<GoRouter>((ref) {
-  // Listenable yang trigger redirect saat auth state berubah
   final authNotifier = _AuthStateListenable(ref);
 
   final router = GoRouter(
@@ -87,25 +82,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLogin = loc == '/login';
       final isOnboarding = loc == '/onboarding';
 
-      // Splash screen menangani navigasinya sendiri — jangan redirect dari sini
       if (isSplash) return null;
 
-      // Saat loading (misal saat proses login), jangan redirect
       if (isLoading && isLogin) return null;
 
       if (isLoggedIn) {
-        // Sudah login — redirect dari auth screens ke home
         if (isLogin || isOnboarding) return '/';
         return null;
       }
 
-      // Belum login
       if (!isOnboardingCompleted && !isOnboarding) {
         return '/onboarding';
       }
       if (isLogin || isOnboarding) return null;
 
-      // Redirect ke login dengan pesan jika session expired
       final error = authState.error;
       if (error != null && error.contains('Sesi')) {
         return '/login?reason=session_expired';
@@ -143,7 +133,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             TaskDetailScreen(taskId: state.pathParameters['id']!),
       ),
 
-      // Recommendation
       GoRoute(
         path: '/recommendations',
         builder: (_, state) {
@@ -160,7 +149,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Phase
       GoRoute(
         path: '/phases/:siteId/:plantName',
         builder: (_, state) => PhaseListScreen(
@@ -172,8 +160,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/phase/:id',
-        builder: (_, state) =>
-            PhaseDetailScreen(phaseId: state.pathParameters['id']!),
+        builder: (_, state) => PhaseDetailScreen(
+          phaseId: state.pathParameters['id']!,
+          siteId: state.uri.queryParameters['siteId'],
+        ),
       ),
       GoRoute(
         path: '/gdd-tracking/:siteId/:plantName',
@@ -185,7 +175,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Profile
       GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
       GoRoute(
@@ -193,7 +182,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const ChangePasswordScreen(),
       ),
 
-      // Site
       GoRoute(path: '/site/create', builder: (_, __) => const SiteFormScreen()),
       GoRoute(
         path: '/site/:id/edit',
@@ -211,7 +199,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             SiteMemberInviteScreen(siteId: state.pathParameters['id']!),
       ),
 
-      // Plant
       GoRoute(path: '/plants', builder: (_, __) => const PlantListScreen()),
       GoRoute(
         path: '/plant/create',
@@ -228,7 +215,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             PlantDetailScreen(plantId: state.pathParameters['id']!),
       ),
 
-      // Forum
       GoRoute(path: '/forum', builder: (_, __) => const ForumScreen()),
       GoRoute(
         path: '/forum/post/:id',
@@ -257,7 +243,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const MyCommentsScreen(),
       ),
 
-      // Monitoring Devices
       GoRoute(
         path: '/site-devices/:siteId/:siteName',
         builder: (_, state) => monitoring_device_list.DeviceListScreen(
@@ -286,7 +271,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Monitoring Sensors
       GoRoute(
         path: '/site-sensors/:siteId/:siteName',
         builder: (_, state) => monitoring_sensor_list.SensorListScreen(
@@ -315,7 +299,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Admin utilities.
       GoRoute(path: '/admin', builder: (_, __) => const AdminMenuScreen()),
       GoRoute(
         path: '/admin/sensors',
@@ -427,7 +410,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             DeviceSensorFormScreen(dsId: state.pathParameters['id']),
       ),
 
-      // Legacy admin utility paths.
       GoRoute(path: '/utilitas', redirect: (_, __) => '/admin'),
       GoRoute(path: '/utilitas/sensors', redirect: (_, __) => '/admin/sensors'),
       GoRoute(
@@ -525,14 +507,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 
-  // Dispose listenable saat provider di-dispose
   ref.onDispose(authNotifier.dispose);
 
   return router;
 });
 
-/// ChangeNotifier yang listen ke authProvider dan notify GoRouter
-/// saat auth state berubah — ini best practice untuk GoRouter + Riverpod
 class _AuthStateListenable extends ChangeNotifier {
   late final ProviderSubscription<AuthState> _subscription;
 

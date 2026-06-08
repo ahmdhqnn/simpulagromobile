@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
@@ -116,7 +117,7 @@ class GddTrackingScreen extends ConsumerWidget {
               ref.invalidate(phaseListProvider(plantId));
               ref.invalidate(phaseStatsProvider(plantId));
             },
-            icon: Icons.refresh,
+            svgIconPath: 'assets/icons/arrow-rotate-left.svg',
           ),
         ],
       ),
@@ -236,7 +237,15 @@ class GddTrackingScreen extends ConsumerWidget {
               ref.invalidate(phaseListProvider(plantId));
               ref.invalidate(phaseStatsProvider(plantId));
             },
-            icon: const Icon(Icons.refresh, size: 18),
+            icon: SvgPicture.asset(
+              'assets/icons/arrow-rotate-left.svg',
+              width: 18,
+              height: 18,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
             label: const Text(
               'Muat Ulang',
               style: TextStyle(fontFamily: 'Plus Jakarta Sans'),

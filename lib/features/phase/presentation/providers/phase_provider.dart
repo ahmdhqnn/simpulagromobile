@@ -11,6 +11,8 @@ import '../../domain/usecases/get_current_phase_usecase.dart';
 import '../../domain/usecases/get_phase_history_usecase.dart';
 import '../../../agro/presentation/providers/agro_provider.dart';
 
+typedef PhaseDetailRequest = ({String phaseId, String? siteId});
+
 // ─── DataSource Provider ─────────────────────────────────
 /// Menggunakan dioClientProvider agar JWT token disertakan
 final phaseRemoteDatasourceProvider = Provider<PhaseRemoteDatasource>((ref) {
@@ -90,6 +92,29 @@ final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
     return result.fold((f) => throw f, (data) => data);
   });
 });
+
+final enrichedPhaseDetailProvider = FutureProvider.autoDispose
+    .family<Phase, PhaseDetailRequest>((ref, request) async {
+      return ref.retryOnError(() async {
+        final requestedSiteId = request.siteId?.trim();
+        final selectedSiteId = ref.watch(selectedSiteIdProvider)?.trim();
+        final siteId = requestedSiteId != null && requestedSiteId.isNotEmpty
+            ? requestedSiteId
+            : selectedSiteId;
+
+        if (siteId != null && siteId.isNotEmpty) {
+          final phases = await ref.watch(phaseListProvider(siteId).future);
+          final phase = phases
+              .where((phase) => phase.id == request.phaseId)
+              .firstOrNull;
+          if (phase != null) return phase;
+        }
+
+        final useCase = ref.watch(getPhaseByIdUseCaseProvider);
+        final result = await useCase(request.phaseId);
+        return result.fold((f) => throw f, (data) => data);
+      });
+    });
 
 // ─── Phase History Provider ───────────────────────────────
 final phaseHistoryProvider = FutureProvider.autoDispose
