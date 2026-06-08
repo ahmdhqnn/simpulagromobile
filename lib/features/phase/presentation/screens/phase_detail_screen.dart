@@ -9,12 +9,15 @@ import '../providers/phase_provider.dart';
 
 class PhaseDetailScreen extends ConsumerWidget {
   final String phaseId;
+  final String? siteId;
 
-  const PhaseDetailScreen({super.key, required this.phaseId});
+  const PhaseDetailScreen({super.key, required this.phaseId, this.siteId});
+
+  PhaseDetailRequest get _detailRequest => (phaseId: phaseId, siteId: siteId);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final phaseAsync = ref.watch(phaseDetailProvider(phaseId));
+    final phaseAsync = ref.watch(enrichedPhaseDetailProvider(_detailRequest));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
@@ -33,7 +36,7 @@ class PhaseDetailScreen extends ConsumerWidget {
           data: (phase) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
-              ref.invalidate(phaseDetailProvider(phaseId));
+              _refreshPhaseDetail(ref);
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Column(
@@ -78,12 +81,21 @@ class PhaseDetailScreen extends ConsumerWidget {
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           CircularIconActionWidget(
-            onPressed: () => ref.invalidate(phaseDetailProvider(phaseId)),
-            icon: Icons.refresh,
+            onPressed: () => _refreshPhaseDetail(ref),
+            svgIconPath: 'assets/icons/arrow-rotate-left.svg',
           ),
         ],
       ),
     );
+  }
+
+  void _refreshPhaseDetail(WidgetRef ref) {
+    final currentSiteId = siteId?.trim();
+    if (currentSiteId != null && currentSiteId.isNotEmpty) {
+      ref.invalidate(phaseListProvider(currentSiteId));
+    }
+    ref.invalidate(enrichedPhaseDetailProvider(_detailRequest));
+    ref.invalidate(phaseDetailProvider(phaseId));
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
@@ -115,8 +127,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: context.rh(0.03)),
                   ElevatedButton(
-                    onPressed: () =>
-                        ref.invalidate(phaseDetailProvider(phaseId)),
+                    onPressed: () => _refreshPhaseDetail(ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -198,7 +209,7 @@ class PhaseDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 1),
-                    // cropType menggantikan plantName yang tidak ada di API
+
                     Text(
                       phase.cropType,
                       style: TextStyle(
