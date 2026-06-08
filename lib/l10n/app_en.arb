@@ -146,6 +146,47 @@
   "plantViewPhases": "View growth phases",
   "plantGddTracking": "GDD tracking",
   "plantMarkHarvested": "Mark as harvested",
+  "phaseGrowthTitle": "Growth Phase",
+  "phaseOverallProgressTitle": "Overall Progress",
+  "phaseOverallProgressSubtitle": "Overall phase progress",
+  "phaseStatusCompleted": "Completed",
+  "phaseStatusActive": "Active",
+  "phaseStatusUpcoming": "Upcoming",
+  "phaseEmptyTitle": "No phase data yet",
+  "phaseEmptyMessage": "Growth phase data will appear after an active plant is registered on this site.",
+  "phaseReload": "Reload",
+  "phaseHstLabel": "DAP",
+  "phaseDurationLabel": "Duration",
+  "phaseDaysValue": "{count} days",
+  "@phaseDaysValue": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "phaseProgressDone": "{percent}% complete",
+  "@phaseProgressDone": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "phaseDetailProgressTitle": "Phase Progress",
+  "phaseDetailProgressSubtitle": "Phase progress tracking",
+  "phaseCurrentHstLabel": "Current DAP",
+  "phaseRemainingDaysLabel": "Days Left",
+  "phaseTargetHstLabel": "Target DAP",
+  "phaseHstRangeTitle": "DAP Range",
+  "phaseHstRangeSubtitle": "Days After Planting",
+  "phaseTimelineStartLabel": "Start",
+  "phaseTimelineEndLabel": "Finish",
+  "phaseTimelineStartSubtitle": "Phase start",
+  "phaseTimelineCompleted": "Completed",
+  "phaseTimelineNotStarted": "Not started",
+  "phaseDaysRemaining": "~{count} days left",
+  "@phaseDaysRemaining": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
   "plantDetailHarvestTitle": "Confirm harvest",
   "plantDetailHarvestMessage": "Mark \"{name}\" as harvested?",
   "@plantDetailHarvestMessage": {

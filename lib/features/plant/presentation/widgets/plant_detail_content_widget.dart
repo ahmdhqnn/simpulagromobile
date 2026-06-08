@@ -232,6 +232,7 @@ class _PhaseProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = phaseProgress.clamp(0, 100).round();
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +240,7 @@ class _PhaseProgress extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Progress fase',
+              l10n.phaseDetailProgressTitle,
               style: AppTextStyles.caption(
                 context,
                 size: context.sp(11),

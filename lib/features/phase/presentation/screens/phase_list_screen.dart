@@ -4,7 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/phase_provider.dart';
 
@@ -22,20 +25,16 @@ class PhaseListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phasesAsync = ref.watch(phaseListProvider(plantId));
     final statsAsync = ref.watch(phaseStatsProvider(plantId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: phasesAsync.when(
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
           skipError: true,
-          loading: () => Column(
-            children: [
-              _buildHeader(context, ref),
-              Expanded(child: buildListSkeleton(count: 5, type: 'phase')),
-            ],
-          ),
+          loading: () => _buildLoadingState(context, ref, l10n),
           error: (error, stack) => _buildErrorState(context, ref, error),
           data: (phases) => RefreshIndicator(
             color: AppColors.primary,
@@ -44,65 +43,113 @@ class PhaseListScreen extends ConsumerWidget {
               ref.invalidate(phaseStatsProvider(plantId));
               await Future.delayed(const Duration(milliseconds: 500));
             },
-            child: Column(
-              children: [
-                _buildHeader(context, ref),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.rw(0.051),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: context.rh(0.01)),
-                        Text(
-                          plantName,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(22),
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF1D1D1D),
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(height: context.rh(0.014)),
-
-                        // Statistics Card
-                        statsAsync.when(
-                          skipLoadingOnReload: true,
-                          skipLoadingOnRefresh: true,
-                          skipError: true,
-                          data: (stats) => _buildStatsCard(context, stats),
-                          loading: () => const PhaseStatsCardSkeleton(),
-                          error: (_, __) => const SizedBox.shrink(),
-                        ),
-
-                        SizedBox(height: context.rh(0.024)),
-
-                        if (phases.isEmpty)
-                          _buildEmptyState(context, ref)
-                        else
-                          ...phases.map(
-                            (phase) => Padding(
-                              padding: EdgeInsets.only(
-                                bottom: context.rh(0.014),
-                              ),
-                              child: _buildPhaseCard(context, phase),
-                            ),
-                          ),
-
-                        SizedBox(height: context.rh(0.02)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            child: _buildScrollablePage(
+              context,
+              ref,
+              content: _buildPhaseListContent(
+                context,
+                ref,
+                phases,
+                statsAsync,
+                l10n,
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildScrollablePage(
+    BuildContext context,
+    WidgetRef ref, {
+    required Widget content,
+  }) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: _scrollMinHeight(context)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, ref),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+              child: content,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double _scrollMinHeight(BuildContext context) {
+    final safeArea = context.screenPadding.top + context.screenPadding.bottom;
+    return (context.sh - safeArea).clamp(0.0, double.infinity);
+  }
+
+  Widget _buildLoadingState(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    return _buildScrollablePage(
+      context,
+      ref,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            l10n.phaseGrowthTitle,
+            style: AppTextStyles.sectionTitle(context, context.sp(22)),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const PhaseStatsCardSkeleton(),
+          const SizedBox(height: AppSpacing.sm),
+          buildListSkeleton(count: 5, type: 'phase', padding: EdgeInsets.zero),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhaseListContent(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> phases,
+    AsyncValue<Map<String, dynamic>> statsAsync,
+    AppLocalizations l10n,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          l10n.phaseGrowthTitle,
+          style: AppTextStyles.sectionTitle(context, context.sp(22)),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        statsAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
+          data: (stats) => _buildStatsCard(context, stats, l10n),
+          loading: () => const PhaseStatsCardSkeleton(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        if (phases.isEmpty)
+          _buildEmptyState(context, ref, l10n)
+        else
+          ...phases.map(
+            (phase) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _buildPhaseCard(context, phase, l10n),
+            ),
+          ),
+        const SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 
@@ -129,98 +176,80 @@ class PhaseListScreen extends ConsumerWidget {
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
-    return Column(
-      children: [
-        _buildHeader(context, ref),
-        Expanded(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(context.rw(0.061)),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: context.rw(0.164).clamp(48.0, 72.0),
-                    color: AppColors.error,
-                  ),
-                  SizedBox(height: context.rh(0.02)),
-                  Text(
-                    'Gagal memuat data',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(18),
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1D1D1D),
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.01)),
-                  Text(
-                    error.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(14),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.03)),
-                  ElevatedButton(
-                    onPressed: () {
-                      ref.invalidate(phaseListProvider(plantId));
-                      ref.invalidate(phaseStatsProvider(plantId));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                    ),
-                    child: const Text(
-                      'Coba Lagi',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                    ),
-                  ),
-                ],
+    final l10n = AppLocalizations.of(context)!;
+
+    return _buildScrollablePage(
+      context,
+      ref,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: context.sh * 0.68),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: context.rw(0.164).clamp(48.0, 72.0),
+              color: AppColors.error,
+            ),
+            SizedBox(height: context.rh(0.02)),
+            Text(
+              l10n.errorLoadData,
+              style: AppTextStyles.cardTitle(context, context.sp(18)),
+            ),
+            SizedBox(height: context.rh(0.01)),
+            Text(
+              error.toString(),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.hint(context, size: context.sp(14)),
+            ),
+            SizedBox(height: context.rh(0.03)),
+            ElevatedButton(
+              onPressed: () {
+                ref.invalidate(phaseListProvider(plantId));
+                ref.invalidate(phaseStatsProvider(plantId));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.surface,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+              ),
+              child: Text(
+                l10n.retry,
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildStatsCard(BuildContext context, Map<String, dynamic> stats) {
-    return Container(
+  Widget _buildStatsCard(
+    BuildContext context,
+    Map<String, dynamic> stats,
+    AppLocalizations l10n,
+  ) {
+    return AppCardWidget(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.timeline,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+              const IconBadgeWidget.icon(
+                icon: Icons.timeline,
+                background: AppColors.softGreen,
+                tint: AppColors.primary,
+                size: 50,
+                iconSize: 20,
+                radius: AppRadius.sm,
               ),
               SizedBox(width: context.rw(0.02)),
               Expanded(
@@ -228,25 +257,16 @@ class PhaseListScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Progress Keseluruhan',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(22),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1,
+                      l10n.phaseOverallProgressTitle,
+                      style: AppTextStyles.sectionTitle(
+                        context,
+                        context.sp(22),
                       ),
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Overall Phase Progress',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.83,
-                      ),
+                      l10n.phaseOverallProgressSubtitle,
+                      style: AppTextStyles.label(context, size: context.sp(12)),
                     ),
                   ],
                 ),
@@ -266,21 +286,21 @@ class PhaseListScreen extends ConsumerWidget {
             children: [
               _buildStatItem(
                 context,
-                'Selesai',
+                l10n.phaseStatusCompleted,
                 '${stats['completed']}',
-                Colors.green,
+                AppColors.success,
               ),
               _buildStatItem(
                 context,
-                'Aktif',
+                l10n.phaseStatusActive,
                 '${stats['active']}',
                 AppColors.primary,
               ),
               _buildStatItem(
                 context,
-                'Mendatang',
+                l10n.phaseStatusUpcoming,
                 '${stats['upcoming']}',
-                Colors.orange,
+                AppColors.warning,
               ),
             ],
           ),
@@ -299,32 +319,32 @@ class PhaseListScreen extends ConsumerWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(24),
-            fontWeight: FontWeight.bold,
+          style: AppTextStyles.metric(
+            context,
+            size: context.sp(24),
+            weight: FontWeight.w700,
             color: color,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(12),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-          ),
+          style: AppTextStyles.caption(context, size: context.sp(12)),
         ),
       ],
     );
   }
 
-  Widget _buildPhaseCard(BuildContext context, phase) {
+  Widget _buildPhaseCard(
+    BuildContext context,
+    dynamic phase,
+    AppLocalizations l10n,
+  ) {
     Color statusColor;
     IconData statusIcon;
 
     switch (phase.status) {
       case 'completed':
-        statusColor = Colors.green;
+        statusColor = AppColors.success;
         statusIcon = Icons.check_circle;
         break;
       case 'active':
@@ -332,145 +352,135 @@ class PhaseListScreen extends ConsumerWidget {
         statusIcon = Icons.play_circle;
         break;
       default:
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         statusIcon = Icons.schedule;
     }
 
-    return Container(
+    return AppCardWidget(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: InkWell(
-        onTap: () {
-          context.push(
-            '/phase/${Uri.encodeComponent(phase.id)}?siteId=${Uri.encodeQueryComponent(plantId)}',
-          );
-        },
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(16),
+      radius: AppRadius.lg,
+      onTap: () {
+        context.push(
+          '/phase/${Uri.encodeComponent(phase.id)}?siteId=${Uri.encodeQueryComponent(plantId)}',
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(statusIcon, color: statusColor, size: 20),
-                  ),
-                  SizedBox(width: context.rw(0.02)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          phase.phaseName,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(22),
-                            fontWeight: FontWeight.w300,
-                            color: const Color(0xFF1D1D1D),
-                            height: 1,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          phase.status == 'completed'
-                              ? 'Selesai'
-                              : phase.status == 'active'
-                              ? 'Aktif'
-                              : 'Mendatang',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: context.sp(12),
-                            fontWeight: FontWeight.w300,
-                            color: const Color(0xFF1D1D1D),
-                            height: 1.83,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              IconBadgeWidget.icon(
+                icon: statusIcon,
+                background: statusColor.withValues(alpha: 0.1),
+                tint: statusColor,
+                size: 50,
+                iconSize: 20,
+                radius: AppRadius.sm,
               ),
-              const SizedBox(height: 12),
-              Text(
-                phase.description,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(13),
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+              SizedBox(width: context.rw(0.02)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      phase.phaseName,
+                      style: AppTextStyles.sectionTitle(
+                        context,
+                        context.sp(22),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      _phaseStatusLabel(phase.status, l10n),
+                      style: AppTextStyles.label(
+                        context,
+                        size: context.sp(12),
+                        weight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoChip(
-                      context,
-                      'HST',
-                      '${phase.hstMin}-${phase.hstMax}',
-                      Icons.calendar_today,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildInfoChip(
-                      context,
-                      'Durasi',
-                      '${phase.phaseDuration} hari',
-                      Icons.timer,
-                    ),
-                  ),
-                ],
-              ),
-              if (phase.isActive || phase.isCompleted) ...[
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: phase.progress,
-                    minHeight: 8,
-                    backgroundColor: AppColors.divider,
-                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${phase.progressPercentage.toStringAsFixed(0)}% selesai',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            phase.description,
+            style: AppTextStyles.hint(context, size: context.sp(13)),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoChip(
+                  context,
+                  l10n.phaseHstLabel,
+                  '${phase.hstMin}-${phase.hstMax}',
+                  Icons.calendar_today,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildInfoChip(
+                  context,
+                  l10n.phaseDurationLabel,
+                  l10n.phaseDaysValue('${phase.phaseDuration}'),
+                  Icons.timer,
+                ),
+              ),
+            ],
+          ),
+          if (phase.isActive || phase.isCompleted) ...[
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: phase.progress,
+                minHeight: 8,
+                backgroundColor: AppColors.divider,
+                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.phaseProgressDone(
+                phase.progressPercentage.toStringAsFixed(0),
+              ),
+              style: AppTextStyles.label(
+                context,
+                size: context.sp(12),
+                weight: FontWeight.w600,
+                color: statusColor,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
-    return Container(
+  String _phaseStatusLabel(String status, AppLocalizations l10n) {
+    switch (status) {
+      case 'completed':
+        return l10n.phaseStatusCompleted;
+      case 'active':
+        return l10n.phaseStatusActive;
+      default:
+        return l10n.phaseStatusUpcoming;
+    }
+  }
+
+  Widget _buildEmptyState(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    return AppCardWidget(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         vertical: context.rh(0.06),
         horizontal: context.rw(0.051),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -478,26 +488,20 @@ class PhaseListScreen extends ConsumerWidget {
           Icon(
             Icons.eco_outlined,
             size: context.rw(0.164).clamp(48.0, 64.0),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.25),
+            color: AppColors.textPrimary.withValues(alpha: 0.25),
           ),
           SizedBox(height: context.rh(0.02)),
           Text(
-            'Belum ada data fase',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(16),
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
-            ),
+            l10n.phaseEmptyTitle,
+            style: AppTextStyles.cardTitle(context, context.sp(16)),
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            'Data fase pertumbuhan akan muncul setelah\ntanaman aktif terdaftar di site ini.',
+            l10n.phaseEmptyMessage,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.55),
+            style: AppTextStyles.hint(
+              context,
+              size: context.sp(13),
               height: 1.5,
             ),
           ),
@@ -512,20 +516,20 @@ class PhaseListScreen extends ConsumerWidget {
               width: 18,
               height: 18,
               colorFilter: const ColorFilter.mode(
-                Colors.white,
+                AppColors.surface,
                 BlendMode.srcIn,
               ),
             ),
-            label: const Text(
-              'Muat Ulang',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            label: Text(
+              l10n.phaseReload,
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
             ),
           ),
@@ -543,8 +547,8 @@ class PhaseListScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,27 +558,22 @@ class PhaseListScreen extends ConsumerWidget {
               Icon(
                 icon,
                 size: 16,
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                color: AppColors.textPrimary.withValues(alpha: 0.6),
               ),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(11),
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                ),
+                style: AppTextStyles.hint(context, size: context.sp(11)),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D1D1D),
+            style: AppTextStyles.label(
+              context,
+              size: context.sp(13),
+              weight: FontWeight.w600,
             ),
           ),
         ],

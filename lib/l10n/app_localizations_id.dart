@@ -382,6 +382,91 @@ class AppLocalizationsId extends AppLocalizations {
   String get plantMarkHarvested => 'Tandai Sudah Panen';
 
   @override
+  String get phaseGrowthTitle => 'Fase Pertumbuhan';
+
+  @override
+  String get phaseOverallProgressTitle => 'Progress Keseluruhan';
+
+  @override
+  String get phaseOverallProgressSubtitle => 'Progress fase keseluruhan';
+
+  @override
+  String get phaseStatusCompleted => 'Selesai';
+
+  @override
+  String get phaseStatusActive => 'Aktif';
+
+  @override
+  String get phaseStatusUpcoming => 'Mendatang';
+
+  @override
+  String get phaseEmptyTitle => 'Belum ada data fase';
+
+  @override
+  String get phaseEmptyMessage =>
+      'Data fase pertumbuhan akan muncul setelah tanaman aktif terdaftar di site ini.';
+
+  @override
+  String get phaseReload => 'Muat Ulang';
+
+  @override
+  String get phaseHstLabel => 'HST';
+
+  @override
+  String get phaseDurationLabel => 'Durasi';
+
+  @override
+  String phaseDaysValue(String count) {
+    return '$count hari';
+  }
+
+  @override
+  String phaseProgressDone(String percent) {
+    return '$percent% selesai';
+  }
+
+  @override
+  String get phaseDetailProgressTitle => 'Progress Fase';
+
+  @override
+  String get phaseDetailProgressSubtitle => 'Pelacakan progress fase';
+
+  @override
+  String get phaseCurrentHstLabel => 'HST Saat Ini';
+
+  @override
+  String get phaseRemainingDaysLabel => 'Sisa Hari';
+
+  @override
+  String get phaseTargetHstLabel => 'Target HST';
+
+  @override
+  String get phaseHstRangeTitle => 'Rentang HST';
+
+  @override
+  String get phaseHstRangeSubtitle => 'Hari Setelah Tanam';
+
+  @override
+  String get phaseTimelineStartLabel => 'Mulai';
+
+  @override
+  String get phaseTimelineEndLabel => 'Selesai';
+
+  @override
+  String get phaseTimelineStartSubtitle => 'Awal fase';
+
+  @override
+  String get phaseTimelineCompleted => 'Sudah selesai';
+
+  @override
+  String get phaseTimelineNotStarted => 'Belum dimulai';
+
+  @override
+  String phaseDaysRemaining(String count) {
+    return '~$count hari lagi';
+  }
+
+  @override
   String get plantDetailHarvestTitle => 'Konfirmasi Panen';
 
   @override
