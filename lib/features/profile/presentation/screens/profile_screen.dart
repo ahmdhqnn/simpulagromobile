@@ -25,6 +25,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
     final permissionsAsync = ref.watch(userPermissionsProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
@@ -48,12 +49,15 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(height: context.rh(0.022)),
                   ProfileAvatarWidget(profile: profile),
                   SizedBox(height: context.rh(0.024)),
-                  _buildUserInfo(context, profile),
+                  _buildUserInfo(context, profile, authState),
                   SizedBox(height: context.rh(0.024)),
                   ProfileAccountInfoWidget(profile: profile),
-                  SizedBox(height: context.rh(0.024)),
-                  _buildAdminSection(context, ref),
-                  SizedBox(height: context.rh(0.024)),
+                  if (authState.isAdmin) ...[
+                    SizedBox(height: context.rh(0.024)),
+                    _buildAdminSection(context),
+                    SizedBox(height: context.rh(0.024)),
+                  ] else
+                    SizedBox(height: context.rh(0.024)),
                   _buildForumSection(context),
                   SizedBox(height: context.rh(0.024)),
                   _buildPermissionsSection(context, permissionsAsync),
@@ -101,7 +105,13 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserInfo(BuildContext context, UserProfile profile) {
+  Widget _buildUserInfo(
+    BuildContext context,
+    UserProfile profile,
+    AuthState authState,
+  ) {
+    final roleLabel = _resolveRoleLabel(profile, authState);
+
     return Column(
       children: [
         Container(
@@ -111,7 +121,7 @@ class ProfileScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            profile.roleName ?? 'User',
+            roleLabel,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(12),
@@ -127,10 +137,19 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAdminSection(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    if (!authState.isAdmin) return const SizedBox.shrink();
+  String _resolveRoleLabel(UserProfile profile, AuthState authState) {
+    final roleId = (profile.roleId ?? authState.user?.roleId ?? '')
+        .trim()
+        .toUpperCase();
+    if (roleId == 'ROLE001' || authState.isAdmin) return 'Admin';
 
+    final rawRole = (profile.roleName ?? '').trim().toLowerCase();
+    if (rawRole == 'admin' || rawRole == 'administrator') return 'Admin';
+
+    return 'User';
+  }
+
+  Widget _buildAdminSection(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
       child: Column(

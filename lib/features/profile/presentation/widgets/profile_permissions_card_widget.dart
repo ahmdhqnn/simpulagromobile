@@ -132,6 +132,10 @@ class _ProfilePermissionsCardWidgetState
     }
 
     final grouped = _groupPermissions(permissions);
+    final totalPermissions = grouped.values.fold<int>(
+      0,
+      (total, actions) => total + actions.length,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -170,7 +174,7 @@ class _ProfilePermissionsCardWidgetState
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          '${permissions.length} Permission${permissions.length > 1 ? 's' : ''}',
+                          '$totalPermissions permission',
                           style: AppTextStyles.hint(context),
                         ),
                       ],
@@ -189,6 +193,7 @@ class _ProfilePermissionsCardWidgetState
           ),
           if (_expanded)
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               decoration: const BoxDecoration(
                 border: Border(top: BorderSide(color: AppColors.divider)),
@@ -217,12 +222,48 @@ class _ProfilePermissionsCardWidgetState
   Map<String, List<String>> _groupPermissions(List<String> permissions) {
     final Map<String, List<String>> grouped = {};
     for (final permission in permissions) {
-      final parts = permission.split(':');
+      final normalized = permission.trim();
+      if (normalized.isEmpty) continue;
+
+      final parts = normalized.split(':');
       if (parts.length == 2) {
-        grouped.putIfAbsent(parts[0], () => []).add(parts[1]);
+        final module = parts[0].trim();
+        final action = parts[1].trim();
+        if (module.isEmpty || action.isEmpty) continue;
+        grouped.putIfAbsent(module, () => []).add(action);
+      } else {
+        grouped.putIfAbsent('Lainnya', () => []).add(normalized);
       }
     }
-    return grouped;
+
+    final sortedEntries = grouped.entries.toList()
+      ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()));
+
+    return {
+      for (final entry in sortedEntries)
+        entry.key: _sortActions(entry.value.toSet().toList()),
+    };
+  }
+
+  List<String> _sortActions(List<String> actions) {
+    const order = {
+      'read': 0,
+      'view': 1,
+      'create': 2,
+      'update': 3,
+      'edit': 4,
+      'delete': 5,
+      'manage': 6,
+      'admin': 7,
+    };
+
+    actions.sort((a, b) {
+      final aOrder = order[a.toLowerCase()] ?? 99;
+      final bOrder = order[b.toLowerCase()] ?? 99;
+      if (aOrder != bOrder) return aOrder.compareTo(bOrder);
+      return a.toLowerCase().compareTo(b.toLowerCase());
+    });
+    return actions;
   }
 }
 
@@ -233,57 +274,103 @@ class _PermissionGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          _capitalize(module),
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(14),
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _formatModule(module),
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(14),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: actions.map((action) {
-            final color = _actionColor(action);
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.xs),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(_actionIcon(action), size: 14, color: color),
-                  const SizedBox(width: 6),
-                  Text(
-                    _capitalize(action),
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.w500,
-                      color: color,
-                    ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              alignment: WrapAlignment.start,
+              runAlignment: WrapAlignment.start,
+              crossAxisAlignment: WrapCrossAlignment.start,
+              spacing: 8,
+              runSpacing: 8,
+              children: actions.map((action) {
+                final color = _actionColor(action);
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ],
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_actionIcon(action), size: 14, color: color),
+                      const SizedBox(width: 6),
+                      Text(
+                        _formatAction(action),
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w500,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  String _capitalize(String text) => text.isEmpty
-      ? text
-      : text[0].toUpperCase() + text.substring(1).toLowerCase();
+  String _formatModule(String text) {
+    final normalized = text
+        .replaceAll(RegExp(r'[_-]+'), ' ')
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .map(_capitalize)
+        .join(' ');
+    return normalized.isEmpty ? '-' : normalized;
+  }
+
+  String _formatAction(String text) {
+    switch (text.toLowerCase()) {
+      case 'read':
+      case 'view':
+        return 'Lihat';
+      case 'create':
+        return 'Tambah';
+      case 'update':
+      case 'edit':
+        return 'Ubah';
+      case 'delete':
+        return 'Hapus';
+      case 'manage':
+        return 'Kelola';
+      case 'admin':
+        return 'Admin';
+      default:
+        return _formatModule(text);
+    }
+  }
+
+  String _capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
 
   IconData _actionIcon(String action) {
     switch (action.toLowerCase()) {
