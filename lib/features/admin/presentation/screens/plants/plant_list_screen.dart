@@ -29,6 +29,9 @@ class PlantListScreen extends ConsumerWidget {
           ),
         ),
         body: plantListAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (plants) {
             if (plants.isEmpty) {
               return const AdminEmptyState(

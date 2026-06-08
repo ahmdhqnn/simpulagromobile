@@ -28,6 +28,9 @@ class RoleListScreen extends ConsumerWidget {
           ),
         ),
         body: roleListAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (roles) {
             if (roles.isEmpty) {
               return const AdminEmptyState(

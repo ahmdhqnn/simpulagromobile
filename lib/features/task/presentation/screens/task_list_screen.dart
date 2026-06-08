@@ -64,6 +64,9 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: filteredTasksAsync.when(
+                    skipLoadingOnReload: true,
+                    skipLoadingOnRefresh: true,
+                    skipError: true,
                     loading: () => buildListSkeleton(count: 6, type: 'task'),
                     error: (error, _) => ErrorStateCardWidget(
                       message: error.toString(),

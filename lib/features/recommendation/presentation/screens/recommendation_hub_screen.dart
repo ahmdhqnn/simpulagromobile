@@ -370,7 +370,11 @@ class _RecommendationHubScreenState
           },
         );
       },
-      loading: () => const LinearProgressIndicator(minHeight: 2),
+      loading: () => const DropdownFieldSkeleton(
+        height: 42,
+        radius: AppRadius.pill,
+        padding: EdgeInsets.zero,
+      ),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
@@ -466,7 +470,7 @@ class _RecommendationHubScreenState
           ],
         ),
       ),
-      loading: () => const CompactStatsCardSkeleton(itemCount: 4, height: 64),
+      loading: () => const InlineStatsCardSkeleton(itemCount: 4, height: 64),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
@@ -529,7 +533,11 @@ class _RecommendationHubScreenState
       loading: () => SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: hPad),
-          child: buildListSkeleton(count: 6, type: 'plant'),
+          child: buildListSkeleton(
+            count: 6,
+            type: 'recommendation',
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
         ),
       ),
       error: (error, _) =>

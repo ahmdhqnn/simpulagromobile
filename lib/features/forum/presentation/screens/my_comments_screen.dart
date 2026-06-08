@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../domain/entities/user_comment.dart';
@@ -24,6 +25,9 @@ class MyCommentsScreen extends ConsumerWidget {
         icon: Icons.refresh,
       ),
       body: myCommentsAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (comments) {
           if (comments.isEmpty) {
             return const ForumActionState(
@@ -475,44 +479,47 @@ class _CommentCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SkeletonContainer(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCardWidget(
+        radius: AppRadius.xl,
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: const [
-                SkeletonBox(width: 42, height: 42, borderRadius: AppRadius.sm),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonLine(width: 160, height: 13),
-                      SizedBox(height: 5),
-                      SkeletonLine(width: 110, height: 10),
-                    ],
+        child: SkeletonContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  SkeletonBox(
+                    width: 42,
+                    height: 42,
+                    borderRadius: AppRadius.sm,
                   ),
-                ),
-                SizedBox(width: 10),
-                SkeletonCircle(size: 28),
-              ],
-            ),
-            const SizedBox(height: 14),
-            const SkeletonLine(width: double.infinity, height: 12),
-            const SizedBox(height: 6),
-            const SkeletonLine(width: double.infinity, height: 12),
-            const SizedBox(height: 6),
-            const SkeletonLine(width: 190, height: 12),
-            const SizedBox(height: 14),
-            const SkeletonLine(width: 86, height: 10),
-          ],
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonLine(width: 160, height: 13),
+                        SizedBox(height: 5),
+                        SkeletonLine(width: 110, height: 10),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  SkeletonCircle(size: 28),
+                ],
+              ),
+              const SizedBox(height: 14),
+              const SkeletonLine(width: double.infinity, height: 12),
+              const SizedBox(height: 6),
+              const SkeletonLine(width: double.infinity, height: 12),
+              const SizedBox(height: 6),
+              const SkeletonLine(width: 190, height: 12),
+              const SizedBox(height: 14),
+              const SkeletonLine(width: 86, height: 10),
+            ],
+          ),
         ),
       ),
     );

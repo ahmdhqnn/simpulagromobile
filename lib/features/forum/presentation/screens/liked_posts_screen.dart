@@ -25,6 +25,9 @@ class LikedPostsScreen extends ConsumerWidget {
         icon: Icons.refresh,
       ),
       body: likedPostsAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (posts) {
           if (posts.isEmpty) {
             return const ForumActionState(

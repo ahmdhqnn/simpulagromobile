@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
@@ -37,27 +36,12 @@ class ProfileAccountInfoWidget extends StatelessWidget {
                   label: 'Telepon',
                   value: profile.userPhone ?? '-',
                 ),
-                const SizedBox(height: 3),
-                _InfoRow(
-                  iconPath: 'assets/icons/date-outline-icon.svg',
-                  label: 'Bergabung',
-                  value: _formatJoinDate(profile.userCreated),
-                ),
               ],
             ),
           ),
         ],
       ),
     );
-  }
-
-  String _formatJoinDate(DateTime? date) {
-    if (date == null) return '-';
-    try {
-      return DateFormat('d/M/yyyy').format(date);
-    } catch (_) {
-      return '-';
-    }
   }
 }
 

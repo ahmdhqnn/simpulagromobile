@@ -76,6 +76,9 @@ class _MappingTab extends ConsumerWidget {
     final dsListAsync = ref.watch(adminDeviceSensorListProvider);
 
     return dsListAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (deviceSensors) {
         if (deviceSensors.isEmpty) {
           return const AdminEmptyState(

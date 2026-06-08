@@ -32,6 +32,9 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return async.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (items) => AdminFormFields.buildDropdown<V>(
         context,
         value: value,
@@ -42,9 +45,9 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
         onChanged: onChanged,
         validator: validator,
       ),
-      loading: () => SkeletonContainer(
-        child: _placeholder(
-          const Padding(
+      loading: () => _placeholder(
+        const SkeletonContainer(
+          child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,

@@ -56,7 +56,12 @@ class RealtimeTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const SizedBox.shrink(),
+              loading: () => Column(
+                children: [
+                  const NoActivePlantCardSkeleton(),
+                  SizedBox(height: context.rh(0.024)),
+                ],
+              ),
               error: (_, __) => const SizedBox.shrink(),
               data: (plant) => plant == null
                   ? Column(

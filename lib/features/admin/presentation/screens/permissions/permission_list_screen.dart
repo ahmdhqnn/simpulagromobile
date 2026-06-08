@@ -20,6 +20,9 @@ class PermissionListScreen extends ConsumerWidget {
         title: 'Permission',
         onRefresh: () => ref.invalidate(groupedPermissionsProvider),
         body: groupedAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (grouped) {
             if (grouped.isEmpty) {
               return const AdminEmptyState(

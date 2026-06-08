@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../notes/presentation/widgets/site_notes_section_widget.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
@@ -60,6 +61,9 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
         ),
       ),
       body: siteAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (site) => TabBarView(
           controller: _tabController,
           children: [
@@ -70,25 +74,15 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
             ),
           ],
         ),
-        loading: () => const DetailScreenSkeleton(
-          infoRowCount: 3,
-          hasDescription: false,
-          headerHeight: 160,
-        ),
+        loading: () => const SiteDetailOverviewSkeleton(),
         error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const Gap(16),
-              Text('Error: $error'),
-              const Gap(16),
-              ElevatedButton(
-                onPressed: () =>
-                    ref.invalidate(siteDetailProvider(widget.siteId)),
-                child: const Text('Retry'),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ErrorStateCardWidget(
+              message: error.toString(),
+              onRetry: () =>
+                  ref.invalidate(siteDetailProvider(widget.siteId)),
+            ),
           ),
         ),
       ),

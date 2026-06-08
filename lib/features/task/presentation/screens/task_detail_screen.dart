@@ -73,6 +73,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: hPad),
                 child: taskAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   loading: () => const DetailScreenSkeleton(
                     infoRowCount: 6,
                     hasDescription: true,

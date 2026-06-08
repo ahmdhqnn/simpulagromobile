@@ -27,16 +27,13 @@ class GddTrackingScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: phasesAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               _buildHeader(context, ref),
-              const Expanded(
-                child: DetailScreenSkeleton(
-                  infoRowCount: 4,
-                  hasDescription: false,
-                  headerHeight: 150,
-                ),
-              ),
+              const Expanded(child: GddTrackingSkeleton()),
             ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
@@ -73,8 +70,11 @@ class GddTrackingScreen extends ConsumerWidget {
                         SizedBox(height: context.rh(0.014)),
 
                         statsAsync.when(
+                          skipLoadingOnReload: true,
+                          skipLoadingOnRefresh: true,
+                          skipError: true,
                           data: (stats) => _buildSummaryCard(context, stats),
-                          loading: () => const SizedBox.shrink(),
+                          loading: () => const GddSummaryCardSkeleton(),
                           error: (_, __) => const SizedBox.shrink(),
                         ),
 

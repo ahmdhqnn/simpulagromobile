@@ -95,7 +95,12 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const SizedBox.shrink(),
+              loading: () => Column(
+                children: [
+                  const NoActivePlantCardSkeleton(),
+                  SizedBox(height: context.rh(0.025)),
+                ],
+              ),
               error: (_, __) => const SizedBox.shrink(),
               data: (activePlant) => activePlant == null
                   ? Column(
@@ -110,7 +115,10 @@ class AnalyticsTab extends ConsumerWidget {
             // Plant Statistics
             const SectionHeaderWidget(title: 'Statistik Tanaman'),
             SizedBox(height: context.rh(0.015)),
-            PlantStatisticsCardWidget(plant: plant),
+            if (activePlantAsync.isLoading && plant == null)
+              const CompactStatsCardSkeleton()
+            else
+              PlantStatisticsCardWidget(plant: plant),
             SizedBox(height: context.rh(0.025)),
 
             if (plant != null) ...[
