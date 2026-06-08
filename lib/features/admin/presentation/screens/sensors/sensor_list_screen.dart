@@ -26,6 +26,9 @@ class SensorListScreen extends ConsumerWidget {
           ),
         ),
         body: sensorListAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (sensors) {
             if (sensors.isEmpty) {
               return const AdminEmptyState(

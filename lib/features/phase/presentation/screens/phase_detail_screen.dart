@@ -20,16 +20,13 @@ class PhaseDetailScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: phaseAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               _buildHeader(context, ref),
-              const Expanded(
-                child: DetailScreenSkeleton(
-                  infoRowCount: 3,
-                  hasDescription: true,
-                  headerHeight: 120,
-                ),
-              ),
+              const Expanded(child: PhaseDetailContentSkeleton()),
             ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),

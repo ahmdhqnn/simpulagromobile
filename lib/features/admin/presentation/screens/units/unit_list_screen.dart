@@ -26,6 +26,9 @@ class UnitListScreen extends ConsumerWidget {
           ),
         ),
         body: unitListAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (units) {
             if (units.isEmpty) {
               return const AdminEmptyState(

@@ -39,13 +39,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
                   recommendationHubDetailProvider(recommendationId),
                 ),
               ),
-              const Expanded(
-                child: DetailScreenSkeleton(
-                  infoRowCount: 4,
-                  hasDescription: true,
-                  headerHeight: 120,
-                ),
-              ),
+              const Expanded(child: RecommendationDetailContentSkeleton()),
             ],
           ),
           error: (error, stack) => Column(

@@ -25,6 +25,9 @@ class SiteListScreen extends ConsumerWidget {
         ],
       ),
       body: siteListAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (sites) {
           if (sites.isEmpty) {
             return const _EmptyState();
@@ -50,7 +53,7 @@ class SiteListScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => buildListSkeleton(count: 6),
+        loading: () => buildListSkeleton(count: 6, type: 'site'),
         error: (error, stack) => _ErrorState(
           message: error.toString(),
           onRetry: () => ref.invalidate(siteListProvider),

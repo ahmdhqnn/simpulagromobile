@@ -92,6 +92,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: postAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (post) {
           final commentCount = _resolveCommentCount(post, commentsState);
 

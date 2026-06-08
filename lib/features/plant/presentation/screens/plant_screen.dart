@@ -35,13 +35,7 @@ class PlantScreen extends ConsumerWidget {
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const Center(
-                child: DetailScreenSkeleton(
-                  infoRowCount: 3,
-                  hasDescription: false,
-                  headerHeight: 120,
-                ),
-              ),
+              loading: () => const CenteredInfoStateSkeleton(),
               error: (error, _) => Center(
                 child: ErrorStateCardWidget(
                   message: 'Gagal memuat site. ${error.toString()}',
@@ -68,13 +62,7 @@ class PlantScreen extends ConsumerWidget {
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
           skipError: true,
-          loading: () => const Center(
-            child: DetailScreenSkeleton(
-              infoRowCount: 3,
-              hasDescription: false,
-              headerHeight: 120,
-            ),
-          ),
+          loading: () => const PlantOverviewSkeleton(),
           error: (error, _) => _PlantErrorState(
             error: error.toString(),
             onRetry: () => ref.read(plantsProvider.notifier).refresh(),
@@ -148,13 +136,7 @@ class _PlantContent extends ConsumerWidget {
 
     switch (actualState) {
       case PlantScreenState.loading:
-        return const Center(
-          child: DetailScreenSkeleton(
-            infoRowCount: 3,
-            hasDescription: false,
-            headerHeight: 120,
-          ),
-        );
+        return const PlantOverviewSkeleton();
 
       case PlantScreenState.empty:
         return SingleChildScrollView(

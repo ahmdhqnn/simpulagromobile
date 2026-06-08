@@ -28,6 +28,9 @@ class UserListScreen extends ConsumerWidget {
           ),
         ),
         body: userListAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (users) {
             if (users.isEmpty) {
               return const AdminEmptyState(

@@ -25,6 +25,9 @@ class MyPostsScreen extends ConsumerWidget {
         svgIconPath: 'assets/icons/plus-outline-icon.svg',
       ),
       body: myPostsAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (posts) {
           if (posts.isEmpty) {
             return ForumActionState(

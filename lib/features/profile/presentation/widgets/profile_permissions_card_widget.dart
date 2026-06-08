@@ -25,12 +25,11 @@ class _ProfilePermissionsCardWidgetState
   @override
   Widget build(BuildContext context) {
     return widget.permissionsAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (permissions) => _buildCard(context, permissions),
-      loading: () => const SimpleRowsCardSkeleton(
-        rowCount: 1,
-        rowHeight: 58,
-        iconSize: 50,
-      ),
+      loading: () => const ProfilePermissionsCardSkeleton(),
       error: (_, __) => _buildErrorState(context),
     );
   }

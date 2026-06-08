@@ -16,6 +16,7 @@ import '../widgets/profile_avatar_widget.dart';
 import '../widgets/profile_forum_card_widget.dart';
 import '../widgets/profile_permissions_card_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -29,6 +30,9 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: profileAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (profile) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
@@ -64,24 +68,16 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               SizedBox(height: context.rh(0.022)),
               _buildHeader(context, ref),
-              const Expanded(
-                child: DetailScreenSkeleton(infoRowCount: 4, hasDescription: false, headerHeight: 150),
-              ),
+              const Expanded(child: ProfileScreenSkeleton()),
             ],
           ),
           error: (error, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text('Error: $error'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => ref.invalidate(userProfileProvider),
-                  child: const Text('Retry'),
-                ),
-              ],
+            child: Padding(
+              padding: EdgeInsets.all(context.rw(0.051)),
+              child: ErrorStateCardWidget(
+                message: error.toString(),
+                onRetry: () => ref.invalidate(userProfileProvider),
+              ),
             ),
           ),
         ),
@@ -98,7 +94,7 @@ class ProfileScreen extends ConsumerWidget {
           CircularBackButtonWidget(onPressed: () => context.pop()),
           CircularIconActionWidget(
             onPressed: () => context.push('/settings'),
-            icon: Icons.settings_outlined,
+            svgIconPath: 'assets/icons/setting-outline-icon.svg',
           ),
         ],
       ),

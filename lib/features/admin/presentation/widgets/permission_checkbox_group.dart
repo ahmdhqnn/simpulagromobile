@@ -23,6 +23,9 @@ class PermissionCheckboxGroup extends ConsumerWidget {
     final groupedAsync = ref.watch(groupedPermissionsProvider);
 
     return groupedAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (grouped) {
         if (grouped.isEmpty) {
           return const Center(child: Text('Tidak ada permission tersedia'));
@@ -40,11 +43,7 @@ class PermissionCheckboxGroup extends ConsumerWidget {
           }).toList(),
         );
       },
-      loading: () => const SimpleRowsCardSkeleton(
-        rowCount: 4,
-        rowHeight: 48,
-        iconSize: 24,
-      ),
+      loading: () => const PermissionGroupsSkeleton(),
       error: (error, _) => Center(
         child: Text(
           'Gagal memuat permissions: $error',

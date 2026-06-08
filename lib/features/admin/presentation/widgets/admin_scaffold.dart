@@ -177,7 +177,7 @@ class AdminLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildListSkeleton(count: 6);
+    return buildListSkeleton(count: 6, type: 'admin');
   }
 }
 

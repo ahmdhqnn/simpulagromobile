@@ -77,6 +77,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
       final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId!)));
       return taskAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => _buildScreenShell(child: _buildLoadingCard()),
         error: (error, _) => _buildScreenShell(
           child: _buildMessageCard(
@@ -331,6 +334,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     final sitesAsync = ref.watch(sitesProvider);
 
     return sitesAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       loading: () => Container(
         height: context.rh(0.05).clamp(44.0, 48.0),
         decoration: BoxDecoration(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../providers/device_provider.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,6 +37,9 @@ class DeviceDetailScreen extends ConsumerWidget {
         ],
       ),
       body: deviceAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (device) => SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -149,8 +153,22 @@ class DeviceDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        loading: () => const DetailScreenSkeleton(infoRowCount: 5, hasDescription: false, headerHeight: 0),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        loading: () => const DetailScreenSkeleton(
+          infoRowCount: 5,
+          hasDescription: false,
+          headerHeight: 0,
+        ),
+        error: (error, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ErrorStateCardWidget(
+              message: error.toString(),
+              onRetry: () => ref.invalidate(
+                deviceDetailProvider((siteId: siteId, devId: devId)),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

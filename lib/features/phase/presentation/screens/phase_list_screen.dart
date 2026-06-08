@@ -26,10 +26,13 @@ class PhaseListScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: phasesAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => Column(
             children: [
               _buildHeader(context, ref),
-              Expanded(child: buildListSkeleton(count: 5)),
+              Expanded(child: buildListSkeleton(count: 5, type: 'phase')),
             ],
           ),
           error: (error, stack) => _buildErrorState(context, ref, error),
@@ -67,8 +70,11 @@ class PhaseListScreen extends ConsumerWidget {
 
                         // Statistics Card
                         statsAsync.when(
+                          skipLoadingOnReload: true,
+                          skipLoadingOnRefresh: true,
+                          skipError: true,
                           data: (stats) => _buildStatsCard(context, stats),
-                          loading: () => const SizedBox.shrink(),
+                          loading: () => const PhaseStatsCardSkeleton(),
                           error: (_, __) => const SizedBox.shrink(),
                         ),
 

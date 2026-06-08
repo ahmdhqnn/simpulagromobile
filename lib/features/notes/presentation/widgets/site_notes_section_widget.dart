@@ -30,6 +30,9 @@ class SiteNotesSectionWidget extends ConsumerWidget {
         const SizedBox(height: 12),
         Expanded(
           child: notesAsync.when(
+            skipLoadingOnReload: true,
+            skipLoadingOnRefresh: true,
+            skipError: true,
             data: (notes) {
               if (notes.isEmpty) {
                 return const Center(

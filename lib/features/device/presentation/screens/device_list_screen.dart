@@ -37,6 +37,9 @@ class DeviceListScreen extends ConsumerWidget {
         ],
       ),
       body: deviceListAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        skipError: true,
         data: (devices) {
           if (devices.isEmpty) {
             return const Center(
