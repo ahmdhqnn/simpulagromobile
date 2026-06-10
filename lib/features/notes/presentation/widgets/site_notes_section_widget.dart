@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site_note.dart';
 import '../providers/notes_provider.dart';
@@ -23,7 +25,7 @@ class SiteNotesSectionWidget extends ConsumerWidget {
           child: FilledButton.icon(
             onPressed: () => _showCreateDialog(context, ref),
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('Catatan Baru'),
+            label: Text(context.l10n.notesNew),
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
           ),
         ),
@@ -35,9 +37,7 @@ class SiteNotesSectionWidget extends ConsumerWidget {
             skipError: true,
             data: (notes) {
               if (notes.isEmpty) {
-                return const Center(
-                  child: Text('Belum ada catatan untuk site ini'),
-                );
+                return Center(child: Text(context.l10n.notesEmptyForSite));
               }
               return RefreshIndicator(
                 onRefresh: () async {
@@ -55,7 +55,8 @@ class SiteNotesSectionWidget extends ConsumerWidget {
               iconSize: 36,
               rowHeight: 44,
             ),
-            error: (e, _) => Center(child: Text('Error: $e')),
+            error: (e, _) =>
+                Center(child: Text('${context.l10n.commonError}: $e')),
           ),
         ),
       ],
@@ -64,26 +65,27 @@ class SiteNotesSectionWidget extends ConsumerWidget {
 
   Future<void> _showCreateDialog(BuildContext context, WidgetRef ref) async {
     final controller = TextEditingController();
+    final l10n = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Catatan Baru'),
+        title: Text(l10n.notesNew),
         content: TextField(
           controller: controller,
           maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: 'Isi catatan...',
+          decoration: InputDecoration(
+            hintText: l10n.notesContentHint,
             border: OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Simpan'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -95,9 +97,7 @@ class SiteNotesSectionWidget extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            success ? 'Catatan tersimpan' : 'Gagal menyimpan catatan',
-          ),
+          content: Text(success ? l10n.notesSaved : l10n.notesSaveFailed),
         ),
       );
     }
@@ -112,11 +112,12 @@ class _NoteListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final date = note.createdAt;
+    final dateText = date == null
+        ? ''
+        : ' - ${context.dateFormat('dd MMM yyyy HH:mm').format(date.toLocal())}';
     return ListTile(
       title: Text(note.noteContent),
-      subtitle: Text(
-        '${note.userId}${date != null ? ' · ${date.toLocal()}' : ''}',
-      ),
+      subtitle: Text('${note.userId}$dateText'),
       leading: const Icon(Icons.note_alt_outlined),
     );
   }

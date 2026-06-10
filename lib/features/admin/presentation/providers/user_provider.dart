@@ -119,9 +119,8 @@ class UserFormNotifier extends StateNotifier<UserFormState> {
 // ═══════════════════════════════════════════════════════════
 // USER FORM PROVIDER
 // ═══════════════════════════════════════════════════════════
-final adminUserFormProvider = StateNotifierProvider<UserFormNotifier, UserFormState>(
-  (ref) {
-    final repository = ref.watch(adminUserRepositoryProvider);
-    return UserFormNotifier(repository, ref);
-  },
-);
+final adminUserFormProvider =
+    StateNotifierProvider<UserFormNotifier, UserFormState>((ref) {
+      final repository = ref.watch(adminUserRepositoryProvider);
+      return UserFormNotifier(repository, ref);
+    });

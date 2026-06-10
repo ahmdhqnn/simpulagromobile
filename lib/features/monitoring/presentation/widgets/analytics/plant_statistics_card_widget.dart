@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../../../../shared/widgets/skeleton_loaders.dart';
@@ -14,9 +15,9 @@ class PlantStatisticsCardWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (plant == null) {
-      return const InfoStateWidget.svg(
+      return InfoStateWidget.svg(
         svgIconPath: 'assets/icons/plant-total-outline-icon.svg',
-        message: 'Belum ada tanaman aktif',
+        message: context.l10n.monitoringNoActivePlantTitle,
         height: 73,
       );
     }
@@ -60,21 +61,21 @@ class PlantStatisticsCardWidget extends ConsumerWidget {
         children: [
           StatItemWidget(
             svgIconPath: 'assets/icons/tag-total-outline-icon.svg',
-            label: 'Total',
+            label: context.l10n.commonTotal,
             value: '$total',
             background: AppColors.softBlue,
             labelTopGap: 4,
           ),
           StatItemWidget(
             svgIconPath: 'assets/icons/plant-total-outline-icon.svg',
-            label: 'Aktif',
+            label: context.l10n.commonActive,
             value: '$active',
             background: AppColors.softGreen,
             labelTopGap: 2,
           ),
           StatItemWidget(
             svgIconPath: 'assets/icons/check-total-icon.svg',
-            label: 'Dipanen',
+            label: context.l10n.plantStatusHarvested,
             value: '$harvested',
             background: AppColors.softGreenAlt,
             labelTopGap: 3,

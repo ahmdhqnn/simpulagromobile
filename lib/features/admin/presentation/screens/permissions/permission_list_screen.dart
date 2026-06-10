@@ -6,6 +6,7 @@ import 'package:simpulagromobile/features/admin/presentation/providers/permissio
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/permission.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 
 class PermissionListScreen extends ConsumerWidget {
   const PermissionListScreen({super.key});
@@ -17,7 +18,7 @@ class PermissionListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'role:read',
       child: AdminScaffold(
-        title: 'Permission',
+        title: context.l10n.adminPermissionTitle,
         onRefresh: () => ref.invalidate(groupedPermissionsProvider),
         body: groupedAsync.when(
           skipLoadingOnReload: true,
@@ -25,10 +26,10 @@ class PermissionListScreen extends ConsumerWidget {
           skipError: true,
           data: (grouped) {
             if (grouped.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.lock_outline,
-                title: 'Belum ada permission',
-                message: 'Tidak ada permission yang terdaftar',
+                title: context.l10n.adminNoPermissions,
+                message: context.l10n.adminNoPermissionsMessage,
               );
             }
 
@@ -52,7 +53,7 @@ class PermissionListScreen extends ConsumerWidget {
                 children: [
                   SizedBox(height: context.rh(0.01)),
                   Text(
-                    'Permission',
+                    context.l10n.adminPermissionTitle,
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(22),
@@ -130,7 +131,7 @@ class _SummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$totalPermissions Total Permission',
+                context.l10n.adminTotalPermissions(totalPermissions),
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(16),
@@ -140,7 +141,7 @@ class _SummaryCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '$totalGroups Grup Resource',
+                context.l10n.adminResourceGroupCount(totalGroups),
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -219,7 +220,9 @@ class _PermissionGroupCardState extends State<_PermissionGroupCard> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${widget.permissions.length} permission',
+                          context.l10n.adminPermissionCount(
+                            widget.permissions.length,
+                          ),
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: context.sp(12),

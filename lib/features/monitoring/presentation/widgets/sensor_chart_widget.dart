@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../data/models/monitoring_models.dart';
 import '../utils/monitoring_display_utils.dart';
@@ -55,7 +56,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
           MonitoringCardHeaderWidget.icon(
             icon: _iconFor(widget.chartType),
             title: widget.title,
-            description: _descriptionFor(widget.chartType),
+            description: _descriptionFor(context, widget.chartType),
             background: (widget.color ?? AppColors.primary).withValues(
               alpha: 0.12,
             ),
@@ -82,14 +83,14 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
     }
   }
 
-  String _descriptionFor(ChartType type) {
+  String _descriptionFor(BuildContext context, ChartType type) {
     switch (type) {
       case ChartType.line:
-        return 'Tren sensor berdasarkan waktu';
+        return context.l10n.monitoringChartDescLine;
       case ChartType.bar:
-        return 'Perbandingan nilai sensor per waktu';
+        return context.l10n.monitoringChartDescBar;
       case ChartType.area:
-        return 'Perubahan sensor dengan area tren';
+        return context.l10n.monitoringChartDescArea;
     }
   }
 
@@ -105,7 +106,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Belum ada data',
+            context.l10n.commonNoDataYet,
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(12),

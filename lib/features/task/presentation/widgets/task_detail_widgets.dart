@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
 
 class TaskStatusBadgeWidget extends StatelessWidget {
@@ -156,7 +156,7 @@ class TaskTimelineItemWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  DateFormat('dd MMMM yyyy, HH:mm').format(date),
+                  context.dateFormat('dd MMMM yyyy, HH:mm').format(date),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(11),

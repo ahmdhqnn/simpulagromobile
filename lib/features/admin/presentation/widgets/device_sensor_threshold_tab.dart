@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_sensor_provider.dart';
 
@@ -13,7 +14,7 @@ class DeviceSensorThresholdTab extends ConsumerWidget {
     return valuesAsync.when(
       data: (rows) {
         if (rows.isEmpty) {
-          return const Center(child: Text('Belum ada data threshold'));
+          return Center(child: Text(context.l10n.adminNoThresholdData));
         }
         return RefreshIndicator(
           onRefresh: () async {
@@ -40,7 +41,7 @@ class DeviceSensorThresholdTab extends ConsumerWidget {
         );
       },
       loading: () => buildListSkeleton(count: 6),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text('${context.l10n.commonError}: $e')),
     );
   }
 }

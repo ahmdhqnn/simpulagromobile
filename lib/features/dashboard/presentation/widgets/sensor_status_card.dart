@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../domain/entities/dashboard_entity.dart';
 import '../../../monitoring/presentation/utils/sensor_metadata_adapter.dart';
 
@@ -11,72 +13,72 @@ class _StatusInfo {
   const _StatusInfo({required this.label, required this.gradientColors});
 }
 
-_StatusInfo _statusInfoFor(double persentase) {
+_StatusInfo _statusInfoFor(AppLocalizations l10n, double persentase) {
   if (persentase >= 80) {
-    return const _StatusInfo(
-      label: 'Optimal',
-      gradientColors: [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
+    return _StatusInfo(
+      label: l10n.commonOptimal,
+      gradientColors: const [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
     );
   } else if (persentase >= 60) {
-    return const _StatusInfo(
-      label: 'Cukup',
-      gradientColors: [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
+    return _StatusInfo(
+      label: l10n.commonFair,
+      gradientColors: const [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
     );
   } else if (persentase >= 40) {
-    return const _StatusInfo(
-      label: 'Kurang',
-      gradientColors: [Color(0xFFFFCC55), Color(0xFFFFAA22), Color(0xFFE07800)],
+    return _StatusInfo(
+      label: l10n.commonPoor,
+      gradientColors: const [Color(0xFFFFCC55), Color(0xFFFFAA22), Color(0xFFE07800)],
     );
   } else {
-    return const _StatusInfo(
-      label: 'Kritis',
-      gradientColors: [Color(0xFFFF7A7A), Color(0xFFFF4444), Color(0xFFCC1111)],
+    return _StatusInfo(
+      label: l10n.commonCritical,
+      gradientColors: const [Color(0xFFFF7A7A), Color(0xFFFF4444), Color(0xFFCC1111)],
     );
   }
 }
 
-_StatusInfo _statusInfoForReadingStatus(SensorReadingStatus status) {
+_StatusInfo _statusInfoForReadingStatus(AppLocalizations l10n, SensorReadingStatus status) {
   switch (status) {
     case SensorReadingStatus.optimal:
-      return const _StatusInfo(
-        label: 'Optimal',
-        gradientColors: [
+      return _StatusInfo(
+        label: l10n.commonOptimal,
+        gradientColors: const [
           Color(0xFF72E85A),
           Color(0xFF4DC934),
           Color(0xFF2FA010),
         ],
       );
     case SensorReadingStatus.warning:
-      return const _StatusInfo(
-        label: 'Waspada',
-        gradientColors: [
+      return _StatusInfo(
+        label: l10n.commonWarning,
+        gradientColors: const [
           Color(0xFFFFCC55),
           Color(0xFFFFAA22),
           Color(0xFFE07800),
         ],
       );
     case SensorReadingStatus.critical:
-      return const _StatusInfo(
-        label: 'Kritis',
-        gradientColors: [
+      return _StatusInfo(
+        label: l10n.commonCritical,
+        gradientColors: const [
           Color(0xFFFF7A7A),
           Color(0xFFFF4444),
           Color(0xFFCC1111),
         ],
       );
     case SensorReadingStatus.offline:
-      return const _StatusInfo(
-        label: 'Offline',
-        gradientColors: [
+      return _StatusInfo(
+        label: l10n.commonOffline,
+        gradientColors: const [
           Color(0xFFBDBDBD),
           Color(0xFF9E9E9E),
           Color(0xFF757575),
         ],
       );
     case SensorReadingStatus.unknown:
-      return const _StatusInfo(
-        label: 'Aktif',
-        gradientColors: [
+      return _StatusInfo(
+        label: l10n.commonActive,
+        gradientColors: const [
           Color(0xFF72E85A),
           Color(0xFF4DC934),
           Color(0xFF2FA010),
@@ -106,8 +108,8 @@ class SensorStatusCard extends StatelessWidget {
     final sw = MediaQuery.sizeOf(context).width;
     final status =
         readingStatus == null || readingStatus == SensorReadingStatus.unknown
-        ? _statusInfoFor(persentase)
-        : _statusInfoForReadingStatus(readingStatus!);
+        ? _statusInfoFor(context.l10n, persentase)
+        : _statusInfoForReadingStatus(context.l10n, readingStatus!);
 
     final valueFontSize = (sw / 390 * 30).clamp(22.0, 36.0);
     final unitFontSize = (sw / 390 * 11).clamp(9.0, 14.0);
@@ -295,8 +297,8 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
                 children: [
                   Text(
                     _expanded
-                        ? 'Sembunyikan'
-                        : 'Lihat ${total - widget.defaultCount} sensor lainnya',
+                        ? context.l10n.commonHide
+                        : context.l10n.dashboardShowOtherSensors(total - widget.defaultCount),
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(13),

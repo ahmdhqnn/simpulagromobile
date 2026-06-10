@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
+import '../../l10n/l10n.dart';
+
 class ErrorDisplayWidget extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -18,7 +20,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
             const Gap(16),
             Text(
-              'Terjadi Kesalahan',
+              context.l10n.commonErrorTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Gap(8),
@@ -32,7 +34,7 @@ class ErrorDisplayWidget extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
+                label: Text(context.l10n.commonRetry),
               ),
             ],
           ],

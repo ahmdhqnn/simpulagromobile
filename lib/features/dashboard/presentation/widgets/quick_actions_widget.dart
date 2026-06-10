@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 class QuickActionsWidget extends ConsumerWidget {
   const QuickActionsWidget({super.key});
@@ -11,30 +12,30 @@ class QuickActionsWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final actions = [
-      const _QuickActionConfig(
+      _QuickActionConfig(
         svgIcon: 'assets/icons/monitoring-outline-icon.svg',
-        label: 'Monitoring',
+        label: context.l10n.monitoringTitle,
         bgColor: AppColors.softOrange,
         iconColor: AppColors.warning,
         tabIndex: 1,
       ),
-      const _QuickActionConfig(
+      _QuickActionConfig(
         svgIcon: 'assets/icons/plant-outline-icon.svg',
-        label: 'Tanaman',
+        label: context.l10n.plantTitle,
         bgColor: AppColors.softGreen,
         iconColor: AppColors.success,
         tabIndex: 2,
       ),
-      const _QuickActionConfig(
+      _QuickActionConfig(
         svgIcon: 'assets/icons/check-task-outline-icon.svg',
-        label: 'Task',
+        label: context.l10n.taskTitle,
         bgColor: AppColors.softGreenAlt,
         iconColor: AppColors.primary,
         tabIndex: 3,
       ),
-      const _QuickActionConfig(
+      _QuickActionConfig(
         svgIcon: 'assets/icons/forum-outline-icon.svg',
-        label: 'Forum',
+        label: context.l10n.forumTitle,
         bgColor: AppColors.softBlue,
         iconColor: AppColors.info,
         tabIndex: 4,

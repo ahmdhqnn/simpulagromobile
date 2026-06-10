@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -110,7 +111,7 @@ class ProfileScreen extends ConsumerWidget {
     UserProfile profile,
     AuthState authState,
   ) {
-    final roleLabel = _resolveRoleLabel(profile, authState);
+    final roleLabel = _resolveRoleLabel(context, profile, authState);
 
     return Column(
       children: [
@@ -137,16 +138,16 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  String _resolveRoleLabel(UserProfile profile, AuthState authState) {
+  String _resolveRoleLabel(BuildContext context, UserProfile profile, AuthState authState) {
     final roleId = (profile.roleId ?? authState.user?.roleId ?? '')
         .trim()
         .toUpperCase();
-    if (roleId == 'ROLE001' || authState.isAdmin) return 'Admin';
+    if (roleId == 'ROLE001' || authState.isAdmin) return context.l10n.roleAdmin;
 
     final rawRole = (profile.roleName ?? '').trim().toLowerCase();
-    if (rawRole == 'admin' || rawRole == 'administrator') return 'Admin';
+    if (rawRole == 'admin' || rawRole == 'administrator') return context.l10n.roleAdmin;
 
-    return 'User';
+    return context.l10n.roleUser;
   }
 
   Widget _buildAdminSection(BuildContext context) {
@@ -155,7 +156,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeaderWidget(title: 'Admin'),
+          SectionHeaderWidget(title: context.l10n.monitoringTabAdmin),
           SizedBox(height: context.rh(0.014)),
           InkWell(
             onTap: () => context.push('/admin'),
@@ -192,7 +193,7 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Admin',
+                          context.l10n.monitoringTabAdmin,
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(22),
@@ -203,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          'Kelola data dan akses sistem',
+                          context.l10n.profileAdminSubtitle,
                           style: AppTextStyles.hint(context),
                         ),
                       ],
@@ -229,7 +230,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeaderWidget(title: 'Forum'),
+          SectionHeaderWidget(title: context.l10n.forumTitle),
           SizedBox(height: context.rh(0.014)),
           const ProfileForumCardWidget(),
         ],
@@ -246,7 +247,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeaderWidget(title: 'Hak Akses'),
+          SectionHeaderWidget(title: context.l10n.profilePermissionsSection),
           SizedBox(height: context.rh(0.014)),
           ProfilePermissionsCardWidget(permissionsAsync: permissionsAsync),
         ],
@@ -267,7 +268,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           child: Center(
             child: Text(
-              'Signout',
+              context.l10n.profileSignout,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
@@ -289,23 +290,23 @@ class ProfileScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
-        title: const Text(
-          'Konfirmasi Keluar',
-          style: TextStyle(
+        title: Text(
+          context.l10n.profileLogoutTitle,
+          style: const TextStyle(
             fontFamily: AppTextStyles.fontFamily,
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: const Text(
-          'Apakah Anda yakin ingin keluar dari aplikasi?',
-          style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+        content: Text(
+          context.l10n.profileLogoutMessage,
+          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Batal',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+            child: Text(
+              context.l10n.commonCancel,
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
           ),
           ElevatedButton(
@@ -323,9 +324,9 @@ class ProfileScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
             ),
-            child: const Text(
-              'Keluar',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+            child: Text(
+              context.l10n.profileLogoutConfirm,
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
           ),
         ],

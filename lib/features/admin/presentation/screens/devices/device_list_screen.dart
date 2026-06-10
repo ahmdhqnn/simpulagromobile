@@ -7,6 +7,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/device.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -20,7 +21,7 @@ class DeviceListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'device:read',
       child: AdminScaffold(
-        title: 'Device',
+        title: context.l10n.deviceTitle,
         action: PermissionGuard(
           permission: 'device:create',
           child: AdminAddButton(
@@ -33,10 +34,10 @@ class DeviceListScreen extends ConsumerWidget {
           skipError: true,
           data: (devices) {
             if (devices.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.device_hub_outlined,
-                title: 'Belum ada device',
-                message: 'Tambahkan device untuk memulai monitoring',
+                title: context.l10n.adminNoDevices,
+                message: context.l10n.adminNoDevicesMessage,
               );
             }
 
@@ -58,7 +59,7 @@ class DeviceListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Device',
+                        context.l10n.deviceTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -98,7 +99,7 @@ class _DeviceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminListItem(
       title: device.displayName,
-      subtitle: 'ID: ${device.devId}',
+      subtitle: context.l10n.adminIdPrefix(device.devId),
       icon: Icons.device_hub,
       iconColor: device.isActive ? const Color(0xFFFF7043) : Colors.grey,
       isActive: device.isActive,
@@ -117,7 +118,9 @@ class _DeviceCard extends ConsumerWidget {
             icon: Icons.location_on,
           ),
         AdminBadge(
-          label: device.isActive ? 'Aktif' : 'Nonaktif',
+          label: device.isActive
+              ? context.l10n.commonActive
+              : context.l10n.commonInactive,
           color: device.isActive ? const Color(0xFF4CAF50) : Colors.grey,
           icon: device.isActive ? Icons.check_circle : Icons.cancel,
         ),
@@ -166,9 +169,9 @@ class _DeviceCard extends ConsumerWidget {
               permission: 'device:update',
               child: ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                title: Text(
+                  context.l10n.commonEdit,
+                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -180,9 +183,9 @@ class _DeviceCard extends ConsumerWidget {
               permission: 'device:delete',
               child: ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.commonDelete,
+                  style: const TextStyle(
                     color: Colors.red,
                     fontFamily: 'Plus Jakarta Sans',
                   ),
@@ -215,10 +218,16 @@ class _DeviceCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (success) {
-      SnackbarHelper.showSuccess(context, 'Device berhasil dihapus');
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.adminDeleteSuccess(context.l10n.deviceTitle),
+      );
     } else {
       final error = ref.read(adminDeviceFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus device');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminDeleteFailed(context.l10n.deviceTitle),
+      );
     }
   }
 }

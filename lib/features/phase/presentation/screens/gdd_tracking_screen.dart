@@ -8,6 +8,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/phase_provider.dart';
+import '../../../../l10n/l10n.dart';
 
 class GddTrackingScreen extends ConsumerWidget {
   final String plantId;
@@ -142,7 +143,7 @@ class GddTrackingScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: context.rh(0.02)),
                   Text(
-                    'Gagal memuat data',
+                    context.l10n.commonLoadFailed,
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(18),
@@ -177,9 +178,9 @@ class GddTrackingScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    child: const Text(
-                      'Coba Lagi',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                    child: Text(
+                      context.l10n.commonRetry,
+                      style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                     ),
                   ),
                 ],
@@ -212,7 +213,7 @@ class GddTrackingScreen extends ConsumerWidget {
           ),
           SizedBox(height: context.rh(0.02)),
           Text(
-            'Belum ada data GDD',
+            context.l10n.agroGddTrackingNoData,
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(16),
@@ -222,7 +223,7 @@ class GddTrackingScreen extends ConsumerWidget {
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            'Data GDD akan ditarik dari API Agro setelah\ntanaman aktif terdaftar di site ini.',
+            context.l10n.agroGddTrackingNoDataDesc,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
@@ -246,9 +247,9 @@ class GddTrackingScreen extends ConsumerWidget {
                 BlendMode.srcIn,
               ),
             ),
-            label: const Text(
-              'Muat Ulang',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            label: Text(
+              context.l10n.commonRefresh,
+              style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -297,24 +298,13 @@ class GddTrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ringkasan GDD',
+                      context.l10n.agroGddTrackingSummaryTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
                         fontWeight: FontWeight.w300,
                         color: const Color(0xFF1D1D1D),
                         height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      'GDD Summary',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.83,
                       ),
                     ),
                   ],
@@ -328,13 +318,13 @@ class GddTrackingScreen extends ConsumerWidget {
             children: [
               _buildStatItem(
                 context,
-                'Total GDD (Riil)',
+                context.l10n.agroGddTrackingTotalReal,
                 (stats['totalGdd'] as num).toStringAsFixed(1),
                 AppColors.primary,
               ),
               _buildStatItem(
                 context,
-                'Progress Lahan',
+                context.l10n.agroGddTrackingFieldProgress,
                 '${(stats['overallProgress'] * 100).toStringAsFixed(0)}%',
                 Colors.orange,
               ),
@@ -408,7 +398,7 @@ class GddTrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Durasi HST per Fase',
+                      context.l10n.agroGddTrackingDurationTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -419,7 +409,7 @@ class GddTrackingScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'HST Duration by Phase',
+                      context.l10n.agroGddTrackingDurationSubtitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -566,7 +556,7 @@ class GddTrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Detail Durasi per Fase',
+                      context.l10n.agroGddTrackingDurationDetailTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -577,7 +567,7 @@ class GddTrackingScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Detailed Duration by Phase',
+                      context.l10n.agroGddTrackingDurationDetailSubtitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -611,9 +601,9 @@ class GddTrackingScreen extends ConsumerWidget {
                     color: AppColors.surfaceVariant,
                   ),
                   children: [
-                    _buildTableHeader(context, 'Fase'),
-                    _buildTableHeader(context, 'HST Kini'),
-                    _buildTableHeader(context, 'Durasi'),
+                    _buildTableHeader(context, context.l10n.agroGddTrackingTablePhase),
+                    _buildTableHeader(context, context.l10n.agroGddTrackingTableCurrentHst),
+                    _buildTableHeader(context, context.l10n.agroGddTrackingTableDuration),
                     _buildTableHeader(context, '%'),
                   ],
                 ),
@@ -623,9 +613,9 @@ class GddTrackingScreen extends ConsumerWidget {
                       _buildTableCell(context, phase.phaseName),
                       _buildTableCell(
                         context,
-                        '${(phase.currentHst - phase.hstMin).clamp(0, phase.phaseDuration)} HST',
+                        '${(phase.currentHst - phase.hstMin).clamp(0, phase.phaseDuration)} ${context.l10n.plantHstLabel}',
                       ),
-                      _buildTableCell(context, '${phase.phaseDuration} HST'),
+                      _buildTableCell(context, '${phase.phaseDuration} ${context.l10n.plantHstLabel}'),
                       _buildTableCell(
                         context,
                         '${phase.progressPercentage.toStringAsFixed(0)}%',

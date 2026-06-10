@@ -7,6 +7,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/sensor.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 
 class SensorListScreen extends ConsumerWidget {
   const SensorListScreen({super.key});
@@ -18,7 +19,7 @@ class SensorListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'sensor:read',
       child: AdminScaffold(
-        title: 'Sensor',
+        title: context.l10n.sensorTitle,
         action: PermissionGuard(
           permission: 'sensor:create',
           child: AdminAddButton(
@@ -31,10 +32,10 @@ class SensorListScreen extends ConsumerWidget {
           skipError: true,
           data: (sensors) {
             if (sensors.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.sensors_off_outlined,
-                title: 'Belum ada sensor',
-                message: 'Tambahkan sensor untuk memulai monitoring',
+                title: context.l10n.adminNoSensors,
+                message: context.l10n.adminNoSensorsMessage,
               );
             }
 
@@ -56,7 +57,7 @@ class SensorListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Sensor',
+                        context.l10n.sensorTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -96,7 +97,7 @@ class _SensorCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminListItem(
       title: sensor.displayName,
-      subtitle: 'ID: ${sensor.sensId}',
+      subtitle: context.l10n.adminIdPrefix(sensor.sensId),
       icon: Icons.sensors,
       iconColor: sensor.isActive ? const Color(0xFF42A5F5) : Colors.grey,
       isActive: sensor.isActive,
@@ -104,7 +105,7 @@ class _SensorCard extends ConsumerWidget {
       badges: [
         if (sensor.devId != null)
           AdminBadge(
-            label: 'Device: ${sensor.devId}',
+            label: context.l10n.adminDevicePrefix(sensor.devId!),
             color: const Color(0xFF42A5F5),
             icon: Icons.device_hub,
           ),
@@ -115,7 +116,9 @@ class _SensorCard extends ConsumerWidget {
             icon: Icons.location_searching,
           ),
         AdminBadge(
-          label: sensor.isActive ? 'Aktif' : 'Nonaktif',
+          label: sensor.isActive
+              ? context.l10n.commonActive
+              : context.l10n.commonInactive,
           color: sensor.isActive ? const Color(0xFF4CAF50) : Colors.grey,
           icon: sensor.isActive ? Icons.check_circle : Icons.cancel,
         ),
@@ -162,9 +165,9 @@ class _SensorCard extends ConsumerWidget {
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text(
-                'Edit',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              title: Text(
+                context.l10n.commonEdit,
+                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
               ),
               onTap: () {
                 Navigator.pop(context);

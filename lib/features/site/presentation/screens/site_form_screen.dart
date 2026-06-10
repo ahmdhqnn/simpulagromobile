@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
@@ -54,7 +55,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
         setState(() => _isLoadingData = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal memuat data: $e'),
+            content: Text(context.l10n.siteLoadDataFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -83,7 +84,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          isEdit ? 'Edit Lokasi' : 'Tambah Lokasi',
+          isEdit ? context.l10n.siteEditTitle : context.l10n.siteAddTitle,
           style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontWeight: FontWeight.w600,
@@ -141,13 +142,13 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     children: [
                       if (!isEdit) ...[
                         _buildField(
-                          label: 'ID Lokasi *',
+                          label: '${context.l10n.siteIdLabel} *',
                           controller: _idController,
-                          hint: 'Contoh: SITE001',
+                          hint: context.l10n.siteIdHint,
                           icon: Icons.tag,
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) {
-                              return 'ID lokasi tidak boleh kosong';
+                              return context.l10n.siteIdRequired;
                             }
                             return null;
                           },
@@ -155,25 +156,25 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                         const Gap(16),
                       ],
                       _buildField(
-                        label: 'Nama Lokasi *',
+                        label: '${context.l10n.siteNameLabel} *',
                         controller: _nameController,
-                        hint: 'Contoh: Sawah Utara',
+                        hint: context.l10n.siteNameHint,
                         icon: Icons.location_on,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'Nama lokasi tidak boleh kosong';
+                            return context.l10n.siteNameRequired;
                           }
                           if (v.trim().length < 3) {
-                            return 'Nama minimal 3 karakter';
+                            return context.l10n.siteNameMinLength;
                           }
                           return null;
                         },
                       ),
                       const Gap(16),
                       _buildField(
-                        label: 'Alamat',
+                        label: context.l10n.commonAddress,
                         controller: _addressController,
-                        hint: 'Contoh: Jl. Raya Pertanian No. 123',
+                        hint: context.l10n.siteAddressHint,
                         icon: Icons.location_city,
                         maxLines: 2,
                       ),
@@ -186,7 +187,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     context,
                     children: [
                       Text(
-                        'Koordinat GPS',
+                        context.l10n.siteGpsCoordinates,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(14),
@@ -197,9 +198,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       const Gap(12),
                       Row(
                         children: [
-                          Expanded(
+                           Expanded(
                             child: _buildField(
-                              label: 'Latitude',
+                              label: context.l10n.commonLatitude,
                               controller: _latController,
                               hint: '-6.200000',
                               icon: Icons.explore,
@@ -212,7 +213,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                                 if (v != null && v.isNotEmpty) {
                                   final lat = double.tryParse(v);
                                   if (lat == null || lat < -90 || lat > 90) {
-                                    return 'Tidak valid';
+                                    return context.l10n.commonInvalid;
                                   }
                                 }
                                 return null;
@@ -222,7 +223,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           const Gap(12),
                           Expanded(
                             child: _buildField(
-                              label: 'Longitude',
+                              label: context.l10n.commonLongitude,
                               controller: _lonController,
                               hint: '106.816666',
                               icon: Icons.explore,
@@ -235,7 +236,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                                 if (v != null && v.isNotEmpty) {
                                   final lon = double.tryParse(v);
                                   if (lon == null || lon < -180 || lon > 180) {
-                                    return 'Tidak valid';
+                                    return context.l10n.commonInvalid;
                                   }
                                 }
                                 return null;
@@ -246,9 +247,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       ),
                       const Gap(16),
                       _buildField(
-                        label: 'Ketinggian (meter)',
+                        label: context.l10n.siteAltitudeLabel,
                         controller: _altController,
-                        hint: 'Contoh: 150',
+                        hint: context.l10n.siteAltitudeHint,
                         icon: Icons.terrain,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -266,15 +267,17 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: SwitchListTile(
-                      title: const Text(
-                        'Status Lokasi',
-                        style: TextStyle(
+                      title: Text(
+                        context.l10n.siteStatusLabel,
+                        style: const TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       subtitle: Text(
-                        _isActive ? 'Aktif' : 'Tidak Aktif',
+                        _isActive
+                            ? context.l10n.commonActive
+                            : context.l10n.commonInactive,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
                       value: _isActive,
@@ -310,7 +313,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                               ),
                             )
                           : Text(
-                              isEdit ? 'Simpan Perubahan' : 'Tambah Lokasi',
+                              isEdit
+                                  ? context.l10n.commonSaveChanges
+                                  : context.l10n.siteAddTitle,
                               style: const TextStyle(
                                 fontFamily: 'Plus Jakarta Sans',
                                 fontWeight: FontWeight.w600,
@@ -395,8 +400,8 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
         SnackBar(
           content: Text(
             isEdit
-                ? 'Lokasi berhasil diperbarui'
-                : 'Lokasi berhasil ditambahkan',
+                ? context.l10n.siteUpdateSuccess
+                : context.l10n.siteCreateSuccess,
             style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
           ),
           backgroundColor: AppColors.success,

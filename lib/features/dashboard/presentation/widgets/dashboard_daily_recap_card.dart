@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../monitoring/presentation/providers/monitoring_provider.dart';
@@ -20,9 +21,9 @@ class DashboardDailyRecapCard extends ConsumerWidget {
       skipError: true,
       data: (items) {
         if (items.isEmpty) {
-          return const InfoStateWidget.icon(
+          return InfoStateWidget.icon(
             icon: Icons.today_outlined,
-            message: 'Belum ada rekap harian hari ini',
+            message: context.l10n.dashboardNoDailyRecapToday,
             height: 72,
           );
         }
@@ -50,7 +51,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    'avg ${r.avgVal?.toStringAsFixed(1) ?? '-'}',
+                    '${context.l10n.dashboardAverageLabel} ${r.avgVal?.toStringAsFixed(1) ?? '-'}',
                     style: AppTextStyles.label(
                       context,
                       size: 11,
@@ -67,7 +68,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
       loading: () => const CompactTextRowsSkeleton(rowCount: 4),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
-        message: toUiErrorMessage(e),
+        message: toUiErrorMessage(e, context.l10n),
         height: 72,
       ),
     );

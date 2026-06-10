@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/sensor_provider.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SensorFormScreen extends ConsumerStatefulWidget {
   final String siteId;
@@ -91,7 +92,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          isEdit ? 'Edit Sensor' : 'Tambah Sensor',
+          isEdit ? context.l10n.sensorEditTitle : context.l10n.sensorAddTitle,
           style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontWeight: FontWeight.w600,
@@ -151,11 +152,16 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       TextFormField(
                         controller: _nameController,
                         decoration: _inputDecoration(
-                          'Nama Sensor',
-                          'Contoh: Sensor Suhu 1',
+                          context.l10n.sensorNameLabel,
+                          context.l10n.adminSensorNameHint,
                           Icons.sensors,
                         ),
-                        validator: (v) => Validators.required(v, 'Nama sensor'),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return context.l10n.sensorNameRequired;
+                          }
+                          return null;
+                        },
                         textInputAction: TextInputAction.next,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
@@ -165,7 +171,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       DropdownButtonFormField<String>(
                         value: _selectedType,
                         decoration: _inputDecoration(
-                          'Tipe Sensor',
+                          context.l10n.sensorTypeLabel,
                           null,
                           Icons.category,
                         ),
@@ -173,7 +179,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                           return DropdownMenuItem(
                             value: type['value'],
                             child: Text(
-                              type['label']!,
+                              _getSensorTypeLabel(type['value']!, context.l10n),
                               style: const TextStyle(
                                 fontFamily: 'Plus Jakarta Sans',
                               ),
@@ -186,7 +192,12 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                             _unitController.text = _getDefaultUnit(value);
                           });
                         },
-                        validator: (v) => Validators.required(v, 'Tipe sensor'),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return context.l10n.sensorTypeRequired;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -194,11 +205,16 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       TextFormField(
                         controller: _unitController,
                         decoration: _inputDecoration(
-                          'Satuan',
-                          'Contoh: °C, %, pH',
+                          context.l10n.commonUnit,
+                          context.l10n.sensorUnitHint,
                           Icons.straighten,
                         ),
-                        validator: (v) => Validators.required(v, 'Satuan'),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return context.l10n.sensorUnitRequired;
+                          }
+                          return null;
+                        },
                         textInputAction: TextInputAction.next,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
@@ -208,8 +224,8 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       TextFormField(
                         controller: _descriptionController,
                         decoration: _inputDecoration(
-                          'Deskripsi (Opsional)',
-                          'Masukkan deskripsi sensor',
+                          context.l10n.sensorDescLabel,
+                          context.l10n.sensorDescHint,
                           Icons.description,
                         ),
                         maxLines: 3,
@@ -228,15 +244,17 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: SwitchListTile(
-                      title: const Text(
-                        'Status Aktif',
-                        style: TextStyle(
+                      title: Text(
+                        context.l10n.sensorStatusActiveLabel,
+                        style: const TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       subtitle: Text(
-                        _isActive ? 'Sensor aktif' : 'Sensor tidak aktif',
+                        _isActive
+                            ? context.l10n.sensorStatusActiveDesc
+                            : context.l10n.sensorStatusInactiveDesc,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
                       value: _isActive,
@@ -273,11 +291,13 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                               ),
                             )
                           : Text(
-                              isEdit ? 'Simpan Perubahan' : 'Tambah Sensor',
+                              isEdit
+                                  ? context.l10n.commonSaveChanges
+                                  : context.l10n.sensorAddTitle,
                               style: const TextStyle(
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w600,
-                              ),
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w600,
+                                ),
                             ),
                     ),
                   ),
@@ -370,8 +390,8 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         SnackBar(
           content: Text(
             widget.sensorId != null
-                ? 'Sensor berhasil diperbarui'
-                : 'Sensor berhasil ditambahkan',
+                ? context.l10n.sensorUpdatedSuccess
+                : context.l10n.sensorCreatedSuccess,
             style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
           ),
           backgroundColor: AppColors.success,
@@ -380,5 +400,35 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       Navigator.pop(context);
     }
     // Error ditampilkan via formState.error di UI
+  }
+
+  String _getSensorTypeLabel(String value, AppLocalizations l10n) {
+    switch (value) {
+      case 'env_temp':
+      case 'temperature':
+        return l10n.sensorTypeAirTemperature;
+      case 'env_hum':
+      case 'humidity':
+        return l10n.sensorTypeAirHumidity;
+      case 'soil_hum':
+        return l10n.sensorTypeSoilMoisture;
+      case 'soil_ph':
+      case 'ph':
+        return l10n.sensorTypeSoilPh;
+      case 'soil_nitro':
+        return l10n.sensorTypeSoilNitrogen;
+      case 'soil_phos':
+        return l10n.sensorTypeSoilPhosphorus;
+      case 'soil_pot':
+        return l10n.sensorTypeSoilPotassium;
+      case 'light':
+        return l10n.sensorTypeLightIntensity;
+      case 'pressure':
+        return l10n.sensorTypeAtmosphericPressure;
+      case 'wind_speed':
+        return l10n.sensorTypeWindSpeed;
+      default:
+        return value;
+    }
   }
 }

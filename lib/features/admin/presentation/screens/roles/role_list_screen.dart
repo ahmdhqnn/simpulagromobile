@@ -7,6 +7,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/role.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -20,7 +21,7 @@ class RoleListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'role:read',
       child: AdminScaffold(
-        title: 'Role',
+        title: context.l10n.adminRoleTitle,
         action: PermissionGuard(
           permission: 'role:create',
           child: AdminAddButton(
@@ -33,10 +34,10 @@ class RoleListScreen extends ConsumerWidget {
           skipError: true,
           data: (roles) {
             if (roles.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.admin_panel_settings_outlined,
-                title: 'Belum ada role',
-                message: 'Tambahkan role untuk mengatur hak akses',
+                title: context.l10n.adminNoRoles,
+                message: context.l10n.adminNoRolesMessage,
               );
             }
 
@@ -58,7 +59,7 @@ class RoleListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Role',
+                        context.l10n.adminRoleTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -98,14 +99,14 @@ class _RoleCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminListItem(
       title: role.displayName,
-      subtitle: 'ID: ${role.roleId}',
+      subtitle: context.l10n.adminIdPrefix(role.roleId),
       icon: Icons.admin_panel_settings,
       iconColor: role.isActive ? const Color(0xFF66BB6A) : Colors.grey,
       isActive: role.isActive,
       onTap: () => _showOptions(context, ref),
       badges: [
         AdminBadge(
-          label: '${role.permissionCount} Permission',
+          label: context.l10n.adminPermissionBadge(role.permissionCount),
           color: const Color(0xFF42A5F5),
           icon: Icons.lock_outline,
         ),
@@ -156,9 +157,9 @@ class _RoleCard extends ConsumerWidget {
               permission: 'role:update',
               child: ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                title: Text(
+                  context.l10n.commonEdit,
+                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -170,9 +171,9 @@ class _RoleCard extends ConsumerWidget {
               permission: 'role:delete',
               child: ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.commonDelete,
+                  style: const TextStyle(
                     color: Colors.red,
                     fontFamily: 'Plus Jakarta Sans',
                   ),
@@ -194,7 +195,7 @@ class _RoleCard extends ConsumerWidget {
     final confirmed = await showDeleteConfirmationDialog(
       context,
       itemName: 'Role "${role.displayName}"',
-      additionalMessage: 'Semua user dengan role ini akan kehilangan akses.',
+      additionalMessage: context.l10n.adminRoleDeleteWarning,
     );
 
     if (!confirmed || !context.mounted) return;
@@ -206,10 +207,16 @@ class _RoleCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (success) {
-      SnackbarHelper.showSuccess(context, 'Role berhasil dihapus');
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.adminDeleteSuccess(context.l10n.adminRoleTitle),
+      );
     } else {
       final error = ref.read(adminRoleFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus role');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminDeleteFailed(context.l10n.adminRoleTitle),
+      );
     }
   }
 }

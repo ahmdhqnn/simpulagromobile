@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/recommendation_request.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -73,8 +74,10 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
       SnackBar(
         content: Text(
           success
-              ? state.message ?? 'Rekomendasi tersimpan'
-              : 'Gagal: ${state.error ?? 'Unknown error'}',
+              ? state.message ?? context.l10n.recommendationLabSaved
+              : context.l10n.recommendationSaveFailed(
+                  state.error ?? context.l10n.commonUnknown,
+                ),
         ),
       ),
     );
@@ -87,7 +90,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
     final previewData = state.preview?.data;
 
     if (siteId == null) {
-      return const Center(child: Text('Pilih site terlebih dahulu'));
+      return Center(child: Text(context.l10n.siteSelectFirst));
     }
 
     return SingleChildScrollView(
@@ -95,9 +98,9 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            '[TEST] Rekomendasi dummy - admin only',
-            style: TextStyle(
+          Text(
+            context.l10n.recommendationLabAdminTestTitle,
+            style: const TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontWeight: FontWeight.w600,
             ),
@@ -105,8 +108,8 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: _phase,
-            decoration: const InputDecoration(
-              labelText: 'phase',
+            decoration: InputDecoration(
+              labelText: context.l10n.plantPhaseLabel,
               border: OutlineInputBorder(),
             ),
             items: _phases
@@ -128,7 +131,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: state.isLoading ? null : _runPreview,
-                  child: const Text('Preview'),
+                  child: Text(context.l10n.commonPreview),
                 ),
               ),
               const SizedBox(width: 8),
@@ -138,7 +141,7 @@ class _RecommendationLabTabState extends ConsumerState<RecommendationLabTab> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                   ),
-                  child: const Text('Save'),
+                  child: Text(context.l10n.commonSave),
                 ),
               ),
             ],

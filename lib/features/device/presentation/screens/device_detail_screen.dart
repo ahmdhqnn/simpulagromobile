@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../providers/device_provider.dart';
@@ -24,7 +25,7 @@ class DeviceDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Perangkat'),
+        title: Text(context.l10n.deviceDetailTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -84,7 +85,9 @@ class DeviceDetailScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                device.statusText,
+                                device.isActive
+                                    ? context.l10n.commonActive
+                                    : context.l10n.commonInactive,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: device.isActive
@@ -111,18 +114,27 @@ class DeviceDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Informasi Perangkat',
+                        context.l10n.deviceInformationTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const Gap(16),
-                      _buildInfoRow('ID Perangkat', device.devId),
-                      _buildInfoRow('Lokasi', device.locationDisplay),
+                      _buildInfoRow(context.l10n.deviceIdLabel, device.devId),
+                      _buildInfoRow(
+                        context.l10n.commonLocation,
+                        device.locationDisplay,
+                      ),
                       if (device.devNumberId != null)
-                        _buildInfoRow('Nomor ID', device.devNumberId!),
+                        _buildInfoRow(
+                          context.l10n.deviceNumberIdLabel,
+                          device.devNumberId!,
+                        ),
                       if (device.devIp != null)
-                        _buildInfoRow('IP Address', device.devIp!),
+                        _buildInfoRow(
+                          context.l10n.commonIpAddress,
+                          device.devIp!,
+                        ),
                       if (device.devPort != null)
-                        _buildInfoRow('Port', device.devPort!),
+                        _buildInfoRow(context.l10n.commonPort, device.devPort!),
                     ],
                   ),
                 ),
@@ -138,14 +150,23 @@ class DeviceDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Koordinat',
+                          context.l10n.commonCoordinates,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const Gap(16),
-                        _buildInfoRow('Longitude', device.devLon.toString()),
-                        _buildInfoRow('Latitude', device.devLat.toString()),
+                        _buildInfoRow(
+                          context.l10n.commonLongitude,
+                          device.devLon.toString(),
+                        ),
+                        _buildInfoRow(
+                          context.l10n.commonLatitude,
+                          device.devLat.toString(),
+                        ),
                         if (device.devAlt != null)
-                          _buildInfoRow('Altitude', '${device.devAlt} m'),
+                          _buildInfoRow(
+                            context.l10n.commonAltitude,
+                            '${device.devAlt} m',
+                          ),
                       ],
                     ),
                   ),

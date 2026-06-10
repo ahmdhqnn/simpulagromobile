@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../../../../shared/widgets/stat_item_widget.dart';
@@ -18,9 +19,9 @@ class MapsStatsBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (devices.isEmpty) {
-      return const InfoStateWidget.svg(
+      return InfoStateWidget.svg(
         svgIconPath: 'assets/icons/device-filled-icon.svg',
-        message: 'Belum ada statistik device',
+        message: context.l10n.monitoringNoDeviceStats,
         height: 70,
       );
     }
@@ -36,7 +37,7 @@ class MapsStatsBarWidget extends StatelessWidget {
         children: [
           StatItemWidget(
             svgIconPath: 'assets/icons/device-filled-icon.svg',
-            label: 'Device',
+            label: context.l10n.deviceTitle,
             value: '${devices.length}',
             background: AppColors.softGreenAlt,
             iconTint: AppColors.primary,
@@ -44,7 +45,7 @@ class MapsStatsBarWidget extends StatelessWidget {
           ),
           StatItemWidget(
             svgIconPath: 'assets/icons/sensor-icon.svg',
-            label: 'Sensor',
+            label: context.l10n.sensorTitle,
             value: '$displaySensors',
             background: AppColors.softBlue,
             iconTint: AppColors.info,
@@ -52,7 +53,7 @@ class MapsStatsBarWidget extends StatelessWidget {
           ),
           StatItemWidget(
             svgIconPath: 'assets/icons/check-icon.svg',
-            label: 'Aktif',
+            label: context.l10n.commonActive,
             value: '$activeDevices',
             background: AppColors.softGreen,
             iconTint: AppColors.success,

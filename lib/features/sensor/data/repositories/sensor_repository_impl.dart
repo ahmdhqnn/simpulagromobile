@@ -25,7 +25,8 @@ class SensorRepositoryImpl implements SensorRepository {
         final statusCode = e.response?.statusCode;
         String message = 'Terjadi kesalahan';
         if (e.response?.data is Map) {
-          message = e.response?.data['message'] ?? e.message ?? 'Terjadi kesalahan';
+          message =
+              e.response?.data['message'] ?? e.message ?? 'Terjadi kesalahan';
         } else {
           message = e.message ?? 'Terjadi kesalahan';
         }
@@ -59,7 +60,10 @@ class SensorRepositoryImpl implements SensorRepository {
   }
 
   @override
-  Future<Either<Failure, Sensor>> getSensorById(String siteId, String sensId) async {
+  Future<Either<Failure, Sensor>> getSensorById(
+    String siteId,
+    String sensId,
+  ) async {
     try {
       final model = await _remoteDataSource.getSensorById(siteId, sensId);
       return Right(model.toEntity());
@@ -71,7 +75,10 @@ class SensorRepositoryImpl implements SensorRepository {
   }
 
   @override
-  Future<Either<Failure, Sensor>> createSensor(String siteId, Map<String, dynamic> data) async {
+  Future<Either<Failure, Sensor>> createSensor(
+    String siteId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final model = await _remoteDataSource.createSensor(siteId, data);
       return Right(model.toEntity());
@@ -99,7 +106,10 @@ class SensorRepositoryImpl implements SensorRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteSensor(String siteId, String sensId) async {
+  Future<Either<Failure, void>> deleteSensor(
+    String siteId,
+    String sensId,
+  ) async {
     try {
       await _remoteDataSource.deleteSensor(siteId, sensId);
       return const Right(null);

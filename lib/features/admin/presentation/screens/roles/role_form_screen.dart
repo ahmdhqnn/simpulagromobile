@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/role_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
@@ -62,7 +63,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
 
       if (roleAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 4),
@@ -71,7 +72,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
       }
       if (roleAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: roleAsync.error!,
             onRetry: () =>
@@ -86,11 +87,11 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit Role' : 'Tambah Role',
+        title: isEditMode ? context.l10n.adminEditRoleTitle : context.l10n.adminAddRoleTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat role...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingRole,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -101,7 +102,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit Role' : 'Tambah Role',
+                isEditMode ? context.l10n.adminEditRoleTitle : context.l10n.adminAddRoleTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -112,23 +113,23 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               ),
               SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
-                title: 'Informasi Role',
+                title: context.l10n.adminRoleInfoSection,
                 child: Column(
                   children: [
                     AdminFormFields.buildField(
                       context,
                       controller: _idController,
-                      label: 'Role ID',
-                      hint: 'Contoh: ROLE001',
+                      label: context.l10n.adminRoleIdLabel,
+                      hint: context.l10n.adminRoleIdHint,
                       icon: Icons.tag,
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Role ID wajib diisi';
+                          return context.l10n.adminRoleIdRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -137,16 +138,16 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
-                      label: 'Nama Role',
-                      hint: 'Contoh: Admin, Operator, Viewer',
+                      label: context.l10n.adminRoleNameLabel,
+                      hint: context.l10n.adminRoleNameHint,
                       icon: Icons.admin_panel_settings,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama role wajib diisi';
+                          return context.l10n.adminRoleNameRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -155,8 +156,8 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _descController,
-                      label: 'Deskripsi',
-                      hint: 'Contoh: Role untuk administrator sistem',
+                      label: context.l10n.commonDescription,
+                      hint: context.l10n.adminRoleDescriptionHint,
                       icon: Icons.description,
                       maxLines: 2,
                     ),
@@ -166,10 +167,10 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Status',
+                title: context.l10n.adminStatusSection,
                 child: AdminFormFields.buildStatusToggle(
                   context,
-                  label: 'Status Role',
+                  label: context.l10n.adminStatusRoleLabel,
                   value: _status == 1,
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
@@ -177,7 +178,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Permission Role',
+                title: context.l10n.adminRolePermissionSection,
                 child: PermissionCheckboxGroup(
                   selectedPermissionIds: _selectedPermissionIds,
                   onChanged: (ids) =>
@@ -187,7 +188,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Role',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddRoleTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -245,12 +246,17 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
     if (success) {
       SnackbarHelper.showSuccess(
         context,
-        isEditMode ? 'Role berhasil diperbarui' : 'Role berhasil ditambahkan',
+        isEditMode
+            ? context.l10n.adminUpdateSuccess(context.l10n.adminRoleTitle)
+            : context.l10n.adminCreateSuccess(context.l10n.adminRoleTitle),
       );
       context.pop();
     } else {
       final error = ref.read(adminRoleFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan role');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.adminRoleTitle),
+      );
     }
   }
 }

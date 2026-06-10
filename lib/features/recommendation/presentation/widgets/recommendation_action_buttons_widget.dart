@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/l10n.dart';
 
 class RecommendationActionButtonsWidget extends StatelessWidget {
   final VoidCallback onDismiss;
   final VoidCallback onApply;
-  final String dismissLabel;
-  final String applyLabel;
+  final String? dismissLabel;
+  final String? applyLabel;
 
   const RecommendationActionButtonsWidget({
     super.key,
     required this.onDismiss,
     required this.onApply,
-    this.dismissLabel = 'Abaikan',
-    this.applyLabel = 'Terapkan',
+    this.dismissLabel,
+    this.applyLabel,
   });
 
   @override
@@ -31,7 +32,7 @@ class RecommendationActionButtonsWidget extends StatelessWidget {
               ),
             ),
             child: Text(
-              dismissLabel,
+              dismissLabel ?? context.l10n.recommendationDismiss,
               style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
           ),
@@ -50,7 +51,7 @@ class RecommendationActionButtonsWidget extends StatelessWidget {
               ),
             ),
             child: Text(
-              applyLabel,
+              applyLabel ?? context.l10n.recommendationApply,
               style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
           ),

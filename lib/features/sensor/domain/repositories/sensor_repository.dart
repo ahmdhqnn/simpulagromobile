@@ -10,7 +10,10 @@ abstract class SensorRepository {
   Future<Either<Failure, Sensor>> getSensorById(String siteId, String sensId);
 
   /// Create sensor for a site
-  Future<Either<Failure, Sensor>> createSensor(String siteId, Map<String, dynamic> data);
+  Future<Either<Failure, Sensor>> createSensor(
+    String siteId,
+    Map<String, dynamic> data,
+  );
 
   /// Update sensor
   Future<Either<Failure, Sensor>> updateSensor(

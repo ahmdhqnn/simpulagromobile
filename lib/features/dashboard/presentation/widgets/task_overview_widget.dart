@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 class TaskOverviewWidget extends StatelessWidget {
   final int totalTasks;
@@ -36,7 +37,7 @@ class TaskOverviewWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ringkasan Task',
+                      context.l10n.dashboardTaskSummaryTitle,
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(22),
@@ -47,7 +48,7 @@ class TaskOverviewWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Tingkat Penyelesaian',
+                      context.l10n.dashboardCompletionRateLabel,
                       style: AppTextStyles.hint(context),
                     ),
                   ],

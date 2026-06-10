@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -38,7 +40,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 child: _buildTopBar(context),
               ),
               SizedBox(height: context.rh(0.024)),
-              _buildErrorState(context, 'Pilih site terlebih dahulu', null),
+              _buildErrorState(context, context.l10n.siteSelectFirst, null),
             ],
           ),
         ),
@@ -106,7 +108,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             onSelected: (value) => _onMenuAction(context, siteId, task, value),
-            itemBuilder: (_) => _buildMenuItems(task),
+            itemBuilder: (_) => _buildMenuItems(context, task),
             child: Container(
               width: 58,
               height: 58,
@@ -129,47 +131,54 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
-  List<PopupMenuEntry<String>> _buildMenuItems(Task task) {
+  List<PopupMenuEntry<String>> _buildMenuItems(
+    BuildContext context,
+    Task task,
+  ) {
+    final l10n = context.l10n;
     return [
       if (task.taskStatus != TaskStatus.complite)
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'complete',
           child: Row(
             children: [
-              Icon(Icons.check_circle, size: 20),
-              SizedBox(width: 12),
-              Text('Tandai Selesai'),
+              const Icon(Icons.check_circle, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.taskMarkComplete),
             ],
           ),
         ),
       if (task.taskStatus == TaskStatus.pending)
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'start',
           child: Row(
             children: [
-              Icon(Icons.play_circle, size: 20),
-              SizedBox(width: 12),
-              Text('Mulai Kerjakan'),
+              const Icon(Icons.play_circle, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.taskStartWork),
             ],
           ),
         ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: 'edit',
         child: Row(
           children: [
-            Icon(Icons.edit, size: 20),
-            SizedBox(width: 12),
-            Text('Edit'),
+            const Icon(Icons.edit, size: 20),
+            const SizedBox(width: 12),
+            Text(l10n.commonEdit),
           ],
         ),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: 'delete',
         child: Row(
           children: [
-            Icon(Icons.delete, size: 20, color: AppColors.error),
-            SizedBox(width: 12),
-            Text('Hapus', style: TextStyle(color: AppColors.error)),
+            const Icon(Icons.delete, size: 20, color: AppColors.error),
+            const SizedBox(width: 12),
+            Text(
+              l10n.commonDelete,
+              style: const TextStyle(color: AppColors.error),
+            ),
           ],
         ),
       ),
@@ -219,6 +228,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   Widget _buildStatusCard(BuildContext context, Task task) {
     final statusColor = _statusColor(task.taskStatus);
     final priorityColor = _priorityColor(task.taskPriority);
+    final l10n = context.l10n;
 
     return Container(
       padding: EdgeInsets.all(context.rw(0.041)),
@@ -249,16 +259,16 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             children: [
               Expanded(
                 child: TaskStatusBadgeWidget(
-                  label: 'Status',
-                  value: task.taskStatus.label,
+                  label: l10n.commonStatus,
+                  value: task.taskStatus.localizedLabel(l10n),
                   color: statusColor,
                 ),
               ),
               SizedBox(width: context.rw(0.03)),
               Expanded(
                 child: TaskStatusBadgeWidget(
-                  label: 'Prioritas',
-                  value: task.taskPriority.label,
+                  label: l10n.commonPriority,
+                  value: task.taskPriority.localizedLabel(l10n),
                   color: priorityColor,
                 ),
               ),
@@ -279,17 +289,20 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Informasi Task', style: AppTextStyles.cardTitle(context, 14)),
+          Text(
+            context.l10n.taskInfoTitle,
+            style: AppTextStyles.cardTitle(context, 14),
+          ),
           SizedBox(height: context.rh(0.015)),
           TaskInfoRowWidget(
             icon: Icons.category_outlined,
-            label: 'Jenis Task',
-            value: task.taskType.label,
+            label: context.l10n.taskTypeLabel,
+            value: task.taskType.localizedLabel(context.l10n),
           ),
           if (task.siteId != null)
             TaskInfoRowWidget(
               icon: Icons.location_on_outlined,
-              label: 'Site',
+              label: context.l10n.siteTitle,
               value: task.siteId!,
             ),
         ],
@@ -307,27 +320,34 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Detail Waktu', style: AppTextStyles.cardTitle(context, 14)),
+          Text(
+            context.l10n.taskTimeDetailsTitle,
+            style: AppTextStyles.cardTitle(context, 14),
+          ),
           SizedBox(height: context.rh(0.015)),
           if (task.createdAt != null)
             TaskInfoRowWidget(
               icon: Icons.add_circle_outline,
-              label: 'Dibuat Pada',
-              value: DateFormat('dd MMMM yyyy, HH:mm').format(task.createdAt!),
+              label: context.l10n.commonCreatedAt,
+              value: context
+                  .dateFormat('dd MMMM yyyy, HH:mm')
+                  .format(task.createdAt!),
             ),
           if (task.updatedAt != null)
             TaskInfoRowWidget(
               icon: Icons.update_outlined,
-              label: 'Terakhir Diupdate',
-              value: DateFormat('dd MMMM yyyy, HH:mm').format(task.updatedAt!),
+              label: context.l10n.commonUpdatedAt,
+              value: context
+                  .dateFormat('dd MMMM yyyy, HH:mm')
+                  .format(task.updatedAt!),
             ),
           if (task.completedAt != null)
             TaskInfoRowWidget(
               icon: Icons.check_circle_outline,
-              label: 'Selesai Pada',
-              value: DateFormat(
-                'dd MMMM yyyy, HH:mm',
-              ).format(task.completedAt!),
+              label: context.l10n.commonCompletedAt,
+              value: context
+                  .dateFormat('dd MMMM yyyy, HH:mm')
+                  .format(task.completedAt!),
               valueColor: AppColors.success,
             ),
         ],
@@ -345,25 +365,28 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Timeline', style: AppTextStyles.cardTitle(context, 14)),
+          Text(
+            context.l10n.taskTimelineTitle,
+            style: AppTextStyles.cardTitle(context, 14),
+          ),
           SizedBox(height: context.rh(0.015)),
           if (task.createdAt != null)
             TaskTimelineItemWidget(
               icon: Icons.add_circle,
-              title: 'Task Dibuat',
+              title: context.l10n.taskCreatedTimeline,
               date: task.createdAt!,
               isFirst: true,
             ),
           if (task.taskStatus == TaskStatus.progress)
             TaskTimelineItemWidget(
               icon: Icons.play_circle,
-              title: 'Task Sedang Dikerjakan',
+              title: context.l10n.taskProgressTimeline,
               date: task.updatedAt ?? DateTime.now(),
             ),
           if (task.taskStatus == TaskStatus.failed)
             TaskTimelineItemWidget(
               icon: Icons.cancel,
-              title: 'Task Gagal',
+              title: context.l10n.taskFailedTimeline,
               date: task.updatedAt ?? DateTime.now(),
               color: AppColors.error,
               isLast: true,
@@ -371,7 +394,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           if (task.completedAt != null)
             TaskTimelineItemWidget(
               icon: Icons.check_circle,
-              title: 'Task Selesai',
+              title: context.l10n.taskCompletedTimeline,
               date: task.completedAt!,
               color: AppColors.success,
               isLast: true,
@@ -390,7 +413,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: AppColors.error),
             SizedBox(height: context.rh(0.02)),
-            Text('Terjadi kesalahan', style: AppTextStyles.cardTitle(context)),
+            Text(
+              context.l10n.commonError,
+              style: AppTextStyles.cardTitle(context),
+            ),
             SizedBox(height: context.rh(0.01)),
             Text(
               error,
@@ -404,7 +430,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ElevatedButton.icon(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('Kembali'),
+                  label: Text(context.l10n.commonBack),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.surface,
                     foregroundColor: AppColors.textPrimary,
@@ -417,7 +443,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       taskDetailProvider((siteId, widget.taskId)),
                     ),
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Coba Lagi'),
+                    label: Text(context.l10n.commonRetry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -436,19 +462,18 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Task'),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus task "${task.taskName}"?',
-        ),
+        title: Text(context.l10n.taskDeleteTitle),
+        content: Text(context.l10n.taskDeleteMessage(task.taskName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               final messenger = ScaffoldMessenger.of(context);
+              final l10n = context.l10n;
               final repository = ref.read(taskRepositoryProvider);
               final result = await repository.deleteTask(siteId, task.taskId);
               if (!mounted) return;
@@ -456,7 +481,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 (failure) {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text('Gagal menghapus task: ${failure.message}'),
+                      content: Text(l10n.taskDeleteFailure(failure.message)),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -471,17 +496,17 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     context.pop(true);
                   }
                   messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Task berhasil dihapus'),
+                    SnackBar(
+                      content: Text(l10n.taskDeleteSuccess),
                       backgroundColor: AppColors.success,
                     ),
                   );
                 },
               );
             },
-            child: const Text(
-              'Hapus',
-              style: TextStyle(color: AppColors.error),
+            child: Text(
+              context.l10n.commonDelete,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -496,6 +521,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     TaskStatus status,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    final statusLabel = status.localizedLabel(l10n);
     final repository = ref.read(taskRepositoryProvider);
     final result = await repository.updateTaskStatus(
       siteId,
@@ -507,7 +534,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       (failure) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Gagal memperbarui status: ${failure.message}'),
+            content: Text(l10n.taskUpdateStatusFailure(failure.message)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -516,7 +543,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         await refreshTaskCache(ref, siteId: siteId, taskId: task.taskId);
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Status diperbarui ke "${status.label}"'),
+            content: Text(l10n.taskStatusUpdated(statusLabel)),
             backgroundColor: AppColors.success,
           ),
         );

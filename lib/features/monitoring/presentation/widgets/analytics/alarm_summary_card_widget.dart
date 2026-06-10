@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../data/models/monitoring_models.dart';
 import '../monitoring_card_header_widget.dart';
@@ -30,7 +31,7 @@ class AlarmSummaryCardWidget extends StatelessWidget {
             const Divider(color: Color(0xFFEEEEEE), height: 1),
             const SizedBox(height: 10),
             Text(
-              'Alarm Terbaru',
+              context.l10n.monitoringLatestAlarm,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(12),
@@ -50,10 +51,10 @@ class AlarmSummaryCardWidget extends StatelessWidget {
     return AppCardWidget.elevated(
       boxShadow: null,
       radius: AppRadius.lg,
-      child: const MonitoringCardHeaderWidget.icon(
+      child: MonitoringCardHeaderWidget.icon(
         icon: Icons.check_circle_outline_rounded,
-        title: 'Tidak ada alarm aktif',
-        description: 'Semua sensor berjalan normal',
+        title: context.l10n.monitoringNoActiveAlarmTitle,
+        description: context.l10n.monitoringNoActiveAlarmDescription,
         background: AppColors.softGreen,
         tint: AppColors.success,
       ),
@@ -63,8 +64,8 @@ class AlarmSummaryCardWidget extends StatelessWidget {
   Widget _buildHeader(BuildContext context, int total) {
     return MonitoringCardHeaderWidget.icon(
       icon: Icons.notifications_outlined,
-      title: 'Ringkasan Alarm',
-      description: '$total total alarm tercatat',
+      title: context.l10n.monitoringAlarmSummaryTitle,
+      description: context.l10n.monitoringAlarmSummaryDescription(total),
       background: AppColors.softOrange,
       tint: AppColors.warning,
     );
@@ -76,7 +77,7 @@ class AlarmSummaryCardWidget extends StatelessWidget {
         Expanded(
           child: _CountBox(
             value: '$recent',
-            label: 'Alarm 24 Jam',
+            label: context.l10n.monitoringAlarmLast24Hours,
             color: const Color(0xFFFF9800),
             background: const Color(0xFFFFF3E0),
           ),
@@ -85,7 +86,7 @@ class AlarmSummaryCardWidget extends StatelessWidget {
         Expanded(
           child: _CountBox(
             value: '$total',
-            label: 'Total Alarm',
+            label: context.l10n.monitoringTotalAlarm,
             color: AppColors.error,
             background: const Color(0xFFFBE9E7),
           ),
@@ -168,7 +169,7 @@ class _AlarmRow extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              alarm.alcodeNote ?? 'Alarm terdeteksi',
+              alarm.alcodeNote ?? context.l10n.monitoringAlarmDetected,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(11),
@@ -180,7 +181,7 @@ class _AlarmRow extends StatelessWidget {
           if (alarm.almDate != null) ...[
             const SizedBox(width: 8),
             Text(
-              DateFormat('d/M HH:mm').format(alarm.almDate!),
+              context.dateFormat('d/M HH:mm').format(alarm.almDate!),
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(9),

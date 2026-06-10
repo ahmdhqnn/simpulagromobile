@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/date_formatter.dart';
+import '../../../../../core/utils/locale_formatters.dart';
 import '../../../../../core/utils/responsive.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../../../l10n/l10n.dart';
+import '../../../../../l10n/localized_labels.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../phase/presentation/providers/phase_provider.dart';
 import '../../../../plant/domain/entities/plant.dart';
@@ -22,7 +25,7 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
         ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
         : null;
     final phase = phaseAsync?.valueOrNull;
-    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync, l10n);
 
     return AppCardWidget.elevated(
       boxShadow: null,
@@ -32,7 +35,7 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
         children: [
           MonitoringCardHeaderWidget.icon(
             icon: Icons.grass_outlined,
-            title: 'Fase Pertumbuhan Saat Ini',
+            title: l10n.monitoringCurrentGrowthPhase,
             description: phaseLabel,
             background: AppColors.softBlue,
             tint: AppColors.infoDeep,
@@ -40,11 +43,14 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
           const SizedBox(height: 14),
           _InfoRow(
             label: l10n.plantTypeLabel,
-            value: plant.plantType?.displayName ?? '-',
+            value: plant.plantType?.localizedLabel(l10n) ?? '-',
           ),
           _InfoRow(
             label: l10n.plantPlantDateLabel,
-            value: DateFormatter.formatDate(plant.plantDate),
+            value: DateFormatter.formatDate(
+              plant.plantDate,
+              locale: context.localeTag,
+            ),
           ),
           _InfoRow(
             label: l10n.plantHstLabel,
@@ -53,17 +59,26 @@ class GrowthPhaseCardWidget extends ConsumerWidget {
                 : '-',
           ),
           _InfoRow(label: l10n.plantPhaseLabel, value: phaseLabel),
-          _InfoRow(label: l10n.plantStatusLabel, value: plant.statusText),
+          _InfoRow(
+            label: l10n.plantStatusLabel,
+            value: _plantStatusLabel(context, plant),
+          ),
           if (phase != null) ...[
             const SizedBox(height: 6),
             _PhaseProgress(
               progress: phase.progressPercentage,
-              range: 'HST ${phase.hstMin}-${phase.hstMax}',
+              range: '${l10n.plantHstUnit} ${phase.hstMin}-${phase.hstMax}',
             ),
           ],
         ],
       ),
     );
+  }
+
+  String _plantStatusLabel(BuildContext context, Plant plant) {
+    if (plant.isHarvested) return context.l10n.plantStatusHarvested;
+    if (plant.isCurrentPlanting) return context.l10n.plantStatusGrowing;
+    return context.l10n.commonInactive;
   }
 }
 

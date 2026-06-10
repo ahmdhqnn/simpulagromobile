@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/agro_entity.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class EtcWidget extends StatelessWidget {
   final List<EtcDailyEntity> etcData;
@@ -17,6 +18,7 @@ class EtcWidget extends StatelessWidget {
 
     final latestData = etcData.first;
     final weekData = etcData.take(7).toList();
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -61,7 +63,7 @@ class EtcWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Kebutuhan Air Tanaman',
+                      l10n.agroWaterRequirement,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -89,11 +91,12 @@ class EtcWidget extends StatelessWidget {
   }
 
   Widget _buildLatestEtc(BuildContext context, EtcDailyEntity data) {
+    final l10n = AppLocalizations.of(context)!;
     final metrics = <_EtcMetricData>[
       _EtcMetricData(
         label: 'ETC',
         value: data.etc?.toStringAsFixed(2) ?? '-',
-        unit: 'mm/hari',
+        unit: l10n.agroUnitMmPerDay,
         color: AppColors.primary,
         icon: Icons.water_drop,
       ),
@@ -101,15 +104,15 @@ class EtcWidget extends StatelessWidget {
         _EtcMetricData(
           label: 'Kc',
           value: data.kc!.toStringAsFixed(2),
-          unit: 'koefisien',
+          unit: l10n.agroUnitCoefficient,
           color: AppColors.accent,
           icon: Icons.eco,
         ),
       if (data.waterNeeds != null)
         _EtcMetricData(
-          label: 'Kebutuhan',
+          label: l10n.agroWaterNeedsLabel,
           value: data.waterNeeds!.toStringAsFixed(1),
-          unit: 'L/m2',
+          unit: l10n.etcLitrePerSqmUnit,
           color: AppColors.info,
           icon: Icons.local_drink,
         ),
@@ -198,12 +201,13 @@ class EtcWidget extends StatelessWidget {
   Widget _buildEtcChart(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
     final hasWaterNeeds = weekData.any((data) => data.waterNeeds != null);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Trend ETC (7 Hari)',
+          l10n.agroEtcTrend7Days,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(14),
@@ -321,7 +325,7 @@ class EtcWidget extends StatelessWidget {
                   getTooltipItems: (touchedSpots) {
                     return touchedSpots.map((spot) {
                       final day = weekData[spot.x.toInt()].day ?? '';
-                      final label = spot.barIndex == 0 ? 'ETC' : 'Kebutuhan';
+                      final label = spot.barIndex == 0 ? 'ETC' : l10n.agroWaterNeedsLabel;
                       return LineTooltipItem(
                         '$label\n$day\n${spot.y.toStringAsFixed(2)}',
                         TextStyle(
@@ -344,7 +348,7 @@ class EtcWidget extends StatelessWidget {
             _buildLegendItem(context, 'ETC', AppColors.primary, false),
             if (hasWaterNeeds) ...[
               const SizedBox(width: 16),
-              _buildLegendItem(context, 'Kebutuhan Air', AppColors.info, true),
+              _buildLegendItem(context, l10n.agroWaterNeedsLabel, AppColors.info, true),
             ],
           ],
         ),
@@ -389,6 +393,7 @@ class EtcWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final waterNeeds = data.waterNeeds;
     final etc = data.etc;
     String recommendation;
@@ -397,43 +402,36 @@ class EtcWidget extends StatelessWidget {
     String title;
 
     if (waterNeeds != null) {
-      title = 'Rekomendasi Penyiraman';
+      title = l10n.agroWateringRecommendation;
       if (waterNeeds < 3) {
-        recommendation =
-            'Kebutuhan air rendah. Penyiraman minimal atau tidak diperlukan.';
+        recommendation = l10n.agroRecWaterNeedsLow;
         color = AppColors.success;
         icon = Icons.check_circle_outline;
       } else if (waterNeeds < 6) {
-        recommendation =
-            'Kebutuhan air sedang. Lakukan penyiraman rutin sesuai jadwal.';
+        recommendation = l10n.agroRecWaterNeedsMedium;
         color = AppColors.info;
         icon = Icons.info_outline;
       } else if (waterNeeds < 10) {
-        recommendation =
-            'Kebutuhan air tinggi. Tingkatkan frekuensi penyiraman.';
+        recommendation = l10n.agroRecWaterNeedsHigh;
         color = AppColors.warning;
         icon = Icons.warning_amber_outlined;
       } else {
-        recommendation =
-            'Kebutuhan air sangat tinggi! Penyiraman intensif diperlukan.';
+        recommendation = l10n.agroRecWaterNeedsVeryHigh;
         color = AppColors.error;
         icon = Icons.error_outline;
       }
     } else {
-      title = 'Status ETC';
+      title = l10n.agroStatusEtc;
       if (etc! < 3) {
-        recommendation =
-            'ETC rendah. Kebutuhan evapotranspirasi tanaman sedang ringan.';
+        recommendation = l10n.agroRecEtcLow;
         color = AppColors.success;
         icon = Icons.check_circle_outline;
       } else if (etc <= 6) {
-        recommendation =
-            'ETC berada pada rentang sedang. Pantau kelembaban dan jadwal irigasi.';
+        recommendation = l10n.agroRecEtcMedium;
         color = AppColors.info;
         icon = Icons.info_outline;
       } else {
-        recommendation =
-            'ETC tinggi. Periksa kelembaban tanah dan kesiapan irigasi.';
+        recommendation = l10n.agroRecEtcHigh;
         color = AppColors.warning;
         icon = Icons.warning_amber_outlined;
       }
@@ -482,12 +480,13 @@ class EtcWidget extends StatelessWidget {
 
   Widget _buildEtcTable(BuildContext context, List<EtcDailyEntity> weekData) {
     if (weekData.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Detail Iklim Harian',
+          l10n.agroDailyClimateDetail,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(14),
@@ -511,7 +510,7 @@ class EtcWidget extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: Text(
-                        'Tanggal',
+                        l10n.agroTableDate,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(12),
@@ -523,7 +522,7 @@ class EtcWidget extends StatelessWidget {
                     Expanded(
                       flex: 3,
                       child: Text(
-                        'Temp (Min-Max)',
+                        l10n.agroTableTemp,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
@@ -536,7 +535,7 @@ class EtcWidget extends StatelessWidget {
                     Expanded(
                       flex: 3,
                       child: Text(
-                        'RH (Min-Max)',
+                        l10n.agroTableRh,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
@@ -627,7 +626,7 @@ class EtcWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Data ETC tidak tersedia',
+              AppLocalizations.of(context)!.agroEtcDataUnavailable,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(14),

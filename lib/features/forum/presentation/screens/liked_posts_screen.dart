@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/post.dart';
@@ -19,7 +20,7 @@ class LikedPostsScreen extends ConsumerWidget {
     final likedPostsAsync = ref.watch(likedPostsProvider);
 
     return ForumActionScaffold(
-      title: 'Postingan Disukai',
+      title: context.l10n.forumLikedPosts,
       trailing: CircularIconActionWidget(
         onPressed: () => ref.invalidate(likedPostsProvider),
         icon: Icons.refresh,
@@ -30,10 +31,10 @@ class LikedPostsScreen extends ConsumerWidget {
         skipError: true,
         data: (posts) {
           if (posts.isEmpty) {
-            return const ForumActionState(
+            return ForumActionState(
               icon: Icons.favorite_border,
-              title: 'Belum ada postingan disukai',
-              message: 'Postingan yang Anda sukai akan tersimpan di sini.',
+              title: context.l10n.forumLikedPostsEmptyTitle,
+              message: context.l10n.forumLikedPostsEmptyMessage,
             );
           }
 
@@ -66,8 +67,8 @@ class LikedPostsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: ForumActionSummaryCard(
                 icon: Icons.favorite_border,
-                title: '${posts.length} postingan disukai',
-                subtitle: 'Daftar postingan yang pernah Anda sukai.',
+                title: context.l10n.forumLikedPostCount(posts.length),
+                subtitle: context.l10n.forumLikedPostsSummary,
                 color: AppColors.error,
                 background: AppColors.softOrange,
               ),
@@ -102,11 +103,11 @@ class LikedPostsScreen extends ConsumerWidget {
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
     return ForumActionState(
       icon: Icons.wifi_off_rounded,
-      title: 'Gagal memuat postingan',
+      title: context.l10n.forumLoadPostsFailed,
       message: error.toString().replaceAll('Exception: ', ''),
       action: ForumActionPrimaryButton(
         icon: Icons.refresh,
-        label: 'Coba Lagi',
+        label: context.l10n.commonRetry,
         onPressed: () => ref.invalidate(likedPostsProvider),
       ),
     );
@@ -117,6 +118,7 @@ class LikedPostsScreen extends ConsumerWidget {
     WidgetRef ref,
     String postId,
   ) async {
+    final l10n = context.l10n;
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(likedPostsProvider);
     if (!context.mounted) return;
@@ -124,9 +126,9 @@ class LikedPostsScreen extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: const Text(
-          'Postingan berhasil dibagikan',
-          style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+        content: Text(
+          l10n.forumPostShared,
+          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
         ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,

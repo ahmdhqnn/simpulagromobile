@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
@@ -18,9 +19,9 @@ class DeviceSensorOverviewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (devices.isEmpty) {
-      return const InfoStateWidget.svg(
+      return InfoStateWidget.svg(
         svgIconPath: 'assets/icons/device-filled-icon.svg',
-        message: 'Belum ada perangkat tersedia',
+        message: context.l10n.monitoringNoDevicesAvailable,
         height: 74,
       );
     }
@@ -51,7 +52,10 @@ class DeviceSensorOverviewWidget extends StatelessWidget {
                         style: AppTextStyles.metric(context),
                       ),
                       const SizedBox(height: 4),
-                      Text('Total device', style: AppTextStyles.label(context)),
+                      Text(
+                        context.l10n.monitoringTotalDevice,
+                        style: AppTextStyles.label(context),
+                      ),
                     ],
                   ),
                 ),
@@ -79,7 +83,10 @@ class DeviceSensorOverviewWidget extends StatelessWidget {
                         style: AppTextStyles.metric(context),
                       ),
                       const SizedBox(height: 4),
-                      Text('Total sensor', style: AppTextStyles.label(context)),
+                      Text(
+                        context.l10n.monitoringTotalSensor,
+                        style: AppTextStyles.label(context),
+                      ),
                     ],
                   ),
                 ),

@@ -23,7 +23,10 @@ class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   @override
-  Future<Either<Failure, Device>> getDeviceById(String siteId, String devId) async {
+  Future<Either<Failure, Device>> getDeviceById(
+    String siteId,
+    String devId,
+  ) async {
     try {
       final model = await _remoteDataSource.getDeviceById(siteId, devId);
       return Right(model.toEntity());
@@ -35,7 +38,9 @@ class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   @override
-  Future<Either<Failure, List<Device>>> getDeviceCoordinates(String siteId) async {
+  Future<Either<Failure, List<Device>>> getDeviceCoordinates(
+    String siteId,
+  ) async {
     try {
       final models = await _remoteDataSource.getDeviceCoordinates(siteId);
       return Right(models.map((m) => m.toEntity()).toList());
@@ -47,7 +52,10 @@ class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   @override
-  Future<Either<Failure, Device>> createDevice(String siteId, Device device) async {
+  Future<Either<Failure, Device>> createDevice(
+    String siteId,
+    Device device,
+  ) async {
     try {
       final model = await _remoteDataSource.createDevice(siteId, device);
       return Right(model.toEntity());
@@ -75,7 +83,10 @@ class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteDevice(String siteId, String devId) async {
+  Future<Either<Failure, void>> deleteDevice(
+    String siteId,
+    String devId,
+  ) async {
     try {
       await _remoteDataSource.deleteDevice(siteId, devId);
       return const Right(null);
@@ -97,7 +108,7 @@ class DeviceRepositoryImpl implements DeviceRepository {
     }
 
     final statusCode = e.response?.statusCode;
-    
+
     // Safely extract message
     String message = 'Unknown error';
     if (e.response?.data is Map) {

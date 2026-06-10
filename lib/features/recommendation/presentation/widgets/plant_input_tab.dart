@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/entities/recommendation_request.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/recommendation_provider.dart';
@@ -55,7 +56,7 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
     final siteId = ref.watch(selectedSiteIdProvider);
     final state = ref.watch(plantRecommendationProvider);
     if (siteId == null) {
-      return const Center(child: Text('Pilih site terlebih dahulu'));
+      return Center(child: Text(context.l10n.siteSelectFirst));
     }
 
     return SingleChildScrollView(
@@ -63,9 +64,9 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Input nilai sensor untuk rekomendasi tanaman',
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+          Text(
+            context.l10n.recommendationSensorInputTitle,
+            style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
           ),
           const SizedBox(height: 16),
           _field(_nitro, 'soil_nitro'),
@@ -92,7 +93,10 @@ class _PlantInputTabState extends ConsumerState<PlantInputTab> {
           if (state.message != null || state.error != null) ...[
             const SizedBox(height: 12),
             Text(
-              state.message ?? 'Error: ${state.error}',
+              state.message ??
+                  context.l10n.recommendationSaveFailed(
+                    state.error ?? context.l10n.commonUnknown,
+                  ),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: state.error == null

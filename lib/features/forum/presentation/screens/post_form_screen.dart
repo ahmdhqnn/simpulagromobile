@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -38,8 +39,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   bool _removeExistingImage = false;
 
   bool get _isEditMode => widget.postId != null;
-  String get _screenTitle =>
-      _isEditMode ? 'Edit Postingan' : 'Tambah Postingan';
+  String _screenTitle(BuildContext context) =>
+      _isEditMode ? context.l10n.forumEditPost : context.l10n.forumAddPost;
 
   String? get _imageToSubmit {
     if (_selectedImage != null) return _selectedImage!.path;
@@ -70,6 +71,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   }
 
   Future<void> _loadPostData() async {
+    final l10n = context.l10n;
     setState(() {
       _isLoadingData = true;
       _loadErrorMessage = null;
@@ -85,7 +87,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         (failure) {
           setState(() {
             _isLoadingData = false;
-            _loadErrorMessage = 'Gagal memuat data: ${failure.message}';
+            _loadErrorMessage = l10n.forumLoadDataFailed(failure.message);
           });
         },
         (post) {
@@ -109,12 +111,13 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       setState(() {
         _isLoadingData = false;
         _loadErrorMessage =
-            'Terjadi kesalahan: ${error.toString().replaceAll('Exception: ', '')}';
+            '${l10n.commonError}: ${error.toString().replaceAll('Exception: ', '')}';
       });
     }
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final l10n = context.l10n;
     try {
       final picked = await _imagePicker.pickImage(
         source: source,
@@ -131,7 +134,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     } catch (error) {
       if (!mounted) return;
       _showErrorSnackBar(
-        'Gagal memilih gambar: ${error.toString().replaceAll('Exception: ', '')}',
+        l10n.forumPickImageFailed(
+          error.toString().replaceAll('Exception: ', ''),
+        ),
       );
     }
   }
@@ -163,7 +168,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Pilih Gambar',
+                  context.l10n.forumSelectImage,
                   style: AppTextStyles.cardTitle(sheetContext, 16),
                 ),
                 const SizedBox(height: 12),
@@ -172,7 +177,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                   icon: Icons.photo_library_outlined,
                   iconColor: AppColors.primary,
                   backgroundColor: AppColors.softGreen,
-                  label: 'Pilih dari Galeri',
+                  label: context.l10n.forumPickFromGallery,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
                     _pickImage(ImageSource.gallery);
@@ -184,7 +189,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                   icon: Icons.camera_alt_outlined,
                   iconColor: AppColors.primary,
                   backgroundColor: AppColors.softGreen,
-                  label: 'Ambil Foto',
+                  label: context.l10n.forumTakePhoto,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
                     _pickImage(ImageSource.camera);
@@ -197,7 +202,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                     icon: Icons.delete_outline,
                     iconColor: AppColors.error,
                     backgroundColor: AppColors.softOrange,
-                    label: 'Hapus Gambar',
+                    label: context.l10n.forumDeleteImage,
                     labelColor: AppColors.error,
                     onTap: () {
                       Navigator.of(sheetContext).pop();
@@ -268,10 +273,11 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = context.l10n;
 
     final selectedSite = ref.read(selectedSiteProvider);
     if (!_isEditMode && selectedSite == null) {
-      _showErrorSnackBar('Pilih site terlebih dahulu di halaman utama');
+      _showErrorSnackBar(l10n.forumSiteRequiredMain);
       return;
     }
 
@@ -306,9 +312,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       if (!mounted) return;
 
       _showSuccessSnackBar(
-        _isEditMode
-            ? 'Postingan berhasil diupdate'
-            : 'Postingan berhasil dibuat',
+        _isEditMode ? l10n.forumPostUpdated : l10n.forumPostCreated,
       );
       context.pop(true);
     } catch (error) {
@@ -328,10 +332,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
         child: _buildMessageCard(
           icon: Icons.location_off_outlined,
           iconColor: AppColors.warning,
-          title: 'Site belum dipilih',
-          description:
-              'Pilih site aktif di dashboard sebelum membuat postingan forum.',
-          actionLabel: 'Kembali',
+          title: context.l10n.forumSiteNotSelectedTitle,
+          description: context.l10n.forumSelectActiveSiteBeforePosting,
+          actionLabel: context.l10n.commonBack,
           onAction: () => context.pop(),
         ),
       );
@@ -346,9 +349,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       child = _buildMessageCard(
         icon: Icons.error_outline,
         iconColor: AppColors.error,
-        title: 'Gagal memuat postingan',
+        title: context.l10n.forumLoadPostsFailed,
         description: _loadErrorMessage!,
-        actionLabel: 'Coba Lagi',
+        actionLabel: context.l10n.commonRetry,
         onAction: _loadPostData,
       );
     } else {
@@ -379,7 +382,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                   ),
                 ),
                 SizedBox(height: context.rh(0.03)),
-                Text(_screenTitle, style: AppTextStyles.sectionTitle(context)),
+                Text(
+                  _screenTitle(context),
+                  style: AppTextStyles.sectionTitle(context),
+                ),
                 SizedBox(height: context.rh(0.03)),
                 child,
                 SizedBox(
@@ -471,21 +477,24 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (siteLabel != null && siteLabel.trim().isNotEmpty) ...[
-              _FormField(label: 'Site', child: _buildReadOnlyField(siteLabel)),
+              _FormField(
+                label: context.l10n.siteTitle,
+                child: _buildReadOnlyField(siteLabel),
+              ),
               SizedBox(height: context.rh(0.025)),
             ],
             _FormField(
-              label: 'Judul',
+              label: context.l10n.forumPostTitleLabel,
               child: _buildTextField(
                 controller: _titleController,
-                hintText: 'Masukkan judul postingan',
+                hintText: context.l10n.forumPostTitleHint,
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Judul tidak boleh kosong';
+                    return context.l10n.forumPostTitleRequired;
                   }
                   if (value.trim().length < 3) {
-                    return 'Judul minimal 3 karakter';
+                    return context.l10n.forumPostTitleMinLength;
                   }
                   return null;
                 },
@@ -493,25 +502,28 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
             ),
             SizedBox(height: context.rh(0.025)),
             _FormField(
-              label: 'Isi Postingan',
+              label: context.l10n.forumPostContentLabel,
               child: _buildTextField(
                 controller: _contentController,
-                hintText: 'Tulis informasi yang ingin Anda bagikan',
+                hintText: context.l10n.forumPostContentHint,
                 maxLines: 6,
                 textInputAction: TextInputAction.newline,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Konten tidak boleh kosong';
+                    return context.l10n.forumPostContentRequired;
                   }
                   if (value.trim().length < 10) {
-                    return 'Konten minimal 10 karakter';
+                    return context.l10n.forumPostContentMinLength;
                   }
                   return null;
                 },
               ),
             ),
             SizedBox(height: context.rh(0.025)),
-            _FormField(label: 'Media', child: _buildImageField()),
+            _FormField(
+              label: context.l10n.forumMediaLabel,
+              child: _buildImageField(),
+            ),
             SizedBox(height: context.rh(0.025)),
             Container(
               width: double.infinity,
@@ -531,7 +543,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                   SizedBox(width: context.rw(0.026)),
                   Expanded(
                     child: Text(
-                      'Pastikan isi postingan tetap jelas, relevan, dan sesuai pedoman komunitas.',
+                      context.l10n.forumPostGuideline,
                       style: AppTextStyles.caption(
                         context,
                         size: context.sp(11),
@@ -682,7 +694,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Tambahkan gambar',
+                        context.l10n.forumAddImage,
                         style: AppTextStyles.label(
                           context,
                           size: context.sp(13),
@@ -692,7 +704,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Opsional. Postingan tanpa gambar tetap dapat dipublikasikan.',
+                        context.l10n.forumImageOptionalHint,
                         style: AppTextStyles.hint(
                           context,
                           size: context.sp(11),
@@ -721,7 +733,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Pilih',
+                        context.l10n.forumChoose,
                         style: AppTextStyles.caption(
                           context,
                           size: context.sp(11),
@@ -768,8 +780,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
             Expanded(
               child: Text(
                 _selectedImage != null
-                    ? 'Gambar baru siap diunggah'
-                    : 'Gambar postingan aktif',
+                    ? context.l10n.forumNewImageReady
+                    : context.l10n.forumActivePostImage,
                 style: AppTextStyles.label(
                   context,
                   size: context.sp(12),
@@ -780,13 +792,13 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
             ),
             _InlineActionButton(
               icon: Icons.edit_outlined,
-              label: 'Ganti',
+              label: context.l10n.forumChange,
               onTap: _showImageSourceSheet,
             ),
             const SizedBox(width: 8),
             _InlineActionButton(
               icon: Icons.close_rounded,
-              label: 'Hapus',
+              label: context.l10n.commonDelete,
               onTap: () {
                 setState(() {
                   _selectedImage = null;

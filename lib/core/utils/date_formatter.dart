@@ -1,33 +1,27 @@
 import 'package:intl/intl.dart';
 
 class DateFormatter {
-  static final DateFormat _dateFormat = DateFormat('dd MMM yyyy', 'id_ID');
-  static final DateFormat _dateTimeFormat = DateFormat(
-    'dd MMM yyyy HH:mm',
-    'id_ID',
-  );
-  static final DateFormat _timeFormat = DateFormat('HH:mm', 'id_ID');
   static final DateFormat _apiDateFormat = DateFormat('yyyy-MM-dd');
   static final DateFormat _apiDateTimeFormat = DateFormat(
     'yyyy-MM-dd HH:mm:ss',
   );
 
   /// Format date to readable format (e.g., "15 Jan 2026")
-  static String formatDate(DateTime? date) {
+  static String formatDate(DateTime? date, {String locale = 'id_ID'}) {
     if (date == null) return '-';
-    return _dateFormat.format(date);
+    return DateFormat('dd MMM yyyy', locale).format(date);
   }
 
   /// Format datetime to readable format (e.g., "15 Jan 2026 14:30")
-  static String formatDateTime(DateTime? dateTime) {
+  static String formatDateTime(DateTime? dateTime, {String locale = 'id_ID'}) {
     if (dateTime == null) return '-';
-    return _dateTimeFormat.format(dateTime);
+    return DateFormat('dd MMM yyyy HH:mm', locale).format(dateTime);
   }
 
   /// Format time only (e.g., "14:30")
-  static String formatTime(DateTime? dateTime) {
+  static String formatTime(DateTime? dateTime, {String locale = 'id_ID'}) {
     if (dateTime == null) return '-';
-    return _timeFormat.format(dateTime);
+    return DateFormat('HH:mm', locale).format(dateTime);
   }
 
   /// Format date for API (e.g., "2026-01-15")
@@ -61,24 +55,33 @@ class DateFormatter {
   }
 
   /// Get relative time (e.g., "2 jam yang lalu")
-  static String getRelativeTime(DateTime? dateTime) {
+  static String getRelativeTime(DateTime? dateTime, {String locale = 'id'}) {
     if (dateTime == null) return '-';
 
+    final isEnglish = locale.toLowerCase().startsWith('en');
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 365) {
-      return '${(difference.inDays / 365).floor()} tahun yang lalu';
+      final count = (difference.inDays / 365).floor();
+      return isEnglish ? '$count years ago' : '$count tahun yang lalu';
     } else if (difference.inDays > 30) {
-      return '${(difference.inDays / 30).floor()} bulan yang lalu';
+      final count = (difference.inDays / 30).floor();
+      return isEnglish ? '$count months ago' : '$count bulan yang lalu';
     } else if (difference.inDays > 0) {
-      return '${difference.inDays} hari yang lalu';
+      return isEnglish
+          ? '${difference.inDays} days ago'
+          : '${difference.inDays} hari yang lalu';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} jam yang lalu';
+      return isEnglish
+          ? '${difference.inHours} hours ago'
+          : '${difference.inHours} jam yang lalu';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} menit yang lalu';
+      return isEnglish
+          ? '${difference.inMinutes} minutes ago'
+          : '${difference.inMinutes} menit yang lalu';
     } else {
-      return 'Baru saja';
+      return isEnglish ? 'Just now' : 'Baru saja';
     }
   }
 

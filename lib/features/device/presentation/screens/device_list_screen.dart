@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/device_provider.dart';
@@ -25,7 +26,7 @@ class DeviceListScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Perangkat IoT'),
+            Text(context.l10n.deviceIoTTitle),
             Text(siteName, style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
@@ -42,11 +43,11 @@ class DeviceListScreen extends ConsumerWidget {
         skipError: true,
         data: (devices) {
           if (devices.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: InfoStateWidget.icon(
-                  message: 'Tidak ada perangkat ditemukan',
+                  message: context.l10n.deviceEmptyMessage,
                   icon: Icons.router,
                 ),
               ),
@@ -104,7 +105,9 @@ class DeviceListScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            device.statusText,
+                            device.isActive
+                                ? context.l10n.commonActive
+                                : context.l10n.commonInactive,
                             style: TextStyle(
                               fontSize: 12,
                               color: device.isActive
@@ -142,7 +145,7 @@ class DeviceListScreen extends ConsumerWidget {
           context.push('/site-device-create/$siteId');
         },
         icon: const Icon(Icons.add),
-        label: const Text('Tambah Perangkat'),
+        label: Text(context.l10n.deviceAddTitle),
       ),
     );
   }

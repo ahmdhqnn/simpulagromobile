@@ -28,11 +28,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     }
 
     switch (statusCode) {
-      case 401: return AuthFailure(message);
-      case 403: return PermissionFailure(message);
-      case 404: return NotFoundFailure(message);
-      case 409: return ValidationFailure(message);
-      default: return ServerFailure(message, statusCode: statusCode);
+      case 401:
+        return AuthFailure(message);
+      case 403:
+        return PermissionFailure(message);
+      case 404:
+        return NotFoundFailure(message);
+      case 409:
+        return ValidationFailure(message);
+      default:
+        return ServerFailure(message, statusCode: statusCode);
     }
   }
 

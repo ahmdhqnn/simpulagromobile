@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/sensor_provider.dart';
@@ -22,8 +23,8 @@ class SensorListScreen extends ConsumerWidget {
 
     if (effectiveSiteId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Sensor')),
-        body: const Center(child: Text('Pilih site terlebih dahulu')),
+        appBar: AppBar(title: Text(context.l10n.sensorTitle)),
+        body: Center(child: Text(context.l10n.siteSelectFirst)),
       );
     }
 
@@ -37,9 +38,9 @@ class SensorListScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Sensor',
-              style: TextStyle(
+            Text(
+              context.l10n.sensorTitle,
+              style: const TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1D1D1D),
@@ -132,7 +133,7 @@ class SensorListScreen extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            'Satuan: ${sensor.unit}',
+                            context.l10n.sensorUnitValue(sensor.unit),
                             style: TextStyle(
                               fontFamily: 'Plus Jakarta Sans',
                               fontSize: context.sp(11),
@@ -155,7 +156,9 @@ class SensorListScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          sensor.statusText,
+                          sensor.isActive
+                              ? context.l10n.commonActive
+                              : context.l10n.commonInactive,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: context.sp(11),
@@ -186,9 +189,9 @@ class SensorListScreen extends ConsumerWidget {
         onPressed: () => _navigateToForm(context, ref, effectiveSiteId),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Tambah Sensor',
-          style: TextStyle(
+        label: Text(
+          context.l10n.sensorAddTitle,
+          style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             color: Colors.white,
           ),
@@ -211,7 +214,7 @@ class SensorListScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Belum ada sensor',
+              context.l10n.sensorEmptyTitle,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(18),
@@ -221,7 +224,7 @@ class SensorListScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.01)),
             Text(
-              'Tambahkan sensor untuk mulai memantau kondisi lahan.',
+              context.l10n.sensorEmptyMessage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
@@ -233,9 +236,9 @@ class SensorListScreen extends ConsumerWidget {
             ElevatedButton.icon(
               onPressed: () => _navigateToForm(context, ref, siteId),
               icon: const Icon(Icons.add),
-              label: const Text(
-                'Tambah Sensor',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              label: Text(
+                context.l10n.sensorAddTitle,
+                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -274,7 +277,7 @@ class SensorListScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Gagal memuat sensor',
+              context.l10n.sensorLoadFailed,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(18),
@@ -306,9 +309,9 @@ class SensorListScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(100),
                 ),
               ),
-              child: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+              child: Text(
+                context.l10n.commonRetry,
+                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
               ),
             ),
           ],

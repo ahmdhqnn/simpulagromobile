@@ -71,8 +71,8 @@ class DashboardScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DashboardHeaderWidget(
-                  userName: authState.user?.userName ?? 'User',
-                  role: authState.isAdmin ? 'Admin' : 'User',
+                  userName: authState.user?.userName ?? l10n.roleUser,
+                  role: authState.isAdmin ? l10n.roleAdmin : l10n.roleUser,
                   onProfileTap: () => context.push('/profile'),
                 ),
                 Padding(
@@ -162,19 +162,23 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: context.rh(0.024)),
 
-                        const SectionHeaderWidget(
-                          title: 'Rekap Harian Hari Ini',
+                        SectionHeaderWidget(
+                          title: l10n.dashboardTodayDailyRecap,
                         ),
                         SizedBox(height: context.rh(0.014)),
                         const DashboardDailyRecapCard(),
                         SizedBox(height: context.rh(0.024)),
 
-                        const SectionHeaderWidget(title: 'Rekomendasi Terbaru'),
+                        SectionHeaderWidget(
+                          title: l10n.dashboardLatestRecommendations,
+                        ),
                         SizedBox(height: context.rh(0.014)),
                         const DashboardRecommendationCard(),
                         SizedBox(height: context.rh(0.024)),
 
-                        const SectionHeaderWidget(title: 'Aktivitas Terbaru'),
+                        SectionHeaderWidget(
+                          title: l10n.dashboardLatestActivity,
+                        ),
                         SizedBox(height: context.rh(0.014)),
                         latestReadsAsync.when(
                           skipLoadingOnReload: true,
@@ -188,14 +192,14 @@ class DashboardScreen extends ConsumerWidget {
                             iconSize: 40,
                           ),
                           error: (_, __) => ErrorStateCardWidget(
-                            message: 'Gagal memuat aktivitas',
+                            message: l10n.dashboardActivityLoadFailed,
                             onRetry: () =>
                                 ref.invalidate(latestSensorReadsProvider),
                           ),
                         ),
                         SizedBox(height: context.rh(0.024)),
 
-                        const SectionHeaderWidget(title: 'Catatan Terbaru'),
+                        SectionHeaderWidget(title: l10n.dashboardLatestNotes),
                         SizedBox(height: context.rh(0.014)),
                         const LatestNotesCardWidget(),
                         SizedBox(height: context.rh(0.024)),

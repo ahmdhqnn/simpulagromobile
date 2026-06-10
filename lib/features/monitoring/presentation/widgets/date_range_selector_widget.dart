@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import 'daily_aggregation_widget.dart';
 
 class DateRangeSelectorWidget extends StatelessWidget {
   final DateRange selected;
   final ValueChanged<DateRange> onSelected;
-  final String title;
+  final String? title;
 
   const DateRangeSelectorWidget({
     super.key,
     required this.selected,
     required this.onSelected,
-    this.title = 'Rentang',
+    this.title,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayTitle = title ?? context.l10n.monitoringRangeLabel;
     return AppCardWidget(
       radius: AppRadius.lg,
       child: Row(
         children: [
           Text(
-            title,
+            displayTitle,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(13),
@@ -41,7 +43,7 @@ class DateRangeSelectorWidget extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _RangePill(
-                      label: _label(range),
+                      label: _label(context, range),
                       selected: isSelected,
                       onTap: () => onSelected(range),
                     ),
@@ -55,16 +57,17 @@ class DateRangeSelectorWidget extends StatelessWidget {
     );
   }
 
-  String _label(DateRange range) {
+  String _label(BuildContext context, DateRange range) {
+    final l10n = context.l10n;
     switch (range) {
       case DateRange.today:
-        return 'Hari Ini';
+        return l10n.monitoringFilterToday;
       case DateRange.week:
-        return '7 Hari';
+        return l10n.monitoringFilterSevenDay;
       case DateRange.month:
-        return '30 Hari';
+        return l10n.monitoringFilterThirtyDay;
       case DateRange.custom:
-        return 'Kustom';
+        return l10n.monitoringFilterCustom;
     }
   }
 }

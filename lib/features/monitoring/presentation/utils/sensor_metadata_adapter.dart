@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 
 import '../../data/models/monitoring_models.dart';
 
@@ -104,18 +105,18 @@ class SensorMetadataAdapter {
     return SensorReadingStatus.unknown;
   }
 
-  String statusLabel(SensorReadingStatus status) {
+  String statusLabel(SensorReadingStatus status, AppLocalizations l10n) {
     switch (status) {
       case SensorReadingStatus.optimal:
-        return 'Optimal';
+        return l10n.commonOptimal;
       case SensorReadingStatus.warning:
-        return 'Waspada';
+        return l10n.commonWarning;
       case SensorReadingStatus.critical:
-        return 'Kritis';
+        return l10n.commonCritical;
       case SensorReadingStatus.offline:
-        return 'Offline';
+        return l10n.commonOffline;
       case SensorReadingStatus.unknown:
-        return 'Aktif';
+        return l10n.commonActive;
     }
   }
 

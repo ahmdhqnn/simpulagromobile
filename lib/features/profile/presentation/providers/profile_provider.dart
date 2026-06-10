@@ -19,7 +19,9 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(datasource);
 });
 
-final userProfileProvider = FutureProvider.autoDispose<UserProfile>((ref) async {
+final userProfileProvider = FutureProvider.autoDispose<UserProfile>((
+  ref,
+) async {
   final repository = ref.watch(profileRepositoryProvider);
   return ref.retryOnError(() async {
     final result = await repository.getUserProfile();

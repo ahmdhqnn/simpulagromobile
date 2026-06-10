@@ -3,6 +3,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../phase/domain/entities/phase.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class AgroPhaseWidget extends StatelessWidget {
   final Phase? phase;
@@ -11,8 +12,9 @@ class AgroPhaseWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (phase == null) {
-      return _buildEmptyState(context);
+      return _buildEmptyState(context, l10n);
     }
 
     return Container(
@@ -47,7 +49,7 @@ class AgroPhaseWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Fase Pertumbuhan',
+                      l10n.plantGrowthPhaseTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -58,7 +60,7 @@ class AgroPhaseWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Fase aktif tanaman saat ini',
+                      l10n.plantActivePhaseDesc,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -73,15 +75,15 @@ class AgroPhaseWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildPhaseCard(context),
+          _buildPhaseCard(context, l10n),
           const SizedBox(height: 16),
-          _buildProgressBars(context),
+          _buildProgressBars(context, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildPhaseCard(BuildContext context) {
+  Widget _buildPhaseCard(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -120,7 +122,7 @@ class AgroPhaseWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${phase!.currentHst} HST',
+                  '${phase!.currentHst} ${l10n.plantHstLabel}',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(12),
@@ -145,14 +147,14 @@ class AgroPhaseWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBars(BuildContext context) {
+  Widget _buildProgressBars(BuildContext context, AppLocalizations l10n) {
     return Column(
       children: [
         _buildLinearProgress(
           context,
-          label: 'Progress Waktu (HST)',
+          label: '${l10n.plantTimeProgressLabel} (${l10n.plantHstLabel})',
           current: '${phase!.currentHst}',
-          total: '${phase!.hstMax} Hari',
+          total: l10n.commonDays(phase!.hstMax),
           percent: phase!.progressPercentage / 100,
           color: AppColors.primary,
         ),
@@ -207,7 +209,7 @@ class AgroPhaseWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -225,7 +227,7 @@ class AgroPhaseWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Data fase pertumbuhan belum tersedia',
+              l10n.plantGrowthPhaseUnavailable,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(14),

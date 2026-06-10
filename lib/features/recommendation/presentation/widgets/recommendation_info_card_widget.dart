@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../domain/entities/recommendation.dart';
 
@@ -19,48 +21,65 @@ class RecommendationInfoCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Informasi', style: AppTextStyles.cardTitle(context)),
+          Text(
+            context.l10n.commonInformation,
+            style: AppTextStyles.cardTitle(context),
+          ),
           const SizedBox(height: 12),
           if (recommendation.siteName != null)
             _InfoRow(
               icon: Icons.location_on_outlined,
-              label: 'Lokasi',
+              label: context.l10n.commonLocation,
               value: recommendation.siteName!,
             ),
           if (recommendation.plantName != null)
             _InfoRow(
               icon: Icons.eco_outlined,
-              label: 'Tanaman',
+              label: context.l10n.plantTitle,
               value: recommendation.plantName!,
             ),
           if (recommendation.confidenceScore != null)
             _InfoRow(
               icon: Icons.analytics_outlined,
-              label: 'Tingkat Keyakinan',
+              label: context.l10n.recommendationConfidenceLabel,
               value:
-                  '${recommendation.confidenceLevel} (${(recommendation.confidenceScore! * 100).toStringAsFixed(0)}%)',
+                  '${_confidenceLabel(context, recommendation.confidenceScore)} (${(recommendation.confidenceScore! * 100).toStringAsFixed(0)}%)',
             ),
           if (recommendation.createdAt != null)
             _InfoRow(
               icon: Icons.calendar_today_outlined,
-              label: 'Dibuat',
-              value: DateFormatter.formatDateTime(recommendation.createdAt!),
+              label: context.l10n.commonCreatedAt,
+              value: DateFormatter.formatDateTime(
+                recommendation.createdAt!,
+                locale: context.localeTag,
+              ),
             ),
           if (recommendation.appliedAt != null)
             _InfoRow(
               icon: Icons.check_circle_outline,
-              label: 'Diterapkan',
-              value: DateFormatter.formatDateTime(recommendation.appliedAt!),
+              label: context.l10n.commonApplied,
+              value: DateFormatter.formatDateTime(
+                recommendation.appliedAt!,
+                locale: context.localeTag,
+              ),
             ),
           if (recommendation.appliedBy != null)
             _InfoRow(
               icon: Icons.person_outline,
-              label: 'Diterapkan oleh',
+              label: context.l10n.recommendationAppliedBy,
               value: recommendation.appliedBy!,
             ),
         ],
       ),
     );
+  }
+
+  String _confidenceLabel(BuildContext context, double? score) {
+    if (score == null) return context.l10n.recommendationConfidenceUnknown;
+    if (score >= 0.8) return context.l10n.recommendationConfidenceVeryHigh;
+    if (score >= 0.6) return context.l10n.commonHigh;
+    if (score >= 0.4) return context.l10n.commonMedium;
+    return context.l10n.commonLow;
   }
 }
 

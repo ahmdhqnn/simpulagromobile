@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/agro_entity.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class GddWidget extends StatelessWidget {
   final GddEntity? gddData;
@@ -11,8 +12,9 @@ class GddWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (gddData == null || gddData!.daily.isEmpty) {
-      return _buildEmptyState(context);
+      return _buildEmptyState(context, l10n);
     }
 
     return Container(
@@ -58,7 +60,7 @@ class GddWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Akumulasi Suhu Pertumbuhan',
+                      l10n.agroGddSuhuAccumLabel,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -73,17 +75,17 @@ class GddWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildTotalGdd(context),
+          _buildTotalGdd(context, l10n),
           const SizedBox(height: 20),
-          _buildGddChart(context),
+          _buildGddChart(context, l10n),
           const SizedBox(height: 16),
-          _buildGddTable(context),
+          _buildGddTable(context, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildTotalGdd(BuildContext context) {
+  Widget _buildTotalGdd(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -102,7 +104,7 @@ class GddWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Total GDD',
+                l10n.agroGddTotalLabel,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(14),
@@ -111,7 +113,7 @@ class GddWidget extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Akumulasi',
+                l10n.agroGddAccumLabel,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -133,7 +135,7 @@ class GddWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                'C-days',
+                l10n.gddCDaysUnit,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -147,7 +149,7 @@ class GddWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildGddChart(BuildContext context) {
+  Widget _buildGddChart(BuildContext context, AppLocalizations l10n) {
     final dailyData = gddData!.daily.take(7).toList();
     if (dailyData.isEmpty) return const SizedBox.shrink();
 
@@ -155,7 +157,7 @@ class GddWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'GDD Harian (7 Hari Terakhir)',
+          l10n.agroGddDailyChartTitle,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(14),
@@ -183,7 +185,7 @@ class GddWidget extends StatelessWidget {
                         dailyData[group.x.toInt()].gdd?.toStringAsFixed(1) ??
                         '0';
                     return BarTooltipItem(
-                      '$day\n$gdd C-days',
+                      '$day\n$gdd ${l10n.gddCDaysUnit}',
                       const TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         color: Colors.white,
@@ -274,7 +276,7 @@ class GddWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildGddTable(BuildContext context) {
+  Widget _buildGddTable(BuildContext context, AppLocalizations l10n) {
     final recentData = gddData!.daily.take(5).toList();
     if (recentData.isEmpty) return const SizedBox.shrink();
 
@@ -282,7 +284,7 @@ class GddWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Detail GDD Harian',
+          l10n.agroGddDetailTitle,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(14),
@@ -306,7 +308,7 @@ class GddWidget extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: Text(
-                        'Tanggal',
+                        l10n.commonDateLabel,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(12),
@@ -317,7 +319,7 @@ class GddWidget extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        'Min',
+                        l10n.commonMin,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
@@ -329,7 +331,7 @@ class GddWidget extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        'Max',
+                        l10n.commonMax,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
@@ -424,7 +426,7 @@ class GddWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -441,7 +443,7 @@ class GddWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Data GDD tidak tersedia',
+              l10n.agroGddUnavailable,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(14),

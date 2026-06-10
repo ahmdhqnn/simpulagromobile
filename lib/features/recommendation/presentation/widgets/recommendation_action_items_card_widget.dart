@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 
 class RecommendationActionItemsCardWidget extends StatelessWidget {
@@ -20,7 +21,10 @@ class RecommendationActionItemsCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Langkah-langkah', style: AppTextStyles.cardTitle(context)),
+          Text(
+            context.l10n.recommendationStepsTitle,
+            style: AppTextStyles.cardTitle(context),
+          ),
           const SizedBox(height: 12),
           ...actionItems.asMap().entries.map(
             (entry) => _StepRow(index: entry.key, text: entry.value),

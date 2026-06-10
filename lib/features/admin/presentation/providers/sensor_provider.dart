@@ -9,7 +9,9 @@ import '../../domain/repositories/sensor_repository.dart';
 // ═══════════════════════════════════════════════════════════
 // DATASOURCE PROVIDER
 // ═══════════════════════════════════════════════════════════
-final adminSensorRemoteDatasourceProvider = Provider<SensorRemoteDatasource>((ref) {
+final adminSensorRemoteDatasourceProvider = Provider<SensorRemoteDatasource>((
+  ref,
+) {
   final dioClient = ref.watch(dioClientProvider);
   return SensorRemoteDatasourceImpl(dioClient.dio);
 });

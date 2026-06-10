@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
+import 'package:simpulagromobile/core/utils/locale_formatters.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/plant_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
@@ -69,7 +70,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
 
       if (plantAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 5),
@@ -78,7 +79,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
       }
       if (plantAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: plantAsync.error!,
             onRetry: () =>
@@ -93,11 +94,11 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit Tanaman' : 'Tambah Tanaman',
+        title: isEditMode ? context.l10n.adminEditPlantTitle : context.l10n.adminAddPlantTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat tanaman...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingPlant,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -108,7 +109,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit Tanaman' : 'Tambah Tanaman',
+                isEditMode ? context.l10n.adminEditPlantTitle : context.l10n.adminAddPlantTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -119,15 +120,15 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
               ),
               SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
-                title: 'Informasi Tanaman',
+                title: context.l10n.adminPlantInfoSection,
                 child: Column(
                   children: [
                     if (isEditMode) ...[
                       AdminFormFields.buildField(
                         context,
                         controller: _idController,
-                        label: 'Plant ID',
-                        hint: 'ID dari server',
+                        label: context.l10n.adminPlantIdLabel,
+                        hint: context.l10n.adminServerIdHint,
                         icon: Icons.tag,
                         enabled: false,
                       ),
@@ -136,16 +137,16 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
-                      label: 'Nama Tanaman',
-                      hint: 'Contoh: Padi Sawah Blok A',
+                      label: context.l10n.adminPlantNameLabel,
+                      hint: context.l10n.adminPlantNameHint,
                       icon: Icons.grass,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama tanaman wajib diisi';
+                          return context.l10n.adminPlantNameRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -154,26 +155,26 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                     AdminFormFields.buildDropdown<CropType>(
                       context,
                       value: _selectedCropType,
-                      label: 'Jenis Tanaman *',
-                      hint: 'Pilih jenis tanaman',
+                      label: '${context.l10n.adminCropTypeLabel} *',
+                      hint: context.l10n.adminSelectCropTypeHint,
                       icon: Icons.eco,
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: CropType.padi,
-                          child: Text('Padi'),
+                          child: Text(context.l10n.cropRice),
                         ),
                         DropdownMenuItem(
                           value: CropType.jagung,
-                          child: Text('Jagung'),
+                          child: Text(context.l10n.cropCorn),
                         ),
                         DropdownMenuItem(
                           value: CropType.kedelai,
-                          child: Text('Kedelai'),
+                          child: Text(context.l10n.cropSoybean),
                         ),
                       ],
                       onChanged: (v) => setState(() => _selectedCropType = v),
                       validator: (v) =>
-                          v == null ? 'Jenis tanaman wajib dipilih' : null,
+                          v == null ? context.l10n.adminCropTypeRequired : null,
                     ),
                     SizedBox(height: context.rh(0.016)),
                     _buildVarietasInput(context, varietasAsync),
@@ -183,13 +184,13 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Tanggal Tanam',
+                title: context.l10n.adminPlantingDateSection,
                 child: _buildDatePicker(context),
               ),
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Tanaman',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddPlantTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -220,13 +221,13 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
           AdminFormFields.buildField(
             context,
             controller: _varietasIdController,
-            label: 'Varietas ID',
-            hint: 'Contoh: VAR_001',
+            label: context.l10n.adminVarietasIdLabel,
+            hint: context.l10n.adminVarietasIdHint,
             icon: Icons.science,
             required: true,
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return 'Varietas ID wajib diisi';
+                return context.l10n.adminVarietasIdRequired;
               }
               return null;
             },
@@ -235,7 +236,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => setState(() => _useManualVarietasId = false),
-              child: const Text('Pilih dari daftar varietas'),
+              child: Text(context.l10n.adminChooseVarietasFromList),
             ),
           ),
         ],
@@ -249,8 +250,8 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
             (items) => items.where((item) => item.isActive).toList(),
           ),
           value: _selectedVarietasId,
-          label: 'Varietas *',
-          hint: 'Pilih varietas dari backend',
+          label: '${context.l10n.adminVarietasLabel} *',
+          hint: context.l10n.adminSelectVarietasHint,
           icon: Icons.science,
           itemBuilder: (items) => items
               .map(
@@ -268,17 +269,17 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
           },
           validator: (value) {
             if ((value ?? '').trim().isEmpty) {
-              return 'Varietas wajib dipilih';
+              return context.l10n.adminVarietasRequired;
             }
             return null;
           },
-          errorMessage: 'Gagal memuat varietas. Gunakan input manual.',
+          errorMessage: context.l10n.adminVarietasLoadFailedManual,
         ),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () => setState(() => _useManualVarietasId = true),
-            child: const Text('Input ID manual'),
+            child: Text(context.l10n.adminManualIdInput),
           ),
         ),
       ],
@@ -324,8 +325,8 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
             Expanded(
               child: Text(
                 _plantDate != null
-                    ? DateFormat('dd MMMM yyyy').format(_plantDate!)
-                    : 'Pilih tanggal tanam',
+                    ? context.dateFormat('dd MMMM yyyy').format(_plantDate!)
+                    : context.l10n.adminSelectPlantingDate,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(14),
@@ -369,12 +370,12 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_plantDate == null) {
-      SnackbarHelper.showError(context, 'Tanggal tanam wajib dipilih');
+      SnackbarHelper.showError(context, context.l10n.adminPlantingDateRequired);
       return;
     }
     final varietasId = _resolveVarietasId();
     if (varietasId == null) {
-      SnackbarHelper.showError(context, 'Varietas wajib diisi');
+      SnackbarHelper.showError(context, context.l10n.adminVarietasRequired);
       return;
     }
 
@@ -398,13 +399,16 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
       SnackbarHelper.showSuccess(
         context,
         isEditMode
-            ? 'Tanaman berhasil diperbarui'
-            : 'Tanaman berhasil ditambahkan',
+            ? context.l10n.adminUpdateSuccess(context.l10n.plantTitle)
+            : context.l10n.adminCreateSuccess(context.l10n.plantTitle),
       );
       context.pop();
     } else {
       final error = ref.read(adminPlantFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan tanaman');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.plantTitle),
+      );
     }
   }
 

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
+
 /// Show confirmation dialog with consistent design
 /// Returns true if user confirms, false if cancelled
 Future<bool> showConfirmationDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmText = 'Ya',
-  String cancelText = 'Batal',
+  String? confirmText,
+  String? cancelText,
   Color? confirmColor,
   bool isDangerous = false,
 }) async {
+  final l10n = context.l10n;
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
@@ -30,7 +33,7 @@ Future<bool> showConfirmationDialog(
         TextButton(
           onPressed: () => Navigator.pop(context, false),
           child: Text(
-            cancelText,
+            cancelText ?? l10n.commonCancel,
             style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
           ),
         ),
@@ -43,7 +46,7 @@ Future<bool> showConfirmationDialog(
             ),
           ),
           child: Text(
-            confirmText,
+            confirmText ?? l10n.commonYes,
             style: const TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontWeight: FontWeight.w600,
@@ -63,12 +66,13 @@ Future<bool> showDeleteConfirmationDialog(
   required String itemName,
   String? additionalMessage,
 }) async {
+  final l10n = context.l10n;
   return showConfirmationDialog(
     context,
-    title: 'Hapus $itemName?',
-    message: additionalMessage ?? 'Data yang dihapus tidak dapat dikembalikan.',
-    confirmText: 'Hapus',
-    cancelText: 'Batal',
+    title: l10n.commonDeleteTitle(itemName),
+    message: additionalMessage ?? l10n.commonDeleteIrreversible,
+    confirmText: l10n.commonDelete,
+    cancelText: l10n.commonCancel,
     isDangerous: true,
   );
 }

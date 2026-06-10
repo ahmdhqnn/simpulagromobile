@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/entities/dashboard_entity.dart';
 
 class LatestSensorReadsWidget extends StatelessWidget {
@@ -117,7 +118,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Belum ada bacaan sensor',
+              context.l10n.dashboardNoSensorReadings,
               style: AppTextStyles.caption(context, size: 12),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/site_provider.dart';
 import '../../domain/entities/site.dart';
@@ -15,7 +16,7 @@ class SiteListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pilih Lokasi'),
+        title: Text(context.l10n.siteListTitle),
         actions: [
           // Tombol tambah site — navigasi ke form
           IconButton(
@@ -171,14 +172,14 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.location_off, size: 80, color: Colors.grey[300]),
           const Gap(16),
           Text(
-            'Belum ada lokasi',
+            context.l10n.siteEmptyTitle,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
           ),
           const Gap(8),
           Text(
-            'Tambahkan lokasi pertanian Anda',
+            context.l10n.siteEmptyMessage,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
@@ -204,7 +205,7 @@ class _ErrorState extends StatelessWidget {
           Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
           const Gap(16),
           Text(
-            'Terjadi Kesalahan',
+            context.l10n.commonErrorTitle,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
@@ -224,7 +225,7 @@ class _ErrorState extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
-            label: const Text('Coba Lagi'),
+            label: Text(context.l10n.commonRetry),
           ),
         ],
       ),

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../phase/domain/entities/phase.dart';
 import '../../domain/entities/plant.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 
 String phaseSiteIdForPlant(Plant plant) {
   final siteId = plant.siteId?.trim();
@@ -28,8 +30,8 @@ String phaseLabelFromAsync(AsyncValue<Phase?>? phaseAsync) {
   );
 }
 
-String phaseLabelForPlant(Plant plant, AsyncValue<Phase?>? phaseAsync) {
-  if (plant.isHarvested) return plant.statusText;
+String phaseLabelForPlant(Plant plant, AsyncValue<Phase?>? phaseAsync, AppLocalizations l10n) {
+  if (plant.isHarvested) return plant.localizedStatus(l10n);
   if (!plant.isCurrentPlanting) return '-';
   return phaseLabelFromAsync(phaseAsync);
 }

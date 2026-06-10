@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site_note.dart';
@@ -22,7 +24,7 @@ class LatestNotesCardWidget extends ConsumerWidget {
         if (notes.isEmpty) {
           return InfoStateWidget.icon(
             icon: Icons.note_alt_outlined,
-            message: 'Belum ada catatan untuk site ini',
+            message: context.l10n.notesEmptyForSite,
             height: 80,
           );
         }
@@ -31,7 +33,7 @@ class LatestNotesCardWidget extends ConsumerWidget {
       loading: () => const CompactTextRowsSkeleton(rowCount: 3),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
-        message: toUiErrorMessage(e),
+        message: toUiErrorMessage(e, context.l10n),
         height: 80,
       ),
     );
@@ -47,7 +49,7 @@ class _NoteTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final date = note.createdAt;
     final dateStr = date != null
-        ? '${date.day}/${date.month}/${date.year}'
+        ? context.dateFormat('dd MMM yyyy').format(date)
         : '';
 
     return Container(

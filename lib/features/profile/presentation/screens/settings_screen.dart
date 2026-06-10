@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
@@ -17,7 +17,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
 
     return Scaffold(
@@ -31,14 +31,14 @@ class SettingsScreen extends ConsumerWidget {
             _buildHeader(context),
             SizedBox(height: context.rh(0.026)),
             _SettingsSection(
-              title: 'Notifikasi',
+              title: l10n.settingsNotificationsSection,
               children: [
                 _SettingsSwitchItem(
                   iconPath: 'assets/icons/warning-outline-icon.svg',
                   iconBackground: const Color(0x1AEF5350),
                   iconTint: AppColors.error,
-                  title: 'Aktifkan Notifikasi',
-                  subtitle: 'Terima notifikasi untuk alert dan update',
+                  title: l10n.settingsEnableNotifications,
+                  subtitle: l10n.settingsNotificationsSubtitle,
                   value: settings['notifications'] ?? true,
                   onChanged: (value) => ref
                       .read(settingsProvider.notifier)
@@ -48,14 +48,14 @@ class SettingsScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.024)),
             _SettingsSection(
-              title: 'Data & Sinkronisasi',
+              title: l10n.settingsDataSyncSection,
               children: [
                 _SettingsSwitchItem(
                   iconPath: 'assets/icons/arrow-rotate-left.svg',
                   iconBackground: const Color(0x1A42A5F5),
                   iconTint: AppColors.info,
-                  title: 'Auto Refresh',
-                  subtitle: 'Perbarui data secara otomatis',
+                  title: l10n.settingsAutoRefresh,
+                  subtitle: l10n.settingsAutoRefreshSubtitle,
                   value: settings['autoRefresh'] ?? true,
                   onChanged: (value) => ref
                       .read(settingsProvider.notifier)
@@ -66,8 +66,10 @@ class SettingsScreen extends ConsumerWidget {
                   iconPath: 'assets/icons/date-outline-icon.svg',
                   iconBackground: const Color(0x1A66BB6A),
                   iconTint: AppColors.primary,
-                  title: 'Interval Refresh',
-                  subtitle: '${settings['refreshInterval'] ?? 30} detik',
+                  title: l10n.settingsRefreshInterval,
+                  subtitle: l10n.settingsRefreshIntervalSeconds(
+                    settings['refreshInterval'] as int? ?? 30,
+                  ),
                   onTap: () => _showRefreshIntervalDialog(
                     context,
                     ref,
@@ -78,16 +80,16 @@ class SettingsScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.024)),
             _SettingsSection(
-              title: 'Tampilan',
+              title: l10n.settingsAppearanceSection,
               children: [
                 _SettingsNavigationItem(
                   iconPath: 'assets/icons/message-outline-icon.svg',
                   iconBackground: const Color(0x1A42A5F5),
                   iconTint: AppColors.info,
-                  title: 'Bahasa',
+                  title: l10n.settingsLanguage,
                   subtitle: settings['language'] == 'en'
-                      ? 'English'
-                      : 'Indonesia',
+                      ? l10n.settingsLanguageEnglish
+                      : l10n.settingsLanguageIndonesian,
                   onTap: () => _showLanguageDialog(
                     context,
                     ref,
@@ -99,8 +101,8 @@ class SettingsScreen extends ConsumerWidget {
                   iconPath: 'assets/icons/setting-outline-icon.svg',
                   iconBackground: const Color(0x1A1B5E20),
                   iconTint: AppColors.primary,
-                  title: 'Tema',
-                  subtitle: _themeLabel(settings['theme'] as String?),
+                  title: l10n.settingsTheme,
+                  subtitle: _themeLabel(context, settings['theme'] as String?),
                   onTap: () => _showThemeDialog(
                     context,
                     ref,
@@ -112,10 +114,10 @@ class SettingsScreen extends ConsumerWidget {
                   iconPath: 'assets/icons/indicator-outline-icon.svg',
                   iconBackground: const Color(0x1AFFA726),
                   iconTint: AppColors.warning,
-                  title: 'Satuan Suhu',
+                  title: l10n.settingsTemperatureUnit,
                   subtitle: settings['temperatureUnit'] == 'fahrenheit'
-                      ? 'Fahrenheit (F)'
-                      : 'Celsius (C)',
+                      ? l10n.settingsTemperatureFahrenheit
+                      : l10n.settingsTemperatureCelsius,
                   onTap: () => _showTemperatureUnitDialog(
                     context,
                     ref,
@@ -142,11 +144,11 @@ class SettingsScreen extends ConsumerWidget {
             _SettingsSection(
               title: l10n.settingsAboutSection,
               children: [
-                const _SettingsStaticItem(
+                _SettingsStaticItem(
                   iconPath: 'assets/images/simpulagro_logo.svg',
-                  iconBackground: Color(0x1A1B5E20),
+                  iconBackground: const Color(0x1A1B5E20),
                   iconTint: AppColors.primary,
-                  title: 'Versi Aplikasi',
+                  title: l10n.settingsAppVersion,
                   subtitle: '1.0.0',
                 ),
                 const _SettingsDivider(),
@@ -154,12 +156,12 @@ class SettingsScreen extends ConsumerWidget {
                   iconPath: 'assets/icons/phone-outline-icon.svg',
                   iconBackground: const Color(0x1A42A5F5),
                   iconTint: AppColors.info,
-                  title: 'Bantuan & Dukungan',
-                  subtitle: 'Kontak bantuan teknis',
+                  title: l10n.settingsHelpSupport,
+                  subtitle: l10n.settingsHelpSupportSubtitle,
                   onTap: () => _showInfoDialog(
                     context,
-                    'Bantuan & Dukungan',
-                    'Untuk bantuan teknis, hubungi tim support melalui email atau WhatsApp yang tertera di aplikasi.',
+                    l10n.settingsHelpSupport,
+                    l10n.settingsHelpSupportMessage,
                   ),
                 ),
                 const _SettingsDivider(),
@@ -167,12 +169,12 @@ class SettingsScreen extends ConsumerWidget {
                   iconPath: 'assets/icons/check-icon.svg',
                   iconBackground: const Color(0x1A66BB6A),
                   iconTint: AppColors.success,
-                  title: 'Kebijakan Privasi',
-                  subtitle: 'Keamanan dan penggunaan data',
+                  title: l10n.settingsPrivacyPolicy,
+                  subtitle: l10n.settingsPrivacyPolicySubtitle,
                   onTap: () => _showInfoDialog(
                     context,
-                    'Kebijakan Privasi',
-                    'Data Anda disimpan secara aman dan tidak dibagikan kepada pihak ketiga tanpa persetujuan Anda.',
+                    l10n.settingsPrivacyPolicy,
+                    l10n.settingsPrivacyPolicyMessage,
                   ),
                 ),
               ],
@@ -199,15 +201,15 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _themeLabel(String? value) {
+  String _themeLabel(BuildContext context, String? value) {
     switch (value) {
       case 'dark':
-        return 'Gelap';
+        return context.l10n.settingsThemeDark;
       case 'system':
-        return 'Ikuti Sistem';
+        return context.l10n.settingsThemeSystem;
       case 'light':
       default:
-        return 'Terang';
+        return context.l10n.settingsThemeLight;
     }
   }
 
@@ -218,13 +220,25 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     _showOptionDialog<int>(
       context: context,
-      title: 'Interval Refresh',
+      title: context.l10n.settingsRefreshInterval,
       currentValue: currentValue,
-      options: const [
-        _OptionItem(value: 15, label: '15 detik'),
-        _OptionItem(value: 30, label: '30 detik'),
-        _OptionItem(value: 60, label: '60 detik'),
-        _OptionItem(value: 120, label: '120 detik'),
+      options: [
+        _OptionItem(
+          value: 15,
+          label: context.l10n.settingsRefreshIntervalSeconds(15),
+        ),
+        _OptionItem(
+          value: 30,
+          label: context.l10n.settingsRefreshIntervalSeconds(30),
+        ),
+        _OptionItem(
+          value: 60,
+          label: context.l10n.settingsRefreshIntervalSeconds(60),
+        ),
+        _OptionItem(
+          value: 120,
+          label: context.l10n.settingsRefreshIntervalSeconds(120),
+        ),
       ],
       onSelected: (value) => ref
           .read(settingsProvider.notifier)
@@ -239,11 +253,14 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     _showOptionDialog<String>(
       context: context,
-      title: 'Pilih Bahasa',
+      title: context.l10n.settingsSelectLanguage,
       currentValue: currentValue,
-      options: const [
-        _OptionItem(value: 'id', label: 'Indonesia'),
-        _OptionItem(value: 'en', label: 'English'),
+      options: [
+        _OptionItem(
+          value: 'id',
+          label: context.l10n.settingsLanguageIndonesian,
+        ),
+        _OptionItem(value: 'en', label: context.l10n.settingsLanguageEnglish),
       ],
       onSelected: (value) =>
           ref.read(settingsProvider.notifier).updateSetting('language', value),
@@ -257,12 +274,12 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     _showOptionDialog<String>(
       context: context,
-      title: 'Pilih Tema',
+      title: context.l10n.settingsSelectTheme,
       currentValue: currentValue,
-      options: const [
-        _OptionItem(value: 'light', label: 'Terang'),
-        _OptionItem(value: 'dark', label: 'Gelap'),
-        _OptionItem(value: 'system', label: 'Ikuti Sistem'),
+      options: [
+        _OptionItem(value: 'light', label: context.l10n.settingsThemeLight),
+        _OptionItem(value: 'dark', label: context.l10n.settingsThemeDark),
+        _OptionItem(value: 'system', label: context.l10n.settingsThemeSystem),
       ],
       onSelected: (value) =>
           ref.read(settingsProvider.notifier).updateSetting('theme', value),
@@ -276,11 +293,17 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     _showOptionDialog<String>(
       context: context,
-      title: 'Satuan Suhu',
+      title: context.l10n.settingsTemperatureUnit,
       currentValue: currentValue,
-      options: const [
-        _OptionItem(value: 'celsius', label: 'Celsius (C)'),
-        _OptionItem(value: 'fahrenheit', label: 'Fahrenheit (F)'),
+      options: [
+        _OptionItem(
+          value: 'celsius',
+          label: context.l10n.settingsTemperatureCelsius,
+        ),
+        _OptionItem(
+          value: 'fahrenheit',
+          label: context.l10n.settingsTemperatureFahrenheit,
+        ),
       ],
       onSelected: (value) => ref
           .read(settingsProvider.notifier)
@@ -353,7 +376,7 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
-              'OK',
+              context.l10n.commonOk,
               style: AppTextStyles.label(
                 context,
                 size: 14,

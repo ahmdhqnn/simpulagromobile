@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../../core/utils/ui_error_message.dart';
+import '../../l10n/l10n.dart';
 import 'app_card_widget.dart';
 
 class InfoStateWidget extends StatelessWidget {
@@ -114,7 +115,7 @@ class ErrorStateCardWidget extends StatelessWidget {
           const Icon(Icons.error_outline, color: AppColors.error, size: 28),
           SizedBox(height: context.rh(0.01)),
           Text(
-            toUiErrorMessage(message),
+            toUiErrorMessage(message, context.l10n),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
@@ -126,9 +127,9 @@ class ErrorStateCardWidget extends StatelessWidget {
           TextButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh, size: 16),
-            label: const Text(
-              'Coba Lagi',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+            label: Text(
+              context.l10n.commonRetry,
+              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
           ),

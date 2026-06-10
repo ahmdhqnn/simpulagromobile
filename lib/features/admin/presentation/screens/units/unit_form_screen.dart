@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/unit_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
@@ -62,7 +63,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
 
       if (unitAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 4),
@@ -71,7 +72,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
       }
       if (unitAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: unitAsync.error!,
             onRetry: () =>
@@ -86,11 +87,11 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit Unit' : 'Tambah Unit',
+        title: isEditMode ? context.l10n.adminEditUnitTitle : context.l10n.adminAddUnitTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat unit...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingUnit,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -101,7 +102,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit Unit' : 'Tambah Unit',
+                isEditMode ? context.l10n.adminEditUnitTitle : context.l10n.adminAddUnitTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -112,23 +113,23 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
               ),
               SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
-                title: 'Informasi Unit',
+                title: context.l10n.adminUnitInfoSection,
                 child: Column(
                   children: [
                     AdminFormFields.buildField(
                       context,
                       controller: _idController,
-                      label: 'Unit ID',
-                      hint: 'Contoh: TEMP_C',
+                      label: context.l10n.adminUnitIdLabel,
+                      hint: context.l10n.adminUnitIdHint,
                       icon: Icons.tag,
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Unit ID wajib diisi';
+                          return context.l10n.adminUnitIdRequired;
                         }
                         if (v.length < 2) {
-                          return 'Minimal 2 karakter';
+                          return context.l10n.commonMinCharacters(2);
                         }
                         return null;
                       },
@@ -137,16 +138,16 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
-                      label: 'Nama Unit',
-                      hint: 'Contoh: Celsius',
+                      label: context.l10n.adminUnitNameLabel,
+                      hint: context.l10n.adminUnitNameHint,
                       icon: Icons.straighten,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama unit wajib diisi';
+                          return context.l10n.adminUnitNameRequired;
                         }
                         if (v.length < 2) {
-                          return 'Minimal 2 karakter';
+                          return context.l10n.commonMinCharacters(2);
                         }
                         return null;
                       },
@@ -155,13 +156,13 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _symbolController,
-                      label: 'Simbol',
-                      hint: 'Contoh: °C',
+                      label: context.l10n.adminUnitSymbolLabel,
+                      hint: context.l10n.adminUnitSymbolHint,
                       icon: Icons.text_fields,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Simbol wajib diisi';
+                          return context.l10n.adminUnitSymbolRequired;
                         }
                         return null;
                       },
@@ -170,8 +171,8 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _descController,
-                      label: 'Deskripsi',
-                      hint: 'Contoh: Satuan suhu dalam derajat Celsius',
+                      label: context.l10n.commonDescription,
+                      hint: context.l10n.adminUnitDescriptionHint,
                       icon: Icons.description,
                       maxLines: 3,
                     ),
@@ -181,10 +182,10 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Status',
+                title: context.l10n.adminStatusSection,
                 child: AdminFormFields.buildStatusToggle(
                   context,
-                  label: 'Status Unit',
+                  label: context.l10n.adminStatusUnitLabel,
                   value: _status == 1,
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
@@ -192,7 +193,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Unit',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddUnitTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -236,12 +237,17 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
     if (success) {
       SnackbarHelper.showSuccess(
         context,
-        isEditMode ? 'Unit berhasil diperbarui' : 'Unit berhasil ditambahkan',
+        isEditMode
+            ? context.l10n.adminUpdateSuccess(context.l10n.adminUnitTitle)
+            : context.l10n.adminCreateSuccess(context.l10n.adminUnitTitle),
       );
       context.pop();
     } else {
       final error = ref.read(adminUnitFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan unit');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.adminUnitTitle),
+      );
     }
   }
 }

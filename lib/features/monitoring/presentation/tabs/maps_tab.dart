@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -62,13 +63,13 @@ class MapsTab extends ConsumerWidget {
                   totalSensors: sensorCount,
                 );
               },
-              loading: () => const CompactStatsCardSkeleton(height: 70),
+              loading: () => const CompactStatsCardSkeleton(),
               error: (_, __) => const SizedBox.shrink(),
             ),
             SizedBox(height: context.rh(0.024)),
 
             // Map
-            const SectionHeaderWidget(title: 'Maps'),
+            SectionHeaderWidget(title: context.l10n.monitoringTabMaps),
             SizedBox(height: context.rh(0.014)),
             devicesAsync.when(
               skipLoadingOnReload: true,
@@ -84,9 +85,9 @@ class MapsTab extends ConsumerWidget {
                     .where((device) => device.hasCoordinates)
                     .toList();
                 if (mappedDevices.isEmpty) {
-                  return const InfoStateWidget.svg(
+                  return InfoStateWidget.svg(
                     svgIconPath: 'assets/icons/maps-dot-filled-icon.svg',
-                    message: 'Belum ada lokasi device untuk ditampilkan',
+                    message: context.l10n.monitoringMapsNoDeviceLocations,
                     height: 195,
                   );
                 }
@@ -102,13 +103,14 @@ class MapsTab extends ConsumerWidget {
                   centerLat: lat,
                   centerLon: lon,
                   devices: mappedDevices,
+                  l10n: context.l10n,
                 );
               },
             ),
             SizedBox(height: context.rh(0.024)),
 
             // Device List (reuse SensorByTypeCardWidget from analytics)
-            const SectionHeaderWidget(title: 'Daftar Device & Sensor'),
+            SectionHeaderWidget(title: context.l10n.monitoringDeviceSensorList),
             SizedBox(height: context.rh(0.014)),
             devicesAsync.when(
               skipLoadingOnReload: true,
@@ -117,9 +119,9 @@ class MapsTab extends ConsumerWidget {
               loading: () => const SimpleRowsCardSkeleton(rowCount: 2),
               error: (_, __) => const SizedBox.shrink(),
               data: (devices) => devices.isEmpty
-                  ? const InfoStateWidget.svg(
+                  ? InfoStateWidget.svg(
                       svgIconPath: 'assets/icons/device-filled-icon.svg',
-                      message: 'Belum ada device tersedia',
+                      message: context.l10n.monitoringNoDevicesAvailable,
                       height: 73,
                     )
                   : SensorByTypeCardWidget(devices: devices, showHeader: false),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 
 class AgroRecommendationWidget extends StatelessWidget {
   final List<Recommendation> recommendations;
@@ -13,6 +15,8 @@ class AgroRecommendationWidget extends StatelessWidget {
     if (recommendations.isEmpty) {
       return _buildEmptyState(context);
     }
+
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -46,7 +50,7 @@ class AgroRecommendationWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Rekomendasi Cerdas',
+                      l10n.agroSmartRecommendation,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -57,7 +61,7 @@ class AgroRecommendationWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Tindakan berdasarkan AI & Data',
+                      l10n.agroRecommendationSubtitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -92,6 +96,8 @@ class AgroRecommendationWidget extends StatelessWidget {
       );
     } catch (_) {}
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -110,7 +116,7 @@ class AgroRecommendationWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  rec.priority.label.toUpperCase(),
+                  rec.priority.localizedLabel(l10n).toUpperCase(),
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(10),
@@ -121,7 +127,7 @@ class AgroRecommendationWidget extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                rec.type.label,
+                rec.type.localizedLabel(l10n),
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -215,7 +221,7 @@ class AgroRecommendationWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Tidak ada rekomendasi kritis saat ini',
+              AppLocalizations.of(context)!.agroNoCriticalRecommendations,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(14),

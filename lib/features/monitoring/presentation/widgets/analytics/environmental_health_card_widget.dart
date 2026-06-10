@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../dashboard/data/models/environmental_health_model.dart';
 import '../monitoring_card_header_widget.dart';
@@ -15,7 +16,7 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
     final total = health.totalSensors;
     final hasSensors = total > 0;
 
-    final (healthColor, healthLabel) = _resolveHealth(overall);
+    final (healthColor, healthLabel) = _resolveHealth(context, overall);
     final healthProgress = (overall / 100).clamp(0.0, 1.0).toDouble();
     final statusColor = hasSensors ? healthColor : AppColors.warning;
     final statusIcon = !hasSensors
@@ -24,10 +25,10 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
         ? Icons.check_circle_outline_rounded
         : Icons.error_outline_rounded;
     final statusText = !hasSensors
-        ? 'Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.'
+        ? context.l10n.monitoringNoSensorsConfiguredStatus
         : overall >= 60
-        ? '$total sensor tersedia, kondisi monitoring stabil.'
-        : '$total sensor tersedia, beberapa parameter perlu perhatian.';
+        ? context.l10n.monitoringSensorsStableStatus(total)
+        : context.l10n.monitoringSensorsAttentionStatus(total);
 
     return AppCardWidget.elevated(
       boxShadow: null,
@@ -35,10 +36,10 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const MonitoringCardHeaderWidget.icon(
+          MonitoringCardHeaderWidget.icon(
             icon: Icons.eco_outlined,
-            title: 'Kesehatan Lingkungan',
-            description: 'Skor kondisi sensor site aktif',
+            title: context.l10n.healthSectionTitle,
+            description: context.l10n.monitoringEnvironmentSubtitle,
             background: AppColors.softGreen,
             tint: AppColors.primary,
           ),
@@ -128,11 +129,19 @@ class EnvironmentalHealthCardWidget extends StatelessWidget {
     );
   }
 
-  (Color, String) _resolveHealth(double overall) {
-    if (overall == 0) return (AppColors.warning, 'Perlu Konfigurasi');
-    if (overall >= 80) return (AppColors.success, 'Sangat Baik');
-    if (overall >= 60) return (AppColors.primaryLight, 'Baik');
-    if (overall >= 40) return (AppColors.warning, 'Cukup');
-    return (AppColors.error, 'Perlu Perhatian');
+  (Color, String) _resolveHealth(BuildContext context, double overall) {
+    if (overall == 0) {
+      return (AppColors.warning, context.l10n.monitoringHealthNeedsSetup);
+    }
+    if (overall >= 80) {
+      return (AppColors.success, context.l10n.monitoringHealthExcellent);
+    }
+    if (overall >= 60) {
+      return (AppColors.primaryLight, context.l10n.monitoringHealthGood);
+    }
+    if (overall >= 40) {
+      return (AppColors.warning, context.l10n.monitoringHealthFair);
+    }
+    return (AppColors.error, context.l10n.monitoringHealthNeedsAttention);
   }
 }

@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -25,6 +28,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final filteredTasksAsync = ref.watch(filteredTasksProvider);
     final currentFilter = ref.watch(taskFilterProvider);
     final stats = ref.watch(taskStatsProvider);
+    final l10n = context.l10n;
     final hPad = context.rw(0.051);
 
     return Scaffold(
@@ -76,7 +80,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                       if (tasks.isEmpty) {
                         return InfoStateWidget.svg(
                           svgIconPath: 'assets/icons/task-filled-icon.svg',
-                          message: _getEmptyMessage(currentFilter),
+                          message: _getEmptyMessage(currentFilter, l10n),
                           height: 195,
                         );
                       }
@@ -140,7 +144,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         children: [
           _TaskStatItem(
             icon: 'assets/icons/total-task-outline-icon.svg',
-            label: 'Total',
+            label: context.l10n.commonTotal,
             value: '${stats.total}',
             color: AppColors.softGreenAlt,
             iconColor: AppColors.primary,
@@ -149,7 +153,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           const SizedBox(width: 7),
           _TaskStatItem(
             icon: 'assets/icons/pending-outline-icon.svg',
-            label: 'Menunggu',
+            label: context.l10n.commonPending,
             value: '${stats.pending}',
             color: AppColors.softOrange,
             iconColor: AppColors.warning,
@@ -158,7 +162,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           const SizedBox(width: 7),
           _TaskStatItem(
             icon: 'assets/icons/total-task-outline-icon.svg',
-            label: 'Dikerjakan',
+            label: context.l10n.commonInProgress,
             value: '${stats.progress}',
             color: AppColors.softBlue,
             iconColor: AppColors.info,
@@ -167,7 +171,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           const SizedBox(width: 7),
           _TaskStatItem(
             icon: 'assets/icons/check-task-outline-icon.svg',
-            label: 'Selesai',
+            label: context.l10n.commonCompleted,
             value: '${stats.complite}',
             color: AppColors.softGreen,
             iconColor: AppColors.success,
@@ -195,7 +199,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         itemBuilder: (context, index) {
           final filter = TaskFilter.values[index];
           return _FilterPill(
-            label: filter.label,
+            label: filter.localizedLabel(context.l10n),
             isSelected: currentFilter == filter,
             onTap: () => ref.read(taskFilterProvider.notifier).state = filter,
           );
@@ -204,18 +208,18 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
-  String _getEmptyMessage(TaskFilter filter) {
+  String _getEmptyMessage(TaskFilter filter, AppLocalizations l10n) {
     switch (filter) {
       case TaskFilter.all:
-        return 'Belum ada task';
+        return l10n.taskEmptyAll;
       case TaskFilter.pending:
-        return 'Tidak ada task yang menunggu';
+        return l10n.taskEmptyPending;
       case TaskFilter.progress:
-        return 'Tidak ada task yang sedang dikerjakan';
+        return l10n.taskEmptyProgress;
       case TaskFilter.complite:
-        return 'Belum ada task yang selesai';
+        return l10n.taskEmptyCompleted;
       case TaskFilter.failed:
-        return 'Tidak ada task yang gagal';
+        return l10n.taskEmptyFailed;
     }
   }
 }

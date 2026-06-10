@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/entities/dashboard_entity.dart';
 import 'smart_score_gauge.dart';
 
@@ -13,7 +14,7 @@ class HealthCardWidget extends StatelessWidget {
     final score = health.overallHealth;
     final totalSensors = health.totalSensors;
 
-    final status = _resolveStatus(score);
+    final status = _resolveStatus(context, score);
 
     return Container(
       width: double.infinity,
@@ -42,33 +43,34 @@ class HealthCardWidget extends StatelessWidget {
     );
   }
 
-  _HealthStatus _resolveStatus(double score) {
+  _HealthStatus _resolveStatus(BuildContext context, double score) {
+    final l10n = context.l10n;
     if (score >= 80) {
-      return const _HealthStatus(
-        label: 'Sangat Baik',
+      return _HealthStatus(
+        label: l10n.monitoringHealthExcellent,
         color: AppColors.healthStatusGood,
         icon: Icons.verified_rounded,
         iconSize: 13,
       );
     }
     if (score >= 60) {
-      return const _HealthStatus(
-        label: 'Kondisi Baik',
+      return _HealthStatus(
+        label: l10n.monitoringHealthGood,
         color: AppColors.healthStatusGood,
         icon: Icons.check_circle_rounded,
         iconSize: 13,
       );
     }
     if (score >= 40) {
-      return const _HealthStatus(
-        label: 'Cukup',
+      return _HealthStatus(
+        label: l10n.monitoringHealthFair,
         color: AppColors.healthStatusWarning,
         icon: Icons.info_rounded,
         iconSize: 13,
       );
     }
-    return const _HealthStatus(
-      label: 'Perlu Perhatian',
+    return _HealthStatus(
+      label: l10n.monitoringHealthNeedsAttention,
       color: AppColors.healthStatusCritical,
       icon: Icons.warning_amber_rounded,
       iconSize: 14,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/section_header_widget.dart';
 import '../../../data/models/monitoring_models.dart';
@@ -25,7 +26,7 @@ class SensorByTypeCardWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (showHeader) ...[
-          const SectionHeaderWidget(title: 'Sensor Berdasarkan Jenis'),
+          SectionHeaderWidget(title: context.l10n.monitoringSensorByTypeTitle),
           SizedBox(height: context.rh(0.015)),
         ],
         ...devices.map((d) => _ExpandableDeviceCard(device: d)),
@@ -64,7 +65,7 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
                 child: MonitoringCardHeaderWidget.svg(
                   svgIconPath: 'assets/icons/device-filled-icon.svg',
                   title: d.devName ?? d.devId,
-                  description: _deviceDescription(d),
+                  description: _deviceDescription(context, d),
                   background: AppColors.softGreenAlt,
                   tint: AppColors.primary,
                   trailing: Row(
@@ -97,14 +98,14 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
     );
   }
 
-  String _deviceDescription(DeviceModel device) {
+  String _deviceDescription(BuildContext context, DeviceModel device) {
     final parts = <String>[];
     final location = device.devLocation?.trim();
     if (location != null && location.isNotEmpty) parts.add(location);
     parts.add(
       device.sensors.isEmpty
-          ? 'Belum ada sensor terdaftar'
-          : '${device.sensors.length} sensor terdaftar',
+          ? context.l10n.monitoringNoRegisteredSensors
+          : context.l10n.monitoringRegisteredSensorCount(device.sensors.length),
     );
     return parts.join(' - ');
   }
@@ -114,7 +115,7 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: context.rh(0.015)),
         child: Text(
-          'Belum ada data sensor',
+          context.l10n.monitoringNoSensorData,
           style: TextStyle(
             fontFamily: AppTextStyles.fontFamily,
             fontSize: context.sp(12),
@@ -192,7 +193,7 @@ class _DeviceStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
-        active ? 'Aktif' : 'Offline',
+        active ? context.l10n.commonActive : context.l10n.commonOffline,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.caption(

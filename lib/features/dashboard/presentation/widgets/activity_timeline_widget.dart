@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 class ActivityTimelineWidget extends StatelessWidget {
   final List<ActivityItem> activities;
@@ -27,7 +28,7 @@ class ActivityTimelineWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Belum ada aktivitas',
+                context.l10n.dashboardNoActivities,
                 style: AppTextStyles.caption(context, size: 13),
               ),
             ],
@@ -48,14 +49,14 @@ class ActivityTimelineWidget extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Aktivitas Terbaru',
+                context.l10n.dashboardRecentActivities,
                 style: AppTextStyles.cardTitle(context, 14),
               ),
               const Spacer(),
               TextButton(
                 onPressed: () {},
                 child: Text(
-                  'Lihat Semua',
+                  context.l10n.commonViewAll,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
@@ -124,7 +125,7 @@ class _ActivityItem extends StatelessWidget {
               ],
               const SizedBox(height: 4),
               Text(
-                _formatTime(activity.timestamp),
+                _formatTime(context, activity.timestamp),
                 style: AppTextStyles.caption(
                   context,
                   size: 11,
@@ -138,18 +139,19 @@ class _ActivityItem extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime timestamp) {
+  String _formatTime(BuildContext context, DateTime timestamp) {
     final now = DateTime.now();
     final diff = now.difference(timestamp);
+    final l10n = context.l10n;
 
     if (diff.inMinutes < 1) {
-      return 'Baru saja';
+      return l10n.timeJustNow;
     } else if (diff.inMinutes < 60) {
-      return '${diff.inMinutes} menit yang lalu';
+      return l10n.timeMinutesAgo(diff.inMinutes);
     } else if (diff.inHours < 24) {
-      return '${diff.inHours} jam yang lalu';
+      return l10n.timeHoursAgo(diff.inHours);
     } else if (diff.inDays < 7) {
-      return '${diff.inDays} hari yang lalu';
+      return l10n.timeDaysAgo(diff.inDays);
     } else {
       return DateFormat('dd MMM yyyy').format(timestamp);
     }

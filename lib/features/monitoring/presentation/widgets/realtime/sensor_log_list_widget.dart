@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../data/models/monitoring_models.dart';
 
@@ -48,7 +49,7 @@ class _SensorLogListWidgetState extends State<SensorLogListWidget> {
                 padding: const EdgeInsets.only(bottom: 12),
                 alignment: Alignment.center,
                 child: Text(
-                  _expanded ? 'Tutup Log' : 'Lihat Semua Log (${logs.length})',
+                  _expanded ? context.l10n.monitoringCloseLog : context.l10n.monitoringShowAllLogsCount(logs.length),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),

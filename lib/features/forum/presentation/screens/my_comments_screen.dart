@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
@@ -19,7 +20,7 @@ class MyCommentsScreen extends ConsumerWidget {
     final myCommentsAsync = ref.watch(myCommentsProvider);
 
     return ForumActionScaffold(
-      title: 'Komentar Saya',
+      title: context.l10n.forumMyComments,
       trailing: CircularIconActionWidget(
         onPressed: () => ref.invalidate(myCommentsProvider),
         icon: Icons.refresh,
@@ -30,10 +31,10 @@ class MyCommentsScreen extends ConsumerWidget {
         skipError: true,
         data: (comments) {
           if (comments.isEmpty) {
-            return const ForumActionState(
+            return ForumActionState(
               icon: Icons.chat_bubble_outline,
-              title: 'Belum ada komentar',
-              message: 'Komentar Anda pada postingan akan muncul di sini.',
+              title: context.l10n.forumNoCommentsTitle,
+              message: context.l10n.forumNoCommentsMessage,
             );
           }
 
@@ -70,8 +71,8 @@ class MyCommentsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: ForumActionSummaryCard(
                 icon: Icons.chat_bubble_outline,
-                title: '${comments.length} komentar',
-                subtitle: 'Komentar yang Anda tulis di postingan forum.',
+                title: context.l10n.forumCommentCount(comments.length),
+                subtitle: context.l10n.forumMyCommentsSummary,
                 color: AppColors.info,
                 background: AppColors.softBlue,
               ),
@@ -96,11 +97,11 @@ class MyCommentsScreen extends ConsumerWidget {
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
     return ForumActionState(
       icon: Icons.wifi_off_rounded,
-      title: 'Gagal memuat komentar',
+      title: context.l10n.forumLoadCommentsFailed,
       message: error.toString().replaceAll('Exception: ', ''),
       action: ForumActionPrimaryButton(
         icon: Icons.refresh,
-        label: 'Coba Lagi',
+        label: context.l10n.commonRetry,
         onPressed: () => ref.invalidate(myCommentsProvider),
       ),
     );
@@ -178,7 +179,7 @@ class _CommentCard extends ConsumerWidget {
             children: [
               Text(
                 comment.postTitle.trim().isEmpty
-                    ? 'Tanpa Judul'
+                    ? context.l10n.forumNoTitle
                     : comment.postTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -191,7 +192,7 @@ class _CommentCard extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'Ketuk untuk membuka postingan',
+                context.l10n.forumOpenPostHint,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.hint(context, size: context.sp(10)),
@@ -200,7 +201,7 @@ class _CommentCard extends ConsumerWidget {
           ),
         ),
         IconButton(
-          tooltip: 'Aksi komentar',
+          tooltip: context.l10n.forumCommentActions,
           onPressed: () => _showActions(context, ref),
           icon: const Icon(Icons.more_vert, size: 20),
           color: AppColors.textSecondary,
@@ -237,7 +238,7 @@ class _CommentCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
             child: Text(
-              'Diedit',
+              context.l10n.forumEdited,
               style: AppTextStyles.caption(
                 context,
                 size: context.sp(9),
@@ -264,13 +265,13 @@ class _CommentCard extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (sheetCtx) => ForumActionBottomSheet(
-        title: 'Kelola Komentar',
+        title: context.l10n.forumManageComments,
         children: [
           ForumActionSheetItem(
             icon: Icons.edit_outlined,
             iconColor: AppColors.primary,
             backgroundColor: AppColors.softGreen,
-            label: 'Edit Komentar',
+            label: context.l10n.forumEditComment,
             onTap: () {
               Navigator.pop(sheetCtx);
               _editComment(context, ref);
@@ -280,7 +281,7 @@ class _CommentCard extends ConsumerWidget {
             icon: Icons.delete_outline,
             iconColor: AppColors.error,
             backgroundColor: AppColors.softOrange,
-            label: 'Hapus Komentar',
+            label: context.l10n.forumDeleteComment,
             labelColor: AppColors.error,
             onTap: () {
               Navigator.pop(sheetCtx);
@@ -293,6 +294,7 @@ class _CommentCard extends ConsumerWidget {
   }
 
   Future<void> _editComment(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final controller = TextEditingController(text: comment.commentContent);
     final updatedContent = await showDialog<String>(
       context: context,
@@ -301,7 +303,7 @@ class _CommentCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Edit Komentar',
+          l10n.forumEditComment,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: TextField(
@@ -309,8 +311,8 @@ class _CommentCard extends ConsumerWidget {
           minLines: 3,
           maxLines: 5,
           textInputAction: TextInputAction.newline,
-          decoration: const InputDecoration(
-            hintText: 'Tulis komentar',
+          decoration: InputDecoration(
+            hintText: l10n.forumWriteComment,
             border: OutlineInputBorder(),
           ),
           style: AppTextStyles.label(
@@ -324,7 +326,7 @@ class _CommentCard extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Batal',
+              l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -340,7 +342,7 @@ class _CommentCard extends ConsumerWidget {
               return TextButton(
                 onPressed: canSave ? () => Navigator.pop(ctx, next) : null,
                 child: Text(
-                  'Simpan',
+                  l10n.commonSave,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     color: canSave ? AppColors.primary : AppColors.textTertiary,
@@ -375,7 +377,7 @@ class _CommentCard extends ConsumerWidget {
         ref.invalidate(commentsProvider(comment.forumId));
         _showSnackBar(
           context,
-          'Komentar diperbarui',
+          l10n.forumCommentUpdated,
           backgroundColor: AppColors.success,
         );
       },
@@ -383,6 +385,7 @@ class _CommentCard extends ConsumerWidget {
   }
 
   Future<void> _deleteComment(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -390,11 +393,11 @@ class _CommentCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Hapus Komentar',
+          l10n.forumDeleteComment,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Komentar ini akan dihapus permanen.',
+          l10n.forumDeleteCommentPermanent,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -405,7 +408,7 @@ class _CommentCard extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'Batal',
+              l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -415,7 +418,7 @@ class _CommentCard extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              'Hapus',
+              l10n.commonDelete,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.error,
@@ -447,7 +450,7 @@ class _CommentCard extends ConsumerWidget {
             .updateCommentCount(comment.forumId, -1);
         _showSnackBar(
           context,
-          'Komentar dihapus',
+          l10n.forumCommentDeleted,
           backgroundColor: AppColors.success,
         );
       },

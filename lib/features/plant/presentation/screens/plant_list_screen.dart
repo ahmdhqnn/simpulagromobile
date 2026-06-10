@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../utils/plant_mutation_actions.dart';
 import '../widgets/plant_actions_sheet_widget.dart';
@@ -139,7 +140,7 @@ class _PlantCard extends ConsumerWidget {
     final phaseAsync = plant.isCurrentPlanting
         ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
         : null;
-    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync, AppLocalizations.of(context)!);
 
     return Container(
       decoration: BoxDecoration(
@@ -227,6 +228,7 @@ class _CardTopRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Container(
@@ -257,7 +259,7 @@ class _CardTopRow extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                plant.plantType?.displayName ?? 'Unknown',
+                plant.plantType?.localizedLabel(l10n) ?? l10n.commonUnknown,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
@@ -269,7 +271,7 @@ class _CardTopRow extends StatelessWidget {
         ),
 
         IconButton(
-          tooltip: 'Aksi tanaman',
+          tooltip: l10n.adminPlantActionsTooltip,
           onPressed: onMoreTap,
           icon: const Icon(Icons.more_vert),
           color: AppColors.textPrimary.withValues(alpha: 0.7),
@@ -282,7 +284,7 @@ class _CardTopRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            plant.statusText,
+            plant.localizedStatus(l10n),
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(12),
@@ -304,18 +306,23 @@ class _CardChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: _InfoChip(
-            label: 'HST',
-            value: '${plant.hst ?? 0} hari',
+            label: l10n.plantHstLabel,
+            value: l10n.commonDays(plant.hst ?? 0),
             icon: Icons.calendar_today,
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: _InfoChip(label: 'Fase', value: phaseLabel, icon: Icons.eco),
+          child: _InfoChip(
+            label: l10n.plantPhaseLabel,
+            value: phaseLabel,
+            icon: Icons.eco,
+          ),
         ),
       ],
     );

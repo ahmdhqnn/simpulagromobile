@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/l10n.dart';
+
 class EditProfileScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> profile;
 
@@ -36,7 +38,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profil'), centerTitle: true),
+      appBar: AppBar(
+        title: Text(context.l10n.profileEditTitle),
+        centerTitle: true,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -44,13 +49,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             _buildAvatarSection(context),
             const SizedBox(height: 24),
-            _buildNameField(),
+            _buildNameField(context),
             const SizedBox(height: 16),
-            _buildEmailField(),
+            _buildEmailField(context),
             const SizedBox(height: 16),
-            _buildPhoneField(),
+            _buildPhoneField(context),
             const SizedBox(height: 24),
-            _buildSaveButton(),
+            _buildSaveButton(context),
           ],
         ),
       ),
@@ -88,8 +93,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 onPressed: () {
                   // Image picker belum diimplementasi — perlu package image_picker
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Fitur upload foto akan segera hadir'),
+                    SnackBar(
+                      content: Text(context.l10n.profilePhotoUploadComingSoon),
                     ),
                   );
                 },
@@ -101,69 +106,69 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildNameField() {
+  Widget _buildNameField(BuildContext context) {
     return TextFormField(
       controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Nama Lengkap',
-        prefixIcon: Icon(Icons.person),
+      decoration: InputDecoration(
+        labelText: context.l10n.profileFullNameLabel,
+        prefixIcon: const Icon(Icons.person),
         border: OutlineInputBorder(),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Nama tidak boleh kosong';
+          return context.l10n.profileNameRequired;
         }
         if (value.length < 3) {
-          return 'Nama minimal 3 karakter';
+          return context.l10n.profileNameMinLength;
         }
         return null;
       },
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildEmailField(BuildContext context) {
     return TextFormField(
       controller: _emailController,
-      decoration: const InputDecoration(
-        labelText: 'Email',
-        prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.adminEmailLabel,
+        prefixIcon: const Icon(Icons.email),
+        border: const OutlineInputBorder(),
       ),
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Email tidak boleh kosong';
+          return context.l10n.profileEmailRequired;
         }
         if (!value.contains('@')) {
-          return 'Email tidak valid';
+          return context.l10n.profileEmailInvalid;
         }
         return null;
       },
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _buildPhoneField(BuildContext context) {
     return TextFormField(
       controller: _phoneController,
-      decoration: const InputDecoration(
-        labelText: 'Nomor Telepon',
-        prefixIcon: Icon(Icons.phone),
+      decoration: InputDecoration(
+        labelText: context.l10n.profilePhoneNumberLabel,
+        prefixIcon: const Icon(Icons.phone),
         border: OutlineInputBorder(),
       ),
       keyboardType: TextInputType.phone,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Nomor telepon tidak boleh kosong';
+          return context.l10n.profilePhoneRequired;
         }
         if (value.length < 10) {
-          return 'Nomor telepon tidak valid';
+          return context.l10n.profilePhoneInvalid;
         }
         return null;
       },
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -175,7 +180,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text('Simpan Perubahan'),
+            : Text(context.l10n.commonSaveChanges),
       ),
     );
   }
@@ -186,6 +191,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
 
     setState(() => _isLoading = true);
+    final l10n = context.l10n;
 
     try {
       // Simulate API call
@@ -193,8 +199,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profil berhasil diperbarui'),
+          SnackBar(
+            content: Text(l10n.profileUpdateSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -203,7 +209,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${l10n.commonError}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

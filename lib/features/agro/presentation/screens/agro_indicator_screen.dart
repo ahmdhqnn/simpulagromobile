@@ -21,6 +21,7 @@ import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../recommendation/presentation/providers/recommendation_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class AgroIndicatorScreen extends ConsumerWidget {
   const AgroIndicatorScreen({super.key});
@@ -36,12 +37,12 @@ class AgroIndicatorScreen extends ConsumerWidget {
           child: Column(
             children: [
               _buildHeader(context, ref),
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Text(
-                      'Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).',
+                      AppLocalizations.of(context)!.agroSelectSiteMessage,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -127,6 +128,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
     AsyncValue<List<Recommendation>> recommendationsAsync,
     AsyncValue<Phase?> phaseAsync,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,7 +140,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+                SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
                 SizedBox(height: context.rh(0.014)),
                 AgroRecommendationWidget(recommendations: recommendations),
                 SizedBox(height: context.rh(0.024)),
@@ -148,7 +150,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
           loading: () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+              SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
               SizedBox(height: context.rh(0.014)),
               const AgroRecommendationCardSkeleton(),
               SizedBox(height: context.rh(0.024)),
@@ -165,7 +167,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SectionHeaderWidget(title: 'Fase Tanam'),
+                SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
                 SizedBox(height: context.rh(0.014)),
                 AgroPhaseWidget(phase: phase),
                 SizedBox(height: context.rh(0.024)),
@@ -175,7 +177,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
           loading: () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionHeaderWidget(title: 'Fase Tanam'),
+              SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
               SizedBox(height: context.rh(0.014)),
               const AgroPhaseCardSkeleton(),
               SizedBox(height: context.rh(0.024)),
@@ -184,7 +186,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
 
-        const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
+        SectionHeaderWidget(title: l10n.healthSectionTitle),
         SizedBox(height: context.rh(0.014)),
         EnvironmentalHealthWidget(
           agroData: agroData,
@@ -193,25 +195,25 @@ class AgroIndicatorScreen extends ConsumerWidget {
 
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Vapor Pressure Deficit'),
+        SectionHeaderWidget(title: l10n.agroVdpTitle),
         SizedBox(height: context.rh(0.014)),
         VdpWidget(vdpData: agroData.vdp),
 
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Growing Degree Days'),
+        SectionHeaderWidget(title: l10n.agroGddTitle),
         SizedBox(height: context.rh(0.014)),
         GddWidget(gddData: agroData.gdd),
 
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Evapotranspiration'),
+        SectionHeaderWidget(title: l10n.agroEtcTitle),
         SizedBox(height: context.rh(0.014)),
         EtcWidget(etcData: agroData.etc),
 
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Informasi'),
+        SectionHeaderWidget(title: l10n.agroInformationTitle),
         SizedBox(height: context.rh(0.014)),
         _buildInfoCard(context),
 
@@ -244,40 +246,41 @@ class AgroIndicatorScreen extends ConsumerWidget {
   }
 
   Widget _buildLoadingSections(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeaderWidget(title: 'Rekomendasi Tindakan'),
+        SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroRecommendationCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Fase Tanam'),
+        SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroPhaseCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Kesehatan Lingkungan'),
+        SectionHeaderWidget(title: l10n.healthSectionTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroEnvironmentalHealthCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Vapor Pressure Deficit'),
+        SectionHeaderWidget(title: l10n.agroVdpTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroVdpCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Growing Degree Days'),
+        SectionHeaderWidget(title: l10n.agroGddTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroGddCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Evapotranspiration'),
+        SectionHeaderWidget(title: l10n.agroEtcTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroEtcCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        const SectionHeaderWidget(title: 'Informasi'),
+        SectionHeaderWidget(title: l10n.agroInformationTitle),
         SizedBox(height: context.rh(0.014)),
         const AgroInfoCardSkeleton(),
         SizedBox(height: context.rh(0.02)),
@@ -322,7 +325,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: context.rh(0.02)),
                   Text(
-                    'Gagal memuat data',
+                    AppLocalizations.of(context)!.commonLoadFailed,
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: context.sp(18),
@@ -354,9 +357,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    child: const Text(
-                      'Coba Lagi',
-                      style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                    child: Text(
+                      AppLocalizations.of(context)!.retry,
+                      style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                     ),
                   ),
                 ],
@@ -369,6 +372,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
   }
 
   Widget _buildInfoCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -395,7 +399,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Tentang Agro Indicator',
+                l10n.agroAboutTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(16),
@@ -408,23 +412,20 @@ class AgroIndicatorScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           _buildInfoItem(
             context,
-            'VDP (Vapor Pressure Deficit)',
-            'Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. '
-                'VDP rendah (<0.4) meningkatkan risiko penyakit, VDP tinggi (>1.6) menyebabkan stress air.',
+            l10n.agroVdpTitle,
+            l10n.agroVdpDescription,
           ),
           const SizedBox(height: 12),
           _buildInfoItem(
             context,
-            'GDD (Growing Degree Days)',
-            'Akumulasi suhu yang diperlukan tanaman untuk tumbuh. '
-                'Digunakan untuk memprediksi fase pertumbuhan dan waktu panen.',
+            l10n.agroGddTitle,
+            l10n.agroGddDescription,
           ),
           const SizedBox(height: 12),
           _buildInfoItem(
             context,
-            'ETC (Evapotranspiration)',
-            'Kebutuhan air tanaman berdasarkan evaporasi dan transpirasi. '
-                'Membantu menentukan jadwal dan volume penyiraman yang optimal.',
+            l10n.agroEtcTitle,
+            l10n.agroEtcDescription,
           ),
         ],
       ),

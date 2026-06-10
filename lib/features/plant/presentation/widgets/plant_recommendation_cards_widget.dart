@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -36,9 +39,9 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
           skipLoadingOnRefresh: true,
           skipError: true,
           data: (items) => _RecommendationSectionCard(
-            title: 'Rekomendasi Tanaman',
-            subtitle: 'Tanaman aktif di site terpilih',
-            description: 'Rekomendasi terbaru berbasis data tanaman aktif.',
+            title: context.l10n.recommendationPlantTitle,
+            subtitle: context.l10n.recommendationPlantSubtitle,
+            description: context.l10n.recommendationPlantDescription,
             icon: Icons.eco_outlined,
             color: AppColors.success,
             items: _filterForPlant(items, plant),
@@ -46,8 +49,8 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
           ),
           loading: () => const RecommendationOverviewCardSkeleton(),
           error: (error, _) => _RecommendationErrorCard(
-            title: 'Gagal memuat rekomendasi tanaman',
-            message: toUiErrorMessage(error),
+            title: context.l10n.recommendationPlantLoadFailed,
+            message: toUiErrorMessage(error, context.l10n),
             icon: Icons.eco_outlined,
             color: AppColors.success,
             onRetry: () =>
@@ -67,9 +70,9 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
   ) {
     if (!plant.isCurrentPlanting) {
       return _RecommendationSectionCard(
-        title: 'Rekomendasi Fase',
-        subtitle: plant.statusText,
-        description: 'Rekomendasi fase tersedia untuk tanaman aktif.',
+        title: context.l10n.recommendationPhaseTitle,
+        subtitle: plant.localizedStatus(context.l10n),
+        description: context.l10n.recommendationPhaseAvailableForActivePlant,
         icon: Icons.timeline_outlined,
         color: AppColors.info,
         items: const <Recommendation>[],
@@ -85,9 +88,9 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
       data: (phase) {
         if (phase == null) {
           return _RecommendationSectionCard(
-            title: 'Rekomendasi Fase',
-            subtitle: 'Fase aktif belum tersedia',
-            description: 'Belum ada fase aktif untuk tanaman ini.',
+            title: context.l10n.recommendationPhaseTitle,
+            subtitle: context.l10n.recommendationPhaseUnavailable,
+            description: context.l10n.recommendationPhaseNoneForPlant,
             icon: Icons.timeline_outlined,
             color: AppColors.info,
             items: const <Recommendation>[],
@@ -105,9 +108,9 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
           skipLoadingOnRefresh: true,
           skipError: true,
           data: (items) => _RecommendationSectionCard(
-            title: 'Rekomendasi Fase',
-            subtitle: _phaseSubtitle(phase, plant),
-            description: 'Saran aksi spesifik sesuai fase pertumbuhan aktif.',
+            title: context.l10n.recommendationPhaseTitle,
+            subtitle: _phaseSubtitle(phase, plant, context.l10n),
+            description: context.l10n.recommendationPhaseDescription,
             icon: Icons.timeline_outlined,
             color: AppColors.info,
             items: items,
@@ -115,8 +118,8 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
           ),
           loading: () => const RecommendationOverviewCardSkeleton(),
           error: (error, _) => _RecommendationErrorCard(
-            title: 'Gagal memuat rekomendasi fase',
-            message: toUiErrorMessage(error),
+            title: context.l10n.recommendationPhaseLoadFailed,
+            message: toUiErrorMessage(error, context.l10n),
             icon: Icons.timeline_outlined,
             color: AppColors.info,
             onRetry: () =>
@@ -126,8 +129,8 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
       },
       loading: () => const RecommendationOverviewCardSkeleton(),
       error: (error, _) => _RecommendationErrorCard(
-        title: 'Gagal memuat fase aktif',
-        message: toUiErrorMessage(error),
+        title: context.l10n.recommendationActivePhaseLoadFailed,
+        message: toUiErrorMessage(error, context.l10n),
         icon: Icons.timeline_outlined,
         color: AppColors.info,
         onRetry: () => ref.invalidate(currentPhaseProvider(siteId)),
@@ -224,13 +227,13 @@ class _RecommendationSectionCard extends StatelessWidget {
           Row(
             children: [
               _MetricPill(
-                label: 'Total',
+                label: context.l10n.commonTotal,
                 value: sortedItems.length.toString(),
                 color: color,
               ),
               const SizedBox(width: 8),
               _MetricPill(
-                label: 'Pending',
+                label: context.l10n.commonPending,
                 value: pendingCount.toString(),
                 color: AppColors.warning,
               ),
@@ -271,7 +274,7 @@ class _RecommendationSectionCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Lihat Detail',
+                        context.l10n.commonViewDetail,
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
                           fontSize: context.sp(12),
@@ -366,7 +369,7 @@ class _RecommendationErrorCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            tooltip: 'Coba lagi',
+            tooltip: context.l10n.retry,
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded),
             color: color,
@@ -473,9 +476,9 @@ bool _sameText(String? left, String right) {
   return normalizedLeft == right.trim().toLowerCase();
 }
 
-String _phaseSubtitle(Phase phase, Plant plant) {
+String _phaseSubtitle(Phase phase, Plant plant, AppLocalizations l10n) {
   final hst = plant.hst ?? (phase.currentHst > 0 ? phase.currentHst : null);
-  final range = 'HST ${phase.hstMin}-${phase.hstMax}';
+  final range = l10n.recommendationHstRangeLabel(phase.hstMin, phase.hstMax);
   if (hst == null) return '${phase.phaseName} - $range';
-  return '${phase.phaseName} - HST $hst';
+  return '${phase.phaseName} - ${l10n.recommendationHstLabel(hst)}';
 }

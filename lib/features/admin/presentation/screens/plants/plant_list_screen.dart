@@ -8,6 +8,8 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/plant.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
+import 'package:simpulagromobile/l10n/localized_labels.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -21,7 +23,7 @@ class PlantListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'plant:read',
       child: AdminScaffold(
-        title: 'Tanaman',
+        title: context.l10n.plantTitle,
         action: PermissionGuard(
           permission: 'plant:create',
           child: AdminAddButton(
@@ -34,10 +36,10 @@ class PlantListScreen extends ConsumerWidget {
           skipError: true,
           data: (plants) {
             if (plants.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.grass_outlined,
-                title: 'Belum ada tanaman',
-                message: 'Tambahkan tanaman untuk memulai monitoring',
+                title: context.l10n.adminNoPlants,
+                message: context.l10n.adminNoPlantsMessage,
               );
             }
 
@@ -58,7 +60,7 @@ class PlantListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Tanaman',
+                        context.l10n.plantTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -115,33 +117,33 @@ class _PlantCard extends ConsumerWidget {
 
     return AdminListItem(
       title: plant.displayName,
-      subtitle: 'ID: ${plant.plantId}',
+      subtitle: context.l10n.adminIdPrefix(plant.plantId),
       icon: Icons.grass,
       iconColor: iconColor,
       isActive: plant.isActive,
       onTap: () => _showOptions(context, ref),
       trailing: IconButton(
-        tooltip: 'Aksi tanaman',
+        tooltip: context.l10n.adminPlantActionsTooltip,
         onPressed: () => _showOptions(context, ref),
         icon: const Icon(Icons.more_vert),
         color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
       ),
       badges: [
         AdminBadge(
-          label: plant.cropTypeDisplay,
+          label: plant.plantType?.localizedLabel(context.l10n) ?? '-',
           color: _cropColor(plant.plantType),
           icon: Icons.eco,
         ),
         if (plant.hst != null)
           AdminBadge(
-            label: 'HST ${plant.hst}',
+            label: context.l10n.recommendationHstLabel(plant.hst!),
             color: const Color(0xFF42A5F5),
             icon: Icons.calendar_today,
           ),
         if (plant.isHarvested)
-          const AdminBadge(
-            label: 'Sudah Panen',
-            color: Color(0xFFFFA726),
+          AdminBadge(
+            label: context.l10n.plantStatusHarvested,
+            color: const Color(0xFFFFA726),
             icon: Icons.agriculture,
           ),
       ],
@@ -190,9 +192,9 @@ class _PlantCard extends ConsumerWidget {
                   Icons.edit_outlined,
                   color: Color(0xFF1B5E20),
                 ),
-                title: const Text(
-                  'Edit Tanaman',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                title: Text(
+                  context.l10n.plantActionEdit,
+                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -208,9 +210,9 @@ class _PlantCard extends ConsumerWidget {
                     Icons.agriculture,
                     color: Color(0xFFFFA726),
                   ),
-                  title: const Text(
-                    'Panen Tanaman',
-                    style: TextStyle(
+                  title: Text(
+                    context.l10n.plantActionHarvest,
+                    style: const TextStyle(
                       color: Color(0xFFFFA726),
                       fontFamily: 'Plus Jakarta Sans',
                     ),
@@ -226,9 +228,9 @@ class _PlantCard extends ConsumerWidget {
             if (isAdmin)
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus Tanaman',
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.plantActionDelete,
+                  style: const TextStyle(
                     color: Colors.red,
                     fontFamily: 'Plus Jakarta Sans',
                   ),
@@ -248,10 +250,9 @@ class _PlantCard extends ConsumerWidget {
   Future<void> _confirmHarvest(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmationDialog(
       context,
-      title: 'Panen Tanaman?',
-      message:
-          '"${plant.displayName}" akan ditandai sebagai sudah dipanen. Aksi ini tidak dapat dibatalkan.',
-      confirmText: 'Panen',
+      title: context.l10n.plantHarvestDialogTitle,
+      message: context.l10n.plantHarvestDialogMessage(plant.displayName),
+      confirmText: context.l10n.plantHarvestConfirm,
       confirmColor: const Color(0xFFFFA726),
     );
 
@@ -264,19 +265,26 @@ class _PlantCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (success) {
-      SnackbarHelper.showSuccess(context, 'Tanaman berhasil dipanen');
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.plantHarvestSuccess(plant.displayName),
+      );
     } else {
       final error = ref.read(adminPlantFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal memanen tanaman');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.plantHarvestFailed,
+      );
     }
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDeleteConfirmationDialog(
       context,
-      itemName: 'Tanaman',
-      additionalMessage:
-          '"${plant.displayName}" akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
+      itemName: context.l10n.plantTitle,
+      additionalMessage: context.l10n.plantDeleteDialogMessage(
+        plant.displayName,
+      ),
     );
 
     if (!confirmed || !context.mounted) return;
@@ -288,10 +296,16 @@ class _PlantCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (success) {
-      SnackbarHelper.showSuccess(context, 'Tanaman berhasil dihapus');
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.plantDeleteSuccess(plant.displayName),
+      );
     } else {
       final error = ref.read(adminPlantFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus tanaman');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.plantDeleteFailed,
+      );
     }
   }
 }

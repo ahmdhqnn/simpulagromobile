@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../data/models/monitoring_models.dart';
 import '../utils/sensor_metadata_adapter.dart';
@@ -9,7 +10,7 @@ import 'monitoring_card_header_widget.dart';
 /// Daily aggregation widget showing min, max, avg values
 class DailyAggregationWidget extends StatelessWidget {
   final List<SensorDailyModel> data;
-  final String title;
+  final String? title;
   final DateRange dateRange;
   final SensorMetadataAdapter metadataAdapter;
 
@@ -17,7 +18,7 @@ class DailyAggregationWidget extends StatelessWidget {
     super.key,
     required this.data,
     required this.metadataAdapter,
-    this.title = 'Ringkasan Harian',
+    this.title,
     this.dateRange = DateRange.week,
   });
 
@@ -33,6 +34,7 @@ class DailyAggregationWidget extends StatelessWidget {
       grouped.putIfAbsent(item.dsId, () => []).add(item);
     }
 
+    final displayTitle = title ?? context.l10n.monitoringDailySummaryTitle;
     return AppCardWidget.elevated(
       boxShadow: null,
       radius: AppRadius.lg,
@@ -44,8 +46,8 @@ class DailyAggregationWidget extends StatelessWidget {
             padding: EdgeInsets.all(context.rw(0.041)),
             child: MonitoringCardHeaderWidget.icon(
               icon: Icons.summarize_outlined,
-              title: title,
-              description: _getDateRangeText(),
+              title: displayTitle,
+              description: _getDateRangeText(context),
               background: AppColors.softGreen,
               tint: AppColors.primary,
               trailing: _SensorCountBadge(count: grouped.length),
@@ -76,26 +78,26 @@ class DailyAggregationWidget extends StatelessWidget {
     return AppCardWidget.elevated(
       boxShadow: null,
       radius: AppRadius.lg,
-      child: const MonitoringCardHeaderWidget.icon(
+      child: MonitoringCardHeaderWidget.icon(
         icon: Icons.summarize_outlined,
-        title: 'Ringkasan Harian',
-        description: 'Belum ada data agregasi untuk rentang ini',
+        title: context.l10n.monitoringDailySummaryTitle,
+        description: context.l10n.monitoringDailyNoAggregationDesc,
         background: AppColors.softGreen,
         tint: AppColors.primary,
       ),
     );
   }
 
-  String _getDateRangeText() {
+  String _getDateRangeText(BuildContext context) {
     switch (dateRange) {
       case DateRange.today:
-        return 'Hari ini';
+        return context.l10n.monitoringRangeToday;
       case DateRange.week:
-        return '7 hari terakhir';
+        return context.l10n.monitoringRangeLast7Days;
       case DateRange.month:
-        return '30 hari terakhir';
+        return context.l10n.monitoringRangeLast30Days;
       case DateRange.custom:
-        return 'Rentang custom';
+        return context.l10n.monitoringRangeCustom;
     }
   }
 }
@@ -114,7 +116,7 @@ class _SensorCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
-        '$count sensor',
+        context.l10n.monitoringSensorCount(count),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.caption(
@@ -176,7 +178,7 @@ class _SensorAggregationItem extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Rata-rata',
+                  label: context.l10n.commonAverage,
                   value: avg.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.primary,
@@ -186,7 +188,7 @@ class _SensorAggregationItem extends StatelessWidget {
               SizedBox(width: context.rw(0.02)),
               Expanded(
                 child: _StatCard(
-                  label: 'Min',
+                  label: context.l10n.commonMin,
                   value: min.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.info,
@@ -196,7 +198,7 @@ class _SensorAggregationItem extends StatelessWidget {
               SizedBox(width: context.rw(0.02)),
               Expanded(
                 child: _StatCard(
-                  label: 'Max',
+                  label: context.l10n.commonMax,
                   value: max.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.warning,
@@ -207,7 +209,7 @@ class _SensorAggregationItem extends StatelessWidget {
           ),
           SizedBox(height: context.rh(0.01)),
           Text(
-            '${data.length} titik data',
+            context.l10n.monitoringDataPointsCount(data.length),
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(10),

@@ -10,10 +10,11 @@ void main() async {
   // Jalankan secara paralel — keduanya tidak saling bergantung
   final results = await Future.wait([
     initializeDateFormatting('id_ID', null),
+    initializeDateFormatting('en_US', null),
     preloadAppData(),
   ]);
 
-  final startupData = results[1] as AppStartupData;
+  final startupData = results[2] as AppStartupData;
 
   runApp(
     ProviderScope(
