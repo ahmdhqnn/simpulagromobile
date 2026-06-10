@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/entities/post.dart';
 
 class PostCard extends StatelessWidget {
@@ -215,7 +216,7 @@ class PostCard extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              '${post.likeCount} suka',
+              context.l10n.forumLikesCount(post.likeCount),
               style: AppTextStyles.caption(context, size: 10),
             ),
           ],
@@ -223,12 +224,12 @@ class PostCard extends StatelessWidget {
         Row(
           children: [
             Text(
-              '${post.commentCount} komentar',
+              context.l10n.forumCommentsCount(post.commentCount),
               style: AppTextStyles.caption(context, size: 10),
             ),
             const SizedBox(width: 8),
             Text(
-              '${post.shareCount} bagikan',
+              context.l10n.forumSharesCount(post.shareCount),
               style: AppTextStyles.caption(context, size: 10),
             ),
           ],
@@ -244,21 +245,21 @@ class PostCard extends StatelessWidget {
         _buildActionButton(
           context,
           icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-          label: 'Suka',
+          label: context.l10n.forumLike,
           color: post.isLiked ? AppColors.error : AppColors.textSecondary,
           onTap: onLike,
         ),
         _buildActionButton(
           context,
           icon: Icons.chat_bubble_outline,
-          label: 'Komentar',
+          label: context.l10n.forumComment,
           color: AppColors.textSecondary,
           onTap: onComment,
         ),
         _buildActionButton(
           context,
           icon: Icons.share_outlined,
-          label: 'Bagikan',
+          label: context.l10n.forumShare,
           color: AppColors.textSecondary,
           onTap: onShare,
         ),

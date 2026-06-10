@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/sensor_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
@@ -76,7 +77,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
       if (sensorAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 7),
@@ -85,7 +86,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       }
       if (sensorAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: sensorAsync.error!,
             onRetry: () =>
@@ -100,11 +101,11 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit Sensor' : 'Tambah Sensor',
+        title: isEditMode ? context.l10n.adminEditSensorTitle : context.l10n.adminAddSensorTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat sensor...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingSensor,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -115,7 +116,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit Sensor' : 'Tambah Sensor',
+                isEditMode ? context.l10n.adminEditSensorTitle : context.l10n.adminAddSensorTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -127,22 +128,22 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
               SizedBox(height: context.rh(0.014)),
               // ── Informasi Dasar ──────────────────────────
               AdminSectionCard(
-                title: 'Informasi Dasar',
+                title: context.l10n.adminBasicInfoSection,
                 child: Column(
                   children: [
                     _buildField(
                       controller: _idController,
-                      label: 'Sensor ID',
-                      hint: 'Contoh: soil_nitro',
+                      label: context.l10n.adminSensorIdLabel,
+                      hint: context.l10n.adminSensorIdHint,
                       icon: Icons.tag,
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Sensor ID wajib diisi';
+                          return context.l10n.adminSensorIdRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -150,16 +151,16 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                     SizedBox(height: context.rh(0.016)),
                     _buildField(
                       controller: _nameController,
-                      label: 'Nama Sensor',
-                      hint: 'Contoh: Nitrogen Sensor',
+                      label: context.l10n.adminSensorNameLabel,
+                      hint: context.l10n.adminSensorNameHint,
                       icon: Icons.sensors,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama sensor wajib diisi';
+                          return context.l10n.adminSensorNameRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -173,20 +174,20 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
               // ── Konfigurasi ──────────────────────────────
               AdminSectionCard(
-                title: 'Konfigurasi',
+                title: context.l10n.adminConfigurationSection,
                 child: Column(
                   children: [
                     _buildField(
                       controller: _addressController,
-                      label: 'Alamat Sensor',
-                      hint: 'Contoh: 0x10',
+                      label: context.l10n.adminSensorAddressLabel,
+                      hint: context.l10n.adminSensorAddressHint,
                       icon: Icons.location_searching,
                     ),
                     SizedBox(height: context.rh(0.016)),
                     _buildField(
                       controller: _locationController,
-                      label: 'Lokasi',
-                      hint: 'Contoh: Soil Layer 1',
+                      label: context.l10n.commonLocation,
+                      hint: context.l10n.adminSensorLocationHint,
                       icon: Icons.place,
                       maxLines: 2,
                     ),
@@ -197,8 +198,8 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
               // ── Koordinat ────────────────────────────────
               AdminSectionCard(
-                title: 'Koordinat',
-                subtitle: 'Opsional — untuk pemetaan lokasi sensor',
+                title: context.l10n.adminCoordinatesSection,
+                subtitle: context.l10n.adminSensorCoordinateSubtitle,
                 child: Column(
                   children: [
                     Row(
@@ -206,7 +207,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         Expanded(
                           child: _buildField(
                             controller: _latController,
-                            label: 'Latitude',
+                            label: context.l10n.commonLatitude,
                             hint: '-7.7956',
                             icon: Icons.my_location,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -217,7 +218,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                               if (v != null && v.isNotEmpty) {
                                 final lat = double.tryParse(v);
                                 if (lat == null || lat < -90 || lat > 90) {
-                                  return 'Tidak valid';
+                                  return context.l10n.commonInvalid;
                                 }
                               }
                               return null;
@@ -228,7 +229,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         Expanded(
                           child: _buildField(
                             controller: _lonController,
-                            label: 'Longitude',
+                            label: context.l10n.commonLongitude,
                             hint: '110.3695',
                             icon: Icons.location_on,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -239,7 +240,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                               if (v != null && v.isNotEmpty) {
                                 final lon = double.tryParse(v);
                                 if (lon == null || lon < -180 || lon > 180) {
-                                  return 'Tidak valid';
+                                  return context.l10n.commonInvalid;
                                 }
                               }
                               return null;
@@ -251,7 +252,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                     SizedBox(height: context.rh(0.016)),
                     _buildField(
                       controller: _altController,
-                      label: 'Altitude (meter)',
+                      label: context.l10n.adminAltitudeLabel,
                       hint: '113.5',
                       icon: Icons.terrain,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -265,9 +266,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
               // ── Status ───────────────────────────────────
               AdminSectionCard(
-                title: 'Status',
+                title: context.l10n.adminStatusSection,
                 child: _buildStatusToggle(
-                  label: 'Status Sensor',
+                  label: context.l10n.adminStatusSensorLabel,
                   value: _status == 1,
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
@@ -276,7 +277,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
               // ── Submit ───────────────────────────────────
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Sensor',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddSensorTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -376,8 +377,8 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           color: const Color(0xFF1D1D1D),
         ),
         decoration: InputDecoration(
-          labelText: 'Device',
-          hintText: 'Pilih device (opsional)',
+          labelText: context.l10n.adminDeviceLabel,
+          hintText: context.l10n.adminSelectDeviceOptional,
           prefixIcon: const Icon(Icons.device_hub, size: 20),
           filled: true,
           fillColor: AppColors.surfaceVariant,
@@ -404,7 +405,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           ),
         ),
         items: [
-          const DropdownMenuItem(value: null, child: Text('Tidak ada device')),
+          DropdownMenuItem(value: null, child: Text(context.l10n.adminNoDevice)),
           ...devices.map(
             (d) => DropdownMenuItem(
               value: d.devId,
@@ -438,7 +439,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         ),
         child: Center(
           child: Text(
-            'Gagal memuat device',
+            context.l10n.adminLoadDeviceFailed,
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: context.sp(13),
@@ -487,7 +488,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                 ),
               ),
               Text(
-                value ? 'Aktif' : 'Nonaktif',
+                value ? context.l10n.commonActive : context.l10n.commonInactive,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -544,13 +545,16 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       SnackbarHelper.showSuccess(
         context,
         isEditMode
-            ? 'Sensor berhasil diperbarui'
-            : 'Sensor berhasil ditambahkan',
+            ? context.l10n.adminUpdateSuccess(context.l10n.adminSensorLabel)
+            : context.l10n.adminCreateSuccess(context.l10n.adminSensorLabel),
       );
       context.pop();
     } else {
       final error = ref.read(adminSensorFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan sensor');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.adminSensorLabel),
+      );
     }
   }
 }

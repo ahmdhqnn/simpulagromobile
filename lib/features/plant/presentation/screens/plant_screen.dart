@@ -38,7 +38,7 @@ class PlantScreen extends ConsumerWidget {
               loading: () => const CenteredInfoStateSkeleton(),
               error: (error, _) => Center(
                 child: ErrorStateCardWidget(
-                  message: 'Gagal memuat site. ${error.toString()}',
+                  message: '${AppLocalizations.of(context)!.errorLoadSite}. ${error.toString()}',
                   onRetry: () => ref.invalidate(sitesProvider),
                 ),
               ),

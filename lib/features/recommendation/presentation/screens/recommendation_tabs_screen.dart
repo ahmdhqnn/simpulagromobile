@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/recommendation.dart';
@@ -44,9 +47,9 @@ class _RecommendationTabsScreenState
   @override
   Widget build(BuildContext context) {
     final tabs = <Widget>[
-      const Tab(text: 'Semua Rekomendasi'),
-      const Tab(text: 'History'),
-      const Tab(text: 'Per Fase'),
+      Tab(text: context.l10n.recommendationAllTab),
+      Tab(text: context.l10n.recommendationHistoryTab),
+      Tab(text: context.l10n.recommendationByPhaseTab),
     ];
 
     final views = <Widget>[
@@ -75,7 +78,7 @@ class _RecommendationTabsScreenState
                     ),
                     Expanded(
                       child: Text(
-                        'Rekomendasi',
+                        context.l10n.recommendationTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: context.sp(18),
@@ -119,7 +122,7 @@ class _LiveTab extends ConsumerWidget {
       skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
       loading: () => const RecommendationListSkeleton(),
-      error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
+      error: (e, _) => Center(child: Text(toUiErrorMessage(e, context.l10n))),
     );
   }
 }
@@ -136,7 +139,7 @@ class _HistoryTab extends ConsumerWidget {
       skipError: true,
       data: (list) => _RecommendationSimpleList(recommendations: list),
       loading: () => const RecommendationListSkeleton(),
-      error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
+      error: (e, _) => Center(child: Text(toUiErrorMessage(e, context.l10n))),
     );
   }
 }
@@ -160,8 +163,8 @@ class _ByPhaseTab extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             child: DropdownButtonFormField<String>(
               value: selectedPhase,
-              decoration: const InputDecoration(
-                labelText: 'Pilih Fase',
+              decoration: InputDecoration(
+                labelText: context.l10n.recommendationSelectPhase,
                 border: OutlineInputBorder(),
               ),
               items: phases
@@ -181,7 +184,7 @@ class _ByPhaseTab extends ConsumerWidget {
         ),
         Expanded(
           child: selectedPhase == null
-              ? const Center(child: Text('Pilih fase terlebih dahulu'))
+              ? Center(child: Text(context.l10n.recommendationSelectPhaseFirst))
               : recAsync.when(
                   skipLoadingOnReload: true,
                   skipLoadingOnRefresh: true,
@@ -189,7 +192,7 @@ class _ByPhaseTab extends ConsumerWidget {
                   data: (list) =>
                       _RecommendationSimpleList(recommendations: list),
                   loading: () => const RecommendationListSkeleton(),
-                  error: (e, _) => Center(child: Text(toUiErrorMessage(e))),
+                  error: (e, _) => Center(child: Text(toUiErrorMessage(e, context.l10n))),
                 ),
         ),
       ],
@@ -205,7 +208,7 @@ class _RecommendationSimpleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (recommendations.isEmpty) {
-      return const Center(child: Text('Tidak ada data'));
+      return Center(child: Text(context.l10n.recommendationNoData));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -217,7 +220,7 @@ class _RecommendationSimpleList extends StatelessWidget {
         final createdAt = r.createdAt;
         final dateText = createdAt == null
             ? null
-            : '${createdAt.day.toString().padLeft(2, '0')}/${createdAt.month.toString().padLeft(2, '0')}/${createdAt.year}';
+            : context.dateFormat('dd/MM/yyyy').format(createdAt);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -259,7 +262,7 @@ class _RecommendationSimpleList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _pill(r.priority.label, priorityColor),
+                  _pill(r.priority.localizedLabel(context.l10n), priorityColor),
                 ],
               ),
               const SizedBox(height: 8),
@@ -277,9 +280,9 @@ class _RecommendationSimpleList extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _pill(r.status.label, statusColor),
+                  _pill(r.status.localizedLabel(context.l10n), statusColor),
                   const SizedBox(width: 8),
-                  _pill(r.type.label, AppColors.info),
+                  _pill(r.type.localizedLabel(context.l10n), AppColors.info),
                   const Spacer(),
                   if (dateText != null)
                     Text(

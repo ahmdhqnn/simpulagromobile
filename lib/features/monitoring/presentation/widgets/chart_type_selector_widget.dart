@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import 'sensor_chart_widget.dart';
 
 class ChartTypeSelectorWidget extends StatelessWidget {
   final ChartType selected;
   final ValueChanged<ChartType> onSelected;
-  final String title;
+  final String? title;
 
   const ChartTypeSelectorWidget({
     super.key,
     required this.selected,
     required this.onSelected,
-    this.title = 'Tipe Chart',
+    this.title,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayTitle = title ?? context.l10n.monitoringChartTypeLabel;
     return AppCardWidget(
       radius: AppRadius.lg,
       child: Row(
         children: [
           Text(
-            title,
+            displayTitle,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(13),
@@ -41,7 +43,7 @@ class ChartTypeSelectorWidget extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _PillButton(
-                      label: _label(type),
+                      label: _label(context, type),
                       selected: isSelected,
                       onTap: () => onSelected(type),
                     ),
@@ -55,14 +57,15 @@ class ChartTypeSelectorWidget extends StatelessWidget {
     );
   }
 
-  String _label(ChartType type) {
+  String _label(BuildContext context, ChartType type) {
+    final l10n = context.l10n;
     switch (type) {
       case ChartType.line:
-        return 'Line';
+        return l10n.monitoringChartTypeLine;
       case ChartType.bar:
-        return 'Bar';
+        return l10n.monitoringChartTypeBar;
       case ChartType.area:
-        return 'Area';
+        return l10n.monitoringChartTypeArea;
     }
   }
 }

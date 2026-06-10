@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../domain/entities/user_profile.dart';
@@ -17,7 +18,7 @@ class ProfileAccountInfoWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeaderWidget(title: 'Informasi Akun'),
+          SectionHeaderWidget(title: context.l10n.profileAccountInfoTitle),
           SizedBox(height: context.rh(0.014)),
           AppCardWidget(
             width: double.infinity,
@@ -27,13 +28,13 @@ class ProfileAccountInfoWidget extends StatelessWidget {
               children: [
                 _InfoRow(
                   iconPath: 'assets/icons/mail-outline-icon.svg',
-                  label: 'Email',
+                  label: context.l10n.adminEmailLabel,
                   value: profile.userEmail ?? '-',
                 ),
                 const SizedBox(height: 3),
                 _InfoRow(
                   iconPath: 'assets/icons/phone-outline-icon.svg',
-                  label: 'Telepon',
+                  label: context.l10n.profilePhoneLabel,
                   value: profile.userPhone ?? '-',
                 ),
               ],

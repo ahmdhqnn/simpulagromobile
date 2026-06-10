@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 class SiteSelectorWidget extends StatelessWidget {
   final List sites;
@@ -40,7 +41,7 @@ class SiteSelectorWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Pilih Site',
+                  context.l10n.siteSelect,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: MediaQuery.sizeOf(ctx).width / 390 * 16,
@@ -51,9 +52,9 @@ class SiteSelectorWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               if (sites.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('Tidak ada site tersedia'),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(context.l10n.siteNoSitesAvailable),
                 )
               else
                 ListView.builder(
@@ -122,7 +123,9 @@ class SiteSelectorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final siteName =
-        selectedSite?.siteName ?? selectedSite?.siteId ?? 'Pilih Site';
+        selectedSite?.siteName ??
+        selectedSite?.siteId ??
+        context.l10n.siteSelect;
     final siteAddress = selectedSite?.siteAddress as String?;
 
     return GestureDetector(

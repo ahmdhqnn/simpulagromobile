@@ -43,7 +43,9 @@
   "siteInviteSiteIdLabel": "Site ID: {siteId}",
   "@siteInviteSiteIdLabel": {
     "placeholders": {
-      "siteId": { "type": "String" }
+      "siteId": {
+        "type": "String"
+      }
     }
   },
   "siteInviteUserIdLabel": "User ID",
@@ -91,7 +93,9 @@
   "plantActiveConflict": "This site still has an active plant \"{name}\". Harvest it before adding a new one.",
   "@plantActiveConflict": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantCreateSuccess": "Plant added successfully",
@@ -105,27 +109,35 @@
   "plantHarvestDialogMessage": "\"{name}\" will be marked as harvested. This cannot be undone.",
   "@plantHarvestDialogMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantHarvestConfirm": "Yes, harvest",
   "plantHarvestSuccess": "\"{name}\" marked as harvested",
   "@plantHarvestSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantHarvestFailed": "Failed to harvest plant",
   "plantDeleteDialogMessage": "\"{name}\" will be permanently deleted. This cannot be undone.",
   "@plantDeleteDialogMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDeleteSuccess": "\"{name}\" deleted successfully",
   "@plantDeleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDeleteFailed": "Failed to delete plant",
@@ -160,13 +172,17 @@
   "phaseDaysValue": "{count} days",
   "@phaseDaysValue": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
   "phaseProgressDone": "{percent}% complete",
   "@phaseProgressDone": {
     "placeholders": {
-      "percent": { "type": "String" }
+      "percent": {
+        "type": "String"
+      }
     }
   },
   "phaseDetailProgressTitle": "Phase Progress",
@@ -184,14 +200,18 @@
   "phaseDaysRemaining": "~{count} days left",
   "@phaseDaysRemaining": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
   "plantDetailHarvestTitle": "Confirm harvest",
   "plantDetailHarvestMessage": "Mark \"{name}\" as harvested?",
   "@plantDetailHarvestMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDetailHarvestConfirm": "Yes, harvested",
@@ -287,5 +307,1354 @@
         "type": "String"
       }
     }
-  }
+  },
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonBack": "Back",
+  "commonRetry": "Retry",
+  "commonRefresh": "Reload",
+  "commonLoading": "Loading...",
+  "commonError": "Something went wrong",
+  "commonLoadFailed": "Failed to load data",
+  "commonNoData": "No data",
+  "commonNoDataYet": "No data yet",
+  "commonActive": "Active",
+  "commonInactive": "Inactive",
+  "commonUnknown": "Unknown",
+  "commonStatus": "Status",
+  "commonPriority": "Priority",
+  "commonTotal": "Total",
+  "commonPending": "Pending",
+  "commonInProgress": "In Progress",
+  "commonCompleted": "Completed",
+  "commonFailed": "Failed",
+  "commonLow": "Low",
+  "commonMedium": "Medium",
+  "commonHigh": "High",
+  "commonCritical": "Critical",
+  "commonApplied": "Applied",
+  "commonDismissed": "Dismissed",
+  "commonExpired": "Expired",
+  "commonAll": "All",
+  "commonOther": "Other",
+  "commonGeneral": "General",
+  "commonHighPriority": "High Priority",
+  "commonActionRequired": "Action Required",
+  "commonInformation": "Information",
+  "commonLocation": "Location",
+  "commonName": "Name",
+  "commonAddress": "Address",
+  "commonCoordinates": "Coordinates",
+  "commonAltitude": "Altitude",
+  "commonCreatedAt": "Created",
+  "commonUpdatedAt": "Last Updated",
+  "commonCompletedAt": "Completed At",
+  "commonDescription": "Description",
+  "commonDate": "Date",
+  "commonUnit": "Unit",
+  "commonSearch": "Search",
+  "commonActions": "Actions",
+  "commonClose": "Close",
+  "commonPreview": "Preview",
+  "commonNone": "None",
+  "commonInvalid": "Invalid",
+  "commonRequired": "Required",
+  "siteTitle": "Site",
+  "siteSelectFirst": "Select a site first",
+  "siteSelect": "Select Site",
+  "taskTypePlanting": "Planting",
+  "taskTypeFertilizing": "Fertilizing",
+  "taskTypeHarvesting": "Harvesting",
+  "taskTypeWatering": "Watering",
+  "taskTypePestControl": "Pest Control",
+  "taskTypeMonitoring": "Monitoring",
+  "taskTypeMaintenance": "Maintenance",
+  "cropRice": "Rice",
+  "cropCorn": "Corn",
+  "cropSoybean": "Soybean",
+  "recommendationTypeNpk": "NPK Fertilization",
+  "recommendationTypePh": "pH Adjustment",
+  "recommendationAllStatuses": "All Statuses",
+  "taskAddTitle": "Add Task",
+  "taskEditTitle": "Edit Task",
+  "taskNameLabel": "Task Name",
+  "taskNameHint": "Enter task name",
+  "taskNameRequired": "Task name is required",
+  "taskDescriptionHint": "Add task description",
+  "taskTypeLabel": "Task Type",
+  "taskEmptyAll": "No tasks yet",
+  "taskEmptyPending": "No pending tasks",
+  "taskEmptyProgress": "No tasks in progress",
+  "taskEmptyCompleted": "No completed tasks yet",
+  "taskEmptyFailed": "No failed tasks",
+  "taskSiteRequiredForEditTitle": "Site not selected",
+  "taskSiteRequiredForEditMessage": "Select a site before editing a task.",
+  "taskLoadFailed": "Failed to load task",
+  "taskNoSite": "No sites yet",
+  "taskSiteIdMissing": "Site ID not found",
+  "taskUpdateSuccess": "Task updated successfully",
+  "taskCreateSuccess": "Task added successfully",
+  "taskDeleteTitle": "Delete Task",
+  "taskDeleteSuccess": "Task deleted successfully",
+  "taskMarkComplete": "Mark Complete",
+  "taskStartWork": "Start Work",
+  "taskInfoTitle": "Task Information",
+  "taskTimeDetailsTitle": "Time Details",
+  "taskTimelineTitle": "Timeline",
+  "taskCreatedTimeline": "Task Created",
+  "taskProgressTimeline": "Task In Progress",
+  "taskFailedTimeline": "Task Failed",
+  "taskCompletedTimeline": "Task Completed",
+  "taskDeleteMessage": "Are you sure you want to delete task \"{name}\"?",
+  "@taskDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskDeleteFailure": "Failed to delete task: {message}",
+  "@taskDeleteFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskUpdateStatusFailure": "Failed to update status: {message}",
+  "@taskUpdateStatusFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskStatusUpdated": "Status updated to \"{status}\"",
+  "@taskStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "taskLoadSiteFailed": "Failed to load site: {message}",
+  "@taskLoadSiteFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskUpdateFailure": "Failed to update task: {message}",
+  "@taskUpdateFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskCreateFailure": "Failed to add task: {message}",
+  "@taskCreateFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDeleteTitle": "Delete {itemName}?",
+  "@commonDeleteTitle": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDeleteIrreversible": "Deleted data cannot be restored.",
+  "commonErrorTitle": "Something Went Wrong",
+  "sensorDetailTitle": "Sensor Detail",
+  "sensorTypeLabel": "Type",
+  "sensorLoadFailed": "Failed to load sensor",
+  "recommendationConfidenceLabel": "Confidence Level",
+  "recommendationAppliedBy": "Applied by",
+  "monitoringCurrentGrowthPhase": "Current Growth Phase",
+  "recommendationConfidenceUnknown": "Unknown",
+  "recommendationConfidenceVeryHigh": "Very High",
+  "plantStatusHarvested": "Harvested",
+  "plantStatusGrowing": "Growing",
+  "dashboardTodayDailyRecap": "Today Daily Recap",
+  "dashboardLatestRecommendations": "Latest Recommendations",
+  "dashboardLatestActivity": "Latest Activity",
+  "dashboardActivityLoadFailed": "Failed to load activity",
+  "dashboardLatestNotes": "Latest Notes",
+  "dashboardNoDailyRecapToday": "No daily recap for today yet",
+  "notesEmptyForSite": "No notes for this site yet",
+  "forumTitle": "Forum",
+  "authWelcome": "Welcome to SimpulAgro",
+  "authSkip": "Skip",
+  "authNext": "Next",
+  "authGetStarted": "Get Started",
+  "onboardingMonitorTitle": "Monitor Fields\nMore Accurately",
+  "onboardingMonitorDesc": "Monitor crop conditions and soil health in real time from your smartphone, anywhere and anytime.",
+  "onboardingDataTitle": "Data-Driven\nDecisions",
+  "onboardingDataDesc": "Get accurate insights into moisture, temperature, and soil nutrients to choose the right care actions.",
+  "onboardingRiskTitle": "Minimize Crop\nFailure Risk",
+  "onboardingRiskDesc": "Receive early notifications when field anomalies occur so you can act before issues grow.",
+  "loginHeroTitle": "The Future of\nFarming, Today.",
+  "loginSubtitle": "Please sign in to your account",
+  "loginUsernameHint": "Your Username",
+  "loginPasswordHint": "Your Password",
+  "loginUsernameRequired": "Username cannot be empty",
+  "loginPasswordRequired": "Password cannot be empty",
+  "loginForgotPassword": "Forgot Password?",
+  "loginSignIn": "Sign In",
+  "loginFailedTitle": "Login Failed",
+  "loginFailedMessage": "Username or password is incorrect",
+  "authSessionExpired": "Your session has expired. Please sign in again.",
+  "siteListTitle": "Select Location",
+  "siteDetailTitle": "Location Detail",
+  "siteAddTitle": "Add Location",
+  "siteEditTitle": "Edit Location",
+  "siteEmptyTitle": "No locations yet",
+  "siteEmptyMessage": "Add your farm location",
+  "siteIdLabel": "Location ID",
+  "siteIdRequired": "Location ID cannot be empty",
+  "siteNameLabel": "Location Name",
+  "siteNameRequired": "Location name cannot be empty",
+  "siteNameMinLength": "Name must be at least 3 characters",
+  "siteAddressHint": "Example: 123 Farming Road",
+  "siteIdHint": "Example: SITE001",
+  "siteNameHint": "Example: North Field",
+  "siteAltitudeLabel": "Altitude (meters)",
+  "siteAltitudeHint": "Example: 150",
+  "siteGpsCoordinates": "GPS Coordinates",
+  "siteStatusLabel": "Location Status",
+  "siteUpdateSuccess": "Location updated successfully",
+  "siteCreateSuccess": "Location added successfully",
+  "siteLoadDataFailed": "Failed to load data: {message}",
+  "@siteLoadDataFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "siteDataTitle": "Site Data",
+  "siteOverviewTab": "Overview",
+  "siteNotesTab": "Notes",
+  "siteLocationInfo": "Location Information",
+  "siteAdditionalInfo": "Additional Information",
+  "siteInviteTooltip": "Invite Member",
+  "commonSaveChanges": "Save Changes",
+  "recommendationTitle": "Recommendations",
+  "recommendationHubTitle": "Recommendation Center",
+  "recommendationSearchHint": "Search title, description, plant, or site",
+  "recommendationEmptyTitle": "No recommendations",
+  "recommendationEmptyAll": "No recommendations available yet.\nMake sure sensors are active and sending data.",
+  "recommendationReload": "Reload",
+  "recommendationLoadFailed": "Failed to load recommendations",
+  "recommendationEmptyDataTitle": "Recommendation data is empty",
+  "recommendationEmptyForSite": "No recommendations are available for this site yet.",
+  "recommendationFilterCategory": "Category Filter",
+  "recommendationFilterStatus": "Status Filter",
+  "recommendationPriorityStat": "Priority",
+  "recommendationDismiss": "Dismiss",
+  "recommendationApply": "Apply",
+  "recommendationEmptyFiltered": "No recommendations for filter \"{filter}\".",
+  "@recommendationEmptyFiltered": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationEmptyScoped": "No data for {scope} filter with {status} status.",
+  "@recommendationEmptyScoped": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationAccuracy": "Accuracy: {level}",
+  "@recommendationAccuracy": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationStepsTitle": "Steps",
+  "recommendationParametersTitle": "Parameters",
+  "recommendationSelectPhaseFirst": "Select a phase first",
+  "recommendationLabSaved": "Recommendation saved",
+  "recommendationLabTestTitle": "[TEST] Dummy recommendation - admin only",
+  "recommendationPlantInputTitle": "Enter sensor values for plant recommendations",
+  "recommendationNpkStatusLabel": "NPK Status",
+  "recommendationNpkDoseLabel": "NPK Dose",
+  "recommendationPhStatusLabel": "pH Status",
+  "recommendationPhDoseLabel": "pH Dose",
+  "recommendationNoAdditionalDose": "No additional dose needed",
+  "recommendationBackendDataUnavailable": "Not available from backend",
+  "recommendationLabAdminTestTitle": "[TEST] Dummy recommendation - admin only",
+  "recommendationSaveFailed": "Failed: {error}",
+  "@recommendationSaveFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "recommendationAllTab": "All Recommendations",
+  "recommendationHistoryTab": "History",
+  "recommendationByPhaseTab": "By Phase",
+  "recommendationSelectPhase": "Select Phase",
+  "recommendationNoData": "No data",
+  "recommendationSensorInputTitle": "Enter sensor values for plant recommendations",
+  "commonOk": "OK",
+  "settingsNotificationsSection": "Notifications",
+  "settingsEnableNotifications": "Enable Notifications",
+  "settingsNotificationsSubtitle": "Receive notifications for alerts and updates",
+  "settingsDataSyncSection": "Data & Sync",
+  "settingsAutoRefresh": "Auto Refresh",
+  "settingsAutoRefreshSubtitle": "Refresh data automatically",
+  "settingsRefreshInterval": "Refresh Interval",
+  "settingsRefreshIntervalSeconds": "{seconds} seconds",
+  "@settingsRefreshIntervalSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearanceSection": "Appearance",
+  "settingsLanguage": "Language",
+  "settingsTheme": "Theme",
+  "settingsTemperatureUnit": "Temperature Unit",
+  "settingsAppVersion": "App Version",
+  "settingsHelpSupport": "Help & Support",
+  "settingsHelpSupportSubtitle": "Contact technical support",
+  "settingsHelpSupportMessage": "For technical help, contact the support team through the email or WhatsApp listed in the app.",
+  "settingsPrivacyPolicy": "Privacy Policy",
+  "settingsPrivacyPolicySubtitle": "Data security and usage",
+  "settingsPrivacyPolicyMessage": "Your data is stored securely and is not shared with third parties without your consent.",
+  "settingsSelectLanguage": "Select Language",
+  "settingsSelectTheme": "Select Theme",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "Follow System",
+  "settingsLanguageIndonesian": "Indonesian",
+  "settingsLanguageEnglish": "English",
+  "settingsTemperatureCelsius": "Celsius (C)",
+  "settingsTemperatureFahrenheit": "Fahrenheit (F)",
+  "profileEditTitle": "Edit Profile",
+  "profilePhotoUploadComingSoon": "Photo upload will be available soon",
+  "profileFullNameLabel": "Full Name",
+  "profileNameRequired": "Name cannot be empty",
+  "profileNameMinLength": "Name must be at least 3 characters",
+  "profileEmailRequired": "Email cannot be empty",
+  "profileEmailInvalid": "Invalid email",
+  "profilePhoneNumberLabel": "Phone Number",
+  "profilePhoneRequired": "Phone number cannot be empty",
+  "profilePhoneInvalid": "Invalid phone number",
+  "profileUpdateSuccess": "Profile updated successfully",
+  "profileAccountInfoTitle": "Account Information",
+  "profilePhoneLabel": "Phone",
+  "profileAdminSubtitle": "Manage system data and access",
+  "profileForumManagement": "Forum Management",
+  "profileForumManagementSubtitle": "Manage posts and comments",
+  "profileMyPosts": "My Posts",
+  "profileMyPostsSubtitle": "View and manage posts",
+  "profileLikedPosts": "Liked Posts",
+  "profileLikedPostsSubtitle": "Posts you liked",
+  "profileMyComments": "My Comments",
+  "profileMyCommentsSubtitle": "View all comments",
+  "profilePermissionsSection": "Access Rights",
+  "profileSignout": "Sign Out",
+  "profileLogoutTitle": "Confirm Sign Out",
+  "profileLogoutMessage": "Are you sure you want to sign out of the app?",
+  "profileLogoutConfirm": "Sign Out",
+  "commonLatitude": "Latitude",
+  "commonLongitude": "Longitude",
+  "commonPort": "Port",
+  "commonIpAddress": "IP Address",
+  "commonSaved": "Saved",
+  "siteNoSitesAvailable": "No sites available",
+  "notesNew": "New Note",
+  "notesContentHint": "Write a note...",
+  "notesSaved": "Note saved",
+  "notesSaveFailed": "Failed to save note",
+  "sensorAddTitle": "Add Sensor",
+  "sensorEmptyTitle": "No sensors yet",
+  "sensorEmptyMessage": "Add sensors to start monitoring field conditions.",
+  "sensorUnitValue": "Unit: {unit}",
+  "@sensorUnitValue": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIoTTitle": "IoT Devices",
+  "deviceAddTitle": "Add Device",
+  "deviceEditTitle": "Edit Device",
+  "deviceDetailTitle": "Device Details",
+  "deviceEmptyMessage": "No devices found",
+  "deviceIdLabel": "Device ID",
+  "deviceIdRequired": "Device ID is required",
+  "deviceNameLabel": "Device Name",
+  "deviceNameRequired": "Device name is required",
+  "deviceNumberIdLabel": "Number ID",
+  "deviceInformationTitle": "Device Information",
+  "deviceStatusActive": "Active Status",
+  "deviceCreateSuccess": "Device added successfully",
+  "deviceUpdateSuccess": "Device updated successfully",
+  "monitoringMapsNoDeviceLocations": "No device locations to display yet",
+  "monitoringDeviceSensorList": "Device & Sensor List",
+  "monitoringNoDevicesAvailable": "No devices available yet",
+  "monitoringAnalyticsOverview": "Analytics Overview",
+  "monitoringPlantStatisticsSection": "Plant Statistics",
+  "monitoringPlantRecommendationSection": "Plant Recommendations",
+  "monitoringDeviceSensorOverviewSection": "Device & Sensor Overview",
+  "monitoringMonthlySensorRecap": "Monthly Sensor Recap",
+  "monitoringRawParameterUnavailable": "Sensor parameter is unavailable in raw data",
+  "monitoringAdminOnlyMessage": "The admin tab is only available to users with the admin role.",
+  "monitoringReadCorrectionTitle": "Correct Sensor Read",
+  "monitoringReadCorrectionDescription": "Update the read value or status for the active site",
+  "monitoringSaving": "Saving...",
+  "monitoringSaveCorrection": "Save Correction",
+  "monitoringGenerateDailyRecapTitle": "Generate Daily Recap",
+  "monitoringGenerateDailyRecapDescription": "Reprocess sensor aggregation for the selected date",
+  "monitoringProcessing": "Processing...",
+  "monitoringGenerateRecap": "Generate Recap",
+  "monitoringReadIdLabel": "Read ID",
+  "monitoringReadValueLabel": "Read Value (optional)",
+  "monitoringReadStsLabel": "Read Status (optional)",
+  "monitoringReadIdRequired": "read_id is required",
+  "monitoringReadValueMustBeNumber": "read_value must be a number",
+  "monitoringReadValueOrStatusRequired": "Fill read_value or read_sts",
+  "monitoringReadUpdated": "Read updated",
+  "monitoringReadUpdateFailed": "Failed to update read",
+  "monitoringDailyRecapTriggered": "Recap processed for {day}",
+  "@monitoringDailyRecapTriggered": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringDailyRecapTriggerFailed": "Failed to trigger recap",
+  "monitoringRefreshActiveTab": "Refresh active tab",
+  "monitoringNoDeviceStats": "No device statistics yet",
+  "monitoringTotalDevice": "Total devices",
+  "monitoringTotalSensor": "Total sensors",
+  "monitoringShowLess": "Show Less",
+  "monitoringShowAllCount": "Show All ({count})",
+  "@monitoringShowAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringPlantRecommendationEmpty": "No recommendations for this site yet",
+  "monitoringRecommendationActionCount": "{count} actions",
+  "@monitoringRecommendationActionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRecommendationMoreCount": "+{count} more recommendations",
+  "@monitoringRecommendationMoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRecommendationSiteTitle": "Site Recommendation",
+  "monitoringRecommendationCachedSubtitle": "Based on saved sensor data",
+  "monitoringRecommendationActiveSiteSubtitle": "Based on active site sensors",
+  "monitoringNpkAdjustment": "NPK Adjustment",
+  "monitoringSoilPhAdjustment": "Soil pH Adjustment",
+  "monitoringSoilPhLabel": "Soil pH",
+  "monitoringNoActiveAlarmTitle": "No active alarms",
+  "monitoringNoActiveAlarmDescription": "All sensors are running normally",
+  "monitoringAlarmSummaryTitle": "Alarm Summary",
+  "monitoringAlarmSummaryDescription": "{total} total alarms recorded",
+  "@monitoringAlarmSummaryDescription": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringLatestAlarm": "Latest Alarm",
+  "monitoringAlarmLast24Hours": "24-hour Alarm",
+  "monitoringTotalAlarm": "Total Alarms",
+  "monitoringAlarmDetected": "Alarm detected",
+  "forumMyPosts": "My Posts",
+  "forumLikedPosts": "Liked Posts",
+  "forumMyComments": "My Comments",
+  "forumLiked": "Liked",
+  "forumNoPostsTitle": "No posts yet",
+  "forumNoPostsMessage": "Be the first to create a post in the community forum",
+  "forumCreatePost": "Create Post",
+  "forumLoadPostsFailed": "Failed to load posts",
+  "forumManagePosts": "Manage Posts",
+  "forumEditPost": "Edit Post",
+  "forumDeletePost": "Delete Post",
+  "forumDeletePostConfirm": "Are you sure you want to delete this post?",
+  "forumDeletePostPermanent": "This post will be deleted permanently.",
+  "forumPostDeleted": "Post deleted successfully",
+  "forumSharePostTitle": "Share Post",
+  "forumSharePostMessage": "Share this post with your friends or community.",
+  "forumPostShared": "Post shared successfully",
+  "forumFirstPostMessage": "Create your first post to share with the community.",
+  "forumPostCount": "{count} posts",
+  "@forumPostCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumMyPostsSummary": "Posts you created in the community forum.",
+  "forumLikedPostsEmptyTitle": "No liked posts yet",
+  "forumLikedPostsEmptyMessage": "Posts you like will be saved here.",
+  "forumLikedPostCount": "{count} liked posts",
+  "@forumLikedPostCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumLikedPostsSummary": "Posts you have liked.",
+  "forumNoCommentsTitle": "No comments yet",
+  "forumNoCommentsMessage": "Your comments on posts will appear here.",
+  "forumCommentCount": "{count} comments",
+  "@forumCommentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumMyCommentsSummary": "Comments you wrote on forum posts.",
+  "forumLoadCommentsFailed": "Failed to load comments",
+  "forumNoTitle": "Untitled",
+  "forumOpenPostHint": "Tap to open post",
+  "forumCommentActions": "Comment actions",
+  "forumEdited": "Edited",
+  "forumManageComments": "Manage Comments",
+  "forumEditComment": "Edit Comment",
+  "forumDeleteComment": "Delete Comment",
+  "forumWriteComment": "Write a comment",
+  "forumCommentUpdated": "Comment updated",
+  "forumDeleteCommentPermanent": "This comment will be deleted permanently.",
+  "forumCommentDeleted": "Comment deleted",
+  "forumLikesCount": "{count} likes",
+  "@forumLikesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumCommentsCount": "{count} comments",
+  "@forumCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumSharesCount": "{count} shares",
+  "@forumSharesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumLike": "Like",
+  "forumComment": "Comment",
+  "forumShare": "Share",
+  "forumDislike": "Dislike",
+  "forumNoReactions": "No reactions yet",
+  "forumAddPost": "Add Post",
+  "forumSelectImage": "Select Image",
+  "forumPickFromGallery": "Choose from Gallery",
+  "forumTakePhoto": "Take Photo",
+  "forumDeleteImage": "Delete Image",
+  "forumPickImageFailed": "Failed to choose image: {message}",
+  "@forumPickImageFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumSiteRequiredMain": "Select a site first on the main page",
+  "forumSiteNotSelectedTitle": "Site not selected",
+  "forumLoadDataFailed": "Failed to load data: {message}",
+  "@forumLoadDataFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumPostTitleLabel": "Title",
+  "forumPostTitleHint": "Enter post title",
+  "forumPostTitleRequired": "Title cannot be empty",
+  "forumPostTitleMinLength": "Title must be at least 3 characters",
+  "forumPostContentLabel": "Post Content",
+  "forumPostContentHint": "Write the information you want to share",
+  "forumPostContentRequired": "Content cannot be empty",
+  "forumPostContentMinLength": "Content must be at least 10 characters",
+  "forumMediaLabel": "Media",
+  "forumPostGuideline": "Keep your post clear, relevant, and aligned with community guidelines.",
+  "forumAddImage": "Add image",
+  "forumImageOptionalHint": "Optional. Posts without images can still be published.",
+  "forumChoose": "Choose",
+  "forumNewImageReady": "New image is ready to upload",
+  "forumActivePostImage": "Active post image",
+  "forumChange": "Change",
+  "forumPostCreated": "Post added successfully",
+  "forumPostUpdated": "Post updated successfully",
+  "forumSelectActiveSiteBeforePosting": "Select an active site on the dashboard before creating a forum post.",
+  "forumSendCommentFailed": "Failed to send comment: {message}",
+  "@forumSendCommentFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumFirstCommentMessage": "Be the first to comment",
+  "forumReactions": "Reactions",
+  "forumDeleteCommentConfirm": "Are you sure you want to delete this comment?",
+  "adminAccessDeniedTitle": "Access Denied",
+  "adminFeatureOnlyMessage": "Admin features can only be accessed by Admin users.",
+  "adminNoPagePermissionMessage": "You do not have permission to access this page.",
+  "adminUsersTitle": "Users",
+  "adminRoleTitle": "Role",
+  "adminUnitTitle": "Unit",
+  "adminDeviceSensorTitle": "Device Sensor",
+  "adminPermissionTitle": "Permission",
+  "adminNoPermissionsAvailable": "No permissions available",
+  "adminLoadPermissionsFailed": "Failed to load permissions: {message}",
+  "@adminLoadPermissionsFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNoThresholdData": "No threshold data yet",
+  "adminNoUsers": "No users yet",
+  "adminNoUsersMessage": "Add users to access the system",
+  "adminNoUnits": "No units yet",
+  "adminNoUnitsMessage": "Add measurement units for sensors",
+  "adminNoDevices": "No devices yet",
+  "adminNoDevicesMessage": "Add devices to start monitoring",
+  "adminNoSensors": "No sensors yet",
+  "adminNoSensorsMessage": "Add sensors to start monitoring",
+  "adminNoRoles": "No roles yet",
+  "adminNoRolesMessage": "Add roles to manage access rights",
+  "adminNoPermissions": "No permissions yet",
+  "adminNoPermissionsMessage": "No permissions are registered",
+  "adminNoPlants": "No plants yet",
+  "adminNoPlantsMessage": "Add plants to start monitoring",
+  "adminNoMappings": "No mappings yet",
+  "adminNoMappingsMessage": "Add device-sensor mappings for monitoring",
+  "adminPlantActionsTooltip": "Plant actions",
+  "adminEditMapping": "Edit Mapping",
+  "adminHarvestPlantTitle": "Harvest Plant?",
+  "adminDeleteSuccess": "{item} deleted successfully",
+  "@adminDeleteSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDeleteFailed": "Failed to delete {item}",
+  "@adminDeleteFailed": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRoleDeleteWarning": "All users with this role will lose access.",
+  "adminUnitReadonlyMessage": "Unit data is read-only. Updating and deleting units is not supported by the backend system at this time.",
+  "adminTotalPermissions": "{count} Total Permissions",
+  "@adminTotalPermissions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminResourceGroupCount": "{count} Resource Groups",
+  "@adminResourceGroupCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPermissionCount": "{count} permissions",
+  "@adminPermissionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPermissionBadge": "{count} Permissions",
+  "@adminPermissionBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminMappingTab": "Mapping",
+  "adminThresholdValuesTab": "Threshold Values",
+  "commonViewDetail": "View Detail",
+  "commonOffline": "Offline",
+  "commonDays": "{count} days",
+  "@commonDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonMinCharacters": "At least {count} characters",
+  "@commonMinCharacters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationSiteTitle": "Site Recommendations",
+  "recommendationSiteSubtitle": "Selected site condition and required actions",
+  "recommendationSiteDescription": "General analysis of site conditions and required actions.",
+  "recommendationPlantTitle": "Plant Recommendations",
+  "recommendationPlantSubtitle": "Active plants at the selected site",
+  "recommendationPlantDescription": "Latest recommendations based on active plant data.",
+  "recommendationPlantLoadFailed": "Failed to load plant recommendations",
+  "recommendationPhaseTitle": "Phase Recommendations",
+  "recommendationPhaseDescription": "Action suggestions specific to the active growth phase.",
+  "recommendationPhaseLoadFailed": "Failed to load phase recommendations",
+  "recommendationActivePhaseLoadFailed": "Failed to load active phase",
+  "recommendationPhaseNoActive": "No active phase yet",
+  "recommendationPhaseUnavailable": "Active phase is not available yet",
+  "recommendationPhaseAvailableForActivePlant": "Phase recommendations are available for active plants.",
+  "recommendationPhaseNoneForPlant": "No active phase for this plant yet.",
+  "recommendationPhaseLabel": "Phase: {phase}",
+  "@recommendationPhaseLabel": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationHstLabel": "DAP {hst}",
+  "@recommendationHstLabel": {
+    "placeholders": {
+      "hst": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDailySummaryTitle": "Daily Summary",
+  "monitoringDailyAggregationEmpty": "No aggregation data for this range yet",
+  "monitoringLast30Days": "Last 30 days",
+  "monitoringCustomRange": "Custom range",
+  "monitoringSensorCount": "{count} sensors",
+  "@monitoringSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRegisteredSensorCount": "{count} registered sensors",
+  "@monitoringRegisteredSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDataPointCount": "{count} data points",
+  "@monitoringDataPointCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringActionRequiredDescription": "0 sensors available, no configuration yet. Configure sensors to start monitoring",
+  "monitoringEnvironmentSubtitle": "Condition score for sensors at the active site",
+  "monitoringNoSensorsConfiguredStatus": "No sensors are available yet. Configure sensors to start monitoring.",
+  "monitoringSensorsStableStatus": "{total} sensors available, monitoring conditions are stable.",
+  "@monitoringSensorsStableStatus": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringSensorsAttentionStatus": "{total} sensors available, some parameters need attention.",
+  "@monitoringSensorsAttentionStatus": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringHealthNeedsSetup": "Needs Setup",
+  "monitoringHealthExcellent": "Excellent",
+  "monitoringHealthExcellentDesc": "Optimal environmental conditions for plant growth",
+  "monitoringHealthGood": "Good",
+  "monitoringHealthGoodDesc": "Environmental conditions support plant growth",
+  "monitoringHealthFair": "Fair",
+  "monitoringHealthFairDesc": "Some parameters need attention",
+  "monitoringHealthNeedsAttention": "Needs Attention",
+  "monitoringHealthNeedsAttentionDesc": "Environmental conditions require immediate improvement",
+  "monitoringSensorsMonitoredCount": "{count} sensors monitored",
+  "@monitoringSensorsMonitoredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agroParameterScoreTitle": "Parameter Scores",
+  "agroRecVentilationLowerHumidity": "Increase ventilation to reduce humidity",
+  "agroRecIncreaseIrrigationHumidity": "Increase watering and air humidity",
+  "agroRecIncreaseWateringFrequency": "Increase watering frequency",
+  "agroRecHighEtcCheckSoil": "High ETC, check soil moisture and irrigation",
+  "agroRecIntenseMonitoring": "Conduct more intensive monitoring",
+  "agroRecConsultAgronomist": "Consult with an agronomist",
+  "monitoringSensorByTypeTitle": "Sensors by Type",
+  "monitoringNoRegisteredSensors": "No registered sensors yet",
+  "monitoringNoSensorData": "No sensor data yet",
+  "monitoringDistributionByTypeTitle": "Distribution by Type",
+  "monitoringPlantCompositionSubtitle": "Active site plant composition",
+  "monitoringAverageGrowthPhase": "Average Growth Phase",
+  "agroSelectSiteMessage": "Select a site first to view agro data (VDP, GDD, ETC).",
+  "agroActionRecommendationTitle": "Action Recommendations",
+  "agroPlantingPhaseTitle": "Planting Phase",
+  "agroInformationTitle": "Information",
+  "agroAboutTitle": "About Agro Indicator",
+  "agroVdpDescription": "Measures the water vapor pressure deficit. Optimal value: 0.4-1.2 kPa. Low VDP (<0.4) increases disease risk, while high VDP (>1.6) causes water stress.",
+  "agroGddDescription": "Accumulated temperature needed by plants to grow. Used to predict growth phases and harvest timing.",
+  "agroEtcDescription": "Plant water requirement based on evaporation and transpiration. Helps determine optimal watering schedule and volume.",
+  "agroVdpTitle": "Vapor Pressure Deficit",
+  "agroGddTitle": "Growing Degree Days",
+  "agroEtcTitle": "Evapotranspiration",
+  "agroSmartRecommendation": "Smart Recommendation",
+  "agroNoCriticalRecommendations": "No critical recommendations at this time",
+  "agroRecommendationSubtitle": "Actions based on AI & Data",
+  "agroWateringRecommendation": "Watering Recommendation",
+  "agroWaterRequirement": "Crop Water Requirement",
+  "agroEtcTrend7Days": "ETC Trend (7 Days)",
+  "agroDailyClimateDetail": "Daily Climate Details",
+  "agroTableDate": "Date",
+  "agroTableTemp": "Temp (Min-Max)",
+  "agroTableRh": "RH (Min-Max)",
+  "agroEtcDataUnavailable": "ETC data is unavailable",
+  "agroUnitMmPerDay": "mm/day",
+  "agroUnitCoefficient": "coefficient",
+  "agroWaterNeedsLabel": "Water Needs",
+  "agroRecWaterNeedsLow": "Low water requirement. Minimal or no watering required.",
+  "agroRecWaterNeedsMedium": "Medium water requirement. Perform routine watering according to schedule.",
+  "agroRecWaterNeedsHigh": "High water requirement. Increase watering frequency.",
+  "agroRecWaterNeedsVeryHigh": "Very high water requirement! Intensive watering required.",
+  "agroStatusEtc": "ETC Status",
+  "agroRecEtcLow": "Low ETC. Plant evapotranspiration requirement is light.",
+  "agroRecEtcMedium": "ETC is in the medium range. Monitor moisture and irrigation schedules.",
+  "agroRecEtcHigh": "High ETC. Check soil moisture and irrigation readiness.",
+  "adminLoadingTitle": "Loading...",
+  "adminEditUserTitle": "Edit User",
+  "adminAddUserTitle": "Add User",
+  "adminEditUnitTitle": "Edit Unit",
+  "adminAddUnitTitle": "Add Unit",
+  "adminEditDeviceTitle": "Edit Device",
+  "adminAddDeviceTitle": "Add Device",
+  "adminEditSensorTitle": "Edit Sensor",
+  "adminAddSensorTitle": "Add Sensor",
+  "adminEditPlantTitle": "Edit Plant",
+  "adminAddPlantTitle": "Add Plant",
+  "adminEditRoleTitle": "Edit Role",
+  "adminAddRoleTitle": "Add Role",
+  "adminEditDeviceSensorTitle": "Edit Device Sensor",
+  "adminAddDeviceSensorTitle": "Add Device Sensor",
+  "adminSavingChanges": "Saving changes...",
+  "adminCreatingUser": "Creating user...",
+  "adminCreatingUnit": "Creating unit...",
+  "adminCreatingDevice": "Creating device...",
+  "adminCreatingSensor": "Creating sensor...",
+  "adminCreatingPlant": "Creating plant...",
+  "adminCreatingRole": "Creating role...",
+  "adminCreatingMapping": "Creating mapping...",
+  "adminAccountInfoSection": "Account Information",
+  "adminSecuritySection": "Security",
+  "adminRoleStatusSection": "Role & Status",
+  "adminBasicInfoSection": "Basic Information",
+  "adminUnitInfoSection": "Unit Information",
+  "adminPlantInfoSection": "Plant Information",
+  "adminPlantingDateSection": "Planting Date",
+  "adminRoleInfoSection": "Role Information",
+  "adminRolePermissionSection": "Role Permissions",
+  "adminConnectionSection": "Connection",
+  "adminConnectionSubtitle": "Optional - device IP address and port",
+  "adminCoordinatesSection": "Coordinates",
+  "adminDeviceCoordinateSubtitle": "Optional - for mapping the device location",
+  "adminSensorCoordinateSubtitle": "Optional - for mapping the sensor location",
+  "adminConfigurationSection": "Configuration",
+  "adminStatusSection": "Status",
+  "adminMappingInfoSection": "Mapping Information",
+  "adminThresholdSection": "Threshold",
+  "adminThresholdSubtitle": "Sensor value threshold configuration",
+  "adminUserIdLabel": "User ID",
+  "adminUserIdHint": "Example: USER001",
+  "adminUserIdRequired": "User ID is required",
+  "adminFullNameHint": "Example: John Doe",
+  "adminEmailHint": "Example: user@example.com",
+  "adminPhoneHint": "Example: 081234567890",
+  "adminRoleLabel": "Role",
+  "adminSelectRoleHint": "Select a role",
+  "adminRoleRequired": "Role is required",
+  "adminSelectStatusHint": "Select a status",
+  "adminPasswordLabel": "Password",
+  "adminPasswordHint": "At least 6 characters",
+  "adminPasswordRequired": "Password is required",
+  "adminPasswordMinLength": "Password must be at least 6 characters",
+  "adminUnitIdLabel": "Unit ID",
+  "adminUnitIdHint": "Example: TEMP_C",
+  "adminUnitIdRequired": "Unit ID is required",
+  "adminUnitNameLabel": "Unit Name",
+  "adminUnitNameHint": "Example: Celsius",
+  "adminUnitNameRequired": "Unit name is required",
+  "adminUnitSymbolLabel": "Symbol",
+  "adminUnitSymbolHint": "Example: C",
+  "adminUnitSymbolRequired": "Symbol is required",
+  "adminUnitDescriptionHint": "Example: Temperature unit in degrees Celsius",
+  "adminSensorIdLabel": "Sensor ID",
+  "adminSensorIdHint": "Example: soil_nitro",
+  "adminSensorIdRequired": "Sensor ID is required",
+  "adminSensorNameLabel": "Sensor Name",
+  "adminSensorNameHint": "Example: Nitrogen Sensor",
+  "adminSensorNameRequired": "Sensor name is required",
+  "adminSensorAddressLabel": "Sensor Address",
+  "adminSensorAddressHint": "Example: 0x10",
+  "adminSensorLocationHint": "Example: Soil Layer 1",
+  "adminSelectDeviceOptional": "Select a device (optional)",
+  "adminNoDevice": "No device",
+  "adminLoadDeviceFailed": "Failed to load devices",
+  "adminDeviceRequired": "Device is required",
+  "adminDeviceIdHint": "Example: DEV001",
+  "adminDeviceNameHint": "Example: Main Gateway",
+  "adminDeviceLocationHint": "Example: Greenhouse A",
+  "adminIpInvalid": "Invalid IP",
+  "adminPlantIdLabel": "Plant ID",
+  "adminServerIdHint": "Server ID",
+  "adminPlantNameLabel": "Plant Name",
+  "adminPlantNameHint": "Example: Rice Field Block A",
+  "adminPlantNameRequired": "Plant name is required",
+  "adminCropTypeLabel": "Plant Type",
+  "adminSelectCropTypeHint": "Select a plant type",
+  "adminCropTypeRequired": "Plant type is required",
+  "adminVarietasIdLabel": "Variety ID",
+  "adminVarietasIdHint": "Example: VAR_001",
+  "adminVarietasIdRequired": "Variety ID is required",
+  "adminChooseVarietasFromList": "Choose from the variety list",
+  "adminVarietasLabel": "Variety",
+  "adminSelectVarietasHint": "Select a variety from the backend",
+  "adminVarietasRequired": "Variety is required",
+  "adminVarietasLoadFailedManual": "Failed to load varieties. Use manual input.",
+  "adminManualIdInput": "Manual ID input",
+  "adminSelectPlantingDate": "Select planting date",
+  "adminPlantingDateRequired": "Planting date is required",
+  "adminRoleIdLabel": "Role ID",
+  "adminRoleIdHint": "Example: ROLE001",
+  "adminRoleIdRequired": "Role ID is required",
+  "adminRoleNameLabel": "Role Name",
+  "adminRoleNameHint": "Example: Admin, Operator, Viewer",
+  "adminRoleNameRequired": "Role name is required",
+  "adminRoleDescriptionHint": "Example: Role for system administrators",
+  "adminDsIdLabel": "DS ID",
+  "adminDsIdHint": "Example: DS001",
+  "adminDsIdRequired": "DS ID is required",
+  "adminMappingNameHint": "Example: Nitrogen Sensor DEV001",
+  "adminNameRequired": "Name is required",
+  "adminSelectDeviceHint": "Select a device",
+  "adminSelectSensorOptional": "Select a sensor (optional)",
+  "adminSelectUnitOptional": "Select a unit (optional)",
+  "adminLoadSensorFailed": "Failed to load sensors",
+  "adminLoadUnitFailed": "Failed to load units",
+  "adminNoSelection": "None",
+  "adminAddressLabel": "Address",
+  "adminSequenceLabel": "Order (Seq)",
+  "adminSequenceHint": "Example: 1",
+  "adminNormalValueLabel": "Normal Value",
+  "adminExampleDecimalHint": "Example: 25.0",
+  "adminMinNormalLabel": "Min Normal",
+  "adminMaxNormalLabel": "Max Normal",
+  "adminMinAbsoluteLabel": "Min Absolute",
+  "adminMaxAbsoluteLabel": "Max Absolute",
+  "adminMinWarningLabel": "Min Warning",
+  "adminMaxWarningLabel": "Max Warning",
+  "adminStatusUserLabel": "User Status",
+  "adminStatusUnitLabel": "Unit Status",
+  "adminStatusDeviceLabel": "Device Status",
+  "adminStatusSensorLabel": "Sensor Status",
+  "adminStatusPlantLabel": "Plant Status",
+  "adminStatusRoleLabel": "Role Status",
+  "adminStatusMappingLabel": "Mapping Status",
+  "adminUpdateSuccess": "{item} updated successfully",
+  "@adminUpdateSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCreateSuccess": "{item} added successfully",
+  "@adminCreateSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSaveFailed": "Failed to save {item}",
+  "@adminSaveFailed": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMinNormalGreaterThanMaxNormal": "Min Normal cannot be greater than Max Normal",
+  "adminMinAbsoluteGreaterThanMaxAbsolute": "Min Absolute cannot be greater than Max Absolute",
+  "adminMinWarningGreaterThanMaxWarning": "Min Warning cannot be greater than Max Warning",
+  "adminMinAbsoluteGreaterThanMinNormal": "Min Absolute cannot be greater than Min Normal",
+  "adminMinAbsoluteGreaterThanMinWarning": "Min Absolute cannot be greater than Min Warning",
+  "adminMaxAbsoluteLessThanMaxNormal": "Max Absolute cannot be less than Max Normal",
+  "adminMaxAbsoluteLessThanMaxWarning": "Max Absolute cannot be less than Max Warning",
+  "adminMinWarningGreaterThanMinNormal": "Min Warning cannot be greater than Min Normal",
+  "adminMaxWarningLessThanMaxNormal": "Max Warning cannot be less than Max Normal",
+  "adminFullNameLabel": "Full Name",
+  "adminEmailLabel": "Email",
+  "adminPhoneLabel": "Phone Number",
+  "adminEmailInvalid": "Invalid email format",
+  "adminPhoneInvalid": "Invalid phone number",
+  "roleAdmin": "Admin",
+  "roleUser": "User",
+  "roleViewer": "Viewer",
+  "adminIdPrefix": "ID: {id}",
+  "@adminIdPrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDevicePrefix": "Device: {id}",
+  "@adminDevicePrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSensorPrefix": "Sensor: {id}",
+  "@adminSensorPrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDeviceLabel": "Device",
+  "adminSensorLabel": "Sensor",
+  "adminUnitLabel": "Unit",
+  "adminDeviceIdLabel": "Device ID",
+  "adminDeviceIdRequired": "Device ID is required",
+  "adminDeviceNameLabel": "Device Name",
+  "adminDeviceNameRequired": "Device name is required",
+  "adminIpAddressLabel": "IP Address",
+  "adminPortLabel": "Port",
+  "adminAltitudeLabel": "Altitude (meters)",
+  "commonUnknown": "Unknown",
+  "recommendationHstRangeLabel": "DAP {min}-{max}",
+  "@recommendationHstRangeLabel": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adminDsDevSubtitle": "DS ID: {dsId} · Device ID: {devId}",
+  "@adminDsDevSubtitle": {
+    "placeholders": {
+      "dsId": {
+        "type": "String"
+      },
+      "devId": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSensIdBadge": "sens_id: {id}",
+  "@adminSensIdBadge": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminUnitBadge": "unit: {id}",
+  "@adminUnitBadge": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "sensorTypeAirTemperature": "Air Temperature",
+  "sensorTypeAirHumidity": "Air Humidity",
+  "sensorTypeSoilMoisture": "Soil Moisture",
+  "sensorTypeSoilPh": "Soil pH",
+  "sensorTypeSoilNitrogen": "Soil Nitrogen",
+  "sensorTypeSoilPhosphorus": "Soil Phosphorus",
+  "sensorTypeSoilPotassium": "Soil Potassium",
+  "sensorTypeLightIntensity": "Light Intensity",
+  "sensorTypeAtmosphericPressure": "Atmospheric Pressure",
+  "sensorTypeWindSpeed": "Wind Speed",
+  "agroVdpDeficitTitle": "Vapor Pressure Deficit",
+  "agroVdpValueLabel": "VPD Value",
+  "agroVdpRangeLabel": "VPD Range",
+  "agroVdpDetailTitle": "VPD Detail",
+  "agroVdpUnavailable": "VPD data unavailable",
+  "agroVdpStatusLow": "Too Low",
+  "agroVdpStatusOptimal": "Optimal",
+  "agroVdpStatusWarning": "Warning",
+  "agroVdpStatusHigh": "Too High",
+  "agroVdpDescLow": "Relative humidity is high. Increase ventilation to lower disease risk.",
+  "agroVdpDescOptimal": "Vapor pressure deficit condition is in the ideal range.",
+  "agroVdpDescWarning": "Plant is starting to lose water faster. Monitor irrigation and humidity.",
+  "agroVdpDescHigh": "High vapor pressure deficit. Increase watering and maintain humidity of planting area.",
+  "agroGddSuhuAccumLabel": "Accumulated Growth Temperature",
+  "agroGddTotalLabel": "Total GDD",
+  "agroGddAccumLabel": "Accumulation",
+  "agroGddDailyChartTitle": "Daily GDD (Last 7 Days)",
+  "agroGddDetailTitle": "Daily GDD Details",
+  "agroGddUnavailable": "GDD data unavailable",
+  "plantGrowthPhaseTitle": "Growth Phase",
+  "plantActivePhaseDesc": "Current active phase of the plant",
+  "plantTimeProgressLabel": "Time Progress",
+  "plantGrowthPhaseUnavailable": "Growth phase data not available yet",
+  "commonNotAvailableYet": "None",
+  "agroGddTrackingNoData": "No GDD data yet",
+  "agroGddTrackingNoDataDesc": "GDD data will be fetched from Agro API after active plants are registered in this site.",
+  "agroGddTrackingSummaryTitle": "GDD Summary",
+  "agroGddTrackingTotalReal": "Total GDD (Real)",
+  "agroGddTrackingFieldProgress": "Field Progress",
+  "agroGddTrackingDurationTitle": "DAP Duration by Phase",
+  "agroGddTrackingDurationSubtitle": "Days After Planting duration by growth phase",
+  "agroGddTrackingDurationDetailTitle": "Detailed Duration by Phase",
+  "agroGddTrackingDurationDetailSubtitle": "Detailed breakdown of duration for each growth phase",
+  "agroGddTrackingTablePhase": "Phase",
+  "agroGddTrackingTableCurrentHst": "Current DAP",
+  "agroGddTrackingTableDuration": "Duration",
+  "profilePermissionsLoadError": "Failed to load permissions",
+  "profilePermissionsNoAccess": "No Access",
+  "profilePermissionsNoAccessDesc": "No permissions available yet",
+  "profilePermissionsSystemAccess": "System Permissions",
+  "permissionActionRead": "Read",
+  "permissionActionCreate": "Create",
+  "permissionActionUpdate": "Update",
+  "permissionActionDelete": "Delete",
+  "permissionActionManage": "Manage",
+  "sensorEditTitle": "Edit Sensor",
+  "sensorNameLabel": "Sensor Name",
+  "sensorNameRequired": "Sensor name is required",
+  "sensorTypeLabel": "Sensor Type",
+  "sensorTypeRequired": "Sensor type is required",
+  "sensorUnitRequired": "Unit is required",
+  "sensorUnitHint": "Example: °C, %, pH",
+  "sensorDescLabel": "Description (Optional)",
+  "sensorDescHint": "Enter sensor description",
+  "sensorStatusActiveLabel": "Active Status",
+  "sensorStatusActiveDesc": "Sensor active",
+  "sensorStatusInactiveDesc": "Sensor inactive",
+  "sensorUpdatedSuccess": "Sensor updated successfully",
+  "sensorCreatedSuccess": "Sensor added successfully",
+  "commonOptimal": "Optimal",
+  "commonWarning": "Warning",
+  "commonNitrogen": "Nitrogen",
+  "commonPhosphorus": "Phosphorus",
+  "commonPotassium": "Potassium",
+  "monitoringActionRequiredTitle": "Action Required",
+  "monitoringNoSensorConfiguredDesc": "0 sensors available, no configuration yet. Please configure sensors to start monitoring",
+  "monitoringPlantCompositionTitle": "Distribution by Type",
+  "monitoringChartTypeLabel": "Chart Type",
+  "monitoringChartTypeLine": "Line",
+  "monitoringChartTypeBar": "Bar",
+  "monitoringChartTypeArea": "Area",
+  "monitoringDailyNoAggregationDesc": "No aggregation data for this range",
+  "monitoringRangeToday": "Today",
+  "monitoringRangeLast7Days": "Last 7 days",
+  "monitoringRangeLast30Days": "Last 30 days",
+  "monitoringRangeCustom": "Custom range",
+  "monitoringSensorCount": "{count} {count, plural, =1{sensor} other{sensors}}",
+  "@monitoringSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDataPointsCount": "{count} {count, plural, =1{data point} other{data points}}",
+  "@monitoringDataPointsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringFilterThirtyDay": "30 Days",
+  "monitoringFilterCustom": "Custom",
+  "monitoringRangeLabel": "Range",
+  "monitoringActiveAlarmsCount": "{count} Active {count, plural, =1{Alarm} other{Alarms}}",
+  "@monitoringActiveAlarmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDetectedInLast24Hours": "Detected in the last 24 hours",
+  "monitoringOtherAlarmsCount": "+ {count} other {count, plural, =1{alarm} other{alarms}}",
+  "@monitoringOtherAlarmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringCloseLog": "Close Log",
+  "monitoringShowAllLogsCount": "Show All Logs ({count})",
+  "@monitoringShowAllLogsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringChartDescLine": "Sensor trend over time",
+  "monitoringChartDescBar": "Sensor value comparison over time",
+  "monitoringChartDescArea": "Sensor changes with area trend",
+  "agroIndicatorLabel": "Agro Indicator",
+  "environmentalHealthScore": "Environmental Health Score",
+  "gddCDaysUnit": "C-days",
+  "etcLitrePerSqmUnit": "L/m²",
+  "commonFair": "Fair",
+  "commonPoor": "Poor",
+  "dashboardWelcomeUser": "Hello, {userName}",
+  "@dashboardWelcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardSelectSitePrompt": "Select a site to load monitoring and recommendation data",
+  "dashboardNoSensorReadings": "No sensor readings yet",
+  "dashboardActiveSensorsCount": "{count} Active {count, plural, =1{Sensor} other{Sensors}}",
+  "@dashboardActiveSensorsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "dashboardRecentActivities": "Recent Activities",
+  "dashboardNoActivities": "No activities yet",
+  "dashboardTaskSummaryTitle": "Task Summary",
+  "dashboardCompletionRateLabel": "Completion Rate",
+  "dashboardShowOtherSensors": "Show {count} other {count, plural, =1{sensor} other{sensors}}",
+  "@dashboardShowOtherSensors": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "dashboardAverageLabel": "Avg",
+  "commonViewAll": "View All",
+  "commonHide": "Hide",
+  "timeJustNow": "Just now",
+  "timeMinutesAgo": "{count} {count, plural, =1{minute} other{minutes}} ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "timeHoursAgo": "{count} {count, plural, =1{hour} other{hours}} ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "timeDaysAgo": "{count} {count, plural, =1{day} other{days}} ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "recommendationReasonLabel": "Reason",
+  "profilePermissionsCount": "{count, plural, =1{1 permission} other{{count} permissions}}",
+  "@profilePermissionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorNetwork": "Connection unstable. Please check your internet connection and try again.",
+  "errorServer": "The server cannot load data at the moment. Please try again later.",
+  "errorSessionExpired": "Your session has expired. Please log in again.",
+  "errorDataNotFound": "No data found for this site.",
+  "errorLoadFailed": "Failed to load data. Please try again."
 }
+
+
+

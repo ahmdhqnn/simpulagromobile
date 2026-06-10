@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -81,7 +83,7 @@ class RecommendationListScreen extends ConsumerWidget {
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           Text(
-            'Rekomendasi',
+            context.l10n.recommendationTitle,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(20),
@@ -114,20 +116,30 @@ class RecommendationListScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem(context, 'Total', stats.total, AppColors.primary),
-          _buildStatDivider(),
-          _buildStatItem(context, 'Menunggu', stats.pending, AppColors.warning),
+          _buildStatItem(
+            context,
+            context.l10n.commonTotal,
+            stats.total,
+            AppColors.primary,
+          ),
           _buildStatDivider(),
           _buildStatItem(
             context,
-            'Diterapkan',
+            context.l10n.commonPending,
+            stats.pending,
+            AppColors.warning,
+          ),
+          _buildStatDivider(),
+          _buildStatItem(
+            context,
+            context.l10n.commonApplied,
             stats.applied,
             AppColors.success,
           ),
           _buildStatDivider(),
           _buildStatItem(
             context,
-            'Prioritas',
+            context.l10n.recommendationPriorityStat,
             stats.highPriority,
             AppColors.error,
           ),
@@ -194,7 +206,7 @@ class RecommendationListScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
-                  filter.label,
+                  filter.localizedLabel(context.l10n),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
@@ -256,7 +268,7 @@ class RecommendationListScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          recommendation.type.label,
+                          recommendation.type.localizedLabel(context.l10n),
                           style: AppTextStyles.hint(context),
                         ),
                       ],
@@ -264,7 +276,7 @@ class RecommendationListScreen extends ConsumerWidget {
                   ),
                   _buildBadge(
                     context,
-                    recommendation.priority.label,
+                    recommendation.priority.localizedLabel(context.l10n),
                     priorityColor,
                   ),
                 ],
@@ -320,12 +332,17 @@ class RecommendationListScreen extends ConsumerWidget {
                 children: [
                   _buildBadge(
                     context,
-                    recommendation.status.label,
+                    recommendation.status.localizedLabel(context.l10n),
                     statusColor,
                   ),
                   if (recommendation.confidenceScore != null)
                     Text(
-                      'Akurasi: ${recommendation.confidenceLevel}',
+                      context.l10n.recommendationAccuracy(
+                        _confidenceLabel(
+                          context,
+                          recommendation.confidenceScore,
+                        ),
+                      ),
                       style: AppTextStyles.caption(context, size: 12),
                     ),
                 ],
@@ -375,7 +392,7 @@ class RecommendationListScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Tidak ada rekomendasi',
+              context.l10n.recommendationEmptyTitle,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
@@ -386,8 +403,10 @@ class RecommendationListScreen extends ConsumerWidget {
             SizedBox(height: context.rh(0.01)),
             Text(
               filter == RecommendationFilter.all
-                  ? 'Belum ada rekomendasi tersedia.\nPastikan sensor sudah aktif dan mengirim data.'
-                  : 'Tidak ada rekomendasi untuk filter "${filter.label}".',
+                  ? context.l10n.recommendationEmptyAll
+                  : context.l10n.recommendationEmptyFiltered(
+                      filter.localizedLabel(context.l10n),
+                    ),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
@@ -403,9 +422,9 @@ class RecommendationListScreen extends ConsumerWidget {
                   ref.invalidate(recommendationListProvider);
                 },
                 icon: const Icon(Icons.refresh),
-                label: const Text(
-                  'Muat Ulang',
-                  style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+                label: Text(
+                  context.l10n.recommendationReload,
+                  style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -440,7 +459,7 @@ class RecommendationListScreen extends ConsumerWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Gagal memuat rekomendasi',
+              context.l10n.recommendationLoadFailed,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
@@ -472,9 +491,9 @@ class RecommendationListScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
-              child: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+              child: Text(
+                context.l10n.commonRetry,
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
             ),
           ],
@@ -507,5 +526,13 @@ class RecommendationListScreen extends ConsumerWidget {
       case RecommendationStatus.expired:
         return AppColors.muted;
     }
+  }
+
+  String _confidenceLabel(BuildContext context, double? score) {
+    if (score == null) return context.l10n.recommendationConfidenceUnknown;
+    if (score >= 0.8) return context.l10n.recommendationConfidenceVeryHigh;
+    if (score >= 0.6) return context.l10n.commonHigh;
+    if (score >= 0.4) return context.l10n.commonMedium;
+    return context.l10n.commonLow;
   }
 }

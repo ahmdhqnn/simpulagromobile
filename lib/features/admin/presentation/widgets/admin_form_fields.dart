@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Reusable form field builder untuk semua form screens admin
 /// Konsisten dengan design system project
@@ -78,7 +79,7 @@ class AdminFormFields {
                 ),
               ),
               Text(
-                value ? 'Aktif' : 'Nonaktif',
+                value ? context.l10n.commonActive : context.l10n.commonInactive,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(12),
@@ -110,7 +111,7 @@ class AdminFormFields {
           child: buildField(
             context,
             controller: latController,
-            label: 'Latitude',
+            label: context.l10n.commonLatitude,
             hint: '-7.7956',
             icon: Icons.my_location,
             keyboardType: const TextInputType.numberWithOptions(
@@ -120,7 +121,9 @@ class AdminFormFields {
             validator: (v) {
               if (v != null && v.isNotEmpty) {
                 final lat = double.tryParse(v);
-                if (lat == null || lat < -90 || lat > 90) return 'Tidak valid';
+                if (lat == null || lat < -90 || lat > 90) {
+                  return context.l10n.commonInvalid;
+                }
               }
               return null;
             },
@@ -131,7 +134,7 @@ class AdminFormFields {
           child: buildField(
             context,
             controller: lonController,
-            label: 'Longitude',
+            label: context.l10n.commonLongitude,
             hint: '110.3695',
             icon: Icons.location_on,
             keyboardType: const TextInputType.numberWithOptions(
@@ -142,7 +145,7 @@ class AdminFormFields {
               if (v != null && v.isNotEmpty) {
                 final lon = double.tryParse(v);
                 if (lon == null || lon < -180 || lon > 180) {
-                  return 'Tidak valid';
+                  return context.l10n.commonInvalid;
                 }
               }
               return null;

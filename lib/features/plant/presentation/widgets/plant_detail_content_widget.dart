@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/status_chip_widget.dart';
@@ -21,7 +22,7 @@ class PlantHeaderCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor(plant);
-    final typeLabel = plant.plantType?.displayName ?? l10n.plantTypeHint;
+    final typeLabel = plant.plantType?.localizedLabel(l10n) ?? l10n.plantTypeHint;
     final subtitle = plant.varietasId?.isNotEmpty == true
         ? '$typeLabel - ${plant.varietasId}'
         : typeLabel;
@@ -68,7 +69,7 @@ class PlantHeaderCardWidget extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           StatusChipWidget(
-            label: plant.statusText,
+            label: plant.localizedStatus(l10n),
             color: statusColor,
             radius: AppRadius.xs,
             fontSize: 11,
@@ -92,7 +93,7 @@ class PlantGrowthCardWidget extends ConsumerWidget {
         ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
         : null;
     final phase = phaseAsync?.valueOrNull;
-    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync, l10n);
     final hst = plant.hst;
 
     return AppCardWidget(
@@ -145,7 +146,7 @@ class PlantGrowthCardWidget extends ConsumerWidget {
                   value: phaseLabel,
                   subtitle: phase == null
                       ? l10n.plantPhaseSubtitle
-                      : 'HST ${phase.hstMin}-${phase.hstMax}',
+                      : '${l10n.plantHstLabel} ${phase.hstMin}-${phase.hstMax}',
                   icon: Icons.eco_outlined,
                   color: AppColors.success,
                 ),
@@ -286,13 +287,13 @@ class PlantInfoCardWidget extends StatelessWidget {
     final rows = [
       _PlantInfoData(
         icon: Icons.tag_outlined,
-        label: 'ID Tanaman',
+        label: l10n.adminPlantIdLabel,
         value: plant.plantId,
       ),
       _PlantInfoData(
         icon: Icons.grass_outlined,
         label: l10n.plantTypeLabel,
-        value: plant.plantType?.displayName ?? '-',
+        value: plant.plantType?.localizedLabel(l10n) ?? '-',
       ),
       _PlantInfoData(
         icon: Icons.badge_outlined,
@@ -320,7 +321,7 @@ class PlantInfoCardWidget extends StatelessWidget {
       _PlantInfoData(
         icon: Icons.verified_outlined,
         label: l10n.plantStatusLabel,
-        value: plant.statusText,
+        value: plant.localizedStatus(l10n),
         valueColor: statusColor,
       ),
     ];

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../providers/auth_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -17,27 +18,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentPage = 0;
-
-  final List<Map<String, String>> onboardingData = [
-    {
-      "title": "Pantau Lahan\nLebih Akurat",
-      "desc":
-          "Pantau kondisi tanaman dan kesehatan tanah secara real-time langsung dari smartphone Anda, di mana saja dan kapan saja.",
-      "bg": "assets/images/onboarding1.svg",
-    },
-    {
-      "title": "Keputusan Berbasis\nData",
-      "desc":
-          "Dapatkan wawasan akurat mengenai kelembapan, suhu, dan nutrisi tanah untuk menentukan langkah perawatan yang paling tepat.",
-      "bg": "assets/images/onboarding2.svg",
-    },
-    {
-      "title": "Minimalkan Risiko\nGagal Panen",
-      "desc":
-          "Terima notifikasi dini jika terjadi anomali pada lahan sehingga Anda bisa bertindak lebih cepat sebelum masalah berkembang.",
-      "bg": "assets/images/onboarding3.svg",
-    },
-  ];
 
   final List<Alignment> _textAlignments = [
     Alignment.center,
@@ -58,7 +38,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   ];
 
   void nextPage() {
-    if (currentPage < onboardingData.length - 1) {
+    if (currentPage < _onboardingData(context).length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -82,6 +62,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final onboardingData = _onboardingData(context);
+
     return Scaffold(
       body: PageView.builder(
         controller: _controller,
@@ -112,7 +94,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Welcome to SimpulAgro",
+                            context.l10n.authWelcome,
                             style: TextStyle(
                               color: const Color(0x7F1D1D1D),
                               fontSize: context.sp(12),
@@ -123,7 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           GestureDetector(
                             onTap: skip,
                             child: Text(
-                              "Skip",
+                              context.l10n.authSkip,
                               style: TextStyle(
                                 color: const Color(0xFF1D1D1D),
                                 fontSize: context.sp(12),
@@ -192,8 +174,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             children: [
                               Text(
                                 index == onboardingData.length - 1
-                                    ? "Get Started"
-                                    : "Next",
+                                    ? context.l10n.authGetStarted
+                                    : context.l10n.authNext,
                                 style: TextStyle(
                                   color: const Color(0xFF1D1D1D),
                                   fontSize: context.sp(18),
@@ -231,6 +213,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildIndicators(BuildContext context) {
+    final onboardingData = _onboardingData(context);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final spacing = (onboardingData.length - 1) * 10.0;
@@ -259,4 +243,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       },
     );
   }
+
+  List<Map<String, String>> _onboardingData(BuildContext context) => [
+    {
+      'title': context.l10n.onboardingMonitorTitle,
+      'desc': context.l10n.onboardingMonitorDesc,
+      'bg': 'assets/images/onboarding1.svg',
+    },
+    {
+      'title': context.l10n.onboardingDataTitle,
+      'desc': context.l10n.onboardingDataDesc,
+      'bg': 'assets/images/onboarding2.svg',
+    },
+    {
+      'title': context.l10n.onboardingRiskTitle,
+      'desc': context.l10n.onboardingRiskDesc,
+      'bg': 'assets/images/onboarding3.svg',
+    },
+  ];
 }

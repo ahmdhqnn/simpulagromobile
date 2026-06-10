@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 
 class ProfileForumCardWidget extends StatefulWidget {
@@ -43,7 +44,7 @@ class _ProfileForumCardWidgetState extends State<ProfileForumCardWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Forum Management',
+                          context.l10n.profileForumManagement,
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(22),
@@ -54,7 +55,7 @@ class _ProfileForumCardWidgetState extends State<ProfileForumCardWidget> {
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          'Kelola postingan dan komentar',
+                          context.l10n.profileForumManagementSubtitle,
                           style: AppTextStyles.hint(context),
                         ),
                       ],
@@ -82,22 +83,22 @@ class _ProfileForumCardWidgetState extends State<ProfileForumCardWidget> {
                   const SizedBox(height: 16),
                   _ForumItem(
                     iconPath: 'assets/icons/comment-outline-icon.svg',
-                    title: 'Postingan Saya',
-                    subtitle: 'Lihat dan kelola postingan',
+                    title: context.l10n.profileMyPosts,
+                    subtitle: context.l10n.profileMyPostsSubtitle,
                     onTap: () => context.push('/forum/my-posts'),
                   ),
                   const SizedBox(height: 12),
                   _ForumItem(
                     iconPath: 'assets/icons/like-outline-icon.svg',
-                    title: 'Postingan Disukai',
-                    subtitle: 'Postingan yang Anda sukai',
+                    title: context.l10n.profileLikedPosts,
+                    subtitle: context.l10n.profileLikedPostsSubtitle,
                     onTap: () => context.push('/forum/liked-posts'),
                   ),
                   const SizedBox(height: 12),
                   _ForumItem(
                     iconPath: 'assets/icons/message-outline-icon.svg',
-                    title: 'Komentar Saya',
-                    subtitle: 'Lihat semua komentar',
+                    title: context.l10n.profileMyComments,
+                    subtitle: context.l10n.profileMyCommentsSubtitle,
                     onTap: () => context.push('/forum/my-comments'),
                   ),
                 ],

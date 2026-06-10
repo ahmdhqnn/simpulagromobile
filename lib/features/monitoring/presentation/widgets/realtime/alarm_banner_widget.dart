@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../data/models/monitoring_models.dart';
 
 class AlarmBannerWidget extends StatelessWidget {
@@ -42,7 +43,7 @@ class AlarmBannerWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${alarms.length} Alarm Aktif',
+                      context.l10n.monitoringActiveAlarmsCount(alarms.length),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(13),
@@ -51,7 +52,7 @@ class AlarmBannerWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Terdeteksi dalam 24 jam terakhir',
+                      context.l10n.monitoringDetectedInLast24Hours,
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(10),
@@ -83,7 +84,7 @@ class AlarmBannerWidget extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          a.alcodeNote ?? 'Alarm terdeteksi',
+                          a.alcodeNote ?? context.l10n.monitoringAlarmDetected,
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(11),
@@ -98,7 +99,7 @@ class AlarmBannerWidget extends StatelessWidget {
               ),
           if (alarms.length > 3)
             Text(
-              '+ ${alarms.length - 3} alarm lainnya',
+              context.l10n.monitoringOtherAlarmsCount(alarms.length - 3),
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(10),

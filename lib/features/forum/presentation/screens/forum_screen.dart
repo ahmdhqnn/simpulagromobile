@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -164,17 +165,17 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           itemBuilder: (_) => [
             _buildPopupItem(
               icon: Icons.article_outlined,
-              label: 'Postingan Saya',
+              label: context.l10n.forumMyPosts,
               value: 'my-posts',
             ),
             _buildPopupItem(
               icon: Icons.favorite_border,
-              label: 'Disukai',
+              label: context.l10n.forumLiked,
               value: 'liked-posts',
             ),
             _buildPopupItem(
               icon: Icons.chat_bubble_outline,
-              label: 'Komentar Saya',
+              label: context.l10n.forumMyComments,
               value: 'my-comments',
             ),
           ],
@@ -271,14 +272,14 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
   Widget _buildEmptyState(BuildContext context) {
     return EmptyStateWidget(
       icon: Icons.forum_outlined,
-      title: 'Belum ada postingan',
-      message: 'Jadilah yang pertama membuat postingan di forum komunitas',
+      title: context.l10n.forumNoPostsTitle,
+      message: context.l10n.forumNoPostsMessage,
       action: ElevatedButton.icon(
         onPressed: () => _openCreatePost(context),
         icon: const Icon(Icons.add, size: 18),
-        label: const Text(
-          'Buat Postingan',
-          style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+        label: Text(
+          context.l10n.forumCreatePost,
+          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -328,7 +329,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'Gagal memuat postingan',
+              context.l10n.forumLoadPostsFailed,
               style: AppTextStyles.cardTitle(context, 16),
             ),
             const SizedBox(height: 8),
@@ -342,9 +343,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               onPressed: () =>
                   ref.read(forumProvider.notifier).loadPosts(refresh: true),
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+              label: Text(
+                context.l10n.commonRetry,
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -387,7 +388,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
                   color: AppColors.textPrimary,
                 ),
                 title: Text(
-                  'Edit Postingan',
+                  context.l10n.forumEditPost,
                   style: AppTextStyles.label(
                     context,
                     size: 14,
@@ -405,7 +406,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
                   color: AppColors.error,
                 ),
                 title: Text(
-                  'Hapus Postingan',
+                  context.l10n.forumDeletePost,
                   style: AppTextStyles.label(
                     context,
                     size: 14,
@@ -433,11 +434,11 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Hapus Postingan',
+          context.l10n.forumDeletePost,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Apakah Anda yakin ingin menghapus postingan ini?',
+          context.l10n.forumDeletePostConfirm,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -448,7 +449,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
-              'Batal',
+              context.l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -463,7 +464,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Postingan berhasil dihapus',
+                      context.l10n.forumPostDeleted,
                       style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
                     backgroundColor: AppColors.success,
@@ -472,7 +473,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               }
             },
             child: Text(
-              'Hapus',
+              context.l10n.commonDelete,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.error,
@@ -493,11 +494,11 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Bagikan Postingan',
+          context.l10n.forumSharePostTitle,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Bagikan postingan ini ke teman atau komunitas Anda.',
+          context.l10n.forumSharePostMessage,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -508,7 +509,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
-              'Batal',
+              context.l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -517,13 +518,14 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
           ),
           TextButton(
             onPressed: () async {
+              final l10n = context.l10n;
               Navigator.pop(dialogCtx);
               await ref.read(forumProvider.notifier).sharePost(postId);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Postingan berhasil dibagikan',
+                      l10n.forumPostShared,
                       style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
                     backgroundColor: AppColors.success,
@@ -532,7 +534,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               }
             },
             child: Text(
-              'Bagikan',
+              context.l10n.forumShare,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.primary,

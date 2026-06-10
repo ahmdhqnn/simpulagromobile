@@ -10,6 +10,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaff
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 
 class UserFormScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -68,7 +69,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
       if (userAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 6),
@@ -77,7 +78,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
       }
       if (userAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: userAsync.error!,
             onRetry: () =>
@@ -92,11 +93,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit User' : 'Tambah User',
+        title: isEditMode ? context.l10n.adminEditUserTitle : context.l10n.adminAddUserTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat user...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingUser,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -107,7 +108,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit User' : 'Tambah User',
+                isEditMode ? context.l10n.adminEditUserTitle : context.l10n.adminAddUserTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -118,23 +119,23 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               ),
               SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
-                title: 'Informasi Akun',
+                title: context.l10n.adminAccountInfoSection,
                 child: Column(
                   children: [
                     AdminFormFields.buildField(
                       context,
                       controller: _idController,
-                      label: 'User ID',
-                      hint: 'Contoh: USER001',
+                      label: context.l10n.adminUserIdLabel,
+                      hint: context.l10n.adminUserIdHint,
                       icon: Icons.tag,
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'User ID wajib diisi';
+                          return context.l10n.adminUserIdRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -143,16 +144,16 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
-                      label: 'Nama Lengkap',
-                      hint: 'Contoh: John Doe',
+                      label: context.l10n.adminFullNameLabel,
+                      hint: context.l10n.adminFullNameHint,
                       icon: Icons.person,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama wajib diisi';
+                          return context.l10n.adminNameRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -161,8 +162,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _emailController,
-                      label: 'Email',
-                      hint: 'Contoh: user@example.com',
+                      label: context.l10n.adminEmailLabel,
+                      hint: context.l10n.adminEmailHint,
                       icon: Icons.email,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
@@ -171,7 +172,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                             r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                           );
                           if (!emailRegex.hasMatch(v)) {
-                            return 'Format email tidak valid';
+                            return context.l10n.adminEmailInvalid;
                           }
                         }
                         return null;
@@ -181,14 +182,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _phoneController,
-                      label: 'No. Telepon',
-                      hint: 'Contoh: 081234567890',
+                      label: context.l10n.adminPhoneLabel,
+                      hint: context.l10n.adminPhoneHint,
                       icon: Icons.phone,
                       keyboardType: TextInputType.phone,
                       validator: (v) {
                         if (v != null && v.isNotEmpty) {
                           if (v.length < 10 || v.length > 15) {
-                            return 'No. telepon tidak valid';
+                            return context.l10n.adminPhoneInvalid;
                           }
                         }
                         return null;
@@ -201,48 +202,54 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
               if (!isEditMode) ...[
                 AdminSectionCard(
-                  title: 'Keamanan',
+                  title: context.l10n.adminSecuritySection,
                   child: _buildPasswordField(context),
                 ),
                 SizedBox(height: context.rh(0.02)),
               ],
 
               AdminSectionCard(
-                title: 'Role & Status',
+                title: context.l10n.adminRoleStatusSection,
                 child: Column(
                   children: [
                     AdminFormFields.buildDropdown<String>(
                       context,
                       value: _selectedRoleId,
-                      label: 'Role *',
-                      hint: 'Pilih role',
+                      label: '${context.l10n.adminRoleLabel} *',
+                      hint: context.l10n.adminSelectRoleHint,
                       icon: Icons.admin_panel_settings,
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: 'ROLE001',
-                          child: Text('Admin'),
+                          child: Text(context.l10n.roleAdmin),
                         ),
-                        DropdownMenuItem(value: 'ROLE002', child: Text('User')),
+                        DropdownMenuItem(
+                          value: 'ROLE002',
+                          child: Text(context.l10n.roleUser),
+                        ),
                         DropdownMenuItem(
                           value: 'ROLE003',
-                          child: Text('Viewer'),
+                          child: Text(context.l10n.roleViewer),
                         ),
                       ],
                       onChanged: (v) => setState(() => _selectedRoleId = v),
-                      validator: (v) => v == null ? 'Role wajib dipilih' : null,
+                      validator: (v) => v == null ? context.l10n.adminRoleRequired : null,
                     ),
                     SizedBox(height: context.rh(0.016)),
                     AdminFormFields.buildDropdown<String>(
                       context,
                       value: _status,
-                      label: 'Status',
-                      hint: 'Pilih status',
+                      label: context.l10n.adminStatusSection,
+                      hint: context.l10n.adminSelectStatusHint,
                       icon: Icons.toggle_on,
-                      items: const [
-                        DropdownMenuItem(value: 'active', child: Text('Aktif')),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'active',
+                          child: Text(context.l10n.commonActive),
+                        ),
                         DropdownMenuItem(
                           value: 'inactive',
-                          child: Text('Nonaktif'),
+                          child: Text(context.l10n.commonInactive),
                         ),
                       ],
                       onChanged: (v) => setState(() => _status = v ?? 'active'),
@@ -253,7 +260,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah User',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddUserTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -284,8 +291,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         color: const Color(0xFF1D1D1D),
       ),
       decoration: InputDecoration(
-        labelText: 'Password *',
-        hintText: 'Minimal 6 karakter',
+        labelText: '${context.l10n.adminPasswordLabel} *',
+        hintText: context.l10n.adminPasswordHint,
         prefixIcon: const Icon(Icons.lock, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
@@ -324,8 +331,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         ),
       ),
       validator: (v) {
-        if (v == null || v.isEmpty) return 'Password wajib diisi';
-        if (v.length < 6) return 'Password minimal 6 karakter';
+        if (v == null || v.isEmpty) return context.l10n.adminPasswordRequired;
+        if (v.length < 6) return context.l10n.adminPasswordMinLength;
         return null;
       },
     );
@@ -360,12 +367,17 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     if (success) {
       SnackbarHelper.showSuccess(
         context,
-        isEditMode ? 'User berhasil diperbarui' : 'User berhasil ditambahkan',
+        isEditMode
+            ? context.l10n.adminUpdateSuccess(context.l10n.roleUser)
+            : context.l10n.adminCreateSuccess(context.l10n.roleUser),
       );
       context.pop();
     } else {
       final error = ref.read(adminUserFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan user');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.roleUser),
+      );
     }
   }
 }

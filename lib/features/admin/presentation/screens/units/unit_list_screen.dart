@@ -7,6 +7,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/unit.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 
 class UnitListScreen extends ConsumerWidget {
   const UnitListScreen({super.key});
@@ -18,7 +19,7 @@ class UnitListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'unit:read',
       child: AdminScaffold(
-        title: 'Unit',
+        title: context.l10n.adminUnitTitle,
         action: PermissionGuard(
           permission: 'unit:create',
           child: AdminAddButton(
@@ -31,10 +32,10 @@ class UnitListScreen extends ConsumerWidget {
           skipError: true,
           data: (units) {
             if (units.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.straighten_outlined,
-                title: 'Belum ada unit',
-                message: 'Tambahkan unit satuan untuk sensor',
+                title: context.l10n.adminNoUnits,
+                message: context.l10n.adminNoUnitsMessage,
               );
             }
 
@@ -56,7 +57,7 @@ class UnitListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Unit',
+                        context.l10n.adminUnitTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -96,7 +97,7 @@ class _UnitCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminListItem(
       title: unit.displayNameWithSymbol,
-      subtitle: 'ID: ${unit.unitId}',
+      subtitle: context.l10n.adminIdPrefix(unit.unitId),
       icon: Icons.straighten,
       iconColor: unit.isActive ? const Color(0xFFAB47BC) : Colors.grey,
       isActive: unit.isActive,
@@ -154,7 +155,7 @@ class _UnitCard extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Text(
-                'Data Unit bersifat read-only. Perubahan dan penghapusan unit tidak didukung oleh sistem backend saat ini.',
+                context.l10n.adminUnitReadonlyMessage,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 13,

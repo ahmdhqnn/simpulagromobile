@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/l10n.dart';
 
 class SmartScoreGauge extends StatelessWidget {
   const SmartScoreGauge({
@@ -83,7 +84,7 @@ class SmartScoreGauge extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$totalSensors Sensor Aktif',
+                      context.l10n.dashboardActiveSensorsCount(totalSensors),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: sw / 390 * 12,

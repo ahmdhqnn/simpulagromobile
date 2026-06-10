@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/post.dart';
@@ -19,7 +20,7 @@ class MyPostsScreen extends ConsumerWidget {
     final myPostsAsync = ref.watch(myPostsProvider);
 
     return ForumActionScaffold(
-      title: 'Postingan Saya',
+      title: context.l10n.forumMyPosts,
       floatingAction: CircularBackButtonWidget(
         onPressed: () => _openCreatePost(context, ref),
         svgIconPath: 'assets/icons/plus-outline-icon.svg',
@@ -32,9 +33,8 @@ class MyPostsScreen extends ConsumerWidget {
           if (posts.isEmpty) {
             return ForumActionState(
               icon: Icons.article_outlined,
-              title: 'Belum ada postingan',
-              message:
-                  'Buat postingan pertama Anda untuk berbagi dengan komunitas.',
+              title: context.l10n.forumNoPostsTitle,
+              message: context.l10n.forumFirstPostMessage,
             );
           }
 
@@ -67,8 +67,8 @@ class MyPostsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: ForumActionSummaryCard(
                 icon: Icons.article_outlined,
-                title: '${posts.length} postingan',
-                subtitle: 'Postingan yang Anda buat di forum komunitas.',
+                title: context.l10n.forumPostCount(posts.length),
+                subtitle: context.l10n.forumMyPostsSummary,
               ),
             );
           }
@@ -102,11 +102,11 @@ class MyPostsScreen extends ConsumerWidget {
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
     return ForumActionState(
       icon: Icons.wifi_off_rounded,
-      title: 'Gagal memuat postingan',
+      title: context.l10n.forumLoadPostsFailed,
       message: error.toString().replaceAll('Exception: ', ''),
       action: ForumActionPrimaryButton(
         icon: Icons.refresh,
-        label: 'Coba Lagi',
+        label: context.l10n.commonRetry,
         onPressed: () => ref.invalidate(myPostsProvider),
       ),
     );
@@ -125,13 +125,13 @@ class MyPostsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (sheetCtx) => ForumActionBottomSheet(
-        title: 'Kelola Postingan',
+        title: context.l10n.forumManagePosts,
         children: [
           ForumActionSheetItem(
             icon: Icons.edit_outlined,
             iconColor: AppColors.primary,
             backgroundColor: AppColors.softGreen,
-            label: 'Edit Postingan',
+            label: context.l10n.forumEditPost,
             onTap: () async {
               Navigator.pop(sheetCtx);
               await context.push('/forum/edit/$postId');
@@ -142,7 +142,7 @@ class MyPostsScreen extends ConsumerWidget {
             icon: Icons.delete_outline,
             iconColor: AppColors.error,
             backgroundColor: AppColors.softOrange,
-            label: 'Hapus Postingan',
+            label: context.l10n.forumDeletePost,
             labelColor: AppColors.error,
             onTap: () {
               Navigator.pop(sheetCtx);
@@ -155,6 +155,7 @@ class MyPostsScreen extends ConsumerWidget {
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, String postId) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -162,11 +163,11 @@ class MyPostsScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Hapus Postingan',
+          l10n.forumDeletePost,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Postingan ini akan dihapus permanen.',
+          l10n.forumDeletePostPermanent,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -177,7 +178,7 @@ class MyPostsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
-              'Batal',
+              l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -192,12 +193,12 @@ class MyPostsScreen extends ConsumerWidget {
               if (!context.mounted) return;
               _showSnackBar(
                 context,
-                'Postingan berhasil dihapus',
+                l10n.forumPostDeleted,
                 backgroundColor: AppColors.success,
               );
             },
             child: Text(
-              'Hapus',
+              l10n.commonDelete,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.error,
@@ -215,12 +216,13 @@ class MyPostsScreen extends ConsumerWidget {
     WidgetRef ref,
     String postId,
   ) async {
+    final l10n = context.l10n;
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(myPostsProvider);
     if (!context.mounted) return;
     _showSnackBar(
       context,
-      'Postingan berhasil dibagikan',
+      l10n.forumPostShared,
       backgroundColor: AppColors.success,
     );
   }

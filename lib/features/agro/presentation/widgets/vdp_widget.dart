@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/agro_entity.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class VdpWidget extends StatelessWidget {
   final VdpEntity? vdpData;
@@ -10,8 +11,10 @@ class VdpWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (vdpData == null || !vdpData!.hasDisplayData) {
-      return _buildEmptyState(context);
+      return _buildEmptyState(context, l10n);
     }
 
     return Container(
@@ -57,7 +60,7 @@ class VdpWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Defisit Tekanan Uap',
+                      l10n.agroVdpDeficitTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -73,23 +76,23 @@ class VdpWidget extends StatelessWidget {
           ),
           if (vdpData!.vdp != null) ...[
             const SizedBox(height: 20),
-            _buildLatestVdp(context),
+            _buildLatestVdp(context, l10n),
             const SizedBox(height: 20),
-            _buildVdpIndicator(context, vdpData!.vdp),
+            _buildVdpIndicator(context, vdpData!.vdp, l10n),
             const SizedBox(height: 16),
-            _buildVdpInfo(context, vdpData!.vdp),
+            _buildVdpInfo(context, vdpData!.vdp, l10n),
             const SizedBox(height: 16),
-            _buildVdpDetails(context),
+            _buildVdpDetails(context, l10n),
           ] else ...[
             const SizedBox(height: 16),
-            _buildVdpDetails(context),
+            _buildVdpDetails(context, l10n),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildLatestVdp(BuildContext context) {
+  Widget _buildLatestVdp(BuildContext context, AppLocalizations l10n) {
     final vdp = vdpData!.vdp!;
     final color = _getVdpColor(vdp);
 
@@ -112,7 +115,7 @@ class VdpWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nilai VPD',
+                  l10n.agroVdpValueLabel,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(14),
@@ -121,7 +124,7 @@ class VdpWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  vdpData!.status ?? _getVdpStatusLabel(vdp),
+                  vdpData!.status ?? _getVdpStatusLabel(vdp, l10n),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -161,7 +164,7 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpIndicator(BuildContext context, double? vdp) {
+  Widget _buildVdpIndicator(BuildContext context, double? vdp, AppLocalizations l10n) {
     if (vdp == null) return const SizedBox.shrink();
 
     final percentage = (vdp / 2.0).clamp(0.0, 1.0);
@@ -170,7 +173,7 @@ class VdpWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'VDP Range',
+          l10n.agroVdpRangeLabel,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(12),
@@ -238,11 +241,11 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpInfo(BuildContext context, double? vdp) {
+  Widget _buildVdpInfo(BuildContext context, double? vdp, AppLocalizations l10n) {
     if (vdp == null) return const SizedBox.shrink();
 
-    final title = vdpData!.status ?? _getVdpStatusLabel(vdp);
-    final description = vdpData!.description ?? _getVdpDescription(vdp);
+    final title = vdpData!.status ?? _getVdpStatusLabel(vdp, l10n);
+    final description = vdpData!.description ?? _getVdpDescription(vdp, l10n);
     IconData icon = Icons.info_outline;
     Color color = AppColors.info;
 
@@ -301,29 +304,29 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpDetails(BuildContext context) {
+  Widget _buildVdpDetails(BuildContext context, AppLocalizations l10n) {
     final details = <_VdpDetailData>[
       _VdpDetailData(
         label: 'V (VDP)',
-        value: _formatNumberUnit(vdpData!.vdp, 2, 'kPa'),
+        value: _formatNumberUnit(vdpData!.vdp, 2, 'kPa', l10n),
       ),
       _VdpDetailData(
         label: 'D (Es)',
-        value: _formatNumberUnit(vdpData!.es, 2, 'kPa'),
+        value: _formatNumberUnit(vdpData!.es, 2, 'kPa', l10n),
       ),
       _VdpDetailData(
         label: 'P (Ea)',
-        value: _formatNumberUnit(vdpData!.ea, 2, 'kPa'),
+        value: _formatNumberUnit(vdpData!.ea, 2, 'kPa', l10n),
       ),
       if (vdpData!.temperature != null)
         _VdpDetailData(
           label: 'Temp',
-          value: _formatNumberUnit(vdpData!.temperature, 1, 'C'),
+          value: _formatNumberUnit(vdpData!.temperature, 1, 'C', l10n),
         ),
       if (vdpData!.humidity != null)
         _VdpDetailData(
           label: 'RH',
-          value: _formatNumberUnit(vdpData!.humidity, 1, '%'),
+          value: _formatNumberUnit(vdpData!.humidity, 1, '%', l10n),
         ),
     ];
 
@@ -333,7 +336,7 @@ class VdpWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Detail VPD',
+          l10n.agroVdpDetailTitle,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(13),
@@ -409,7 +412,7 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -426,7 +429,7 @@ class VdpWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Data VDP tidak tersedia',
+              l10n.agroVdpUnavailable,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(14),
@@ -447,31 +450,31 @@ class VdpWidget extends StatelessWidget {
     return AppColors.error;
   }
 
-  String _formatNumberUnit(double? value, int fractionDigits, String unit) {
-    if (value == null) return 'Belum ada';
+  String _formatNumberUnit(double? value, int fractionDigits, String unit, AppLocalizations l10n) {
+    if (value == null) return l10n.commonNotAvailableYet;
     final number = value.toStringAsFixed(fractionDigits);
     if (unit == '%') return '$number%';
     return '$number $unit';
   }
 
-  String _getVdpStatusLabel(double vdp) {
-    if (vdp < 0.4) return 'Terlalu Rendah';
-    if (vdp <= 1.2) return 'Optimal';
-    if (vdp <= 1.6) return 'Waspada';
-    return 'Terlalu Tinggi';
+  String _getVdpStatusLabel(double vdp, AppLocalizations l10n) {
+    if (vdp < 0.4) return l10n.agroVdpStatusLow;
+    if (vdp <= 1.2) return l10n.agroVdpStatusOptimal;
+    if (vdp <= 1.6) return l10n.agroVdpStatusWarning;
+    return l10n.agroVdpStatusHigh;
   }
 
-  String _getVdpDescription(double vdp) {
+  String _getVdpDescription(double vdp, AppLocalizations l10n) {
     if (vdp < 0.4) {
-      return 'Kelembaban relatif tinggi. Tingkatkan ventilasi agar risiko penyakit turun.';
+      return l10n.agroVdpDescLow;
     }
     if (vdp <= 1.2) {
-      return 'Kondisi defisit tekanan uap berada pada rentang ideal.';
+      return l10n.agroVdpDescOptimal;
     }
     if (vdp <= 1.6) {
-      return 'Tanaman mulai berisiko kehilangan air lebih cepat. Pantau irigasi dan kelembaban.';
+      return l10n.agroVdpDescWarning;
     }
-    return 'Defisit tekanan uap tinggi. Tingkatkan penyiraman dan jaga kelembaban area tanam.';
+    return l10n.agroVdpDescHigh;
   }
 }
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../domain/entities/task.dart';
 
 class TaskCardWidget extends StatelessWidget {
@@ -80,7 +82,7 @@ class TaskCardWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Text(
-                    task.taskStatus.label,
+                    task.taskStatus.localizedLabel(context.l10n),
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(11),
@@ -99,24 +101,28 @@ class TaskCardWidget extends StatelessWidget {
               children: [
                 _MetaChip(
                   icon: Icons.category_outlined,
-                  label: task.taskType.label,
+                  label: task.taskType.localizedLabel(context.l10n),
                   color: AppColors.primary,
                 ),
                 _MetaChip(
                   icon: Icons.flag_outlined,
-                  label: task.taskPriority.label,
+                  label: task.taskPriority.localizedLabel(context.l10n),
                   color: priorityColor,
                 ),
                 if (task.completedAt != null)
                   _MetaChip(
                     icon: Icons.check_circle_outline,
-                    label: DateFormat('dd MMM yyyy').format(task.completedAt!),
+                    label: context
+                        .dateFormat('dd MMM yyyy')
+                        .format(task.completedAt!),
                     color: AppColors.success,
                   )
                 else if (task.createdAt != null)
                   _MetaChip(
                     icon: Icons.calendar_today_outlined,
-                    label: DateFormat('dd MMM yyyy').format(task.createdAt!),
+                    label: context
+                        .dateFormat('dd MMM yyyy')
+                        .format(task.createdAt!),
                     color: AppColors.textPrimary.withValues(alpha: 0.6),
                   ),
               ],

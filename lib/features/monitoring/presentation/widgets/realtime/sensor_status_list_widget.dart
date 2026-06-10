@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../dashboard/data/models/environmental_health_model.dart';
 import '../../../data/models/monitoring_models.dart';
@@ -62,8 +63,8 @@ class _SensorStatusListWidgetState extends State<SensorStatusListWidget> {
                 alignment: Alignment.center,
                 child: Text(
                   _expanded
-                      ? 'Tampilkan Lebih Sedikit'
-                      : 'Tampilkan Semua (${reads.length})',
+                      ? context.l10n.monitoringShowLess
+                      : context.l10n.monitoringShowAllCount(reads.length),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
@@ -99,7 +100,7 @@ class _SensorRow extends StatelessWidget {
       devId: read.devId,
       value: val,
     );
-    final statusLabel = metadataAdapter.statusLabel(status);
+    final statusLabel = metadataAdapter.statusLabel(status, context.l10n);
 
     double persentase = val > 0 ? 80.0 : 0.0;
     if (envHealth != null && envHealth!.sensors.isNotEmpty) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 
 class RecommendationReasonCardWidget extends StatelessWidget {
   final String reason;
@@ -27,7 +28,7 @@ class RecommendationReasonCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Alasan',
+                  context.l10n.recommendationReasonLabel,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(14),

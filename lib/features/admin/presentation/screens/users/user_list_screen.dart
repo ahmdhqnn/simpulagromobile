@@ -7,6 +7,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -20,7 +21,7 @@ class UserListScreen extends ConsumerWidget {
     return PermissionGuardScreen(
       permission: 'user:read',
       child: AdminScaffold(
-        title: 'Users',
+        title: context.l10n.adminUsersTitle,
         action: PermissionGuard(
           permission: 'user:create',
           child: AdminAddButton(
@@ -33,10 +34,10 @@ class UserListScreen extends ConsumerWidget {
           skipError: true,
           data: (users) {
             if (users.isEmpty) {
-              return const AdminEmptyState(
+              return AdminEmptyState(
                 icon: Icons.people_outline,
-                title: 'Belum ada user',
-                message: 'Tambahkan user untuk mengakses sistem',
+                title: context.l10n.adminNoUsers,
+                message: context.l10n.adminNoUsersMessage,
               );
             }
 
@@ -58,7 +59,7 @@ class UserListScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: context.rh(0.014)),
                       child: Text(
-                        'Users',
+                        context.l10n.adminUsersTitle,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(22),
@@ -112,7 +113,7 @@ class _UserCard extends ConsumerWidget {
 
     return AdminListItem(
       title: user.userName,
-      subtitle: 'ID: ${user.userId}',
+      subtitle: context.l10n.adminIdPrefix(user.userId),
       icon: Icons.person,
       iconColor: user.isActive ? const Color(0xFFFFA726) : Colors.grey,
       isActive: user.isActive,
@@ -158,9 +159,9 @@ class _UserCard extends ConsumerWidget {
               permission: 'user:update',
               child: ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                title: Text(
+                  context.l10n.commonEdit,
+                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -172,9 +173,9 @@ class _UserCard extends ConsumerWidget {
               permission: 'user:delete',
               child: ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Hapus',
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.commonDelete,
+                  style: const TextStyle(
                     color: Colors.red,
                     fontFamily: 'Plus Jakarta Sans',
                   ),
@@ -207,10 +208,16 @@ class _UserCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (success) {
-      SnackbarHelper.showSuccess(context, 'User berhasil dihapus');
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.adminDeleteSuccess('User'),
+      );
     } else {
       final error = ref.read(adminUserFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menghapus user');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminDeleteFailed('User'),
+      );
     }
   }
 }

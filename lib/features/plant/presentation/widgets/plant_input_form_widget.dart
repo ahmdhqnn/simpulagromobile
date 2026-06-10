@@ -6,6 +6,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
@@ -425,7 +426,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
             return DropdownMenuItem(
               value: type,
               child: Text(
-                type.displayName,
+                type.localizedLabel(l10n),
                 style: AppTextStyles.label(
                   context,
                   size: context.sp(14),

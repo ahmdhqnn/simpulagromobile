@@ -15,7 +15,9 @@ final adminDeviceSensorRemoteDatasourceProvider =
       return DeviceSensorRemoteDatasourceImpl(dioClient.dio);
     });
 
-final adminDeviceSensorRepositoryProvider = Provider<DeviceSensorRepository>((ref) {
+final adminDeviceSensorRepositoryProvider = Provider<DeviceSensorRepository>((
+  ref,
+) {
   final datasource = ref.watch(adminDeviceSensorRemoteDatasourceProvider);
   return DeviceSensorRepositoryImpl(datasource);
 });
@@ -35,11 +37,11 @@ final adminDeviceSensorListProvider = FutureProvider<List<DeviceSensor>>((
 /// GET /sites/{siteId}/device-sensors/values
 final deviceSensorThresholdValuesProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final ds = ref.watch(adminDeviceSensorRemoteDatasourceProvider);
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  return ds.getThresholdValues(siteId);
-});
+      final ds = ref.watch(adminDeviceSensorRemoteDatasourceProvider);
+      final siteId = ref.watch(selectedSiteIdProvider);
+      if (siteId == null) return [];
+      return ds.getThresholdValues(siteId);
+    });
 
 // ═══════════════════════════════════════════════════════════
 // DEVICE SENSOR DETAIL PROVIDER
@@ -120,7 +122,11 @@ class DeviceSensorFormNotifier extends StateNotifier<DeviceSensorFormState> {
     }
 
     try {
-      final saved = await _repository.updateDeviceSensor(siteId, dsId, deviceSensor);
+      final saved = await _repository.updateDeviceSensor(
+        siteId,
+        dsId,
+        deviceSensor,
+      );
       state = DeviceSensorFormState(savedDeviceSensor: saved);
       _ref.invalidate(adminDeviceSensorListProvider);
       _ref.invalidate(adminDeviceSensorDetailProvider(dsId));

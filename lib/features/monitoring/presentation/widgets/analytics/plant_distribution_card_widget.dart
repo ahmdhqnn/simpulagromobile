@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../plant/domain/entities/plant.dart';
 import '../monitoring_card_header_widget.dart';
@@ -29,10 +30,10 @@ class PlantDistributionCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const MonitoringCardHeaderWidget.icon(
+          MonitoringCardHeaderWidget.icon(
             icon: Icons.pie_chart_outline_rounded,
-            title: 'Distribusi Berdasarkan Jenis',
-            description: 'Komposisi tanaman site aktif',
+            title: context.l10n.monitoringPlantCompositionTitle,
+            description: context.l10n.monitoringPlantCompositionSubtitle,
             background: AppColors.softGreen,
             tint: AppColors.primary,
           ),
@@ -91,12 +92,12 @@ class PlantDistributionCardWidget extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            'Fase Pertumbuhan Rata-rata',
+            context.l10n.monitoringAverageGrowthPhase,
             style: AppTextStyles.label(context, weight: FontWeight.w300),
           ),
           const SizedBox(height: 1),
           Text(
-            '$hst Hari',
+            context.l10n.commonDays(hst),
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(22),

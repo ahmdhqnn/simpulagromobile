@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/status_chip_widget.dart';
 import '../../domain/entities/recommendation.dart';
@@ -40,7 +42,7 @@ class RecommendationTitleCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      recommendation.type.label,
+                      recommendation.type.localizedLabel(context.l10n),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(12),
@@ -67,12 +69,12 @@ class RecommendationTitleCardWidget extends StatelessWidget {
           Row(
             children: [
               StatusChipWidget(
-                label: recommendation.priority.label,
+                label: recommendation.priority.localizedLabel(context.l10n),
                 color: priorityColor,
               ),
               const SizedBox(width: 8),
               StatusChipWidget(
-                label: recommendation.status.label,
+                label: recommendation.status.localizedLabel(context.l10n),
                 color: statusColor,
               ),
             ],

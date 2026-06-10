@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../agro/presentation/screens/agro_indicator_screen.dart';
 
 class AgroIndicatorButton extends StatelessWidget {
@@ -23,9 +24,9 @@ class AgroIndicatorButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Agro Indicator',
-              style: TextStyle(
+            Text(
+              context.l10n.agroIndicatorLabel,
+              style: const TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,

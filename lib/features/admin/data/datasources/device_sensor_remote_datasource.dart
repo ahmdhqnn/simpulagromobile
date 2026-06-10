@@ -8,7 +8,10 @@ abstract class DeviceSensorRemoteDatasource {
   Future<List<DeviceSensorModel>> getAllDeviceSensors(String siteId);
   Future<List<Map<String, dynamic>>> getThresholdValues(String siteId);
   Future<DeviceSensorModel> getDeviceSensorById(String siteId, String dsId);
-  Future<DeviceSensorModel> createDeviceSensor(String siteId, Map<String, dynamic> data);
+  Future<DeviceSensorModel> createDeviceSensor(
+    String siteId,
+    Map<String, dynamic> data,
+  );
   Future<DeviceSensorModel> updateDeviceSensor(
     String siteId,
     String dsId,
@@ -53,16 +56,19 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   Future<List<Map<String, dynamic>>> getThresholdValues(String siteId) async {
     try {
       final response = await dio.get(ApiEndpoints.deviceSensorValues(siteId));
-      return ResponseParser.extractDataList(response.data)
-          .whereType<Map<String, dynamic>>()
-          .toList();
+      return ResponseParser.extractDataList(
+        response.data,
+      ).whereType<Map<String, dynamic>>().toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
   }
 
   @override
-  Future<DeviceSensorModel> getDeviceSensorById(String siteId, String dsId) async {
+  Future<DeviceSensorModel> getDeviceSensorById(
+    String siteId,
+    String dsId,
+  ) async {
     try {
       // Fetch all and filter — avoids "not found" on single endpoint
       final all = await getAllDeviceSensors(siteId);
@@ -80,7 +86,10 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await dio.post(ApiEndpoints.deviceSensors(siteId), data: data);
+      final response = await dio.post(
+        ApiEndpoints.deviceSensors(siteId),
+        data: data,
+      );
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
@@ -122,8 +131,14 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   }
 
   @override
-  Future<void> deleteDeviceSensor(String siteId, String dsId, String devId) async {
-    throw const UnsupportedBackendEndpointException('Hapus device sensor belum didukung oleh server');
+  Future<void> deleteDeviceSensor(
+    String siteId,
+    String dsId,
+    String devId,
+  ) async {
+    throw const UnsupportedBackendEndpointException(
+      'Hapus device sensor belum didukung oleh server',
+    );
   }
 
   /// Normalize device sensor JSON — API sometimes returns sts/seq as String

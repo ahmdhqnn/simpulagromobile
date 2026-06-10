@@ -67,7 +67,7 @@ class DailyRecapTab extends ConsumerWidget {
               ),
               loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: toUiErrorMessage(e),
+                message: toUiErrorMessage(e, l10n),
                 onRetry: () => ref.invalidate(dailyTodayProvider),
               ),
             ),
@@ -100,7 +100,7 @@ class DailyRecapTab extends ConsumerWidget {
               ),
               loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: toUiErrorMessage(e),
+                message: toUiErrorMessage(e, l10n),
                 onRetry: () => ref.invalidate(dailyByDayProvider),
               ),
             ),
@@ -181,8 +181,8 @@ class _DailyRecapListState extends State<_DailyRecapList> {
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                 child: Text(
                   _expanded
-                      ? 'Tampilkan Lebih Sedikit'
-                      : 'Tampilkan Semua (${sorted.length})',
+                      ? l10n.monitoringShowLess
+                      : l10n.monitoringShowAllCount(sorted.length),
                   style: AppTextStyles.label(
                     context,
                     color: AppColors.primary,

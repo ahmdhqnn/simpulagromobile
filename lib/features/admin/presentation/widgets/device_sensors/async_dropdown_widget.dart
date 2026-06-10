@@ -4,6 +4,7 @@ import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/shared/widgets/skeleton_elements.dart';
+import 'package:simpulagromobile/l10n/app_localizations.dart';
 
 class AsyncDropdownWidget<T, V> extends ConsumerWidget {
   final AsyncValue<List<T>> async;
@@ -14,7 +15,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
   final List<DropdownMenuItem<V>> Function(List<T> items) itemBuilder;
   final ValueChanged<V?> onChanged;
   final String? Function(V?)? validator;
-  final String errorMessage;
+  final String? errorMessage;
 
   const AsyncDropdownWidget({
     super.key,
@@ -26,11 +27,14 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
     required this.itemBuilder,
     required this.onChanged,
     this.validator,
-    this.errorMessage = 'Gagal memuat data',
+    this.errorMessage,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final displayErrorMessage =
+        errorMessage ?? AppLocalizations.of(context)!.commonLoadFailed;
+
     return async.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
@@ -59,7 +63,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
       error: (_, __) => _placeholder(
         Center(
           child: Text(
-            errorMessage,
+            displayErrorMessage,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(13),

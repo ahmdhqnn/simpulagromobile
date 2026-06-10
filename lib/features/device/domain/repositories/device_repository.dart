@@ -16,7 +16,11 @@ abstract class DeviceRepository {
   Future<Either<Failure, Device>> createDevice(String siteId, Device device);
 
   /// Update existing device
-  Future<Either<Failure, Device>> updateDevice(String siteId, String devId, Device device);
+  Future<Either<Failure, Device>> updateDevice(
+    String siteId,
+    String devId,
+    Device device,
+  );
 
   /// Delete device
   Future<Either<Failure, void>> deleteDevice(String siteId, String devId);

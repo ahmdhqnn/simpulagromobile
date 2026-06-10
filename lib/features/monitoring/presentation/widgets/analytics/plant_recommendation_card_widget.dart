@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/responsive.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../../../../../shared/widgets/info_state_widget.dart';
 import '../../utils/sensor_metadata_adapter.dart';
@@ -26,12 +27,15 @@ class PlantRecommendationCardWidget extends StatelessWidget {
     final sensorData =
         _extractMap(recData['sensor_data']) ??
         _extractMap(recData['sensorData']);
-    final items = _buildRecommendationItems(recommendations ?? recData);
+    final items = _buildRecommendationItems(
+      context,
+      recommendations ?? recData,
+    );
 
     if (recData.isEmpty || (items.isEmpty && sensorData == null)) {
-      return const InfoStateWidget.svg(
+      return InfoStateWidget.svg(
         svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
-        message: 'Belum ada rekomendasi untuk site ini',
+        message: context.l10n.monitoringPlantRecommendationEmpty,
         height: 195,
       );
     }
@@ -44,12 +48,16 @@ class PlantRecommendationCardWidget extends StatelessWidget {
         children: [
           MonitoringCardHeaderWidget.svg(
             svgIconPath: 'assets/icons/recomendation-filled-icon.svg',
-            title: _titleFor(recData),
-            description: _subtitleFor(recData),
+            title: _titleFor(context, recData),
+            description: _subtitleFor(context, recData),
             background: AppColors.softGreen,
             tint: AppColors.success,
             trailing: items.isNotEmpty
-                ? _CountBadge(label: '${items.length} aksi')
+                ? _CountBadge(
+                    label: context.l10n.monitoringRecommendationActionCount(
+                      items.length,
+                    ),
+                  )
                 : null,
           ),
           if (items.isNotEmpty) ...[
@@ -59,7 +67,9 @@ class PlantRecommendationCardWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  '+${items.length - 5} rekomendasi lainnya',
+                  context.l10n.monitoringRecommendationMoreCount(
+                    items.length - 5,
+                  ),
                   style: AppTextStyles.caption(
                     context,
                     size: 11,
@@ -87,7 +97,7 @@ class PlantRecommendationCardWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: Text(
-                    '${_sensorLabel(entry.key)}: ${entry.value}',
+                    '${_sensorLabel(context, entry.key)}: ${entry.value}',
                     style: AppTextStyles.caption(context, size: 11),
                   ),
                 );
@@ -100,6 +110,7 @@ class PlantRecommendationCardWidget extends StatelessWidget {
   }
 
   List<_RecommendationItem> _buildRecommendationItems(
+    BuildContext context,
     Map<String, dynamic> recommendations,
   ) {
     final result = <_RecommendationItem>[];
@@ -150,13 +161,21 @@ class PlantRecommendationCardWidget extends StatelessWidget {
       );
     }
 
-    addFromRaw('npk', 'Penyesuaian NPK', recommendations['npk']);
-    addFromRaw('ph', 'Penyesuaian pH Tanah', recommendations['ph']);
+    addFromRaw(
+      'npk',
+      context.l10n.monitoringNpkAdjustment,
+      recommendations['npk'],
+    );
+    addFromRaw(
+      'ph',
+      context.l10n.monitoringSoilPhAdjustment,
+      recommendations['ph'],
+    );
 
     final lingkungan = _extractMap(recommendations['lingkungan']);
     if (lingkungan != null) {
       for (final entry in lingkungan.entries) {
-        addFromRaw(entry.key, _sensorLabel(entry.key), entry.value);
+        addFromRaw(entry.key, _sensorLabel(context, entry.key), entry.value);
       }
     }
 
@@ -172,7 +191,7 @@ class PlantRecommendationCardWidget extends StatelessWidget {
     return result;
   }
 
-  String _titleFor(Map<String, dynamic> data) {
+  String _titleFor(BuildContext context, Map<String, dynamic> data) {
     return _stringValue(
           data['plant_name'] ??
               data['plantName'] ??
@@ -180,26 +199,26 @@ class PlantRecommendationCardWidget extends StatelessWidget {
               data['name'] ??
               data['label'],
         ) ??
-        'Rekomendasi Site';
+        context.l10n.monitoringRecommendationSiteTitle;
   }
 
-  String _subtitleFor(Map<String, dynamic> data) {
+  String _subtitleFor(BuildContext context, Map<String, dynamic> data) {
     final cached = data['cached'] == true;
     return cached
-        ? 'Berdasarkan data sensor tersimpan'
-        : 'Berdasarkan sensor site aktif';
+        ? context.l10n.monitoringRecommendationCachedSubtitle
+        : context.l10n.monitoringRecommendationActiveSiteSubtitle;
   }
 
-  String _sensorLabel(String key) {
+  String _sensorLabel(BuildContext context, String key) {
     switch (key) {
       case 'nitrogen':
-        return 'Nitrogen';
+        return context.l10n.commonNitrogen;
       case 'phosphorus':
-        return 'Fosfor';
+        return context.l10n.commonPhosphorus;
       case 'potassium':
-        return 'Kalium';
+        return context.l10n.commonPotassium;
       case 'ph':
-        return 'pH Tanah';
+        return context.l10n.monitoringSoilPhLabel;
       default:
         return metadataAdapter.labelFor(key);
     }

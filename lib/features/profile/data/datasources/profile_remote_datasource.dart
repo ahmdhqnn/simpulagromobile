@@ -50,6 +50,8 @@ class ProfileRemoteDatasource {
     String email,
     String phone,
   ) async {
-    throw const UnsupportedBackendEndpointException('Update profil belum didukung oleh server');
+    throw const UnsupportedBackendEndpointException(
+      'Update profil belum didukung oleh server',
+    );
   }
 }

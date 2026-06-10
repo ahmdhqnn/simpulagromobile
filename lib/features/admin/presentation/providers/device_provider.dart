@@ -9,7 +9,9 @@ import '../../domain/repositories/device_repository.dart';
 // ═══════════════════════════════════════════════════════════
 // DATASOURCE PROVIDER
 // ═══════════════════════════════════════════════════════════
-final adminDeviceRemoteDatasourceProvider = Provider<DeviceRemoteDatasource>((ref) {
+final adminDeviceRemoteDatasourceProvider = Provider<DeviceRemoteDatasource>((
+  ref,
+) {
   final dioClient = ref.watch(dioClientProvider);
   return DeviceRemoteDatasourceImpl(dioClient.dio);
 });

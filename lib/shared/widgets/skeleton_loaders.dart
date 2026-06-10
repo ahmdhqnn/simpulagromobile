@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/l10n.dart';
 import 'skeleton_elements.dart';
 import 'app_card_widget.dart';
 import 'section_header_widget.dart';
@@ -662,34 +663,43 @@ class _SensorStatusCardSkeleton extends StatelessWidget {
 
 class CompactStatsCardSkeleton extends StatelessWidget {
   final int itemCount;
-  final double height;
+  final double? height;
 
   const CompactStatsCardSkeleton({
     super.key,
     this.itemCount = 3,
-    this.height = 74,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     return _SkeletonCard(
-      height: height,
+      height: height ?? 74,
       radius: AppRadius.lg,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(
           itemCount,
-          (_) => const Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SkeletonBox(width: 28, height: 28, borderRadius: 8),
-                SizedBox(height: 4),
-                SkeletonLine(width: 48, height: 11),
-                SizedBox(height: 2),
-                SkeletonLine(width: 28, height: 12),
-              ],
-            ),
+          (_) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SkeletonBox(
+                width: 32,
+                height: 32,
+                borderRadius: AppRadius.xs,
+              ),
+              const SizedBox(width: 6),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  SkeletonLine(width: 20, height: 14),
+                  SizedBox(height: 4),
+                  SkeletonLine(width: 32, height: 10),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -3255,26 +3265,28 @@ class ProfileScreenSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
+    final l10n = context.l10n;
+
+    return SingleChildScrollView(
       child: Column(
         children: [
-          SizedBox(height: 20),
-          SkeletonContainer(child: SkeletonCircle(size: 100)),
-          SizedBox(height: 16),
-          SkeletonContainer(
+          const SizedBox(height: 20),
+          const SkeletonContainer(child: SkeletonCircle(size: 100)),
+          const SizedBox(height: 16),
+          const SkeletonContainer(
             child: SkeletonBox(width: 80, height: 22, borderRadius: 10),
           ),
-          SizedBox(height: 8),
-          SkeletonContainer(child: SkeletonLine(width: 160, height: 22)),
-          SizedBox(height: 24),
+          const SizedBox(height: 8),
+          const SkeletonContainer(child: SkeletonLine(width: 160, height: 22)),
+          const SizedBox(height: 24),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SectionHeaderWidget(title: 'Informasi Akun'),
-                SizedBox(height: 14),
-                _SkeletonCard(
+                SectionHeaderWidget(title: l10n.profileAccountInfoTitle),
+                const SizedBox(height: 14),
+                const _SkeletonCard(
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3288,15 +3300,15 @@ class ProfileScreenSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SectionHeaderWidget(title: 'Forum'),
-                SizedBox(height: 14),
-                _SkeletonCard(
+                SectionHeaderWidget(title: l10n.forumTitle),
+                const SizedBox(height: 14),
+                const _SkeletonCard(
                   padding: EdgeInsets.all(16),
                   child: Row(
                     children: [
@@ -3319,15 +3331,15 @@ class ProfileScreenSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SectionHeaderWidget(title: 'Hak Akses'),
-                SizedBox(height: 14),
-                _SkeletonCard(
+                SectionHeaderWidget(title: l10n.profilePermissionsSection),
+                const SizedBox(height: 14),
+                const _SkeletonCard(
                   padding: EdgeInsets.all(16),
                   child: Row(
                     children: [
@@ -3350,8 +3362,8 @@ class ProfileScreenSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 24),
-          Padding(
+          const SizedBox(height: 24),
+          const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: SkeletonContainer(
               child: SkeletonBox(

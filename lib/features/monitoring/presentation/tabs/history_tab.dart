@@ -130,7 +130,7 @@ class HistoryTab extends ConsumerWidget {
                 if (param == null) {
                   return InfoStateWidget.icon(
                     icon: Icons.table_chart_outlined,
-                    message: 'Parameter sensor tidak tersedia pada data raw',
+                    message: l10n.monitoringRawParameterUnavailable,
                     height: 60,
                   );
                 }

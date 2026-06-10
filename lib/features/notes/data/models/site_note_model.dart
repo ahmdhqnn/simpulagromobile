@@ -28,10 +28,10 @@ class SiteNoteModel {
   }
 
   SiteNote toEntity() => SiteNote(
-        noteId: noteId,
-        siteId: siteId,
-        userId: userId,
-        noteContent: noteContent,
-        createdAt: createdAt,
-      );
+    noteId: noteId,
+    siteId: siteId,
+    userId: userId,
+    noteContent: noteContent,
+    createdAt: createdAt,
+  );
 }

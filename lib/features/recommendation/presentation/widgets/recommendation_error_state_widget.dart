@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/l10n.dart';
 
 class RecommendationErrorStateWidget extends StatelessWidget {
   final String errorMessage;
@@ -28,7 +29,7 @@ class RecommendationErrorStateWidget extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Gagal memuat rekomendasi',
+              context.l10n.recommendationLoadFailed,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: context.sp(18),
@@ -38,7 +39,7 @@ class RecommendationErrorStateWidget extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.01)),
             Text(
-              toUiErrorMessage(errorMessage),
+              toUiErrorMessage(errorMessage, context.l10n),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
@@ -56,9 +57,9 @@ class RecommendationErrorStateWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
-              child: const Text(
-                'Coba Lagi',
-                style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+              child: Text(
+                context.l10n.commonRetry,
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
             ),
           ],

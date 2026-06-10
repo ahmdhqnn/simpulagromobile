@@ -11,7 +11,9 @@ import '../../domain/repositories/plant_repository.dart';
 // ═══════════════════════════════════════════════════════════
 // DATASOURCE PROVIDER
 // ═══════════════════════════════════════════════════════════
-final adminPlantRemoteDatasourceProvider = Provider<PlantRemoteDatasource>((ref) {
+final adminPlantRemoteDatasourceProvider = Provider<PlantRemoteDatasource>((
+  ref,
+) {
   final dioClient = ref.watch(dioClientProvider);
   return PlantRemoteDatasourceImpl(dioClient.dio);
 });

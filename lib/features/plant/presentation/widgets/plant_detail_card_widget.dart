@@ -7,6 +7,7 @@ import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
@@ -29,10 +30,11 @@ class PlantDetailCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final phaseAsync = plant.isCurrentPlanting
         ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
         : null;
-    final phaseLabel = phaseLabelForPlant(plant, phaseAsync);
+    final phaseLabel = phaseLabelForPlant(plant, phaseAsync, l10n);
     final gapSm = context.rh(0.012);
     final gapMd = context.rh(0.016);
     final gapLg = context.rh(0.02);
@@ -159,7 +161,7 @@ class _PlantImageSection extends StatelessWidget {
             GrowthPhaseButton(
               siteId: plant.siteId ?? '',
               plantName:
-                  plant.plantType?.displayName ?? plant.plantName ?? 'Tanaman',
+                  plant.plantType?.localizedLabel(AppLocalizations.of(context)!) ?? plant.plantName ?? AppLocalizations.of(context)!.plantTitle,
             ),
             const Spacer(),
             const AgroIndicatorButton(),
@@ -240,7 +242,7 @@ class _PlantInfoSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
                 child: Text(
-                  plant.statusText,
+                  plant.localizedStatus(l10n),
                   style: AppTextStyles.label(
                     context,
                     size: context.sp(11),
@@ -255,7 +257,7 @@ class _PlantInfoSection extends StatelessWidget {
           SizedBox(height: context.rh(0.018)),
           _DetailRow(
             label: l10n.plantTypeLabel,
-            value: plant.plantType?.displayName ?? '-',
+            value: plant.plantType?.localizedLabel(l10n) ?? '-',
           ),
           _DetailRow(
             label: l10n.plantVarietasIdLabel,

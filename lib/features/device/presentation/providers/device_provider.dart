@@ -25,54 +25,41 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 // ═══════════════════════════════════════════════════════════
 // DEVICE LIST PROVIDER (by Site ID)
 // ═══════════════════════════════════════════════════════════
-final deviceListProvider = FutureProvider.autoDispose.family<List<Device>, String>((
-  ref,
-  siteId,
-) async {
-  final repository = ref.watch(deviceRepositoryProvider);
-  return await ref.retryOnError(() async {
-    final result = await repository.getDevices(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (devices) => devices,
-    );
-  });
-});
+final deviceListProvider = FutureProvider.autoDispose
+    .family<List<Device>, String>((ref, siteId) async {
+      final repository = ref.watch(deviceRepositoryProvider);
+      return await ref.retryOnError(() async {
+        final result = await repository.getDevices(siteId);
+        return result.fold((failure) => throw failure, (devices) => devices);
+      });
+    });
 
 // ═══════════════════════════════════════════════════════════
 // DEVICE DETAIL PROVIDER (by Site ID & Device ID)
 // ═══════════════════════════════════════════════════════════
-final deviceDetailProvider =
-    FutureProvider.autoDispose.family<Device, ({String siteId, String devId})>((
-      ref,
-      params,
-    ) async {
+final deviceDetailProvider = FutureProvider.autoDispose
+    .family<Device, ({String siteId, String devId})>((ref, params) async {
       final repository = ref.watch(deviceRepositoryProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getDeviceById(params.siteId, params.devId);
-        return result.fold(
-          (failure) => throw failure,
-          (device) => device,
+        final result = await repository.getDeviceById(
+          params.siteId,
+          params.devId,
         );
+        return result.fold((failure) => throw failure, (device) => device);
       });
     });
 
 // ═══════════════════════════════════════════════════════════
 // DEVICE COORDINATES PROVIDER
 // ═══════════════════════════════════════════════════════════
-final deviceCoordinatesProvider = FutureProvider.autoDispose.family<List<Device>, String>((
-  ref,
-  siteId,
-) async {
-  final repository = ref.watch(deviceRepositoryProvider);
-  return await ref.retryOnError(() async {
-    final result = await repository.getDeviceCoordinates(siteId);
-    return result.fold(
-      (failure) => throw failure,
-      (devices) => devices,
-    );
-  });
-});
+final deviceCoordinatesProvider = FutureProvider.autoDispose
+    .family<List<Device>, String>((ref, siteId) async {
+      final repository = ref.watch(deviceRepositoryProvider);
+      return await ref.retryOnError(() async {
+        final result = await repository.getDeviceCoordinates(siteId);
+        return result.fold((failure) => throw failure, (devices) => devices);
+      });
+    });
 
 // ═══════════════════════════════════════════════════════════
 // SELECTED DEVICE PROVIDER
@@ -166,7 +153,9 @@ class DeviceFormNotifier extends StateNotifier<DeviceFormState> {
 }
 
 final deviceFormProvider =
-    StateNotifierProvider.autoDispose<DeviceFormNotifier, DeviceFormState>((ref) {
+    StateNotifierProvider.autoDispose<DeviceFormNotifier, DeviceFormState>((
+      ref,
+    ) {
       final repository = ref.watch(deviceRepositoryProvider);
       return DeviceFormNotifier(repository);
     });

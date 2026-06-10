@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
@@ -30,7 +31,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
         ],
       ),
       loading: () => const RecommendationOverviewListSkeleton(),
-      error: (error, _) => _buildErrorCard(context, toUiErrorMessage(error)),
+      error: (error, _) => _buildErrorCard(context, toUiErrorMessage(error, context.l10n)),
     );
   }
 
@@ -41,9 +42,9 @@ class DashboardRecommendationCard extends ConsumerWidget {
   ) {
     return _buildOverviewCard(
       context: context,
-      title: 'Rekomendasi Site',
-      subtitle: 'Kondisi site terpilih dan kebutuhan tindakan',
-      description: 'Analisis umum kondisi site dan kebutuhan tindakan.',
+      title: context.l10n.recommendationSiteTitle,
+      subtitle: context.l10n.recommendationSiteSubtitle,
+      description: context.l10n.recommendationSiteDescription,
       icon: Icons.location_on_outlined,
       color: AppColors.primary,
       items: items,
@@ -59,9 +60,9 @@ class DashboardRecommendationCard extends ConsumerWidget {
   ) {
     return _buildOverviewCard(
       context: context,
-      title: 'Rekomendasi Tanaman',
-      subtitle: 'Tanaman aktif di site terpilih',
-      description: 'Rekomendasi terbaru berbasis data tanaman aktif.',
+      title: context.l10n.recommendationPlantTitle,
+      subtitle: context.l10n.recommendationPlantSubtitle,
+      description: context.l10n.recommendationPlantDescription,
       icon: Icons.eco_outlined,
       color: AppColors.success,
       items: items,
@@ -76,17 +77,18 @@ class DashboardRecommendationCard extends ConsumerWidget {
     RecommendationPhaseSnapshot snapshot,
   ) {
     final phaseLabel = snapshot.phaseName == null
-        ? 'Belum ada fase aktif'
+        ? context.l10n.recommendationPhaseNoActive
         : [
-            'Fase: ${snapshot.phaseName}',
-            if (snapshot.currentHst != null) 'HST ${snapshot.currentHst}',
+            context.l10n.recommendationPhaseLabel(snapshot.phaseName!),
+            if (snapshot.currentHst != null)
+              context.l10n.recommendationHstLabel(snapshot.currentHst!),
           ].join(' • ');
 
     return _buildOverviewCard(
       context: context,
-      title: 'Rekomendasi Fase',
+      title: context.l10n.recommendationPhaseTitle,
       subtitle: phaseLabel,
-      description: 'Saran aksi spesifik sesuai fase pertumbuhan aktif.',
+      description: context.l10n.recommendationPhaseDescription,
       icon: Icons.timeline_outlined,
       color: AppColors.info,
       items: snapshot.items,
@@ -177,7 +179,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
               children: [
                 _metricPill(
                   context,
-                  'Total',
+                  context.l10n.commonTotal,
                   '${items.length}',
                   color.withValues(alpha: 0.1),
                   color,
@@ -185,7 +187,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 _metricPill(
                   context,
-                  'Pending',
+                  context.l10n.commonPending,
                   '$pending',
                   AppColors.warning.withValues(alpha: 0.1),
                   AppColors.warning,
@@ -227,7 +229,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          'Lihat Detail',
+                          context.l10n.commonViewDetail,
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(12),

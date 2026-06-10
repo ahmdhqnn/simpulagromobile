@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../admin/presentation/providers/permission_guard_provider.dart';
@@ -43,12 +44,12 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     final isTriggeringRekap = rekapState.isLoading;
 
     if (!isAdmin) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: InfoStateWidget.icon(
             icon: Icons.lock_outline_rounded,
-            message: 'Tab admin hanya untuk pengguna dengan role admin.',
+            message: context.l10n.monitoringAdminOnlyMessage,
             height: 120,
           ),
         ),
@@ -56,12 +57,12 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     }
 
     if (siteId == null) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: InfoStateWidget.icon(
             icon: Icons.agriculture_outlined,
-            message: 'Pilih site terlebih dahulu',
+            message: context.l10n.siteSelectFirst,
             height: 120,
           ),
         ),
@@ -84,21 +85,20 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const MonitoringCardHeaderWidget.icon(
+                MonitoringCardHeaderWidget.icon(
                   icon: Icons.edit_note_rounded,
-                  title: 'Koreksi Sensor Read',
-                  description:
-                      'Perbarui nilai atau status read pada site aktif',
+                  title: context.l10n.monitoringReadCorrectionTitle,
+                  description: context.l10n.monitoringReadCorrectionDescription,
                   background: AppColors.softBlue,
                   tint: AppColors.info,
                 ),
                 const SizedBox(height: 16),
-                TextField(
+                 TextField(
                   controller: _readIdController,
                   enabled: !isSavingCorrection,
-                  decoration: const InputDecoration(
-                    labelText: 'read_id',
-                    prefixIcon: Icon(Icons.key_rounded),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.monitoringReadIdLabel,
+                    prefixIcon: const Icon(Icons.key_rounded),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -108,18 +108,18 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'read_value (opsional)',
-                    prefixIcon: Icon(Icons.speed_rounded),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.monitoringReadValueLabel,
+                    prefixIcon: const Icon(Icons.speed_rounded),
                   ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _readStsController,
                   enabled: !isSavingCorrection,
-                  decoration: const InputDecoration(
-                    labelText: 'read_sts (opsional)',
-                    prefixIcon: Icon(Icons.flag_rounded),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.monitoringReadStsLabel,
+                    prefixIcon: const Icon(Icons.flag_rounded),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -141,7 +141,9 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
                         )
                       : const Icon(Icons.save_rounded),
                   label: Text(
-                    isSavingCorrection ? 'Menyimpan...' : 'Simpan Koreksi',
+                    isSavingCorrection
+                        ? context.l10n.monitoringSaving
+                        : context.l10n.monitoringSaveCorrection,
                   ),
                 ),
               ],
@@ -154,11 +156,11 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const MonitoringCardHeaderWidget.icon(
+                MonitoringCardHeaderWidget.icon(
                   icon: Icons.event_repeat_rounded,
-                  title: 'Generate Rekap Harian',
+                  title: context.l10n.monitoringGenerateDailyRecapTitle,
                   description:
-                      'Proses ulang agregasi sensor untuk tanggal dipilih',
+                      context.l10n.monitoringGenerateDailyRecapDescription,
                   background: AppColors.softGreen,
                   tint: AppColors.primary,
                 ),
@@ -196,7 +198,9 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
                         )
                       : const Icon(Icons.play_arrow_rounded),
                   label: Text(
-                    isTriggeringRekap ? 'Memproses...' : 'Generate Rekap',
+                    isTriggeringRekap
+                        ? context.l10n.monitoringProcessing
+                        : context.l10n.monitoringGenerateRecap,
                   ),
                 ),
               ],
@@ -208,9 +212,10 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
   }
 
   Future<void> _submitCorrection(String siteId) async {
+    final l10n = context.l10n;
     final readId = _readIdController.text.trim();
     if (readId.isEmpty) {
-      _showSnackBar('read_id wajib diisi');
+      _showSnackBar(l10n.monitoringReadIdRequired);
       return;
     }
 
@@ -219,13 +224,13 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         ? null
         : double.tryParse(valueText.replaceAll(',', '.'));
     if (valueText.isNotEmpty && value == null) {
-      _showSnackBar('read_value harus berupa angka');
+      _showSnackBar(l10n.monitoringReadValueMustBeNumber);
       return;
     }
 
     final sts = _readStsController.text.trim();
     if (value == null && sts.isEmpty) {
-      _showSnackBar('Isi read_value atau read_sts');
+      _showSnackBar(l10n.monitoringReadValueOrStatusRequired);
       return;
     }
 
@@ -238,7 +243,9 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
           readSts: sts.isEmpty ? null : sts,
         );
     if (!mounted) return;
-    _showSnackBar(ok ? 'Read diperbarui' : 'Gagal memperbarui read');
+    _showSnackBar(
+      ok ? l10n.monitoringReadUpdated : l10n.monitoringReadUpdateFailed,
+    );
     if (ok) {
       _readIdController.clear();
       _readValueController.clear();
@@ -250,12 +257,17 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
   }
 
   Future<void> _triggerRekap(String siteId) async {
+    final l10n = context.l10n;
     final day = DateFormat('yyyy-MM-dd').format(_rekapDay);
     final ok = await ref
         .read(dailyRekapTriggerProvider.notifier)
         .trigger(siteId, day);
     if (!mounted) return;
-    _showSnackBar(ok ? 'Rekap diproses untuk $day' : 'Gagal trigger rekap');
+    _showSnackBar(
+      ok
+          ? l10n.monitoringDailyRecapTriggered(day)
+          : l10n.monitoringDailyRecapTriggerFailed,
+    );
     if (ok) {
       ref.invalidate(dailyTodayProvider);
       ref.invalidate(dailyByDayProvider);

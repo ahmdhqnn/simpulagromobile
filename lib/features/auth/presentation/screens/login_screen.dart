@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_pill_input.dart';
 import '../widgets/auth_pill_button.dart';
@@ -30,13 +31,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Sesi Anda telah berakhir. Silakan login kembali.',
-                style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                context.l10n.authSessionExpired,
+                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
               ),
               backgroundColor: Colors.orange,
-              duration: Duration(seconds: 4),
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -56,12 +57,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool hasError = false;
 
     if (username.isEmpty) {
-      setState(() => _usernameError = 'Username tidak boleh kosong');
+      setState(() => _usernameError = context.l10n.loginUsernameRequired);
       hasError = true;
     }
 
     if (password.isEmpty) {
-      setState(() => _passwordError = 'Password tidak boleh kosong');
+      setState(() => _passwordError = context.l10n.loginPasswordRequired);
       hasError = true;
     }
 
@@ -84,12 +85,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
-            children: const [
-              Icon(Icons.error_outline, color: Colors.red, size: 28),
-              SizedBox(width: 10),
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 28),
+              const SizedBox(width: 10),
               Text(
-                'Gagal Login',
-                style: TextStyle(
+                context.l10n.loginFailedTitle,
+                style: const TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -98,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ],
           ),
           content: Text(
-            error ?? 'Username atau Password salah',
+            error ?? context.l10n.loginFailedMessage,
             style: const TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 14,
@@ -107,9 +108,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text(
-                'OK',
-                style: TextStyle(
+              child: Text(
+                context.l10n.commonOk,
+                style: const TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
@@ -169,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Masa Depan\nBertani, Hari Ini.",
+                      context.l10n.loginHeroTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: "Plus Jakarta Sans",
@@ -183,7 +184,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SizedBox(height: context.rh(0.012)),
 
                     Text(
-                      "Please SignIn to your account",
+                      context.l10n.loginSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: "Plus Jakarta Sans",
@@ -196,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     AuthPillInput(
                       controller: usernameController,
-                      hint: "Your Username",
+                      hint: context.l10n.loginUsernameHint,
                       enabled: !isLoading,
                     ),
 
@@ -219,7 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     AuthPillInput(
                       controller: passwordController,
-                      hint: "Your Password",
+                      hint: context.l10n.loginPasswordHint,
                       isPassword: true,
                       enabled: !isLoading,
                     ),
@@ -244,7 +245,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        "Forgot Password?",
+                        context.l10n.loginForgotPassword,
                         style: TextStyle(
                           fontFamily: "Plus Jakarta Sans",
                           fontSize: context.sp(10),
@@ -256,7 +257,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SizedBox(height: context.rh(0.036)),
 
                     AuthPillButton(
-                      text: "SignIn",
+                      text: context.l10n.loginSignIn,
                       loading: isLoading,
                       onPressed: login,
                     ),

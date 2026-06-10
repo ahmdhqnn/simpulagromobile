@@ -21,41 +21,39 @@ final sensorRepositoryProvider = Provider<SensorRepository>((ref) {
 
 // ─── Sensor List Provider (by siteId) ────────────────────
 /// Mengambil semua sensor untuk site yang dipilih
-final sensorListProvider = FutureProvider.autoDispose.family<List<Sensor>, String>((
-  ref,
-  siteId,
-) async {
-  final repository = ref.watch(sensorRepositoryProvider);
-  return await ref.retryOnError(() async {
-    final result = await repository.getSensors(siteId);
-    return result.fold((f) => throw f, (data) => data);
-  });
-});
+final sensorListProvider = FutureProvider.autoDispose
+    .family<List<Sensor>, String>((ref, siteId) async {
+      final repository = ref.watch(sensorRepositoryProvider);
+      return await ref.retryOnError(() async {
+        final result = await repository.getSensors(siteId);
+        return result.fold((f) => throw f, (data) => data);
+      });
+    });
 
 // ─── Sensor List for Selected Site ───────────────────────
 /// Shortcut provider yang otomatis menggunakan selectedSiteProvider
-final sensorsForSelectedSiteProvider = FutureProvider.autoDispose<List<Sensor>>((
-  ref,
-) async {
-  final siteId = ref.watch(selectedSiteIdProvider);
-  if (siteId == null) return [];
-  final repository = ref.watch(sensorRepositoryProvider);
-  return await ref.retryOnError(() async {
-    final result = await repository.getSensors(siteId);
-    return result.fold((f) => throw f, (data) => data);
-  });
-});
+final sensorsForSelectedSiteProvider = FutureProvider.autoDispose<List<Sensor>>(
+  (ref) async {
+    final siteId = ref.watch(selectedSiteIdProvider);
+    if (siteId == null) return [];
+    final repository = ref.watch(sensorRepositoryProvider);
+    return await ref.retryOnError(() async {
+      final result = await repository.getSensors(siteId);
+      return result.fold((f) => throw f, (data) => data);
+    });
+  },
+);
 
 // ─── Sensor Detail Provider ───────────────────────────────
 /// Mengambil detail sensor berdasarkan siteId dan sensId
-final sensorDetailProvider =
-    FutureProvider.autoDispose.family<Sensor, ({String siteId, String sensId})>((
-      ref,
-      params,
-    ) async {
+final sensorDetailProvider = FutureProvider.autoDispose
+    .family<Sensor, ({String siteId, String sensId})>((ref, params) async {
       final repository = ref.watch(sensorRepositoryProvider);
       return await ref.retryOnError(() async {
-        final result = await repository.getSensorById(params.siteId, params.sensId);
+        final result = await repository.getSensorById(
+          params.siteId,
+          params.sensId,
+        );
         return result.fold((f) => throw f, (data) => data);
       });
     });
@@ -152,7 +150,9 @@ class SensorFormNotifier extends StateNotifier<SensorFormState> {
 
 // ─── Sensor Form Provider ─────────────────────────────────
 final sensorFormProvider =
-    StateNotifierProvider.autoDispose<SensorFormNotifier, SensorFormState>((ref) {
+    StateNotifierProvider.autoDispose<SensorFormNotifier, SensorFormState>((
+      ref,
+    ) {
       final repository = ref.watch(sensorRepositoryProvider);
       return SensorFormNotifier(repository, ref);
     });

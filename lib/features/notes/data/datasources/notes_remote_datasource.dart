@@ -9,7 +9,11 @@ class NotesRemoteDataSource {
   const NotesRemoteDataSource(this._dio);
 
   /// GET /sites/{siteId}/notes
-  Future<List<SiteNoteModel>> getNotes(String siteId, {int? page, int? limit}) async {
+  Future<List<SiteNoteModel>> getNotes(
+    String siteId, {
+    int? page,
+    int? limit,
+  }) async {
     final response = await _dio.get(
       ApiEndpoints.siteNotes(siteId),
       queryParameters: {
@@ -17,10 +21,9 @@ class NotesRemoteDataSource {
         if (limit != null) 'limit': limit,
       },
     );
-    return ResponseParser.extractDataList(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SiteNoteModel.fromJson)
-        .toList();
+    return ResponseParser.extractDataList(
+      response.data,
+    ).whereType<Map<String, dynamic>>().map(SiteNoteModel.fromJson).toList();
   }
 
   /// POST /sites/{siteId}/notes

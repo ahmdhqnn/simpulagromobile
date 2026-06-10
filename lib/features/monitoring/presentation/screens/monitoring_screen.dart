@@ -132,7 +132,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
                       0,
                     ),
                     child: Row(
-                      children: [const Spacer(), _buildRefreshButton()],
+                      children: [const Spacer(), _buildRefreshButton(context)],
                     ),
                   ),
                   SizedBox(height: context.rh(0.024)),
@@ -164,7 +164,8 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
     );
   }
 
-  Widget _buildRefreshButton() {
+  Widget _buildRefreshButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 58,
       height: 58,
@@ -173,7 +174,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
         borderRadius: BorderRadius.circular(29),
       ),
       child: IconButton(
-        tooltip: 'Refresh tab aktif',
+        tooltip: l10n.monitoringRefreshActiveTab,
         onPressed: () {
           unawaited(_refreshCurrentTab());
         },

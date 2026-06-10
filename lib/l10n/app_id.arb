@@ -60,7 +60,9 @@
   "siteInviteSiteIdLabel": "Site ID: {siteId}",
   "@siteInviteSiteIdLabel": {
     "placeholders": {
-      "siteId": { "type": "String" }
+      "siteId": {
+        "type": "String"
+      }
     }
   },
   "siteInviteUserIdLabel": "User ID",
@@ -108,7 +110,9 @@
   "plantActiveConflict": "Lokasi ini masih memiliki tanaman aktif \"{name}\". Panen terlebih dahulu sebelum menambah yang baru.",
   "@plantActiveConflict": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantCreateSuccess": "Tanaman berhasil ditambahkan",
@@ -122,27 +126,35 @@
   "plantHarvestDialogMessage": "\"{name}\" akan ditandai sudah dipanen. Aksi ini tidak dapat dibatalkan.",
   "@plantHarvestDialogMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantHarvestConfirm": "Ya, panen",
   "plantHarvestSuccess": "\"{name}\" berhasil ditandai sudah panen",
   "@plantHarvestSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantHarvestFailed": "Gagal memanen tanaman",
   "plantDeleteDialogMessage": "\"{name}\" akan dihapus permanen. Aksi ini tidak dapat dibatalkan.",
   "@plantDeleteDialogMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDeleteSuccess": "\"{name}\" berhasil dihapus",
   "@plantDeleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDeleteFailed": "Gagal menghapus tanaman",
@@ -177,13 +189,17 @@
   "phaseDaysValue": "{count} hari",
   "@phaseDaysValue": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
   "phaseProgressDone": "{percent}% selesai",
   "@phaseProgressDone": {
     "placeholders": {
-      "percent": { "type": "String" }
+      "percent": {
+        "type": "String"
+      }
     }
   },
   "phaseDetailProgressTitle": "Progress Fase",
@@ -201,14 +217,18 @@
   "phaseDaysRemaining": "~{count} hari lagi",
   "@phaseDaysRemaining": {
     "placeholders": {
-      "count": { "type": "String" }
+      "count": {
+        "type": "String"
+      }
     }
   },
   "plantDetailHarvestTitle": "Konfirmasi Panen",
   "plantDetailHarvestMessage": "Tandai \"{name}\" sudah dipanen?",
   "@plantDetailHarvestMessage": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "plantDetailHarvestConfirm": "Ya, Sudah Panen",
@@ -222,8 +242,8 @@
   "monitoringTabRawReads": "Raw Reads",
   "monitoringTabDailyRecap": "Rekap Harian",
   "monitoringTabMonthlyRecap": "Rekap Bulan",
-  "monitoringTabMaps": "Maps",
-  "monitoringTabAnalytics": "Analytics",
+  "monitoringTabMaps": "Peta",
+  "monitoringTabAnalytics": "Analisis",
   "monitoringTabAdmin": "Admin",
   "monitoringSyncWaiting": "Menunggu sinkronisasi",
   "monitoringSyncAt": "Sinkron {time}",
@@ -253,7 +273,7 @@
   "monitoringSensorDetailSection": "Detail Status Sensor",
   "monitoringEmptySensor": "Belum ada data sensor",
   "monitoringEmptyTodayChart": "Belum ada data grafik hari ini",
-  "monitoringHistoryChartSection": "Grafik History",
+  "monitoringHistoryChartSection": "Riwayat Grafik",
   "monitoringEmptyHistory": "Belum ada data riwayat",
   "monitoringSelectSensor": "Pilih parameter sensor",
   "monitoringHistoryDataSection": "Data Riwayat",
@@ -304,5 +324,1354 @@
         "type": "String"
       }
     }
-  }
+  },
+  "commonYes": "Ya",
+  "commonNo": "Tidak",
+  "commonCancel": "Batal",
+  "commonSave": "Simpan",
+  "commonDelete": "Hapus",
+  "commonEdit": "Edit",
+  "commonBack": "Kembali",
+  "commonRetry": "Coba Lagi",
+  "commonRefresh": "Muat Ulang",
+  "commonLoading": "Memuat...",
+  "commonError": "Terjadi kesalahan",
+  "commonLoadFailed": "Gagal memuat data",
+  "commonNoData": "Tidak ada data",
+  "commonNoDataYet": "Belum ada data",
+  "commonActive": "Aktif",
+  "commonInactive": "Tidak Aktif",
+  "commonUnknown": "Tidak diketahui",
+  "commonStatus": "Status",
+  "commonPriority": "Prioritas",
+  "commonTotal": "Total",
+  "commonPending": "Menunggu",
+  "commonInProgress": "Dikerjakan",
+  "commonCompleted": "Selesai",
+  "commonFailed": "Gagal",
+  "commonLow": "Rendah",
+  "commonMedium": "Sedang",
+  "commonHigh": "Tinggi",
+  "commonCritical": "Kritis",
+  "commonApplied": "Diterapkan",
+  "commonDismissed": "Diabaikan",
+  "commonExpired": "Kedaluwarsa",
+  "commonAll": "Semua",
+  "commonOther": "Lainnya",
+  "commonGeneral": "Umum",
+  "commonHighPriority": "Prioritas Tinggi",
+  "commonActionRequired": "Perlu Tindakan",
+  "commonInformation": "Informasi",
+  "commonLocation": "Lokasi",
+  "commonName": "Nama",
+  "commonAddress": "Alamat",
+  "commonCoordinates": "Koordinat",
+  "commonAltitude": "Ketinggian",
+  "commonCreatedAt": "Dibuat",
+  "commonUpdatedAt": "Terakhir Diperbarui",
+  "commonCompletedAt": "Selesai Pada",
+  "commonDescription": "Deskripsi",
+  "commonDate": "Tanggal",
+  "commonUnit": "Satuan",
+  "commonSearch": "Cari",
+  "commonActions": "Aksi",
+  "commonClose": "Tutup",
+  "commonPreview": "Preview",
+  "commonNone": "Tidak ada",
+  "commonInvalid": "Tidak valid",
+  "commonRequired": "Wajib diisi",
+  "siteTitle": "Site",
+  "siteSelectFirst": "Pilih site terlebih dahulu",
+  "siteSelect": "Pilih Site",
+  "taskTypePlanting": "Penanaman",
+  "taskTypeFertilizing": "Pemupukan",
+  "taskTypeHarvesting": "Panen",
+  "taskTypeWatering": "Penyiraman",
+  "taskTypePestControl": "Pengendalian Hama",
+  "taskTypeMonitoring": "Monitoring",
+  "taskTypeMaintenance": "Perawatan",
+  "cropRice": "Padi",
+  "cropCorn": "Jagung",
+  "cropSoybean": "Kedelai",
+  "recommendationTypeNpk": "Pemupukan NPK",
+  "recommendationTypePh": "Penyesuaian pH",
+  "recommendationAllStatuses": "Semua Status",
+  "taskAddTitle": "Tambah Task",
+  "taskEditTitle": "Edit Task",
+  "taskNameLabel": "Nama Task",
+  "taskNameHint": "Masukkan nama task",
+  "taskNameRequired": "Nama task harus diisi",
+  "taskDescriptionHint": "Tambahkan deskripsi task",
+  "taskTypeLabel": "Jenis Task",
+  "taskEmptyAll": "Belum ada task",
+  "taskEmptyPending": "Tidak ada task yang menunggu",
+  "taskEmptyProgress": "Tidak ada task yang sedang dikerjakan",
+  "taskEmptyCompleted": "Belum ada task yang selesai",
+  "taskEmptyFailed": "Tidak ada task yang gagal",
+  "taskSiteRequiredForEditTitle": "Site belum dipilih",
+  "taskSiteRequiredForEditMessage": "Pilih site terlebih dahulu sebelum mengedit task.",
+  "taskLoadFailed": "Gagal memuat task",
+  "taskNoSite": "Belum ada site",
+  "taskSiteIdMissing": "Site ID tidak ditemukan",
+  "taskUpdateSuccess": "Task berhasil diupdate",
+  "taskCreateSuccess": "Task berhasil ditambahkan",
+  "taskDeleteTitle": "Hapus Task",
+  "taskDeleteSuccess": "Task berhasil dihapus",
+  "taskMarkComplete": "Tandai Selesai",
+  "taskStartWork": "Mulai Kerjakan",
+  "taskInfoTitle": "Informasi Task",
+  "taskTimeDetailsTitle": "Detail Waktu",
+  "taskTimelineTitle": "Timeline",
+  "taskCreatedTimeline": "Task Dibuat",
+  "taskProgressTimeline": "Task Sedang Dikerjakan",
+  "taskFailedTimeline": "Task Gagal",
+  "taskCompletedTimeline": "Task Selesai",
+  "taskDeleteMessage": "Apakah Anda yakin ingin menghapus task \"{name}\"?",
+  "@taskDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskDeleteFailure": "Gagal menghapus task: {message}",
+  "@taskDeleteFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskUpdateStatusFailure": "Gagal memperbarui status: {message}",
+  "@taskUpdateStatusFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskStatusUpdated": "Status diperbarui ke \"{status}\"",
+  "@taskStatusUpdated": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "taskLoadSiteFailed": "Gagal memuat site: {message}",
+  "@taskLoadSiteFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskUpdateFailure": "Gagal mengupdate task: {message}",
+  "@taskUpdateFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "taskCreateFailure": "Gagal menambah task: {message}",
+  "@taskCreateFailure": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDeleteTitle": "Hapus {itemName}?",
+  "@commonDeleteTitle": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDeleteIrreversible": "Data yang dihapus tidak dapat dikembalikan.",
+  "commonErrorTitle": "Terjadi Kesalahan",
+  "sensorDetailTitle": "Detail Sensor",
+  "sensorTypeLabel": "Tipe",
+  "sensorLoadFailed": "Gagal memuat sensor",
+  "recommendationConfidenceLabel": "Tingkat Keyakinan",
+  "recommendationAppliedBy": "Diterapkan oleh",
+  "monitoringCurrentGrowthPhase": "Fase Pertumbuhan Saat Ini",
+  "recommendationConfidenceUnknown": "Tidak diketahui",
+  "recommendationConfidenceVeryHigh": "Sangat Tinggi",
+  "plantStatusHarvested": "Sudah Panen",
+  "plantStatusGrowing": "Sedang Tumbuh",
+  "dashboardTodayDailyRecap": "Rekap Harian Hari Ini",
+  "dashboardLatestRecommendations": "Rekomendasi Terbaru",
+  "dashboardLatestActivity": "Aktivitas Terbaru",
+  "dashboardActivityLoadFailed": "Gagal memuat aktivitas",
+  "dashboardLatestNotes": "Catatan Terbaru",
+  "dashboardNoDailyRecapToday": "Belum ada rekap harian hari ini",
+  "notesEmptyForSite": "Belum ada catatan untuk site ini",
+  "forumTitle": "Forum",
+  "authWelcome": "Welcome to SimpulAgro",
+  "authSkip": "Lewati",
+  "authNext": "Lanjut",
+  "authGetStarted": "Mulai",
+  "onboardingMonitorTitle": "Pantau Lahan\nLebih Akurat",
+  "onboardingMonitorDesc": "Pantau kondisi tanaman dan kesehatan tanah secara real-time langsung dari smartphone Anda, di mana saja dan kapan saja.",
+  "onboardingDataTitle": "Keputusan Berbasis\nData",
+  "onboardingDataDesc": "Dapatkan wawasan akurat mengenai kelembapan, suhu, dan nutrisi tanah untuk menentukan langkah perawatan yang paling tepat.",
+  "onboardingRiskTitle": "Minimalkan Risiko\nGagal Panen",
+  "onboardingRiskDesc": "Terima notifikasi dini jika terjadi anomali pada lahan sehingga Anda bisa bertindak lebih cepat sebelum masalah berkembang.",
+  "loginHeroTitle": "Masa Depan\nBertani, Hari Ini.",
+  "loginSubtitle": "Silakan masuk ke akun Anda",
+  "loginUsernameHint": "Username Anda",
+  "loginPasswordHint": "Password Anda",
+  "loginUsernameRequired": "Username tidak boleh kosong",
+  "loginPasswordRequired": "Password tidak boleh kosong",
+  "loginForgotPassword": "Lupa Password?",
+  "loginSignIn": "Masuk",
+  "loginFailedTitle": "Gagal Login",
+  "loginFailedMessage": "Username atau password salah",
+  "authSessionExpired": "Sesi Anda telah berakhir. Silakan login kembali.",
+  "siteListTitle": "Pilih Lokasi",
+  "siteDetailTitle": "Detail Lokasi",
+  "siteAddTitle": "Tambah Lokasi",
+  "siteEditTitle": "Edit Lokasi",
+  "siteEmptyTitle": "Belum ada lokasi",
+  "siteEmptyMessage": "Tambahkan lokasi pertanian Anda",
+  "siteIdLabel": "ID Lokasi",
+  "siteIdRequired": "ID lokasi tidak boleh kosong",
+  "siteNameLabel": "Nama Lokasi",
+  "siteNameRequired": "Nama lokasi tidak boleh kosong",
+  "siteNameMinLength": "Nama minimal 3 karakter",
+  "siteAddressHint": "Contoh: Jl. Raya Pertanian No. 123",
+  "siteIdHint": "Contoh: SITE001",
+  "siteNameHint": "Contoh: Sawah Utara",
+  "siteAltitudeLabel": "Ketinggian (meter)",
+  "siteAltitudeHint": "Contoh: 150",
+  "siteGpsCoordinates": "Koordinat GPS",
+  "siteStatusLabel": "Status Lokasi",
+  "siteUpdateSuccess": "Lokasi berhasil diperbarui",
+  "siteCreateSuccess": "Lokasi berhasil ditambahkan",
+  "siteLoadDataFailed": "Gagal memuat data: {message}",
+  "@siteLoadDataFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "siteDataTitle": "Data Site",
+  "siteOverviewTab": "Overview",
+  "siteNotesTab": "Catatan",
+  "siteLocationInfo": "Informasi Lokasi",
+  "siteAdditionalInfo": "Informasi Tambahan",
+  "siteInviteTooltip": "Undang Member",
+  "commonSaveChanges": "Simpan Perubahan",
+  "recommendationTitle": "Rekomendasi",
+  "recommendationHubTitle": "Pusat Rekomendasi",
+  "recommendationSearchHint": "Cari judul, deskripsi, tanaman atau site",
+  "recommendationEmptyTitle": "Tidak ada rekomendasi",
+  "recommendationEmptyAll": "Belum ada rekomendasi tersedia.\nPastikan sensor sudah aktif dan mengirim data.",
+  "recommendationReload": "Muat Ulang",
+  "recommendationLoadFailed": "Gagal memuat rekomendasi",
+  "recommendationEmptyDataTitle": "Data rekomendasi kosong",
+  "recommendationEmptyForSite": "Belum ada rekomendasi yang tersedia untuk site ini.",
+  "recommendationFilterCategory": "Filter Kategori",
+  "recommendationFilterStatus": "Filter Status",
+  "recommendationPriorityStat": "Prioritas",
+  "recommendationDismiss": "Abaikan",
+  "recommendationApply": "Terapkan",
+  "recommendationEmptyFiltered": "Tidak ada rekomendasi untuk filter \"{filter}\".",
+  "@recommendationEmptyFiltered": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationEmptyScoped": "Tidak ada data untuk filter {scope} dengan status {status}.",
+  "@recommendationEmptyScoped": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationAccuracy": "Akurasi: {level}",
+  "@recommendationAccuracy": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationStepsTitle": "Langkah-langkah",
+  "recommendationParametersTitle": "Parameter",
+  "recommendationSelectPhaseFirst": "Pilih fase terlebih dahulu",
+  "recommendationLabSaved": "Rekomendasi tersimpan",
+  "recommendationLabTestTitle": "[TEST] Rekomendasi dummy - admin only",
+  "recommendationPlantInputTitle": "Input nilai sensor untuk rekomendasi tanaman",
+  "recommendationNpkStatusLabel": "Status NPK",
+  "recommendationNpkDoseLabel": "Dosis NPK",
+  "recommendationPhStatusLabel": "Status pH",
+  "recommendationPhDoseLabel": "Dosis pH",
+  "recommendationNoAdditionalDose": "Tidak perlu tambahan",
+  "recommendationBackendDataUnavailable": "Belum tersedia dari backend",
+  "recommendationLabAdminTestTitle": "[TEST] Rekomendasi dummy - admin only",
+  "recommendationSaveFailed": "Gagal: {error}",
+  "@recommendationSaveFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "recommendationAllTab": "Semua Rekomendasi",
+  "recommendationHistoryTab": "Riwayat",
+  "recommendationByPhaseTab": "Per Fase",
+  "recommendationSelectPhase": "Pilih Fase",
+  "recommendationNoData": "Tidak ada data",
+  "recommendationSensorInputTitle": "Input nilai sensor untuk rekomendasi tanaman",
+  "commonOk": "OK",
+  "settingsNotificationsSection": "Notifikasi",
+  "settingsEnableNotifications": "Aktifkan Notifikasi",
+  "settingsNotificationsSubtitle": "Terima notifikasi untuk alert dan update",
+  "settingsDataSyncSection": "Data & Sinkronisasi",
+  "settingsAutoRefresh": "Auto Refresh",
+  "settingsAutoRefreshSubtitle": "Perbarui data secara otomatis",
+  "settingsRefreshInterval": "Interval Refresh",
+  "settingsRefreshIntervalSeconds": "{seconds} detik",
+  "@settingsRefreshIntervalSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearanceSection": "Tampilan",
+  "settingsLanguage": "Bahasa",
+  "settingsTheme": "Tema",
+  "settingsTemperatureUnit": "Satuan Suhu",
+  "settingsAppVersion": "Versi Aplikasi",
+  "settingsHelpSupport": "Bantuan & Dukungan",
+  "settingsHelpSupportSubtitle": "Kontak bantuan teknis",
+  "settingsHelpSupportMessage": "Untuk bantuan teknis, hubungi tim support melalui email atau WhatsApp yang tertera di aplikasi.",
+  "settingsPrivacyPolicy": "Kebijakan Privasi",
+  "settingsPrivacyPolicySubtitle": "Keamanan dan penggunaan data",
+  "settingsPrivacyPolicyMessage": "Data Anda disimpan secara aman dan tidak dibagikan kepada pihak ketiga tanpa persetujuan Anda.",
+  "settingsSelectLanguage": "Pilih Bahasa",
+  "settingsSelectTheme": "Pilih Tema",
+  "settingsThemeLight": "Terang",
+  "settingsThemeDark": "Gelap",
+  "settingsThemeSystem": "Ikuti Sistem",
+  "settingsLanguageIndonesian": "Indonesia",
+  "settingsLanguageEnglish": "English",
+  "settingsTemperatureCelsius": "Celsius (C)",
+  "settingsTemperatureFahrenheit": "Fahrenheit (F)",
+  "profileEditTitle": "Edit Profil",
+  "profilePhotoUploadComingSoon": "Fitur upload foto akan segera hadir",
+  "profileFullNameLabel": "Nama Lengkap",
+  "profileNameRequired": "Nama tidak boleh kosong",
+  "profileNameMinLength": "Nama minimal 3 karakter",
+  "profileEmailRequired": "Email tidak boleh kosong",
+  "profileEmailInvalid": "Email tidak valid",
+  "profilePhoneNumberLabel": "Nomor Telepon",
+  "profilePhoneRequired": "Nomor telepon tidak boleh kosong",
+  "profilePhoneInvalid": "Nomor telepon tidak valid",
+  "profileUpdateSuccess": "Profil berhasil diperbarui",
+  "profileAccountInfoTitle": "Informasi Akun",
+  "profilePhoneLabel": "Telepon",
+  "profileAdminSubtitle": "Kelola data dan akses sistem",
+  "profileForumManagement": "Manajemen Forum",
+  "profileForumManagementSubtitle": "Kelola postingan dan komentar",
+  "profileMyPosts": "Postingan Saya",
+  "profileMyPostsSubtitle": "Lihat dan kelola postingan",
+  "profileLikedPosts": "Postingan Disukai",
+  "profileLikedPostsSubtitle": "Postingan yang Anda sukai",
+  "profileMyComments": "Komentar Saya",
+  "profileMyCommentsSubtitle": "Lihat semua komentar",
+  "profilePermissionsSection": "Hak Akses",
+  "profileSignout": "Signout",
+  "profileLogoutTitle": "Konfirmasi Keluar",
+  "profileLogoutMessage": "Apakah Anda yakin ingin keluar dari aplikasi?",
+  "profileLogoutConfirm": "Keluar",
+  "commonLatitude": "Latitude",
+  "commonLongitude": "Longitude",
+  "commonPort": "Port",
+  "commonIpAddress": "IP Address",
+  "commonSaved": "Tersimpan",
+  "siteNoSitesAvailable": "Tidak ada site tersedia",
+  "notesNew": "Catatan Baru",
+  "notesContentHint": "Isi catatan...",
+  "notesSaved": "Catatan tersimpan",
+  "notesSaveFailed": "Gagal menyimpan catatan",
+  "sensorAddTitle": "Tambah Sensor",
+  "sensorEmptyTitle": "Belum ada sensor",
+  "sensorEmptyMessage": "Tambahkan sensor untuk mulai memantau kondisi lahan.",
+  "sensorUnitValue": "Satuan: {unit}",
+  "@sensorUnitValue": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIoTTitle": "Perangkat IoT",
+  "deviceAddTitle": "Tambah Perangkat",
+  "deviceEditTitle": "Edit Perangkat",
+  "deviceDetailTitle": "Detail Perangkat",
+  "deviceEmptyMessage": "Tidak ada perangkat ditemukan",
+  "deviceIdLabel": "ID Perangkat",
+  "deviceIdRequired": "ID Perangkat wajib diisi",
+  "deviceNameLabel": "Nama Perangkat",
+  "deviceNameRequired": "Nama Perangkat wajib diisi",
+  "deviceNumberIdLabel": "Nomor ID",
+  "deviceInformationTitle": "Informasi Perangkat",
+  "deviceStatusActive": "Status Aktif",
+  "deviceCreateSuccess": "Perangkat berhasil ditambahkan",
+  "deviceUpdateSuccess": "Perangkat berhasil diperbarui",
+  "monitoringMapsNoDeviceLocations": "Belum ada lokasi device untuk ditampilkan",
+  "monitoringDeviceSensorList": "Daftar Device & Sensor",
+  "monitoringNoDevicesAvailable": "Belum ada device tersedia",
+  "monitoringAnalyticsOverview": "Ringkasan Analitik",
+  "monitoringPlantStatisticsSection": "Statistik Tanaman",
+  "monitoringPlantRecommendationSection": "Rekomendasi Tanaman",
+  "monitoringDeviceSensorOverviewSection": "Perangkat & Ringkasan Sensor",
+  "monitoringMonthlySensorRecap": "Rekap Bulanan Sensor",
+  "monitoringRawParameterUnavailable": "Parameter sensor tidak tersedia pada data raw",
+  "monitoringAdminOnlyMessage": "Tab admin hanya untuk pengguna dengan role admin.",
+  "monitoringReadCorrectionTitle": "Koreksi Sensor Read",
+  "monitoringReadCorrectionDescription": "Perbarui nilai atau status read pada site aktif",
+  "monitoringSaving": "Menyimpan...",
+  "monitoringSaveCorrection": "Simpan Koreksi",
+  "monitoringGenerateDailyRecapTitle": "Generate Rekap Harian",
+  "monitoringGenerateDailyRecapDescription": "Proses ulang agregasi sensor untuk tanggal dipilih",
+  "monitoringProcessing": "Memproses...",
+  "monitoringGenerateRecap": "Generate Rekap",
+  "monitoringReadIdLabel": "ID Bacaan",
+  "monitoringReadValueLabel": "Nilai Bacaan (opsional)",
+  "monitoringReadStsLabel": "Status Bacaan (opsional)",
+  "monitoringReadIdRequired": "read_id wajib diisi",
+  "monitoringReadValueMustBeNumber": "read_value harus berupa angka",
+  "monitoringReadValueOrStatusRequired": "Isi read_value atau read_sts",
+  "monitoringReadUpdated": "Read diperbarui",
+  "monitoringReadUpdateFailed": "Gagal memperbarui read",
+  "monitoringDailyRecapTriggered": "Rekap diproses untuk {day}",
+  "@monitoringDailyRecapTriggered": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringDailyRecapTriggerFailed": "Gagal trigger rekap",
+  "monitoringRefreshActiveTab": "Refresh tab aktif",
+  "monitoringNoDeviceStats": "Belum ada statistik device",
+  "monitoringTotalDevice": "Total device",
+  "monitoringTotalSensor": "Total sensor",
+  "monitoringShowLess": "Tampilkan Lebih Sedikit",
+  "monitoringShowAllCount": "Tampilkan Semua ({count})",
+  "@monitoringShowAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringPlantRecommendationEmpty": "Belum ada rekomendasi untuk site ini",
+  "monitoringRecommendationActionCount": "{count} aksi",
+  "@monitoringRecommendationActionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRecommendationMoreCount": "+{count} rekomendasi lainnya",
+  "@monitoringRecommendationMoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRecommendationSiteTitle": "Rekomendasi Site",
+  "monitoringRecommendationCachedSubtitle": "Berdasarkan data sensor tersimpan",
+  "monitoringRecommendationActiveSiteSubtitle": "Berdasarkan sensor site aktif",
+  "monitoringNpkAdjustment": "Penyesuaian NPK",
+  "monitoringSoilPhAdjustment": "Penyesuaian pH Tanah",
+  "monitoringSoilPhLabel": "pH Tanah",
+  "monitoringNoActiveAlarmTitle": "Tidak ada alarm aktif",
+  "monitoringNoActiveAlarmDescription": "Semua sensor berjalan normal",
+  "monitoringAlarmSummaryTitle": "Ringkasan Alarm",
+  "monitoringAlarmSummaryDescription": "{total} total alarm tercatat",
+  "@monitoringAlarmSummaryDescription": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringLatestAlarm": "Alarm Terbaru",
+  "monitoringAlarmLast24Hours": "Alarm 24 Jam",
+  "monitoringTotalAlarm": "Total Alarm",
+  "monitoringAlarmDetected": "Alarm terdeteksi",
+  "forumMyPosts": "Postingan Saya",
+  "forumLikedPosts": "Postingan Disukai",
+  "forumMyComments": "Komentar Saya",
+  "forumLiked": "Disukai",
+  "forumNoPostsTitle": "Belum ada postingan",
+  "forumNoPostsMessage": "Jadilah yang pertama membuat postingan di forum komunitas",
+  "forumCreatePost": "Buat Postingan",
+  "forumLoadPostsFailed": "Gagal memuat postingan",
+  "forumManagePosts": "Kelola Postingan",
+  "forumEditPost": "Edit Postingan",
+  "forumDeletePost": "Hapus Postingan",
+  "forumDeletePostConfirm": "Apakah Anda yakin ingin menghapus postingan ini?",
+  "forumDeletePostPermanent": "Postingan ini akan dihapus permanen.",
+  "forumPostDeleted": "Postingan berhasil dihapus",
+  "forumSharePostTitle": "Bagikan Postingan",
+  "forumSharePostMessage": "Bagikan postingan ini ke teman atau komunitas Anda.",
+  "forumPostShared": "Postingan berhasil dibagikan",
+  "forumFirstPostMessage": "Buat postingan pertama Anda untuk berbagi dengan komunitas.",
+  "forumPostCount": "{count} postingan",
+  "@forumPostCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumMyPostsSummary": "Postingan yang Anda buat di forum komunitas.",
+  "forumLikedPostsEmptyTitle": "Belum ada postingan disukai",
+  "forumLikedPostsEmptyMessage": "Postingan yang Anda sukai akan tersimpan di sini.",
+  "forumLikedPostCount": "{count} postingan disukai",
+  "@forumLikedPostCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumLikedPostsSummary": "Daftar postingan yang pernah Anda sukai.",
+  "forumNoCommentsTitle": "Belum ada komentar",
+  "forumNoCommentsMessage": "Komentar Anda pada postingan akan muncul di sini.",
+  "forumCommentCount": "{count} komentar",
+  "@forumCommentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumMyCommentsSummary": "Komentar yang Anda tulis di postingan forum.",
+  "forumLoadCommentsFailed": "Gagal memuat komentar",
+  "forumNoTitle": "Tanpa Judul",
+  "forumOpenPostHint": "Ketuk untuk membuka postingan",
+  "forumCommentActions": "Aksi komentar",
+  "forumEdited": "Diedit",
+  "forumManageComments": "Kelola Komentar",
+  "forumEditComment": "Edit Komentar",
+  "forumDeleteComment": "Hapus Komentar",
+  "forumWriteComment": "Tulis komentar",
+  "forumCommentUpdated": "Komentar diperbarui",
+  "forumDeleteCommentPermanent": "Komentar ini akan dihapus permanen.",
+  "forumCommentDeleted": "Komentar dihapus",
+  "forumLikesCount": "{count} suka",
+  "@forumLikesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumCommentsCount": "{count} komentar",
+  "@forumCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumSharesCount": "{count} bagikan",
+  "@forumSharesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forumLike": "Suka",
+  "forumComment": "Komentar",
+  "forumShare": "Bagikan",
+  "forumDislike": "Dislike",
+  "forumNoReactions": "Belum ada reaksi",
+  "forumAddPost": "Tambah Postingan",
+  "forumSelectImage": "Pilih Gambar",
+  "forumPickFromGallery": "Pilih dari Galeri",
+  "forumTakePhoto": "Ambil Foto",
+  "forumDeleteImage": "Hapus Gambar",
+  "forumPickImageFailed": "Gagal memilih gambar: {message}",
+  "@forumPickImageFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumSiteRequiredMain": "Pilih site terlebih dahulu di halaman utama",
+  "forumSiteNotSelectedTitle": "Site belum dipilih",
+  "forumLoadDataFailed": "Gagal memuat data: {message}",
+  "@forumLoadDataFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumPostTitleLabel": "Judul",
+  "forumPostTitleHint": "Masukkan judul postingan",
+  "forumPostTitleRequired": "Judul tidak boleh kosong",
+  "forumPostTitleMinLength": "Judul minimal 3 karakter",
+  "forumPostContentLabel": "Isi Postingan",
+  "forumPostContentHint": "Tulis informasi yang ingin Anda bagikan",
+  "forumPostContentRequired": "Konten tidak boleh kosong",
+  "forumPostContentMinLength": "Konten minimal 10 karakter",
+  "forumMediaLabel": "Media",
+  "forumPostGuideline": "Pastikan isi postingan tetap jelas, relevan, dan sesuai pedoman komunitas.",
+  "forumAddImage": "Tambahkan gambar",
+  "forumImageOptionalHint": "Opsional. Postingan tanpa gambar tetap dapat dipublikasikan.",
+  "forumChoose": "Pilih",
+  "forumNewImageReady": "Gambar baru siap diunggah",
+  "forumActivePostImage": "Gambar postingan aktif",
+  "forumChange": "Ganti",
+  "forumPostCreated": "Postingan berhasil ditambahkan",
+  "forumPostUpdated": "Postingan berhasil diperbarui",
+  "forumSelectActiveSiteBeforePosting": "Pilih site aktif di dashboard sebelum membuat postingan forum.",
+  "forumSendCommentFailed": "Gagal mengirim komentar: {message}",
+  "@forumSendCommentFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "forumFirstCommentMessage": "Jadilah yang pertama berkomentar",
+  "forumReactions": "Reaksi",
+  "forumDeleteCommentConfirm": "Apakah Anda yakin ingin menghapus komentar ini?",
+  "adminAccessDeniedTitle": "Akses Ditolak",
+  "adminFeatureOnlyMessage": "Fitur admin hanya dapat diakses oleh Admin.",
+  "adminNoPagePermissionMessage": "Anda tidak memiliki izin untuk mengakses halaman ini.",
+  "adminUsersTitle": "Users",
+  "adminRoleTitle": "Role",
+  "adminUnitTitle": "Unit",
+  "adminDeviceSensorTitle": "Device Sensor",
+  "adminPermissionTitle": "Permission",
+  "adminNoPermissionsAvailable": "Tidak ada permission tersedia",
+  "adminLoadPermissionsFailed": "Gagal memuat permissions: {message}",
+  "@adminLoadPermissionsFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNoThresholdData": "Belum ada data threshold",
+  "adminNoUsers": "Belum ada user",
+  "adminNoUsersMessage": "Tambahkan user untuk mengakses sistem",
+  "adminNoUnits": "Belum ada unit",
+  "adminNoUnitsMessage": "Tambahkan unit satuan untuk sensor",
+  "adminNoDevices": "Belum ada device",
+  "adminNoDevicesMessage": "Tambahkan device untuk memulai monitoring",
+  "adminNoSensors": "Belum ada sensor",
+  "adminNoSensorsMessage": "Tambahkan sensor untuk memulai monitoring",
+  "adminNoRoles": "Belum ada role",
+  "adminNoRolesMessage": "Tambahkan role untuk mengatur hak akses",
+  "adminNoPermissions": "Belum ada permission",
+  "adminNoPermissionsMessage": "Tidak ada permission yang terdaftar",
+  "adminNoPlants": "Belum ada tanaman",
+  "adminNoPlantsMessage": "Tambahkan tanaman untuk memulai monitoring",
+  "adminNoMappings": "Belum ada mapping",
+  "adminNoMappingsMessage": "Tambahkan mapping device-sensor untuk monitoring",
+  "adminPlantActionsTooltip": "Aksi tanaman",
+  "adminEditMapping": "Edit Mapping",
+  "adminHarvestPlantTitle": "Panen Tanaman?",
+  "adminDeleteSuccess": "{item} berhasil dihapus",
+  "@adminDeleteSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDeleteFailed": "Gagal menghapus {item}",
+  "@adminDeleteFailed": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRoleDeleteWarning": "Semua user dengan role ini akan kehilangan akses.",
+  "adminUnitReadonlyMessage": "Data Unit bersifat read-only. Perubahan dan penghapusan unit tidak didukung oleh sistem backend saat ini.",
+  "adminTotalPermissions": "{count} Total Permission",
+  "@adminTotalPermissions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminResourceGroupCount": "{count} Grup Resource",
+  "@adminResourceGroupCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPermissionCount": "{count} permission",
+  "@adminPermissionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPermissionBadge": "{count} Permission",
+  "@adminPermissionBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminMappingTab": "Mapping",
+  "adminThresholdValuesTab": "Nilai Ambang",
+  "commonViewDetail": "Lihat Detail",
+  "commonOffline": "Offline",
+  "commonDays": "{count} hari",
+  "@commonDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonMinCharacters": "Minimal {count} karakter",
+  "@commonMinCharacters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationSiteTitle": "Rekomendasi Site",
+  "recommendationSiteSubtitle": "Kondisi site terpilih dan kebutuhan tindakan",
+  "recommendationSiteDescription": "Analisis umum kondisi site dan kebutuhan tindakan.",
+  "recommendationPlantTitle": "Rekomendasi Tanaman",
+  "recommendationPlantSubtitle": "Tanaman aktif di site terpilih",
+  "recommendationPlantDescription": "Rekomendasi terbaru berbasis data tanaman aktif.",
+  "recommendationPlantLoadFailed": "Gagal memuat rekomendasi tanaman",
+  "recommendationPhaseTitle": "Rekomendasi Fase",
+  "recommendationPhaseDescription": "Saran aksi spesifik sesuai fase pertumbuhan aktif.",
+  "recommendationPhaseLoadFailed": "Gagal memuat rekomendasi fase",
+  "recommendationActivePhaseLoadFailed": "Gagal memuat fase aktif",
+  "recommendationPhaseNoActive": "Belum ada fase aktif",
+  "recommendationPhaseUnavailable": "Fase aktif belum tersedia",
+  "recommendationPhaseAvailableForActivePlant": "Rekomendasi fase tersedia untuk tanaman aktif.",
+  "recommendationPhaseNoneForPlant": "Belum ada fase aktif untuk tanaman ini.",
+  "recommendationPhaseLabel": "Fase: {phase}",
+  "@recommendationPhaseLabel": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "recommendationHstLabel": "HST {hst}",
+  "@recommendationHstLabel": {
+    "placeholders": {
+      "hst": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDailySummaryTitle": "Ringkasan Harian",
+  "monitoringDailyAggregationEmpty": "Belum ada data agregasi untuk rentang ini",
+  "monitoringLast30Days": "30 hari terakhir",
+  "monitoringCustomRange": "Rentang custom",
+  "monitoringSensorCount": "{count} sensor",
+  "@monitoringSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringRegisteredSensorCount": "{count} sensor terdaftar",
+  "@monitoringRegisteredSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDataPointCount": "{count} titik data",
+  "@monitoringDataPointCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringActionRequiredDescription": "0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring",
+  "monitoringEnvironmentSubtitle": "Skor kondisi sensor site aktif",
+  "monitoringNoSensorsConfiguredStatus": "Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.",
+  "monitoringSensorsStableStatus": "{total} sensor tersedia, kondisi monitoring stabil.",
+  "@monitoringSensorsStableStatus": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringSensorsAttentionStatus": "{total} sensor tersedia, beberapa parameter perlu perhatian.",
+  "@monitoringSensorsAttentionStatus": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringHealthNeedsSetup": "Perlu Konfigurasi",
+  "monitoringHealthExcellent": "Sangat Baik",
+  "monitoringHealthExcellentDesc": "Kondisi lingkungan optimal untuk pertumbuhan tanaman",
+  "monitoringHealthGood": "Baik",
+  "monitoringHealthGoodDesc": "Kondisi lingkungan mendukung pertumbuhan tanaman",
+  "monitoringHealthFair": "Cukup",
+  "monitoringHealthFairDesc": "Beberapa parameter perlu perhatian",
+  "monitoringHealthNeedsAttention": "Perlu Perhatian",
+  "monitoringHealthNeedsAttentionDesc": "Kondisi lingkungan memerlukan perbaikan segera",
+  "monitoringSensorsMonitoredCount": "{count} sensor dipantau",
+  "@monitoringSensorsMonitoredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agroParameterScoreTitle": "Skor Parameter",
+  "agroRecVentilationLowerHumidity": "Tingkatkan ventilasi untuk menurunkan kelembaban",
+  "agroRecIncreaseIrrigationHumidity": "Tingkatkan penyiraman dan kelembaban udara",
+  "agroRecIncreaseWateringFrequency": "Tingkatkan frekuensi penyiraman",
+  "agroRecHighEtcCheckSoil": "ETC tinggi, periksa kelembaban tanah dan irigasi",
+  "agroRecIntenseMonitoring": "Lakukan monitoring lebih intensif",
+  "agroRecConsultAgronomist": "Konsultasikan dengan ahli agronomi",
+  "monitoringSensorByTypeTitle": "Sensor Berdasarkan Jenis",
+  "monitoringNoRegisteredSensors": "Belum ada sensor terdaftar",
+  "monitoringNoSensorData": "Belum ada data sensor",
+  "monitoringDistributionByTypeTitle": "Distribusi Berdasarkan Jenis",
+  "monitoringPlantCompositionSubtitle": "Komposisi tanaman site aktif",
+  "monitoringAverageGrowthPhase": "Fase Pertumbuhan Rata-rata",
+  "agroSelectSiteMessage": "Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).",
+  "agroActionRecommendationTitle": "Rekomendasi Tindakan",
+  "agroPlantingPhaseTitle": "Fase Tanam",
+  "agroInformationTitle": "Informasi",
+  "agroAboutTitle": "Tentang Agro Indicator",
+  "agroVdpDescription": "Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VDP rendah (<0.4) meningkatkan risiko penyakit, VDP tinggi (>1.6) menyebabkan stres air.",
+  "agroGddDescription": "Akumulasi suhu yang diperlukan tanaman untuk tumbuh. Digunakan untuk memprediksi fase pertumbuhan dan waktu panen.",
+  "agroEtcDescription": "Kebutuhan air tanaman berdasarkan evaporasi dan transpirasi. Membantu menentukan jadwal dan volume penyiraman yang optimal.",
+  "agroVdpTitle": "Vapor Pressure Deficit",
+  "agroGddTitle": "Growing Degree Days",
+  "agroEtcTitle": "Evapotranspiration",
+  "agroSmartRecommendation": "Rekomendasi Cerdas",
+  "agroNoCriticalRecommendations": "Tidak ada rekomendasi kritis saat ini",
+  "agroRecommendationSubtitle": "Tindakan berdasarkan AI & Data",
+  "agroWateringRecommendation": "Rekomendasi Penyiraman",
+  "agroWaterRequirement": "Kebutuhan Air Tanaman",
+  "agroEtcTrend7Days": "Tren ETC (7 Hari)",
+  "agroDailyClimateDetail": "Detail Iklim Harian",
+  "agroTableDate": "Tanggal",
+  "agroTableTemp": "Suhu (Min-Maks)",
+  "agroTableRh": "Kelembaban (Min-Maks)",
+  "agroEtcDataUnavailable": "Data ETC tidak tersedia",
+  "agroUnitMmPerDay": "mm/hari",
+  "agroUnitCoefficient": "koefisien",
+  "agroWaterNeedsLabel": "Kebutuhan",
+  "agroRecWaterNeedsLow": "Kebutuhan air rendah. Penyiraman minimal atau tidak diperlukan.",
+  "agroRecWaterNeedsMedium": "Kebutuhan air sedang. Lakukan penyiraman rutin sesuai jadwal.",
+  "agroRecWaterNeedsHigh": "Kebutuhan air tinggi. Tingkatkan frekuensi penyiraman.",
+  "agroRecWaterNeedsVeryHigh": "Kebutuhan air sangat tinggi! Penyiraman intensif diperlukan.",
+  "agroStatusEtc": "Status ETC",
+  "agroRecEtcLow": "ETC rendah. Kebutuhan evapotranspirasi tanaman sedang ringan.",
+  "agroRecEtcMedium": "ETC berada pada rentang sedang. Pantau kelembaban dan jadwal irigasi.",
+  "agroRecEtcHigh": "ETC tinggi. Periksa kelembaban tanah dan kesiapan irigasi.",
+  "adminLoadingTitle": "Memuat...",
+  "adminEditUserTitle": "Edit User",
+  "adminAddUserTitle": "Tambah User",
+  "adminEditUnitTitle": "Edit Unit",
+  "adminAddUnitTitle": "Tambah Unit",
+  "adminEditDeviceTitle": "Edit Device",
+  "adminAddDeviceTitle": "Tambah Device",
+  "adminEditSensorTitle": "Edit Sensor",
+  "adminAddSensorTitle": "Tambah Sensor",
+  "adminEditPlantTitle": "Edit Tanaman",
+  "adminAddPlantTitle": "Tambah Tanaman",
+  "adminEditRoleTitle": "Edit Role",
+  "adminAddRoleTitle": "Tambah Role",
+  "adminEditDeviceSensorTitle": "Edit Device Sensor",
+  "adminAddDeviceSensorTitle": "Tambah Device Sensor",
+  "adminSavingChanges": "Menyimpan perubahan...",
+  "adminCreatingUser": "Membuat user...",
+  "adminCreatingUnit": "Membuat unit...",
+  "adminCreatingDevice": "Membuat device...",
+  "adminCreatingSensor": "Membuat sensor...",
+  "adminCreatingPlant": "Membuat tanaman...",
+  "adminCreatingRole": "Membuat role...",
+  "adminCreatingMapping": "Membuat mapping...",
+  "adminAccountInfoSection": "Informasi Akun",
+  "adminSecuritySection": "Keamanan",
+  "adminRoleStatusSection": "Role & Status",
+  "adminBasicInfoSection": "Informasi Dasar",
+  "adminUnitInfoSection": "Informasi Unit",
+  "adminPlantInfoSection": "Informasi Tanaman",
+  "adminPlantingDateSection": "Tanggal Tanam",
+  "adminRoleInfoSection": "Informasi Role",
+  "adminRolePermissionSection": "Permission Role",
+  "adminConnectionSection": "Koneksi",
+  "adminConnectionSubtitle": "Opsional - IP address dan port device",
+  "adminCoordinatesSection": "Koordinat",
+  "adminDeviceCoordinateSubtitle": "Opsional - untuk pemetaan lokasi device",
+  "adminSensorCoordinateSubtitle": "Opsional - untuk pemetaan lokasi sensor",
+  "adminConfigurationSection": "Konfigurasi",
+  "adminStatusSection": "Status",
+  "adminMappingInfoSection": "Informasi Mapping",
+  "adminThresholdSection": "Threshold",
+  "adminThresholdSubtitle": "Konfigurasi batas nilai sensor",
+  "adminUserIdLabel": "User ID",
+  "adminUserIdHint": "Contoh: USER001",
+  "adminUserIdRequired": "User ID wajib diisi",
+  "adminFullNameHint": "Contoh: John Doe",
+  "adminEmailHint": "Contoh: user@example.com",
+  "adminPhoneHint": "Contoh: 081234567890",
+  "adminRoleLabel": "Role",
+  "adminSelectRoleHint": "Pilih role",
+  "adminRoleRequired": "Role wajib dipilih",
+  "adminSelectStatusHint": "Pilih status",
+  "adminPasswordLabel": "Password",
+  "adminPasswordHint": "Minimal 6 karakter",
+  "adminPasswordRequired": "Password wajib diisi",
+  "adminPasswordMinLength": "Password minimal 6 karakter",
+  "adminUnitIdLabel": "Unit ID",
+  "adminUnitIdHint": "Contoh: TEMP_C",
+  "adminUnitIdRequired": "Unit ID wajib diisi",
+  "adminUnitNameLabel": "Nama Unit",
+  "adminUnitNameHint": "Contoh: Celsius",
+  "adminUnitNameRequired": "Nama unit wajib diisi",
+  "adminUnitSymbolLabel": "Simbol",
+  "adminUnitSymbolHint": "Contoh: C",
+  "adminUnitSymbolRequired": "Simbol wajib diisi",
+  "adminUnitDescriptionHint": "Contoh: Satuan suhu dalam derajat Celsius",
+  "adminSensorIdLabel": "Sensor ID",
+  "adminSensorIdHint": "Contoh: soil_nitro",
+  "adminSensorIdRequired": "Sensor ID wajib diisi",
+  "adminSensorNameLabel": "Nama Sensor",
+  "adminSensorNameHint": "Contoh: Nitrogen Sensor",
+  "adminSensorNameRequired": "Nama sensor wajib diisi",
+  "adminSensorAddressLabel": "Alamat Sensor",
+  "adminSensorAddressHint": "Contoh: 0x10",
+  "adminSensorLocationHint": "Contoh: Soil Layer 1",
+  "adminSelectDeviceOptional": "Pilih device (opsional)",
+  "adminNoDevice": "Tidak ada device",
+  "adminLoadDeviceFailed": "Gagal memuat device",
+  "adminDeviceRequired": "Device wajib dipilih",
+  "adminDeviceIdHint": "Contoh: DEV001",
+  "adminDeviceNameHint": "Contoh: Main Gateway",
+  "adminDeviceLocationHint": "Contoh: Greenhouse A",
+  "adminIpInvalid": "IP tidak valid",
+  "adminPlantIdLabel": "Plant ID",
+  "adminServerIdHint": "ID dari server",
+  "adminPlantNameLabel": "Nama Tanaman",
+  "adminPlantNameHint": "Contoh: Padi Sawah Blok A",
+  "adminPlantNameRequired": "Nama tanaman wajib diisi",
+  "adminCropTypeLabel": "Jenis Tanaman",
+  "adminSelectCropTypeHint": "Pilih jenis tanaman",
+  "adminCropTypeRequired": "Jenis tanaman wajib dipilih",
+  "adminVarietasIdLabel": "Varietas ID",
+  "adminVarietasIdHint": "Contoh: VAR_001",
+  "adminVarietasIdRequired": "Varietas ID wajib diisi",
+  "adminChooseVarietasFromList": "Pilih dari daftar varietas",
+  "adminVarietasLabel": "Varietas",
+  "adminSelectVarietasHint": "Pilih varietas dari backend",
+  "adminVarietasRequired": "Varietas wajib dipilih",
+  "adminVarietasLoadFailedManual": "Gagal memuat varietas. Gunakan input manual.",
+  "adminManualIdInput": "Input ID manual",
+  "adminSelectPlantingDate": "Pilih tanggal tanam",
+  "adminPlantingDateRequired": "Tanggal tanam wajib dipilih",
+  "adminRoleIdLabel": "Role ID",
+  "adminRoleIdHint": "Contoh: ROLE001",
+  "adminRoleIdRequired": "Role ID wajib diisi",
+  "adminRoleNameLabel": "Nama Role",
+  "adminRoleNameHint": "Contoh: Admin, Operator, Viewer",
+  "adminRoleNameRequired": "Nama role wajib diisi",
+  "adminRoleDescriptionHint": "Contoh: Role untuk administrator sistem",
+  "adminDsIdLabel": "DS ID",
+  "adminDsIdHint": "Contoh: DS001",
+  "adminDsIdRequired": "DS ID wajib diisi",
+  "adminMappingNameHint": "Contoh: Nitrogen Sensor DEV001",
+  "adminNameRequired": "Nama wajib diisi",
+  "adminSelectDeviceHint": "Pilih device",
+  "adminSelectSensorOptional": "Pilih sensor (opsional)",
+  "adminSelectUnitOptional": "Pilih unit (opsional)",
+  "adminLoadSensorFailed": "Gagal memuat sensor",
+  "adminLoadUnitFailed": "Gagal memuat unit",
+  "adminNoSelection": "Tidak ada",
+  "adminAddressLabel": "Alamat",
+  "adminSequenceLabel": "Urutan (Seq)",
+  "adminSequenceHint": "Contoh: 1",
+  "adminNormalValueLabel": "Nilai Normal",
+  "adminExampleDecimalHint": "Contoh: 25.0",
+  "adminMinNormalLabel": "Min Normal",
+  "adminMaxNormalLabel": "Max Normal",
+  "adminMinAbsoluteLabel": "Min Absolut",
+  "adminMaxAbsoluteLabel": "Max Absolut",
+  "adminMinWarningLabel": "Min Warning",
+  "adminMaxWarningLabel": "Max Warning",
+  "adminStatusUserLabel": "Status User",
+  "adminStatusUnitLabel": "Status Unit",
+  "adminStatusDeviceLabel": "Status Device",
+  "adminStatusSensorLabel": "Status Sensor",
+  "adminStatusPlantLabel": "Status Tanaman",
+  "adminStatusRoleLabel": "Status Role",
+  "adminStatusMappingLabel": "Status Mapping",
+  "adminUpdateSuccess": "{item} berhasil diperbarui",
+  "@adminUpdateSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCreateSuccess": "{item} berhasil ditambahkan",
+  "@adminCreateSuccess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSaveFailed": "Gagal menyimpan {item}",
+  "@adminSaveFailed": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMinNormalGreaterThanMaxNormal": "Min Normal tidak boleh lebih besar dari Max Normal",
+  "adminMinAbsoluteGreaterThanMaxAbsolute": "Min Absolut tidak boleh lebih besar dari Max Absolut",
+  "adminMinWarningGreaterThanMaxWarning": "Min Warning tidak boleh lebih besar dari Max Warning",
+  "adminMinAbsoluteGreaterThanMinNormal": "Min Absolut tidak boleh lebih besar dari Min Normal",
+  "adminMinAbsoluteGreaterThanMinWarning": "Min Absolut tidak boleh lebih besar dari Min Warning",
+  "adminMaxAbsoluteLessThanMaxNormal": "Max Absolut tidak boleh lebih kecil dari Max Normal",
+  "adminMaxAbsoluteLessThanMaxWarning": "Max Absolut tidak boleh lebih kecil dari Max Warning",
+  "adminMinWarningGreaterThanMinNormal": "Min Warning tidak boleh lebih besar dari Min Normal",
+  "adminMaxWarningLessThanMaxNormal": "Max Warning tidak boleh lebih kecil dari Max Normal",
+  "adminFullNameLabel": "Nama Lengkap",
+  "adminEmailLabel": "Email",
+  "adminPhoneLabel": "No. Telepon",
+  "adminEmailInvalid": "Format email tidak valid",
+  "adminPhoneInvalid": "No. telepon tidak valid",
+  "roleAdmin": "Admin",
+  "roleUser": "User",
+  "roleViewer": "Viewer",
+  "adminIdPrefix": "ID: {id}",
+  "@adminIdPrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDevicePrefix": "Device: {id}",
+  "@adminDevicePrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSensorPrefix": "Sensor: {id}",
+  "@adminSensorPrefix": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDeviceLabel": "Device",
+  "adminSensorLabel": "Sensor",
+  "adminUnitLabel": "Unit",
+  "adminDeviceIdLabel": "Device ID",
+  "adminDeviceIdRequired": "Device ID wajib diisi",
+  "adminDeviceNameLabel": "Nama Device",
+  "adminDeviceNameRequired": "Nama device wajib diisi",
+  "adminIpAddressLabel": "IP Address",
+  "adminPortLabel": "Port",
+  "adminAltitudeLabel": "Altitude (meter)",
+  "commonUnknown": "Tidak diketahui",
+  "recommendationHstRangeLabel": "HST {min}-{max}",
+  "@recommendationHstRangeLabel": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adminDsDevSubtitle": "DS ID: {dsId} · Device ID: {devId}",
+  "@adminDsDevSubtitle": {
+    "placeholders": {
+      "dsId": {
+        "type": "String"
+      },
+      "devId": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSensIdBadge": "sens_id: {id}",
+  "@adminSensIdBadge": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "adminUnitBadge": "unit: {id}",
+  "@adminUnitBadge": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "sensorTypeAirTemperature": "Suhu Udara",
+  "sensorTypeAirHumidity": "Kelembaban Udara",
+  "sensorTypeSoilMoisture": "Kelembaban Tanah",
+  "sensorTypeSoilPh": "pH Tanah",
+  "sensorTypeSoilNitrogen": "Nitrogen Tanah",
+  "sensorTypeSoilPhosphorus": "Fosfor Tanah",
+  "sensorTypeSoilPotassium": "Kalium Tanah",
+  "sensorTypeLightIntensity": "Intensitas Cahaya",
+  "sensorTypeAtmosphericPressure": "Tekanan Udara",
+  "sensorTypeWindSpeed": "Kecepatan Angin",
+  "agroVdpDeficitTitle": "Defisit Tekanan Uap",
+  "agroVdpValueLabel": "Nilai VPD",
+  "agroVdpRangeLabel": "VDP Range",
+  "agroVdpDetailTitle": "Detail VPD",
+  "agroVdpUnavailable": "Data VDP tidak tersedia",
+  "agroVdpStatusLow": "Terlalu Rendah",
+  "agroVdpStatusOptimal": "Optimal",
+  "agroVdpStatusWarning": "Waspada",
+  "agroVdpStatusHigh": "Terlalu Tinggi",
+  "agroVdpDescLow": "Kelembaban relatif tinggi. Tingkatkan ventilasi agar risiko penyakit turun.",
+  "agroVdpDescOptimal": "Kondisi defisit tekanan uap berada pada rentang ideal.",
+  "agroVdpDescWarning": "Tanaman mulai berisiko kehilangan air lebih cepat. Pantau irigasi dan kelembaban.",
+  "agroVdpDescHigh": "Defisit tekanan uap tinggi. Tingkatkan penyiraman dan jaga kelembaban area tanam.",
+  "agroGddSuhuAccumLabel": "Akumulasi Suhu Pertumbuhan",
+  "agroGddTotalLabel": "Total GDD",
+  "agroGddAccumLabel": "Akumulasi",
+  "agroGddDailyChartTitle": "GDD Harian (7 Hari Terakhir)",
+  "agroGddDetailTitle": "Detail GDD Harian",
+  "agroGddUnavailable": "Data GDD tidak tersedia",
+  "plantGrowthPhaseTitle": "Fase Pertumbuhan",
+  "plantActivePhaseDesc": "Fase aktif tanaman saat ini",
+  "plantTimeProgressLabel": "Progress Waktu",
+  "plantGrowthPhaseUnavailable": "Data fase pertumbuhan belum tersedia",
+  "commonNotAvailableYet": "Belum ada",
+  "agroGddTrackingNoData": "Belum ada data GDD",
+  "agroGddTrackingNoDataDesc": "Data GDD akan ditarik dari API Agro setelah tanaman aktif terdaftar di site ini.",
+  "agroGddTrackingSummaryTitle": "Ringkasan GDD",
+  "agroGddTrackingTotalReal": "Total GDD (Riil)",
+  "agroGddTrackingFieldProgress": "Progress Lahan",
+  "agroGddTrackingDurationTitle": "Durasi HST per Fase",
+  "agroGddTrackingDurationSubtitle": "Durasi Hari Setelah Tanam per fase pertumbuhan",
+  "agroGddTrackingDurationDetailTitle": "Detail Durasi per Fase",
+  "agroGddTrackingDurationDetailSubtitle": "Detail rincian durasi setiap fase pertumbuhan",
+  "agroGddTrackingTablePhase": "Fase",
+  "agroGddTrackingTableCurrentHst": "HST Kini",
+  "agroGddTrackingTableDuration": "Durasi",
+  "profilePermissionsLoadError": "Tidak dapat memuat hak akses",
+  "profilePermissionsNoAccess": "Tidak Ada Akses",
+  "profilePermissionsNoAccessDesc": "Belum ada hak akses tersedia",
+  "profilePermissionsSystemAccess": "Hak Akses Sistem",
+  "permissionActionRead": "Lihat",
+  "permissionActionCreate": "Tambah",
+  "permissionActionUpdate": "Ubah",
+  "permissionActionDelete": "Hapus",
+  "permissionActionManage": "Kelola",
+  "sensorEditTitle": "Edit Sensor",
+  "sensorNameLabel": "Nama Sensor",
+  "sensorNameRequired": "Nama sensor wajib diisi",
+  "sensorTypeLabel": "Tipe Sensor",
+  "sensorTypeRequired": "Tipe sensor wajib dipilih",
+  "sensorUnitRequired": "Satuan wajib diisi",
+  "sensorUnitHint": "Contoh: °C, %, pH",
+  "sensorDescLabel": "Deskripsi (Opsional)",
+  "sensorDescHint": "Masukkan deskripsi sensor",
+  "sensorStatusActiveLabel": "Status Aktif",
+  "sensorStatusActiveDesc": "Sensor aktif",
+  "sensorStatusInactiveDesc": "Sensor tidak aktif",
+  "sensorUpdatedSuccess": "Sensor berhasil diperbarui",
+  "sensorCreatedSuccess": "Sensor berhasil ditambahkan",
+  "commonOptimal": "Optimal",
+  "commonWarning": "Waspada",
+  "commonNitrogen": "Nitrogen",
+  "commonPhosphorus": "Fosfor",
+  "commonPotassium": "Kalium",
+  "monitoringActionRequiredTitle": "Tindakan Diperlukan",
+  "monitoringNoSensorConfiguredDesc": "0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring",
+  "monitoringPlantCompositionTitle": "Distribusi Berdasarkan Jenis",
+  "monitoringChartTypeLabel": "Tipe Grafik",
+  "monitoringChartTypeLine": "Garis",
+  "monitoringChartTypeBar": "Batang",
+  "monitoringChartTypeArea": "Area",
+  "monitoringDailyNoAggregationDesc": "Belum ada data agregasi untuk rentang ini",
+  "monitoringRangeToday": "Hari ini",
+  "monitoringRangeLast7Days": "7 hari terakhir",
+  "monitoringRangeLast30Days": "30 hari terakhir",
+  "monitoringRangeCustom": "Rentang custom",
+  "monitoringSensorCount": "{count} sensor",
+  "@monitoringSensorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDataPointsCount": "{count} titik data",
+  "@monitoringDataPointsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringFilterThirtyDay": "30 Hari",
+  "monitoringFilterCustom": "Kustom",
+  "monitoringRangeLabel": "Rentang",
+  "monitoringActiveAlarmsCount": "{count} Alarm Aktif",
+  "@monitoringActiveAlarmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringDetectedInLast24Hours": "Terdeteksi dalam 24 jam terakhir",
+  "monitoringOtherAlarmsCount": "+ {count} alarm lainnya",
+  "@monitoringOtherAlarmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringCloseLog": "Tutup Log",
+  "monitoringShowAllLogsCount": "Lihat Semua Log ({count})",
+  "@monitoringShowAllLogsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringChartDescLine": "Tren sensor berdasarkan waktu",
+  "monitoringChartDescBar": "Perbandingan nilai sensor per waktu",
+  "monitoringChartDescArea": "Perubahan sensor dengan area tren",
+  "agroIndicatorLabel": "Agro Indikator",
+  "environmentalHealthScore": "Skor Kesehatan Lingkungan",
+  "gddCDaysUnit": "C-hari",
+  "etcLitrePerSqmUnit": "L/m²",
+  "commonFair": "Cukup",
+  "commonPoor": "Kurang",
+  "dashboardWelcomeUser": "Halo, {userName}",
+  "@dashboardWelcomeUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardSelectSitePrompt": "Pilih site untuk memuat data monitoring dan rekomendasi",
+  "dashboardNoSensorReadings": "Belum ada bacaan sensor",
+  "dashboardActiveSensorsCount": "{count} Sensor Aktif",
+  "@dashboardActiveSensorsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "dashboardRecentActivities": "Aktivitas Terbaru",
+  "dashboardNoActivities": "Belum ada aktivitas",
+  "dashboardTaskSummaryTitle": "Ringkasan Task",
+  "dashboardCompletionRateLabel": "Tingkat Penyelesaian",
+  "dashboardShowOtherSensors": "Lihat {count} sensor lainnya",
+  "@dashboardShowOtherSensors": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "dashboardAverageLabel": "Rata-rata",
+  "commonViewAll": "Lihat Semua",
+  "commonHide": "Sembunyikan",
+  "timeJustNow": "Baru saja",
+  "timeMinutesAgo": "{count} menit yang lalu",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "timeHoursAgo": "{count} jam yang lalu",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "timeDaysAgo": "{count} hari yang lalu",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "recommendationReasonLabel": "Alasan",
+  "profilePermissionsCount": "{count} izin",
+  "@profilePermissionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorNetwork": "Koneksi tidak stabil. Periksa internet Anda lalu coba lagi.",
+  "errorServer": "Server belum bisa memuat data saat ini. Silakan coba lagi.",
+  "errorSessionExpired": "Sesi Anda berakhir. Silakan login kembali.",
+  "errorDataNotFound": "Data tidak ditemukan untuk site ini.",
+  "errorLoadFailed": "Terjadi kendala saat memuat data. Silakan coba lagi."
 }
+
+
+

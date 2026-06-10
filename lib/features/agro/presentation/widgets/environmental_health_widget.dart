@@ -4,6 +4,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/agro_entity.dart';
 import '../../../dashboard/domain/entities/dashboard_entity.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/l10n.dart';
 
 class EnvironmentalHealthWidget extends StatelessWidget {
   final AgroEntity? agroData;
@@ -13,8 +15,9 @@ class EnvironmentalHealthWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final healthScore = _calculateHealthScore();
-    final healthStatus = _getHealthStatus(healthScore);
+    final healthStatus = _getHealthStatus(context, healthScore);
 
     return Container(
       width: double.infinity,
@@ -48,7 +51,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Kesehatan Lingkungan',
+                      l10n.healthSectionTitle,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -59,7 +62,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Environmental Health Score',
+                      l10n.environmentalHealthScore,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(12),
@@ -107,7 +110,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${healthData!.totalSensors} sensor dipantau',
+                  AppLocalizations.of(context)!.monitoringSensorsMonitoredCount(healthData!.totalSensors),
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(13),
@@ -292,7 +295,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Skor Parameter',
+          AppLocalizations.of(context)!.agroParameterScoreTitle,
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: context.sp(14),
@@ -380,7 +383,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
   }
 
   Widget _buildRecommendations(BuildContext context, HealthStatus status) {
-    final recommendations = _getRecommendations(status);
+    final recommendations = _getRecommendations(context, status);
     if (recommendations.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -397,7 +400,7 @@ class EnvironmentalHealthWidget extends StatelessWidget {
               Icon(Icons.lightbulb_outline, color: status.color, size: 18),
               const SizedBox(width: 8),
               Text(
-                'Rekomendasi',
+                context.l10n.recommendationTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(13),
@@ -496,47 +499,49 @@ class EnvironmentalHealthWidget extends StatelessWidget {
     }
   }
 
-  HealthStatus _getHealthStatus(double score) {
+  HealthStatus _getHealthStatus(BuildContext context, double score) {
+    final l10n = AppLocalizations.of(context)!;
     if (score >= 80) {
       return HealthStatus(
-        label: 'Sangat Baik',
-        description: 'Kondisi lingkungan optimal untuk pertumbuhan tanaman',
+        label: l10n.monitoringHealthExcellent,
+        description: l10n.monitoringHealthExcellentDesc,
         color: AppColors.success,
         icon: Icons.check_circle,
       );
     } else if (score >= 60) {
       return HealthStatus(
-        label: 'Baik',
-        description: 'Kondisi lingkungan mendukung pertumbuhan tanaman',
+        label: l10n.monitoringHealthGood,
+        description: l10n.monitoringHealthGoodDesc,
         color: AppColors.accent,
         icon: Icons.thumb_up,
       );
     } else if (score >= 40) {
       return HealthStatus(
-        label: 'Cukup',
-        description: 'Beberapa parameter perlu perhatian',
+        label: l10n.monitoringHealthFair,
+        description: l10n.monitoringHealthFairDesc,
         color: AppColors.warning,
         icon: Icons.warning_amber,
       );
     } else {
       return HealthStatus(
-        label: 'Perlu Perhatian',
-        description: 'Kondisi lingkungan memerlukan perbaikan segera',
+        label: l10n.monitoringHealthNeedsAttention,
+        description: l10n.monitoringHealthNeedsAttentionDesc,
         color: AppColors.error,
         icon: Icons.error,
       );
     }
   }
 
-  List<String> _getRecommendations(HealthStatus status) {
+  List<String> _getRecommendations(BuildContext context, HealthStatus status) {
+    final l10n = AppLocalizations.of(context)!;
     final recommendations = <String>[];
 
     final vdp = agroData?.vdp?.vdp;
     if (vdp != null) {
       if (vdp < 0.4) {
-        recommendations.add('Tingkatkan ventilasi untuk menurunkan kelembaban');
+        recommendations.add(l10n.agroRecVentilationLowerHumidity);
       } else if (vdp > 1.6) {
-        recommendations.add('Tingkatkan penyiraman dan kelembaban udara');
+        recommendations.add(l10n.agroRecIncreaseIrrigationHumidity);
       }
     }
 
@@ -544,17 +549,17 @@ class EnvironmentalHealthWidget extends StatelessWidget {
       final latestEtc = agroData!.etc.first;
       final waterNeeds = latestEtc.waterNeeds;
       if (waterNeeds != null && waterNeeds > 6) {
-        recommendations.add('Tingkatkan frekuensi penyiraman');
+        recommendations.add(l10n.agroRecIncreaseWateringFrequency);
       } else if (waterNeeds == null &&
           latestEtc.etc != null &&
           latestEtc.etc! > 6) {
-        recommendations.add('ETC tinggi, periksa kelembaban tanah dan irigasi');
+        recommendations.add(l10n.agroRecHighEtcCheckSoil);
       }
     }
 
-    if (status.label == 'Perlu Perhatian') {
-      recommendations.add('Lakukan monitoring lebih intensif');
-      recommendations.add('Konsultasikan dengan ahli agronomi');
+    if (status.label == l10n.monitoringHealthNeedsAttention) {
+      recommendations.add(l10n.agroRecIntenseMonitoring);
+      recommendations.add(l10n.agroRecConsultAgronomist);
     }
 
     return recommendations;

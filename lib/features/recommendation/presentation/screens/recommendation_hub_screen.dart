@@ -4,8 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
@@ -86,7 +89,7 @@ class _RecommendationHubScreenState
                           SizedBox(height: context.rh(0.024)),
 
                           Text(
-                            'Pusat Rekomendasi',
+                            context.l10n.recommendationHubTitle,
                             style: TextStyle(
                               fontFamily: AppTextStyles.fontFamily,
                               fontSize: context.sp(22),
@@ -217,7 +220,7 @@ class _RecommendationHubScreenState
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    filter.label,
+                    filter.localizedLabel(context.l10n),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
@@ -264,7 +267,7 @@ class _RecommendationHubScreenState
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  current.label,
+                  current.localizedLabel(context.l10n),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
@@ -408,7 +411,7 @@ class _RecommendationHubScreenState
                 color: AppColors.textPrimary,
               ),
               decoration: InputDecoration(
-                hintText: 'Cari judul, deskripsi, tanaman atau site',
+                hintText: context.l10n.recommendationSearchHint,
                 hintStyle: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
@@ -458,12 +461,27 @@ class _RecommendationHubScreenState
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _statCell(context, 'Total', stats.total, AppColors.primary),
-            _statCell(context, 'Pending', stats.pending, AppColors.warning),
-            _statCell(context, 'Applied', stats.applied, AppColors.success),
             _statCell(
               context,
-              'Prioritas',
+              context.l10n.commonTotal,
+              stats.total,
+              AppColors.primary,
+            ),
+            _statCell(
+              context,
+              context.l10n.commonPending,
+              stats.pending,
+              AppColors.warning,
+            ),
+            _statCell(
+              context,
+              context.l10n.commonApplied,
+              stats.applied,
+              AppColors.success,
+            ),
+            _statCell(
+              context,
+              context.l10n.recommendationPriorityStat,
               stats.highPriority,
               AppColors.error,
             ),
@@ -600,7 +618,11 @@ class _RecommendationHubScreenState
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _pill(context, rec.priority.label, priorityColor),
+                  _pill(
+                    context,
+                    rec.priority.localizedLabel(context.l10n),
+                    priorityColor,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -624,13 +646,21 @@ class _RecommendationHubScreenState
               const SizedBox(height: 10),
               Row(
                 children: [
-                  _pill(context, rec.status.label, statusColor),
+                  _pill(
+                    context,
+                    rec.status.localizedLabel(context.l10n),
+                    statusColor,
+                  ),
                   const SizedBox(width: 8),
-                  _pill(context, rec.type.label, typeColor),
+                  _pill(
+                    context,
+                    rec.type.localizedLabel(context.l10n),
+                    typeColor,
+                  ),
                   const Spacer(),
                   if (rec.createdAt != null)
                     Text(
-                      _dateText(rec.createdAt!),
+                      _dateText(context, rec.createdAt!),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(11),
@@ -652,8 +682,11 @@ class _RecommendationHubScreenState
     RecommendationStatusFilter status,
   ) {
     final msg = scope == RecommendationScope.all
-        ? 'Belum ada rekomendasi yang tersedia untuk site ini.'
-        : 'Tidak ada data untuk filter ${scope.label} dengan status ${status.label}.';
+        ? context.l10n.recommendationEmptyForSite
+        : context.l10n.recommendationEmptyScoped(
+            scope.localizedLabel(context.l10n),
+            status.localizedLabel(context.l10n),
+          );
     return Padding(
       padding: EdgeInsets.only(top: context.rh(0.10)),
       child: Column(
@@ -665,7 +698,7 @@ class _RecommendationHubScreenState
           ),
           SizedBox(height: context.rh(0.016)),
           Text(
-            'Data rekomendasi kosong',
+            context.l10n.recommendationEmptyDataTitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
@@ -705,7 +738,7 @@ class _RecommendationHubScreenState
           ),
           SizedBox(height: context.rh(0.016)),
           Text(
-            'Gagal memuat rekomendasi',
+            context.l10n.recommendationLoadFailed,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
@@ -718,7 +751,7 @@ class _RecommendationHubScreenState
           Padding(
             padding: EdgeInsets.symmetric(horizontal: context.rw(0.12)),
             child: Text(
-              toUiErrorMessage(error),
+              toUiErrorMessage(error, context.l10n),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
@@ -758,7 +791,7 @@ class _RecommendationHubScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'Filter Kategori',
+              context.l10n.recommendationFilterCategory,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
@@ -773,7 +806,7 @@ class _RecommendationHubScreenState
                 contentPadding: EdgeInsets.zero,
                 leading: _radioCircle(sel),
                 title: Text(
-                  scope.label,
+                  scope.localizedLabel(context.l10n),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: 14,
@@ -822,7 +855,7 @@ class _RecommendationHubScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'Filter Status',
+              context.l10n.recommendationFilterStatus,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
@@ -837,7 +870,7 @@ class _RecommendationHubScreenState
                 contentPadding: EdgeInsets.zero,
                 leading: _radioCircle(sel),
                 title: Text(
-                  filter.label,
+                  filter.localizedLabel(context.l10n),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: 14,
@@ -917,7 +950,7 @@ class _RecommendationHubScreenState
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Text(
-        scope.label,
+        scope.localizedLabel(context.l10n),
         style: TextStyle(
           fontFamily: AppTextStyles.fontFamily,
           fontSize: context.sp(10),
@@ -928,10 +961,8 @@ class _RecommendationHubScreenState
     );
   }
 
-  String _dateText(DateTime date) {
-    final d = date.day.toString().padLeft(2, '0');
-    final m = date.month.toString().padLeft(2, '0');
-    return '$d/$m/${date.year}';
+  String _dateText(BuildContext context, DateTime date) {
+    return context.dateFormat('dd MMM yyyy').format(date);
   }
 
   IconData _typeIcon(RecommendationType type) => switch (type) {

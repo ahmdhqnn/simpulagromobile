@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/device_sensor.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/device_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/device_sensor_provider.dart';
@@ -82,7 +83,7 @@ class _DeviceSensorFormScreenState
 
       if (dsAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 8),
@@ -91,7 +92,7 @@ class _DeviceSensorFormScreenState
       }
       if (dsAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: dsAsync.error!,
             onRetry: () =>
@@ -102,7 +103,7 @@ class _DeviceSensorFormScreenState
     }
 
     final permission = _isEditMode ? 'ds:update' : 'ds:create';
-    final title = _isEditMode ? 'Edit Device Sensor' : 'Tambah Device Sensor';
+    final title = _isEditMode ? context.l10n.adminEditDeviceSensorTitle : context.l10n.adminAddDeviceSensorTitle;
 
     return PermissionGuardScreen(
       permission: permission,
@@ -110,8 +111,8 @@ class _DeviceSensorFormScreenState
         title: title,
         isLoading: formState.isLoading,
         loadingMessage: _isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat mapping...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingMapping,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -148,17 +149,17 @@ class _DeviceSensorFormScreenState
               ),
               SizedBox(height: context.rh(0.02)),
               AdminSectionCard(
-                title: 'Status',
+                title: context.l10n.adminStatusSection,
                 child: AdminFormFields.buildStatusToggle(
                   context,
-                  label: 'Status Mapping',
+                  label: context.l10n.adminStatusMappingLabel,
                   value: _status == 1,
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
               ),
               SizedBox(height: context.rh(0.03)),
               AdminSubmitButton(
-                label: _isEditMode ? 'Simpan Perubahan' : 'Tambah Mapping',
+                label: _isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddDeviceSensorTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -198,7 +199,7 @@ class _DeviceSensorFormScreenState
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedDeviceId == null) {
-      SnackbarHelper.showError(context, 'Device wajib dipilih');
+      SnackbarHelper.showError(context, context.l10n.adminDeviceRequired);
       return;
     }
 
@@ -212,21 +213,21 @@ class _DeviceSensorFormScreenState
     if (minNorm != null && maxNorm != null && minNorm > maxNorm) {
       SnackbarHelper.showError(
         context,
-        'Min Normal tidak boleh lebih besar dari Max Normal',
+        context.l10n.adminMinNormalGreaterThanMaxNormal,
       );
       return;
     }
     if (minValue != null && maxValue != null && minValue > maxValue) {
       SnackbarHelper.showError(
         context,
-        'Min Absolut tidak boleh lebih besar dari Max Absolut',
+        context.l10n.adminMinAbsoluteGreaterThanMaxAbsolute,
       );
       return;
     }
     if (minWarn != null && maxWarn != null && minWarn > maxWarn) {
       SnackbarHelper.showError(
         context,
-        'Min Warning tidak boleh lebih besar dari Max Warning',
+        context.l10n.adminMinWarningGreaterThanMaxWarning,
       );
       return;
     }
@@ -235,14 +236,14 @@ class _DeviceSensorFormScreenState
       if (minNorm != null && minValue > minNorm) {
         SnackbarHelper.showError(
           context,
-          'Min Absolut tidak boleh lebih besar dari Min Normal',
+          context.l10n.adminMinAbsoluteGreaterThanMinNormal,
         );
         return;
       }
       if (minWarn != null && minValue > minWarn) {
         SnackbarHelper.showError(
           context,
-          'Min Absolut tidak boleh lebih besar dari Min Warning',
+          context.l10n.adminMinAbsoluteGreaterThanMinWarning,
         );
         return;
       }
@@ -252,14 +253,14 @@ class _DeviceSensorFormScreenState
       if (maxNorm != null && maxValue < maxNorm) {
         SnackbarHelper.showError(
           context,
-          'Max Absolut tidak boleh lebih kecil dari Max Normal',
+          context.l10n.adminMaxAbsoluteLessThanMaxNormal,
         );
         return;
       }
       if (maxWarn != null && maxValue < maxWarn) {
         SnackbarHelper.showError(
           context,
-          'Max Absolut tidak boleh lebih kecil dari Max Warning',
+          context.l10n.adminMaxAbsoluteLessThanMaxWarning,
         );
         return;
       }
@@ -268,7 +269,7 @@ class _DeviceSensorFormScreenState
     if (minWarn != null && minNorm != null && minWarn > minNorm) {
       SnackbarHelper.showError(
         context,
-        'Min Warning tidak boleh lebih besar dari Min Normal',
+        context.l10n.adminMinWarningGreaterThanMinNormal,
       );
       return;
     }
@@ -276,7 +277,7 @@ class _DeviceSensorFormScreenState
     if (maxWarn != null && maxNorm != null && maxWarn < maxNorm) {
       SnackbarHelper.showError(
         context,
-        'Max Warning tidak boleh lebih kecil dari Max Normal',
+        context.l10n.adminMaxWarningLessThanMaxNormal,
       );
       return;
     }
@@ -312,13 +313,16 @@ class _DeviceSensorFormScreenState
       SnackbarHelper.showSuccess(
         context,
         _isEditMode
-            ? 'Mapping berhasil diperbarui'
-            : 'Mapping berhasil ditambahkan',
+            ? context.l10n.adminUpdateSuccess(context.l10n.adminDeviceSensorTitle)
+            : context.l10n.adminCreateSuccess(context.l10n.adminDeviceSensorTitle),
       );
       context.pop();
     } else {
       final error = ref.read(adminDeviceSensorFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan mapping');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.adminDeviceSensorTitle),
+      );
     }
   }
 }
@@ -353,39 +357,39 @@ class _MappingInfoSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminSectionCard(
-      title: 'Informasi Mapping',
+      title: context.l10n.adminMappingInfoSection,
       child: Column(
         children: [
           AdminFormFields.buildField(
             context,
             controller: idController,
-            label: 'DS ID',
-            hint: 'Contoh: DS001',
+            label: context.l10n.adminDsIdLabel,
+            hint: context.l10n.adminDsIdHint,
             icon: Icons.tag,
             enabled: !isEditMode,
             required: true,
             validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'DS ID wajib diisi' : null,
+                (v == null || v.trim().isEmpty) ? context.l10n.adminDsIdRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AdminFormFields.buildField(
             context,
             controller: nameController,
-            label: 'Nama',
-            hint: 'Contoh: Nitrogen Sensor DEV001',
+            label: context.l10n.commonName,
+            hint: context.l10n.adminMappingNameHint,
             icon: Icons.cable,
             required: true,
             validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
+                (v == null || v.trim().isEmpty) ? context.l10n.adminNameRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminDeviceListProvider),
             value: selectedDeviceId,
-            label: 'Device *',
-            hint: 'Pilih device',
+            label: '${context.l10n.adminDeviceLabel} *',
+            hint: context.l10n.adminSelectDeviceHint,
             icon: Icons.device_hub,
-            errorMessage: 'Gagal memuat device',
+            errorMessage: context.l10n.adminLoadDeviceFailed,
             itemBuilder: (devices) => devices
                 .map(
                   (d) => DropdownMenuItem<String>(
@@ -395,20 +399,20 @@ class _MappingInfoSection extends ConsumerWidget {
                 )
                 .toList(),
             onChanged: onDeviceChanged,
-            validator: (v) => v == null ? 'Device wajib dipilih' : null,
+            validator: (v) => v == null ? context.l10n.adminDeviceRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminSensorListProvider),
             value: selectedSensorId,
-            label: 'Sensor',
-            hint: 'Pilih sensor (opsional)',
+            label: context.l10n.adminSensorLabel,
+            hint: context.l10n.adminSelectSensorOptional,
             icon: Icons.sensors,
-            errorMessage: 'Gagal memuat sensor',
+            errorMessage: context.l10n.adminNoSensorsMessage,
             itemBuilder: (sensors) => [
-              const DropdownMenuItem<String>(
+              DropdownMenuItem<String>(
                 value: null,
-                child: Text('Tidak ada'),
+                child: Text(context.l10n.adminNoSelection),
               ),
               ...sensors.map(
                 (s) => DropdownMenuItem<String>(
@@ -423,14 +427,14 @@ class _MappingInfoSection extends ConsumerWidget {
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminUnitListProvider),
             value: selectedUnitId,
-            label: 'Unit',
-            hint: 'Pilih unit (opsional)',
+            label: context.l10n.adminUnitLabel,
+            hint: context.l10n.adminSelectUnitOptional,
             icon: Icons.straighten,
-            errorMessage: 'Gagal memuat unit',
+            errorMessage: context.l10n.adminNoUnitsMessage,
             itemBuilder: (units) => [
-              const DropdownMenuItem<String>(
+              DropdownMenuItem<String>(
                 value: null,
-                child: Text('Tidak ada'),
+                child: Text(context.l10n.adminNoSelection),
               ),
               ...units.map(
                 (u) => DropdownMenuItem<String>(
@@ -445,7 +449,7 @@ class _MappingInfoSection extends ConsumerWidget {
           AdminFormFields.buildField(
             context,
             controller: addressController,
-            label: 'Alamat',
+            label: context.l10n.adminAddressLabel,
             hint: 'Contoh: 0x10',
             icon: Icons.location_searching,
           ),
@@ -453,8 +457,8 @@ class _MappingInfoSection extends ConsumerWidget {
           AdminFormFields.buildField(
             context,
             controller: seqController,
-            label: 'Urutan (Seq)',
-            hint: 'Contoh: 1',
+            label: context.l10n.adminSequenceLabel,
+            hint: context.l10n.adminSequenceHint,
             icon: Icons.format_list_numbered,
             keyboardType: TextInputType.number,
           ),
@@ -487,48 +491,48 @@ class _ThresholdSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdminSectionCard(
-      title: 'Threshold',
-      subtitle: 'Konfigurasi batas nilai sensor',
+      title: context.l10n.adminThresholdSection,
+      subtitle: context.l10n.adminThresholdSubtitle,
       child: Column(
         children: [
           AdminFormFields.buildField(
             context,
             controller: normalValueController,
-            label: 'Nilai Normal',
-            hint: 'Contoh: 25.0',
+            label: context.l10n.adminNormalValueLabel,
+            hint: context.l10n.adminExampleDecimalHint,
             icon: Icons.check_circle_outline,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           SizedBox(height: context.rh(0.016)),
           ThresholdRowWidget(
             leftController: minNormController,
-            leftLabel: 'Min Normal',
+            leftLabel: context.l10n.adminMinNormalLabel,
             leftIcon: Icons.arrow_downward,
             leftColor: AppColors.success,
             rightController: maxNormController,
-            rightLabel: 'Max Normal',
+            rightLabel: context.l10n.adminMaxNormalLabel,
             rightIcon: Icons.arrow_upward,
             rightColor: AppColors.success,
           ),
           SizedBox(height: context.rh(0.016)),
           ThresholdRowWidget(
             leftController: minValueController,
-            leftLabel: 'Min Absolut',
+            leftLabel: context.l10n.adminMinAbsoluteLabel,
             leftIcon: Icons.arrow_downward,
             leftColor: AppColors.info,
             rightController: maxValueController,
-            rightLabel: 'Max Absolut',
+            rightLabel: context.l10n.adminMaxAbsoluteLabel,
             rightIcon: Icons.arrow_upward,
             rightColor: AppColors.info,
           ),
           SizedBox(height: context.rh(0.016)),
           ThresholdRowWidget(
             leftController: minWarnController,
-            leftLabel: 'Min Warning',
+            leftLabel: context.l10n.adminMinWarningLabel,
             leftIcon: Icons.warning_amber,
             leftColor: AppColors.warning,
             rightController: maxWarnController,
-            rightLabel: 'Max Warning',
+            rightLabel: context.l10n.adminMaxWarningLabel,
             rightIcon: Icons.warning_amber,
             rightColor: AppColors.warning,
           ),

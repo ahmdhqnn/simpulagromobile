@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../data/models/monitoring_models.dart';
 
 class MapsWebviewWidget extends StatefulWidget {
   final double centerLat;
   final double centerLon;
   final List<DeviceModel> devices;
+  final AppLocalizations l10n;
 
   const MapsWebviewWidget({
     super.key,
     required this.centerLat,
     required this.centerLon,
     required this.devices,
+    required this.l10n,
   });
 
   @override
@@ -34,7 +37,8 @@ class _MapsWebviewWidgetState extends State<MapsWebviewWidget> {
   @override
   void didUpdateWidget(covariant MapsWebviewWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_mapSignature(widget) != _mapSignature(oldWidget)) {
+    if (_mapSignature(widget) != _mapSignature(oldWidget) ||
+        widget.l10n != oldWidget.l10n) {
       _controller.loadHtmlString(_buildHtml());
     }
   }
@@ -48,7 +52,7 @@ class _MapsWebviewWidgetState extends State<MapsWebviewWidget> {
           final status = d.isActive ? '#4CAF50' : '#9E9E9E';
           final popupHtml = _escapeJsString(
             '<strong>${_escapeHtml(label)}</strong><br>'
-            '${_escapeHtml(location)}<br>${d.sensors.length} sensor',
+            '${_escapeHtml(location)}<br>${widget.l10n.monitoringSensorCount(d.sensors.length)}',
           );
           return '''
         L.circleMarker([${d.devLat}, ${d.devLon}], {

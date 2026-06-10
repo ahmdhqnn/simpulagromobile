@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 
@@ -206,7 +207,7 @@ class AdminErrorState extends StatelessWidget {
             ),
             SizedBox(height: context.rh(0.02)),
             Text(
-              'Gagal memuat data',
+              AppLocalizations.of(context)!.commonLoadFailed,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: context.sp(18),
@@ -238,7 +239,7 @@ class AdminErrorState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Text(
-                  'Coba Lagi',
+                  AppLocalizations.of(context)!.retry,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(16),

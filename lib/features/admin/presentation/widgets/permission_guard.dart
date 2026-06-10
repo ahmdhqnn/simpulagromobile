@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../l10n/l10n.dart';
 import '../providers/permission_guard_provider.dart';
 
 class PermissionGuard extends ConsumerWidget {
@@ -53,7 +54,7 @@ class _ForbiddenScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Akses Ditolak')),
+      appBar: AppBar(title: Text(context.l10n.adminAccessDeniedTitle)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -63,7 +64,7 @@ class _ForbiddenScreen extends StatelessWidget {
               Icon(Icons.block, size: 80, color: Colors.red[300]),
               const SizedBox(height: 24),
               Text(
-                'Akses Ditolak',
+                context.l10n.adminAccessDeniedTitle,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.red[700],
@@ -71,7 +72,7 @@ class _ForbiddenScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Anda tidak memiliki izin untuk mengakses halaman ini.',
+                context.l10n.adminNoPagePermissionMessage,
                 textAlign: TextAlign.center,
                 style: Theme.of(
                   context,
@@ -81,7 +82,7 @@ class _ForbiddenScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back),
-                label: const Text('Kembali'),
+                label: Text(context.l10n.commonBack),
               ),
             ],
           ),

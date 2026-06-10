@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/permission.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 /// Widget untuk memilih permissions dalam form Role
@@ -28,7 +29,7 @@ class PermissionCheckboxGroup extends ConsumerWidget {
       skipError: true,
       data: (grouped) {
         if (grouped.isEmpty) {
-          return const Center(child: Text('Tidak ada permission tersedia'));
+          return Center(child: Text(context.l10n.adminNoPermissionsAvailable));
         }
 
         return Column(
@@ -46,7 +47,7 @@ class PermissionCheckboxGroup extends ConsumerWidget {
       loading: () => const PermissionGroupsSkeleton(),
       error: (error, _) => Center(
         child: Text(
-          'Gagal memuat permissions: $error',
+          context.l10n.adminLoadPermissionsFailed(error.toString()),
           style: const TextStyle(color: Colors.red),
         ),
       ),

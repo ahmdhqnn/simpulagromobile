@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 
 class DashboardHeaderWidget extends StatelessWidget {
@@ -34,7 +35,7 @@ class DashboardHeaderWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Halo, $userName',
+                  context.l10n.dashboardWelcomeUser(userName),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(16),

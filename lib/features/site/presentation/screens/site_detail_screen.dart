@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/locale_formatters.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../notes/presentation/widgets/site_notes_section_widget.dart';
@@ -39,12 +41,12 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Lokasi'),
+        title: Text(context.l10n.siteDetailTitle),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_outlined),
-            tooltip: 'Invite Member',
+            tooltip: context.l10n.siteInviteTooltip,
             onPressed: () => context.push('/site/${widget.siteId}/invite'),
           ),
           IconButton(
@@ -54,9 +56,9 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Catatan'),
+          tabs: [
+            Tab(text: context.l10n.siteOverviewTab),
+            Tab(text: context.l10n.siteNotesTab),
           ],
         ),
       ),
@@ -80,8 +82,7 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
             padding: const EdgeInsets.all(16.0),
             child: ErrorStateCardWidget(
               message: error.toString(),
-              onRetry: () =>
-                  ref.invalidate(siteDetailProvider(widget.siteId)),
+              onRetry: () => ref.invalidate(siteDetailProvider(widget.siteId)),
             ),
           ),
         ),
@@ -129,26 +130,28 @@ class _OverviewTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Data Site',
+              context.l10n.siteDataTitle,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Gap(12),
-            _buildInfoRow(context, Icons.tag, 'Site ID', site.siteId),
+            _buildInfoRow(context, Icons.tag, context.l10n.siteIdLabel, site.siteId),
             const Gap(8),
             _buildInfoRow(
               context,
               Icons.badge_outlined,
-              'Nama',
+              context.l10n.commonName,
               site.siteName ?? site.displayName,
             ),
             const Gap(8),
             _buildInfoRow(
               context,
               Icons.toggle_on,
-              'Status',
-              site.isActive ? 'Aktif (1)' : 'Tidak Aktif (0)',
+              context.l10n.commonStatus,
+              site.isActive
+                  ? '${context.l10n.commonActive} (1)'
+                  : '${context.l10n.commonInactive} (0)',
             ),
           ],
         ),
@@ -200,7 +203,9 @@ class _OverviewTab extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      site.isActive ? 'Aktif' : 'Tidak Aktif',
+                      site.isActive
+                          ? context.l10n.commonActive
+                          : context.l10n.commonInactive,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -225,7 +230,7 @@ class _OverviewTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Informasi Lokasi',
+              context.l10n.siteLocationInfo,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -235,7 +240,7 @@ class _OverviewTab extends ConsumerWidget {
               _buildInfoRow(
                 context,
                 Icons.location_city,
-                'Alamat',
+                context.l10n.commonAddress,
                 site.siteAddress!,
               ),
               const Gap(12),
@@ -244,7 +249,7 @@ class _OverviewTab extends ConsumerWidget {
               _buildInfoRow(
                 context,
                 Icons.my_location,
-                'Koordinat',
+                context.l10n.commonCoordinates,
                 '${site.siteLat?.toStringAsFixed(6)}, ${site.siteLon?.toStringAsFixed(6)}',
               ),
               const Gap(12),
@@ -253,7 +258,7 @@ class _OverviewTab extends ConsumerWidget {
               _buildInfoRow(
                 context,
                 Icons.terrain,
-                'Ketinggian',
+                context.l10n.commonAltitude,
                 '${site.siteAlt?.toStringAsFixed(1)} m',
               ),
           ],
@@ -270,7 +275,7 @@ class _OverviewTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Informasi Tambahan',
+              context.l10n.siteAdditionalInfo,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -280,8 +285,8 @@ class _OverviewTab extends ConsumerWidget {
               _buildInfoRow(
                 context,
                 Icons.calendar_today,
-                'Dibuat',
-                _formatDate(site.siteCreated!),
+                context.l10n.commonCreatedAt,
+                _formatDate(context, site.siteCreated!),
               ),
               const Gap(12),
             ],
@@ -289,8 +294,8 @@ class _OverviewTab extends ConsumerWidget {
               _buildInfoRow(
                 context,
                 Icons.update,
-                'Terakhir Diperbarui',
-                _formatDate(site.siteUpdate!),
+                context.l10n.commonUpdatedAt,
+                _formatDate(context, site.siteUpdate!),
               ),
           ],
         ),
@@ -333,7 +338,7 @@ class _OverviewTab extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    return context.dateFormat('dd MMM yyyy').format(date);
   }
 }

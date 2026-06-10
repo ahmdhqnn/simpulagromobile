@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../site/domain/entities/site.dart';
 
 class DashboardSiteCommandBanner extends StatelessWidget {
@@ -24,7 +25,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Pilih site untuk memuat data monitoring dan rekomendasi',
+                context.l10n.dashboardSelectSitePrompt,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(13),
@@ -67,7 +68,7 @@ class DashboardSiteCommandBanner extends StatelessWidget {
           ],
           const SizedBox(height: 4),
           Text(
-            'ID: ${site!.siteId} · ${site!.isActive ? 'Aktif' : 'Nonaktif'}',
+            'ID: ${site!.siteId} · ${site!.isActive ? context.l10n.commonActive : context.l10n.commonInactive}',
             style: TextStyle(
               fontFamily: AppTextStyles.fontFamily,
               fontSize: context.sp(11),

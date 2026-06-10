@@ -8,6 +8,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/device_sensor.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 
 class DeviceSensorListScreen extends ConsumerStatefulWidget {
   const DeviceSensorListScreen({super.key});
@@ -38,7 +39,7 @@ class _DeviceSensorListScreenState extends ConsumerState<DeviceSensorListScreen>
     return PermissionGuardScreen(
       permission: 'ds:read',
       child: AdminScaffold(
-        title: 'Device Sensor',
+        title: context.l10n.adminDeviceSensorTitle,
         action: PermissionGuard(
           permission: 'ds:create',
           child: AdminAddButton(
@@ -49,18 +50,15 @@ class _DeviceSensorListScreenState extends ConsumerState<DeviceSensorListScreen>
           children: [
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Mapping'),
-                Tab(text: 'Nilai Ambang'),
+              tabs: [
+                Tab(text: context.l10n.adminMappingTab),
+                Tab(text: context.l10n.adminThresholdValuesTab),
               ],
             ),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: [
-                  _MappingTab(),
-                  const DeviceSensorThresholdTab(),
-                ],
+                children: [_MappingTab(), const DeviceSensorThresholdTab()],
               ),
             ),
           ],
@@ -81,10 +79,10 @@ class _MappingTab extends ConsumerWidget {
       skipError: true,
       data: (deviceSensors) {
         if (deviceSensors.isEmpty) {
-          return const AdminEmptyState(
+          return AdminEmptyState(
             icon: Icons.cable_outlined,
-            title: 'Belum ada mapping',
-            message: 'Tambahkan mapping device-sensor untuk monitoring',
+            title: context.l10n.adminNoMappings,
+            message: context.l10n.adminNoMappingsMessage,
           );
         }
 
@@ -128,7 +126,7 @@ class _DeviceSensorCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AdminListItem(
       title: deviceSensor.displayName,
-      subtitle: 'ds_id: ${deviceSensor.dsId} · dev_id: ${deviceSensor.devId}',
+      subtitle: context.l10n.adminDsDevSubtitle(deviceSensor.dsId, deviceSensor.devId),
       icon: Icons.cable,
       iconColor: deviceSensor.isActive ? const Color(0xFF26C6DA) : Colors.grey,
       isActive: deviceSensor.isActive,
@@ -136,13 +134,13 @@ class _DeviceSensorCard extends ConsumerWidget {
       badges: [
         if (deviceSensor.sensId != null)
           AdminBadge(
-            label: 'sens_id: ${deviceSensor.sensId}',
+            label: context.l10n.adminSensIdBadge(deviceSensor.sensId!),
             color: Colors.purple,
             icon: Icons.sensors,
           ),
         if (deviceSensor.unitId != null)
           AdminBadge(
-            label: 'unit: ${deviceSensor.unitId}',
+            label: context.l10n.adminUnitBadge(deviceSensor.unitId!),
             color: Colors.teal,
             icon: Icons.straighten,
           ),
@@ -177,7 +175,7 @@ class _DeviceSensorCard extends ConsumerWidget {
               permission: 'ds:update',
               child: ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text('Edit Mapping'),
+                title: Text(context.l10n.adminEditMapping),
                 onTap: () {
                   Navigator.pop(context);
                   context.push(

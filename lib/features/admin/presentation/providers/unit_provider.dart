@@ -119,9 +119,8 @@ class UnitFormNotifier extends StateNotifier<UnitFormState> {
 // ═══════════════════════════════════════════════════════════
 // UNIT FORM PROVIDER
 // ═══════════════════════════════════════════════════════════
-final adminUnitFormProvider = StateNotifierProvider<UnitFormNotifier, UnitFormState>(
-  (ref) {
-    final repository = ref.watch(adminUnitRepositoryProvider);
-    return UnitFormNotifier(repository, ref);
-  },
-);
+final adminUnitFormProvider =
+    StateNotifierProvider<UnitFormNotifier, UnitFormState>((ref) {
+      final repository = ref.watch(adminUnitRepositoryProvider);
+      return UnitFormNotifier(repository, ref);
+    });

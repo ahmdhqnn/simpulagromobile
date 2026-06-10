@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/sensor_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -28,9 +30,9 @@ class SensorDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Detail Sensor',
-          style: TextStyle(
+        title: Text(
+          context.l10n.sensorDetailTitle,
+          style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontWeight: FontWeight.w600,
             color: Color(0xFF1D1D1D),
@@ -119,7 +121,9 @@ class SensorDetailScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                sensor.statusText,
+                                sensor.isActive
+                                    ? context.l10n.commonActive
+                                    : context.l10n.commonInactive,
                                 style: TextStyle(
                                   fontFamily: 'Plus Jakarta Sans',
                                   fontSize: context.sp(12),
@@ -151,7 +155,7 @@ class SensorDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Informasi',
+                        context.l10n.commonInformation,
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: context.sp(16),
@@ -162,23 +166,37 @@ class SensorDetailScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       const Divider(height: 1),
                       const SizedBox(height: 12),
-                      _buildInfoRow(context, 'Tipe', sensor.typeDisplay),
-                      _buildInfoRow(context, 'Satuan', sensor.unit),
+                      _buildInfoRow(
+                        context,
+                        context.l10n.sensorTypeLabel,
+                        sensor.typeDisplay,
+                      ),
+                      _buildInfoRow(
+                        context,
+                        context.l10n.commonUnit,
+                        sensor.unit,
+                      ),
                       if (sensor.description != null)
                         _buildInfoRow(
                           context,
-                          'Deskripsi',
+                          context.l10n.commonDescription,
                           sensor.description!,
                         ),
                       _buildInfoRow(
                         context,
-                        'Dibuat',
-                        DateFormatter.formatDateTime(sensor.createdAt),
+                        context.l10n.commonCreatedAt,
+                        DateFormatter.formatDateTime(
+                          sensor.createdAt,
+                          locale: context.localeTag,
+                        ),
                       ),
                       _buildInfoRow(
                         context,
-                        'Diperbarui',
-                        DateFormatter.formatDateTime(sensor.updatedAt),
+                        context.l10n.commonUpdatedAt,
+                        DateFormatter.formatDateTime(
+                          sensor.updatedAt,
+                          locale: context.localeTag,
+                        ),
                       ),
                     ],
                   ),
@@ -210,7 +228,7 @@ class SensorDetailScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: context.rh(0.02)),
                 Text(
-                  'Gagal memuat sensor',
+                  context.l10n.sensorLoadFailed,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: context.sp(18),
@@ -240,9 +258,9 @@ class SensorDetailScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(100),
                     ),
                   ),
-                  child: const Text(
-                    'Coba Lagi',
-                    style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                  child: Text(
+                    context.l10n.commonRetry,
+                    style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                   ),
                 ),
               ],

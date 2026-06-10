@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -55,6 +56,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<void> _submitComment() async {
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
+    final l10n = context.l10n;
 
     setState(() => _isSendingComment = true);
 
@@ -69,7 +71,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gagal mengirim komentar: ${e.toString().replaceAll('Exception: ', '')}',
+              l10n.forumSendCommentFailed(
+                e.toString().replaceAll('Exception: ', ''),
+              ),
               style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
             ),
             backgroundColor: AppColors.error,
@@ -266,7 +270,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Gagal memuat postingan',
+                          context.l10n.forumLoadPostsFailed,
                           style: AppTextStyles.cardTitle(context, 16),
                         ),
                         const SizedBox(height: 8),
@@ -281,7 +285,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               ref.invalidate(postDetailProvider(widget.postId)),
                           icon: const Icon(Icons.refresh, size: 18),
                           label: Text(
-                            'Coba Lagi',
+                            context.l10n.commonRetry,
                             style: TextStyle(
                               fontFamily: AppTextStyles.fontFamily,
                               fontSize: context.sp(13),
@@ -336,14 +340,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 _confirmDelete(context, post.postId);
               }
             },
-            itemBuilder: (_) => const [
+            itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, size: 18),
-                    SizedBox(width: 8),
-                    Text('Edit'),
+                    const Icon(Icons.edit_outlined, size: 18),
+                    const SizedBox(width: 8),
+                    Text(context.l10n.commonEdit),
                   ],
                 ),
               ),
@@ -351,13 +355,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.delete_outline,
                       size: 18,
                       color: AppColors.error,
                     ),
-                    SizedBox(width: 8),
-                    Text('Hapus', style: TextStyle(color: AppColors.error)),
+                    const SizedBox(width: 8),
+                    Text(
+                      context.l10n.commonDelete,
+                      style: const TextStyle(color: AppColors.error),
+                    ),
                   ],
                 ),
               ),
@@ -491,7 +498,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 _buildMetricCell(
                   context,
                   icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-                  label: 'Suka',
+                  label: context.l10n.forumLike,
                   value: post.likeCount,
                   color: post.isLiked ? AppColors.error : AppColors.textPrimary,
                 ),
@@ -499,7 +506,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 _buildMetricCell(
                   context,
                   icon: Icons.chat_bubble_outline,
-                  label: 'Komentar',
+                  label: context.l10n.forumComment,
                   value: commentCount,
                   color: AppColors.textPrimary,
                 ),
@@ -507,7 +514,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 _buildMetricCell(
                   context,
                   icon: Icons.share_outlined,
-                  label: 'Bagikan',
+                  label: context.l10n.forumShare,
                   value: post.shareCount,
                   color: AppColors.textPrimary,
                 ),
@@ -521,7 +528,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: _buildPostActionChip(
                   context,
                   icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-                  label: 'Suka',
+                  label: context.l10n.forumLike,
                   color: post.isLiked
                       ? AppColors.error
                       : AppColors.textSecondary,
@@ -540,7 +547,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: _buildPostActionChip(
                   context,
                   icon: Icons.thumb_down_outlined,
-                  label: 'Dislike',
+                  label: context.l10n.forumDislike,
                   color: AppColors.textSecondary,
                   onTap: () async {
                     await ref
@@ -555,7 +562,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: _buildPostActionChip(
                   context,
                   icon: Icons.chat_bubble_outline,
-                  label: 'Komentar',
+                  label: context.l10n.forumComment,
                   color: AppColors.textSecondary,
                   onTap: () => _commentFocusNode.requestFocus(),
                 ),
@@ -565,7 +572,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: _buildPostActionChip(
                   context,
                   icon: Icons.share_outlined,
-                  label: 'Bagikan',
+                  label: context.l10n.forumShare,
                   color: AppColors.textSecondary,
                   onTap: () => _handleShare(post.postId),
                 ),
@@ -669,7 +676,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ),
       child: Row(
         children: [
-          Text('Komentar', style: AppTextStyles.cardTitle(context, 14)),
+          Text(
+            context.l10n.forumComment,
+            style: AppTextStyles.cardTitle(context, 14),
+          ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -711,7 +721,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Belum ada komentar',
+            context.l10n.forumNoCommentsTitle,
             style: AppTextStyles.label(
               context,
               size: 14,
@@ -721,7 +731,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Jadilah yang pertama berkomentar',
+            context.l10n.forumFirstCommentMessage,
             style: AppTextStyles.caption(context),
           ),
         ],
@@ -792,14 +802,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             _confirmDeleteComment(context, comment.commentId);
                           }
                         },
-                        itemBuilder: (_) => const [
+                        itemBuilder: (_) => [
                           PopupMenuItem(
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit_outlined, size: 18),
-                                SizedBox(width: 8),
-                                Text('Edit'),
+                                const Icon(Icons.edit_outlined, size: 18),
+                                const SizedBox(width: 8),
+                                Text(context.l10n.commonEdit),
                               ],
                             ),
                           ),
@@ -807,15 +817,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.delete_outline,
                                   size: 18,
                                   color: AppColors.error,
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
-                                  'Hapus',
-                                  style: TextStyle(color: AppColors.error),
+                                  context.l10n.commonDelete,
+                                  style: const TextStyle(
+                                    color: AppColors.error,
+                                  ),
                                 ),
                               ],
                             ),
@@ -888,7 +900,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     fontSize: context.sp(13),
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Tulis komentar...',
+                    hintText: context.l10n.forumWriteComment,
                     hintStyle: AppTextStyles.hint(context, size: 13),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -1001,15 +1013,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             child: reactionsAsync.when(
               data: (reactions) {
                 if (reactions.isEmpty) {
-                  return const Text('Belum ada reaksi');
+                  return Text(context.l10n.forumNoReactions);
                 }
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Reaksi',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.forumReactions,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1030,7 +1042,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 rowHeight: 40,
                 iconSize: 32,
               ),
-              error: (error, _) => Text('Error: $error'),
+              error: (error, _) => Text('${context.l10n.commonError}: $error'),
             ),
           ),
         );
@@ -1039,6 +1051,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _confirmDelete(BuildContext context, String postId) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -1046,11 +1059,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Hapus Postingan',
+          l10n.forumDeletePost,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Apakah Anda yakin ingin menghapus postingan ini?',
+          l10n.forumDeletePostConfirm,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -1061,7 +1074,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
-              'Batal',
+              l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -1079,7 +1092,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Postingan berhasil dihapus',
+                      l10n.forumPostDeleted,
                       style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                     ),
                     backgroundColor: AppColors.success,
@@ -1088,7 +1101,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               }
             },
             child: Text(
-              'Hapus',
+              l10n.commonDelete,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.error,
@@ -1102,6 +1115,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _editComment(BuildContext context, Comment comment) async {
+    final l10n = context.l10n;
     final controller = TextEditingController(text: comment.commentContent);
     final ok = await showDialog<bool>(
       context: context,
@@ -1110,7 +1124,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Edit Komentar',
+          l10n.forumEditComment,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: TextField(
@@ -1121,11 +1135,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Simpan'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -1139,10 +1153,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Komentar diperbarui')));
+    ).showSnackBar(SnackBar(content: Text(l10n.forumCommentUpdated)));
   }
 
   void _confirmDeleteComment(BuildContext context, String commentId) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -1150,11 +1165,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: Text(
-          'Hapus Komentar',
+          l10n.forumDeleteComment,
           style: AppTextStyles.cardTitle(context, 16),
         ),
         content: Text(
-          'Apakah Anda yakin ingin menghapus komentar ini?',
+          l10n.forumDeleteCommentConfirm,
           style: AppTextStyles.label(
             context,
             size: 13,
@@ -1165,7 +1180,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
-              'Batal',
+              l10n.commonCancel,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textSecondary,
@@ -1180,7 +1195,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   .deleteComment(commentId);
             },
             child: Text(
-              'Hapus',
+              l10n.commonDelete,
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.error,
@@ -1194,13 +1209,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _handleShare(String postId) async {
+    final l10n = context.l10n;
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(postDetailProvider(widget.postId));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Postingan berhasil dibagikan',
+            l10n.forumPostShared,
             style: TextStyle(fontFamily: AppTextStyles.fontFamily),
           ),
           backgroundColor: AppColors.success,

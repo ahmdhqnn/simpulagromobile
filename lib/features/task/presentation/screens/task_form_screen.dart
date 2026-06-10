@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -38,7 +40,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   bool _hydrated = false;
 
   bool get isEditMode => widget.taskId != null;
-  String get _screenTitle => isEditMode ? 'Edit Task' : 'Tambah Task';
 
   @override
   void dispose() {
@@ -63,13 +64,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       _editSiteId ??= ref.read(selectedSiteIdProvider);
       final siteId = _editSiteId;
       if (siteId == null) {
+        final l10n = context.l10n;
         return _buildScreenShell(
           child: _buildMessageCard(
             icon: Icons.location_off_outlined,
             iconColor: AppColors.warning,
-            title: 'Site belum dipilih',
-            description: 'Pilih site terlebih dahulu sebelum mengedit task.',
-            actionLabel: 'Kembali',
+            title: l10n.taskSiteRequiredForEditTitle,
+            description: l10n.taskSiteRequiredForEditMessage,
+            actionLabel: l10n.commonBack,
             onAction: () => context.pop(),
           ),
         );
@@ -85,9 +87,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           child: _buildMessageCard(
             icon: Icons.error_outline,
             iconColor: AppColors.error,
-            title: 'Gagal memuat task',
+            title: context.l10n.taskLoadFailed,
             description: error.toString(),
-            actionLabel: 'Coba Lagi',
+            actionLabel: context.l10n.commonRetry,
             onAction: () =>
                 ref.invalidate(taskDetailProvider((siteId, widget.taskId!))),
           ),
@@ -119,7 +121,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 SizedBox(height: context.rh(0.015)),
                 _buildTopBar(),
                 SizedBox(height: context.rh(0.03)),
-                Text(_screenTitle, style: AppTextStyles.sectionTitle(context)),
+                Text(
+                  isEditMode
+                      ? context.l10n.taskEditTitle
+                      : context.l10n.taskAddTitle,
+                  style: AppTextStyles.sectionTitle(context),
+                ),
                 SizedBox(height: context.rh(0.03)),
                 child,
                 SizedBox(
@@ -218,18 +225,21 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isEditMode) ...[
-              _FormField(label: 'Site', child: _buildSiteSelector()),
+              _FormField(
+                label: context.l10n.siteTitle,
+                child: _buildSiteSelector(),
+              ),
               SizedBox(height: context.rh(0.025)),
             ],
             _FormField(
-              label: 'Nama Task',
+              label: context.l10n.taskNameLabel,
               child: _buildTextField(
                 controller: _taskNameController,
-                hintText: 'Masukkan nama task',
+                hintText: context.l10n.taskNameHint,
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Nama task harus diisi';
+                    return context.l10n.taskNameRequired;
                   }
                   return null;
                 },
@@ -237,21 +247,30 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             ),
             SizedBox(height: context.rh(0.025)),
             _FormField(
-              label: 'Deskripsi',
+              label: context.l10n.commonDescription,
               child: _buildTextField(
                 controller: _taskDescriptionController,
-                hintText: 'Tambahkan deskripsi task',
+                hintText: context.l10n.taskDescriptionHint,
                 maxLines: 4,
                 textInputAction: TextInputAction.newline,
               ),
             ),
             SizedBox(height: context.rh(0.025)),
-            _FormField(label: 'Jenis Task', child: _buildTypeSelector()),
+            _FormField(
+              label: context.l10n.taskTypeLabel,
+              child: _buildTypeSelector(),
+            ),
             SizedBox(height: context.rh(0.025)),
-            _FormField(label: 'Prioritas', child: _buildPrioritySelector()),
+            _FormField(
+              label: context.l10n.commonPriority,
+              child: _buildPrioritySelector(),
+            ),
             if (isEditMode) ...[
               SizedBox(height: context.rh(0.025)),
-              _FormField(label: 'Status', child: _buildStatusSelector()),
+              _FormField(
+                label: context.l10n.commonStatus,
+                child: _buildStatusSelector(),
+              ),
             ],
             SizedBox(height: context.rh(0.037)),
             Row(
@@ -361,7 +380,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: Text(
-          'Gagal memuat site: $error',
+          context.l10n.taskLoadSiteFailed(error.toString()),
           style: AppTextStyles.label(
             context,
             size: context.sp(12),
@@ -379,7 +398,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: Text(
-              'Belum ada site',
+              context.l10n.taskNoSite,
               style: AppTextStyles.label(
                 context,
                 size: context.sp(13),
@@ -408,7 +427,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      _selectedSite?.siteName ?? 'Pilih site',
+                      _selectedSite?.siteName ?? context.l10n.siteSelectFirst,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style:
@@ -466,7 +485,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Pilih Site',
+                  context.l10n.siteSelect,
                   style: AppTextStyles.cardTitle(sheetContext, 16),
                 ),
                 const SizedBox(height: 12),
@@ -540,7 +559,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       children: TaskType.values.map((type) {
         final isSelected = type == _selectedType;
         return _buildChoiceChip(
-          label: type.label,
+          label: type.localizedLabel(context.l10n),
           isSelected: isSelected,
           backgroundColor: AppColors.surfaceVariant,
           selectedColor: AppColors.primary,
@@ -560,7 +579,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         final isSelected = priority == _selectedPriority;
         final color = _priorityColor(priority);
         return _buildChoiceChip(
-          label: priority.label,
+          label: priority.localizedLabel(context.l10n),
           isSelected: isSelected,
           backgroundColor: color.withValues(alpha: 0.12),
           selectedColor: color,
@@ -582,7 +601,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         final isSelected = status == _selectedStatus;
         final color = _statusColor(status);
         return _buildChoiceChip(
-          label: status.label,
+          label: status.localizedLabel(context.l10n),
           isSelected: isSelected,
           backgroundColor: color.withValues(alpha: 0.12),
           selectedColor: color,
@@ -642,15 +661,16 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
 
     if (!isEditMode && _selectedSite == null) {
-      _showError(messenger, 'Pilih site terlebih dahulu');
+      _showError(messenger, l10n.siteSelectFirst);
       return;
     }
 
     final siteId = isEditMode ? _editSiteId : _selectedSite?.siteId;
     if (siteId == null) {
-      _showError(messenger, 'Site ID tidak ditemukan');
+      _showError(messenger, l10n.taskSiteIdMissing);
       return;
     }
 
@@ -676,12 +696,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       setState(() => _isSubmitting = false);
       result.fold(
         (failure) =>
-            _showError(messenger, 'Gagal mengupdate task: ${failure.message}'),
+            _showError(messenger, l10n.taskUpdateFailure(failure.message)),
         (_) async {
           await refreshTaskCache(ref, siteId: siteId, taskId: widget.taskId!);
           if (!mounted) return;
           context.pop(true);
-          _showSuccess(messenger, 'Task berhasil diupdate');
+          _showSuccess(messenger, l10n.taskUpdateSuccess);
         },
       );
     } else {
@@ -699,12 +719,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       setState(() => _isSubmitting = false);
       result.fold(
         (failure) =>
-            _showError(messenger, 'Gagal menambah task: ${failure.message}'),
+            _showError(messenger, l10n.taskCreateFailure(failure.message)),
         (_) async {
           await refreshTaskCache(ref, siteId: siteId);
           if (!mounted) return;
           context.pop(true);
-          _showSuccess(messenger, 'Task berhasil ditambahkan');
+          _showSuccess(messenger, l10n.taskCreateSuccess);
         },
       );
     }

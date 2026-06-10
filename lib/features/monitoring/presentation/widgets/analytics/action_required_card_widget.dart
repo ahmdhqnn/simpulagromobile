@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/widgets/app_card_widget.dart';
 import '../monitoring_card_header_widget.dart';
 
@@ -11,11 +12,10 @@ class ActionRequiredCardWidget extends StatelessWidget {
     return AppCardWidget.elevated(
       boxShadow: null,
       radius: AppRadius.lg,
-      child: const MonitoringCardHeaderWidget.icon(
+      child: MonitoringCardHeaderWidget.icon(
         icon: Icons.settings_suggest_outlined,
-        title: 'Tindakan Diperlukan',
-        description:
-            '0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring',
+        title: context.l10n.monitoringActionRequiredTitle,
+        description: context.l10n.monitoringNoSensorConfiguredDesc,
         background: AppColors.softOrange,
         tint: AppColors.warning,
       ),

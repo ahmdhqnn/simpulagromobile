@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ProfilePermissionsCardWidget extends StatefulWidget {
   final AsyncValue<List<String>> permissionsAsync;
@@ -35,6 +36,7 @@ class _ProfilePermissionsCardWidgetState
   }
 
   Widget _buildErrorState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 82,
       padding: const EdgeInsets.all(16),
@@ -57,7 +59,7 @@ class _ProfilePermissionsCardWidgetState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Gagal Memuat',
+                  l10n.commonLoadFailed,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(22),
@@ -68,7 +70,7 @@ class _ProfilePermissionsCardWidgetState
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  'Tidak dapat memuat hak akses',
+                  l10n.profilePermissionsLoadError,
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),
@@ -86,6 +88,7 @@ class _ProfilePermissionsCardWidgetState
   }
 
   Widget _buildCard(BuildContext context, List<String> permissions) {
+    final l10n = AppLocalizations.of(context)!;
     if (permissions.isEmpty) {
       return Container(
         height: 82,
@@ -109,7 +112,7 @@ class _ProfilePermissionsCardWidgetState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Tidak Ada Akses',
+                    l10n.profilePermissionsNoAccess,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(22),
@@ -120,7 +123,7 @@ class _ProfilePermissionsCardWidgetState
                   ),
                   const SizedBox(height: 1),
                   Text(
-                    'Belum ada hak akses tersedia',
+                    l10n.profilePermissionsNoAccessDesc,
                     style: AppTextStyles.hint(context),
                   ),
                 ],
@@ -131,7 +134,7 @@ class _ProfilePermissionsCardWidgetState
       );
     }
 
-    final grouped = _groupPermissions(permissions);
+    final grouped = _groupPermissions(permissions, l10n);
     final totalPermissions = grouped.values.fold<int>(
       0,
       (total, actions) => total + actions.length,
@@ -163,7 +166,7 @@ class _ProfilePermissionsCardWidgetState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hak Akses Sistem',
+                          l10n.profilePermissionsSystemAccess,
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: context.sp(22),
@@ -174,7 +177,7 @@ class _ProfilePermissionsCardWidgetState
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          '$totalPermissions permission',
+                          l10n.profilePermissionsCount(totalPermissions),
                           style: AppTextStyles.hint(context),
                         ),
                       ],
@@ -219,7 +222,7 @@ class _ProfilePermissionsCardWidgetState
     );
   }
 
-  Map<String, List<String>> _groupPermissions(List<String> permissions) {
+  Map<String, List<String>> _groupPermissions(List<String> permissions, AppLocalizations l10n) {
     final Map<String, List<String>> grouped = {};
     for (final permission in permissions) {
       final normalized = permission.trim();
@@ -232,7 +235,7 @@ class _ProfilePermissionsCardWidgetState
         if (module.isEmpty || action.isEmpty) continue;
         grouped.putIfAbsent(module, () => []).add(action);
       } else {
-        grouped.putIfAbsent('Lainnya', () => []).add(normalized);
+        grouped.putIfAbsent(l10n.commonOther, () => []).add(normalized);
       }
     }
 
@@ -274,6 +277,7 @@ class _PermissionGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -316,7 +320,7 @@ class _PermissionGroup extends StatelessWidget {
                       Icon(_actionIcon(action), size: 14, color: color),
                       const SizedBox(width: 6),
                       Text(
-                        _formatAction(action),
+                        _formatAction(action, l10n),
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
                           fontSize: context.sp(12),
@@ -346,22 +350,22 @@ class _PermissionGroup extends StatelessWidget {
     return normalized.isEmpty ? '-' : normalized;
   }
 
-  String _formatAction(String text) {
+  String _formatAction(String text, AppLocalizations l10n) {
     switch (text.toLowerCase()) {
       case 'read':
       case 'view':
-        return 'Lihat';
+        return l10n.permissionActionRead;
       case 'create':
-        return 'Tambah';
+        return l10n.permissionActionCreate;
       case 'update':
       case 'edit':
-        return 'Ubah';
+        return l10n.permissionActionUpdate;
       case 'delete':
-        return 'Hapus';
+        return l10n.permissionActionDelete;
       case 'manage':
-        return 'Kelola';
+        return l10n.permissionActionManage;
       case 'admin':
-        return 'Admin';
+        return l10n.roleAdmin;
       default:
         return _formatModule(text);
     }

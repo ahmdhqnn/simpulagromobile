@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -58,7 +59,9 @@ class AnalyticsTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeaderWidget(title: 'Analytics Overview'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringAnalyticsOverview,
+            ),
             SizedBox(height: context.rh(0.015)),
 
             // Environmental Health
@@ -113,7 +116,9 @@ class AnalyticsTab extends ConsumerWidget {
             ),
 
             // Plant Statistics
-            const SectionHeaderWidget(title: 'Statistik Tanaman'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringPlantStatisticsSection,
+            ),
             SizedBox(height: context.rh(0.015)),
             if (activePlantAsync.isLoading && plant == null)
               const CompactStatsCardSkeleton()
@@ -129,7 +134,9 @@ class AnalyticsTab extends ConsumerWidget {
             ],
 
             // Plant Recommendation
-            const SectionHeaderWidget(title: 'Rekomendasi Tanaman'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringPlantRecommendationSection,
+            ),
             SizedBox(height: context.rh(0.015)),
             plantRecAsync.when(
               skipLoadingOnReload: true,
@@ -148,7 +155,9 @@ class AnalyticsTab extends ConsumerWidget {
             SizedBox(height: context.rh(0.025)),
 
             // Device & Sensor Overview
-            const SectionHeaderWidget(title: 'Perangkat & Sensor Overview'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringDeviceSensorOverviewSection,
+            ),
             SizedBox(height: context.rh(0.015)),
             devicesAsync.when(
               skipLoadingOnReload: true,
@@ -189,7 +198,9 @@ class AnalyticsTab extends ConsumerWidget {
             SizedBox(height: context.rh(0.025)),
 
             // Daily Sensor Analysis
-            const SectionHeaderWidget(title: 'Analisis Sensor Harian'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringDailyAnalyticsTitle,
+            ),
             SizedBox(height: context.rh(0.015)),
             dailyAsync.when(
               skipLoadingOnReload: true,
@@ -209,7 +220,9 @@ class AnalyticsTab extends ConsumerWidget {
             SizedBox(height: context.rh(0.025)),
 
             // Monthly Recap
-            const SectionHeaderWidget(title: 'Rekap Bulanan Sensor'),
+            SectionHeaderWidget(
+              title: context.l10n.monitoringMonthlySensorRecap,
+            ),
             SizedBox(height: context.rh(0.015)),
             monthlyAsync.when(
               skipLoadingOnReload: true,

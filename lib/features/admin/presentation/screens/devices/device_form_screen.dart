@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/device_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
@@ -76,7 +77,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
 
       if (deviceAsync.isLoading) {
         return AdminFormScaffold(
-          title: 'Memuat...',
+          title: context.l10n.adminLoadingTitle,
           body: const Padding(
             padding: EdgeInsets.all(16),
             child: FormCardSkeleton(fieldCount: 7),
@@ -85,7 +86,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
       }
       if (deviceAsync.hasError) {
         return AdminFormScaffold(
-          title: 'Error',
+          title: context.l10n.commonErrorTitle,
           body: AdminErrorState(
             error: deviceAsync.error!,
             onRetry: () =>
@@ -100,11 +101,11 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? 'Edit Device' : 'Tambah Device',
+        title: isEditMode ? context.l10n.adminEditDeviceTitle : context.l10n.adminAddDeviceTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
-            ? 'Menyimpan perubahan...'
-            : 'Membuat device...',
+            ? context.l10n.adminSavingChanges
+            : context.l10n.adminCreatingDevice,
         body: Form(
           key: _formKey,
           child: ListView(
@@ -115,7 +116,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? 'Edit Device' : 'Tambah Device',
+                isEditMode ? context.l10n.adminEditDeviceTitle : context.l10n.adminAddDeviceTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -126,23 +127,23 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               ),
               SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
-                title: 'Informasi Dasar',
+                title: context.l10n.adminBasicInfoSection,
                 child: Column(
                   children: [
                     AdminFormFields.buildField(
                       context,
                       controller: _idController,
-                      label: 'Device ID',
-                      hint: 'Contoh: DEV001',
+                      label: context.l10n.adminDeviceIdLabel,
+                      hint: context.l10n.adminDeviceIdHint,
                       icon: Icons.tag,
                       enabled: !isEditMode,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Device ID wajib diisi';
+                          return context.l10n.adminDeviceIdRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -151,16 +152,16 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
-                      label: 'Nama Device',
-                      hint: 'Contoh: Main Gateway',
+                      label: context.l10n.adminDeviceNameLabel,
+                      hint: context.l10n.adminDeviceNameHint,
                       icon: Icons.device_hub,
                       required: true,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Nama device wajib diisi';
+                          return context.l10n.adminDeviceNameRequired;
                         }
                         if (v.length < 3) {
-                          return 'Minimal 3 karakter';
+                          return context.l10n.commonMinCharacters(3);
                         }
                         return null;
                       },
@@ -169,8 +170,8 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _locationController,
-                      label: 'Lokasi',
-                      hint: 'Contoh: Greenhouse A',
+                      label: context.l10n.commonLocation,
+                      hint: context.l10n.adminDeviceLocationHint,
                       icon: Icons.place,
                       maxLines: 2,
                     ),
@@ -180,8 +181,8 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Koneksi',
-                subtitle: 'Opsional — IP address dan port device',
+                title: context.l10n.adminConnectionSection,
+                subtitle: context.l10n.adminConnectionSubtitle,
                 child: Row(
                   children: [
                     Expanded(
@@ -189,14 +190,14 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                       child: AdminFormFields.buildField(
                         context,
                         controller: _ipController,
-                        label: 'IP Address',
+                        label: context.l10n.adminIpAddressLabel,
                         hint: '192.168.1.100',
                         icon: Icons.wifi,
                         keyboardType: TextInputType.number,
                         validator: (v) {
                           if (v != null && v.isNotEmpty) {
                             final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                            if (!ipRegex.hasMatch(v)) return 'IP tidak valid';
+                            if (!ipRegex.hasMatch(v)) return context.l10n.adminIpInvalid;
                           }
                           return null;
                         },
@@ -207,7 +208,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                       child: AdminFormFields.buildField(
                         context,
                         controller: _portController,
-                        label: 'Port',
+                        label: context.l10n.adminPortLabel,
                         hint: '8080',
                         icon: Icons.settings_ethernet,
                         keyboardType: TextInputType.number,
@@ -215,7 +216,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                           if (v != null && v.isNotEmpty) {
                             final port = int.tryParse(v);
                             if (port == null || port < 1 || port > 65535) {
-                              return 'Tidak valid';
+                              return context.l10n.commonInvalid;
                             }
                           }
                           return null;
@@ -228,8 +229,8 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Koordinat',
-                subtitle: 'Opsional — untuk pemetaan lokasi device',
+                title: context.l10n.adminCoordinatesSection,
+                subtitle: context.l10n.adminDeviceCoordinateSubtitle,
                 child: Column(
                   children: [
                     AdminFormFields.buildCoordinateRow(
@@ -241,7 +242,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                     AdminFormFields.buildField(
                       context,
                       controller: _altController,
-                      label: 'Altitude (meter)',
+                      label: context.l10n.adminAltitudeLabel,
                       hint: '113.5',
                       icon: Icons.terrain,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -254,10 +255,10 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSectionCard(
-                title: 'Status',
+                title: context.l10n.adminStatusSection,
                 child: AdminFormFields.buildStatusToggle(
                   context,
-                  label: 'Status Device',
+                  label: context.l10n.adminStatusDeviceLabel,
                   value: _status == 1,
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
@@ -265,7 +266,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? 'Simpan Perubahan' : 'Tambah Device',
+                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddDeviceTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -328,13 +329,16 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
       SnackbarHelper.showSuccess(
         context,
         isEditMode
-            ? 'Device berhasil diperbarui'
-            : 'Device berhasil ditambahkan',
+            ? context.l10n.adminUpdateSuccess(context.l10n.adminDeviceLabel)
+            : context.l10n.adminCreateSuccess(context.l10n.adminDeviceLabel),
       );
       context.pop();
     } else {
       final error = ref.read(adminDeviceFormProvider).error;
-      SnackbarHelper.showError(context, error ?? 'Gagal menyimpan device');
+      SnackbarHelper.showError(
+        context,
+        error ?? context.l10n.adminSaveFailed(context.l10n.adminDeviceLabel),
+      );
     }
   }
 }
