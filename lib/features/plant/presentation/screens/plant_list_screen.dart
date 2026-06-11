@@ -137,10 +137,16 @@ class _PlantCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statusColor = _statusColor(plant);
+    final selectedSiteId = ref.watch(selectedSiteIdProvider);
+    final siteId = phaseSiteIdForPlant(plant, fallbackSiteId: selectedSiteId);
     final phaseAsync = plant.isCurrentPlanting
-        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        ? ref.watch(currentPhaseProvider(siteId))
         : null;
-    final phaseLabel = phaseLabelForPlant(plant, phaseAsync, AppLocalizations.of(context)!);
+    final phaseLabel = phaseLabelForPlant(
+      plant,
+      phaseAsync,
+      AppLocalizations.of(context)!,
+    );
 
     return Container(
       decoration: BoxDecoration(

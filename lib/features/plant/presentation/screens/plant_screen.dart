@@ -38,7 +38,8 @@ class PlantScreen extends ConsumerWidget {
               loading: () => const CenteredInfoStateSkeleton(),
               error: (error, _) => Center(
                 child: ErrorStateCardWidget(
-                  message: '${AppLocalizations.of(context)!.errorLoadSite}. ${error.toString()}',
+                  message:
+                      '${AppLocalizations.of(context)!.errorLoadSite}. ${error.toString()}',
                   onRetry: () => ref.invalidate(sitesProvider),
                 ),
               ),
@@ -79,15 +80,15 @@ class PlantScreen extends ConsumerWidget {
               }
 
               if (activePlant != null) {
-                final recommendationSiteId = phaseSiteIdForPlant(activePlant);
+                final recommendationSiteId = phaseSiteIdForPlant(
+                  activePlant,
+                  fallbackSiteId: siteId,
+                );
                 final activePhase = ref
                     .read(currentPhaseProvider(recommendationSiteId))
                     .valueOrNull;
                 ref.invalidate(
-                  recommendationsByPlantForSiteProvider((
-                    siteId: recommendationSiteId,
-                    plantId: activePlant.plantId,
-                  )),
+                  plantRecommendationsBySiteProvider(recommendationSiteId),
                 );
                 if (activePhase != null) {
                   ref.invalidate(

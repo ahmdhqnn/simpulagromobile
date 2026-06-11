@@ -420,6 +420,8 @@ abstract class _RecommendationActionResult extends RecommendationActionResult {
 mixin _$RecommendationBundle {
   RecommendationActionResult? get npk => throw _privateConstructorUsedError;
   RecommendationActionResult? get ph => throw _privateConstructorUsedError;
+  RecommendationSensorData? get sensorData =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of RecommendationBundle
   /// with the given fields replaced by the non-null parameter values.
@@ -435,10 +437,15 @@ abstract class $RecommendationBundleCopyWith<$Res> {
     $Res Function(RecommendationBundle) then,
   ) = _$RecommendationBundleCopyWithImpl<$Res, RecommendationBundle>;
   @useResult
-  $Res call({RecommendationActionResult? npk, RecommendationActionResult? ph});
+  $Res call({
+    RecommendationActionResult? npk,
+    RecommendationActionResult? ph,
+    RecommendationSensorData? sensorData,
+  });
 
   $RecommendationActionResultCopyWith<$Res>? get npk;
   $RecommendationActionResultCopyWith<$Res>? get ph;
+  $RecommendationSensorDataCopyWith<$Res>? get sensorData;
 }
 
 /// @nodoc
@@ -458,7 +465,11 @@ class _$RecommendationBundleCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? npk = freezed, Object? ph = freezed}) {
+  $Res call({
+    Object? npk = freezed,
+    Object? ph = freezed,
+    Object? sensorData = freezed,
+  }) {
     return _then(
       _value.copyWith(
             npk: freezed == npk
@@ -469,6 +480,10 @@ class _$RecommendationBundleCopyWithImpl<
                 ? _value.ph
                 : ph // ignore: cast_nullable_to_non_nullable
                       as RecommendationActionResult?,
+            sensorData: freezed == sensorData
+                ? _value.sensorData
+                : sensorData // ignore: cast_nullable_to_non_nullable
+                      as RecommendationSensorData?,
           )
           as $Val,
     );
@@ -501,6 +516,20 @@ class _$RecommendationBundleCopyWithImpl<
       return _then(_value.copyWith(ph: value) as $Val);
     });
   }
+
+  /// Create a copy of RecommendationBundle
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RecommendationSensorDataCopyWith<$Res>? get sensorData {
+    if (_value.sensorData == null) {
+      return null;
+    }
+
+    return $RecommendationSensorDataCopyWith<$Res>(_value.sensorData!, (value) {
+      return _then(_value.copyWith(sensorData: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -512,12 +541,18 @@ abstract class _$$RecommendationBundleImplCopyWith<$Res>
   ) = __$$RecommendationBundleImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({RecommendationActionResult? npk, RecommendationActionResult? ph});
+  $Res call({
+    RecommendationActionResult? npk,
+    RecommendationActionResult? ph,
+    RecommendationSensorData? sensorData,
+  });
 
   @override
   $RecommendationActionResultCopyWith<$Res>? get npk;
   @override
   $RecommendationActionResultCopyWith<$Res>? get ph;
+  @override
+  $RecommendationSensorDataCopyWith<$Res>? get sensorData;
 }
 
 /// @nodoc
@@ -533,7 +568,11 @@ class __$$RecommendationBundleImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? npk = freezed, Object? ph = freezed}) {
+  $Res call({
+    Object? npk = freezed,
+    Object? ph = freezed,
+    Object? sensorData = freezed,
+  }) {
     return _then(
       _$RecommendationBundleImpl(
         npk: freezed == npk
@@ -544,6 +583,10 @@ class __$$RecommendationBundleImplCopyWithImpl<$Res>
             ? _value.ph
             : ph // ignore: cast_nullable_to_non_nullable
                   as RecommendationActionResult?,
+        sensorData: freezed == sensorData
+            ? _value.sensorData
+            : sensorData // ignore: cast_nullable_to_non_nullable
+                  as RecommendationSensorData?,
       ),
     );
   }
@@ -552,16 +595,19 @@ class __$$RecommendationBundleImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$RecommendationBundleImpl extends _RecommendationBundle {
-  const _$RecommendationBundleImpl({this.npk, this.ph}) : super._();
+  const _$RecommendationBundleImpl({this.npk, this.ph, this.sensorData})
+    : super._();
 
   @override
   final RecommendationActionResult? npk;
   @override
   final RecommendationActionResult? ph;
+  @override
+  final RecommendationSensorData? sensorData;
 
   @override
   String toString() {
-    return 'RecommendationBundle(npk: $npk, ph: $ph)';
+    return 'RecommendationBundle(npk: $npk, ph: $ph, sensorData: $sensorData)';
   }
 
   @override
@@ -570,11 +616,13 @@ class _$RecommendationBundleImpl extends _RecommendationBundle {
         (other.runtimeType == runtimeType &&
             other is _$RecommendationBundleImpl &&
             (identical(other.npk, npk) || other.npk == npk) &&
-            (identical(other.ph, ph) || other.ph == ph));
+            (identical(other.ph, ph) || other.ph == ph) &&
+            (identical(other.sensorData, sensorData) ||
+                other.sensorData == sensorData));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, npk, ph);
+  int get hashCode => Object.hash(runtimeType, npk, ph, sensorData);
 
   /// Create a copy of RecommendationBundle
   /// with the given fields replaced by the non-null parameter values.
@@ -593,6 +641,7 @@ abstract class _RecommendationBundle extends RecommendationBundle {
   const factory _RecommendationBundle({
     final RecommendationActionResult? npk,
     final RecommendationActionResult? ph,
+    final RecommendationSensorData? sensorData,
   }) = _$RecommendationBundleImpl;
   const _RecommendationBundle._() : super._();
 
@@ -600,6 +649,8 @@ abstract class _RecommendationBundle extends RecommendationBundle {
   RecommendationActionResult? get npk;
   @override
   RecommendationActionResult? get ph;
+  @override
+  RecommendationSensorData? get sensorData;
 
   /// Create a copy of RecommendationBundle
   /// with the given fields replaced by the non-null parameter values.

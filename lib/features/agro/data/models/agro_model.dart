@@ -233,9 +233,9 @@ class GddDailyModel with _$GddDailyModel {
     }
 
     return GddDailyModel(
-      day: json['day'] as String?,
-      tempMin: _parseNullableDouble(json['tempMin']),
-      tempMax: _parseNullableDouble(json['tempMax']),
+      day: _readString(json, ['day', 'date']),
+      tempMin: _readDouble(json, ['tempMin', 'temp_min']),
+      tempMax: _readDouble(json, ['tempMax', 'temp_max']),
       gdd: readGdd(),
     );
   }
@@ -272,11 +272,12 @@ class GddModel with _$GddModel {
   factory GddModel.fromJson(Map<String, dynamic> json) {
     return GddModel(
       totalGDD: _readDouble(json, ['totalGDD', 'totalGdd', 'total_gdd']),
-      daily:
-          (json['daily'] as List?)
-              ?.map((e) => GddDailyModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      daily: (json['daily'] as List? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) => GddDailyModel.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(),
     );
   }
 
@@ -308,6 +309,9 @@ class EtcDailyModel with _$EtcDailyModel {
   const EtcDailyModel._();
 
   const factory EtcDailyModel({
+    int? hst,
+    String? phase,
+    double? et0,
     String? day,
     double? tempMin,
     double? tempMax,
@@ -316,6 +320,9 @@ class EtcDailyModel with _$EtcDailyModel {
     double? etc,
     double? kc,
     double? waterNeeds,
+    String? waterStatus,
+    String? recommendation,
+    String? riceType,
   }) = _EtcDailyModel;
 
   factory EtcDailyModel.fromJson(Map<String, dynamic> json) {
@@ -342,18 +349,33 @@ class EtcDailyModel with _$EtcDailyModel {
     }
 
     return EtcDailyModel(
-      day: json['day'] as String?,
-      tempMin: _parseNullableDouble(json['tempMin']),
-      tempMax: _parseNullableDouble(json['tempMax']),
-      rhMin: _parseNullableDouble(json['rhMin']),
-      rhMax: _parseNullableDouble(json['rhMax']),
+      hst: _parseNullableDouble(
+        _readRaw(json, ['hst', 'currentHst', 'current_hst']),
+      )?.toInt(),
+      phase: _readString(json, ['phase', 'phaseName', 'phase_name']),
+      et0: _readDouble(json, ['et0', 'et_0', 'referenceEt']),
+      day: _readString(json, ['day', 'date']),
+      tempMin: _readDouble(json, ['tempMin', 'temp_min']),
+      tempMax: _readDouble(json, ['tempMax', 'temp_max']),
+      rhMin: _readDouble(json, ['rhMin', 'rh_min']),
+      rhMax: _readDouble(json, ['rhMax', 'rh_max']),
       etc: readEtc(),
       kc: readKc(),
       waterNeeds: readWaterNeeds(),
+      waterStatus: _readString(json, ['waterStatus', 'water_status']),
+      recommendation: _readString(json, [
+        'recommendation',
+        'recommendationText',
+        'message',
+      ]),
+      riceType: _readString(json, ['riceType', 'rice_type']),
     );
   }
 
   EtcDailyEntity toEntity() => EtcDailyEntity(
+    hst: hst,
+    phase: phase,
+    et0: et0,
     day: day,
     tempMin: tempMin,
     tempMax: tempMax,
@@ -362,9 +384,18 @@ class EtcDailyModel with _$EtcDailyModel {
     etc: etc,
     kc: kc,
     waterNeeds: waterNeeds,
+    waterStatus: waterStatus,
+    recommendation: recommendation,
+    riceType: riceType,
   );
 
-  bool get isEmpty => etc == null && waterNeeds == null && kc == null;
+  bool get isEmpty =>
+      etc == null &&
+      waterNeeds == null &&
+      kc == null &&
+      et0 == null &&
+      phase == null &&
+      recommendation == null;
 
   bool isValid() {
     if (etc != null && etc! < 0) {
@@ -404,8 +435,8 @@ class AgroModel with _$AgroModel {
     }
 
     GddModel? gdd;
-    if (json['gdd'] is Map<String, dynamic>) {
-      gdd = GddModel.fromJson(json['gdd'] as Map<String, dynamic>);
+    if (json['gdd'] is Map) {
+      gdd = GddModel.fromJson(Map<String, dynamic>.from(json['gdd'] as Map));
     } else if (json['gdd'] is num) {
       gdd = GddModel(totalGDD: (json['gdd'] as num).toDouble(), daily: []);
     }
@@ -413,10 +444,15 @@ class AgroModel with _$AgroModel {
     List<EtcDailyModel> etc = [];
     if (json['etc'] is List) {
       etc = (json['etc'] as List)
-          .map((e) => EtcDailyModel.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map(
+            (item) => EtcDailyModel.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList();
-    } else if (json['etc'] is Map<String, dynamic>) {
-      etc = [EtcDailyModel.fromJson(json['etc'] as Map<String, dynamic>)];
+    } else if (json['etc'] is Map) {
+      etc = [
+        EtcDailyModel.fromJson(Map<String, dynamic>.from(json['etc'] as Map)),
+      ];
     } else if (json['etc'] is num) {
       etc = [EtcDailyModel(etc: (json['etc'] as num).toDouble())];
     }

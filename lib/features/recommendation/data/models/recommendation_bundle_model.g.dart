@@ -53,8 +53,17 @@ _$RecommendationBundleModelImpl _$$RecommendationBundleModelImplFromJson(
       : RecommendationActionResultModel.fromJson(
           json['ph'] as Map<String, dynamic>,
         ),
+  sensorData: json['sensor_data'] == null
+      ? null
+      : RecommendationSensorDataModel.fromJson(
+          json['sensor_data'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$$RecommendationBundleModelImplToJson(
   _$RecommendationBundleModelImpl instance,
-) => <String, dynamic>{'npk': instance.npk, 'ph': instance.ph};
+) => <String, dynamic>{
+  'npk': instance.npk,
+  'ph': instance.ph,
+  'sensor_data': instance.sensorData,
+};

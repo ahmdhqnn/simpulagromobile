@@ -2441,7 +2441,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationSearchHint.
   ///
   /// In id, this message translates to:
-  /// **'Cari judul, deskripsi, tanaman atau site'**
+  /// **'Cari judul, deskripsi, tanaman, aksi, atau fase'**
   String get recommendationSearchHint;
 
   /// No description provided for @recommendationEmptyTitle.
@@ -2453,7 +2453,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationEmptyAll.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada rekomendasi tersedia.\nPastikan sensor sudah aktif dan mengirim data.'**
+  /// **'Belum ada rekomendasi aktif untuk aksi hari ini, tanaman ML, atau fase aktif.'**
   String get recommendationEmptyAll;
 
   /// No description provided for @recommendationReload.
@@ -2477,7 +2477,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationEmptyForSite.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada rekomendasi yang tersedia untuk site ini.'**
+  /// **'Belum ada rekomendasi yang tersedia untuk konteks ini.'**
   String get recommendationEmptyForSite;
 
   /// No description provided for @recommendationFilterCategory.
@@ -3359,7 +3359,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringPlantRecommendationEmpty.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada rekomendasi untuk site ini'**
+  /// **'Belum ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir'**
   String get monitoringPlantRecommendationEmpty;
 
   /// No description provided for @monitoringRecommendationActionCount.
@@ -3377,19 +3377,19 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringRecommendationSiteTitle.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi Site'**
+  /// **'Rekomendasi Tanaman ML'**
   String get monitoringRecommendationSiteTitle;
 
   /// No description provided for @monitoringRecommendationCachedSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Berdasarkan data sensor tersimpan'**
+  /// **'Fresh dari endpoint ML tanaman'**
   String get monitoringRecommendationCachedSubtitle;
 
   /// No description provided for @monitoringRecommendationActiveSiteSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Berdasarkan sensor site aktif'**
+  /// **'Berdasarkan rata-rata sensor 7 hari'**
   String get monitoringRecommendationActiveSiteSubtitle;
 
   /// No description provided for @monitoringNpkAdjustment.
@@ -4205,19 +4205,19 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationSiteTitle.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi Site'**
+  /// **'Rekomendasi Aksi'**
   String get recommendationSiteTitle;
 
   /// No description provided for @recommendationSiteSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Kondisi site terpilih dan kebutuhan tindakan'**
+  /// **'Aksi hari ini dari kondisi sensor lahan'**
   String get recommendationSiteSubtitle;
 
   /// No description provided for @recommendationSiteDescription.
   ///
   /// In id, this message translates to:
-  /// **'Analisis umum kondisi site dan kebutuhan tindakan.'**
+  /// **'Rekomendasi aksi hanya menampilkan data hari ini. Cache database dari hari lain tidak ditampilkan.'**
   String get recommendationSiteDescription;
 
   /// No description provided for @recommendationPlantTitle.
@@ -4229,13 +4229,13 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationPlantSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Tanaman aktif di site terpilih'**
+  /// **'ML dari rata-rata sensor 7 hari'**
   String get recommendationPlantSubtitle;
 
   /// No description provided for @recommendationPlantDescription.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi terbaru berbasis data tanaman aktif.'**
+  /// **'Rekomendasi tanaman berasal langsung dari endpoint Machine Learning dan tidak disimpan ke database.'**
   String get recommendationPlantDescription;
 
   /// No description provided for @recommendationPlantLoadFailed.
@@ -4247,13 +4247,13 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationPhaseTitle.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi Fase'**
+  /// **'Rekomendasi Fase Aktif'**
   String get recommendationPhaseTitle;
 
   /// No description provided for @recommendationPhaseDescription.
   ///
   /// In id, this message translates to:
-  /// **'Saran aksi spesifik sesuai fase pertumbuhan aktif.'**
+  /// **'Saran aksi dari database seeded sesuai fase penanaman yang sedang berlangsung.'**
   String get recommendationPhaseDescription;
 
   /// No description provided for @recommendationPhaseLoadFailed.
@@ -4297,6 +4297,108 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Fase: {phase}'**
   String recommendationPhaseLabel(String phase);
+
+  /// No description provided for @recommendationActionScopeLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Aksi'**
+  String get recommendationActionScopeLabel;
+
+  /// No description provided for @recommendationPlantMlScopeLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Tanaman ML'**
+  String get recommendationPlantMlScopeLabel;
+
+  /// No description provided for @recommendationActivePhaseScopeLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Fase Aktif'**
+  String get recommendationActivePhaseScopeLabel;
+
+  /// No description provided for @recommendationSourceLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Sumber data'**
+  String get recommendationSourceLabel;
+
+  /// No description provided for @recommendationDataRuleLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Aturan tampil'**
+  String get recommendationDataRuleLabel;
+
+  /// No description provided for @recommendationActionSourceTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Endpoint rekomendasi aksi'**
+  String get recommendationActionSourceTitle;
+
+  /// No description provided for @recommendationActionSourceDescription.
+  ///
+  /// In id, this message translates to:
+  /// **'Data hari ini dari kondisi lahan: suhu/kelembaban lingkungan, suhu/kelembaban tanah, NPK, dan pH. Cache DB hari lain disembunyikan.'**
+  String get recommendationActionSourceDescription;
+
+  /// No description provided for @recommendationPlantSourceTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Endpoint rekomendasi tanaman ML'**
+  String get recommendationPlantSourceTitle;
+
+  /// No description provided for @recommendationPlantSourceDescription.
+  ///
+  /// In id, this message translates to:
+  /// **'Fresh dari Machine Learning berdasarkan rata-rata sensor 7 hari terakhir. Hasil ini tidak disimpan ke database.'**
+  String get recommendationPlantSourceDescription;
+
+  /// No description provided for @recommendationPhaseSourceTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Database rekomendasi fase aktif'**
+  String get recommendationPhaseSourceTitle;
+
+  /// No description provided for @recommendationPhaseSourceDescription.
+  ///
+  /// In id, this message translates to:
+  /// **'Data seeded berdasarkan fase penanaman yang sedang berlangsung. Ditampilkan hanya jika ada penanaman aktif.'**
+  String get recommendationPhaseSourceDescription;
+
+  /// No description provided for @recommendationGeneratedTodayLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari ini'**
+  String get recommendationGeneratedTodayLabel;
+
+  /// No description provided for @recommendationFreshMlLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Fresh ML 7 hari'**
+  String get recommendationFreshMlLabel;
+
+  /// No description provided for @recommendationSeededDatabaseLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Database fase'**
+  String get recommendationSeededDatabaseLabel;
+
+  /// No description provided for @recommendationEmptyAction.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada rekomendasi aksi untuk hari ini.'**
+  String get recommendationEmptyAction;
+
+  /// No description provided for @recommendationEmptyPlant.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir.'**
+  String get recommendationEmptyPlant;
+
+  /// No description provided for @recommendationEmptyPhase.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada rekomendasi fase karena belum ada fase penanaman aktif.'**
+  String get recommendationEmptyPhase;
 
   /// No description provided for @recommendationHstLabel.
   ///
@@ -4517,7 +4619,7 @@ abstract class AppLocalizations {
   /// No description provided for @agroSelectSiteMessage.
   ///
   /// In id, this message translates to:
-  /// **'Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).'**
+  /// **'Pilih site terlebih dahulu untuk melihat data agro (VPD, GDD, ETc).'**
   String get agroSelectSiteMessage;
 
   /// No description provided for @agroActionRecommendationTitle.
@@ -4547,7 +4649,7 @@ abstract class AppLocalizations {
   /// No description provided for @agroVdpDescription.
   ///
   /// In id, this message translates to:
-  /// **'Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VDP rendah (<0.4) meningkatkan risiko penyakit, VDP tinggi (>1.6) menyebabkan stres air.'**
+  /// **'Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VPD rendah (<0.4) meningkatkan risiko penyakit, VPD tinggi (>1.6) menyebabkan stres air.'**
   String get agroVdpDescription;
 
   /// No description provided for @agroGddDescription.
@@ -5837,7 +5939,7 @@ abstract class AppLocalizations {
   /// No description provided for @agroVdpRangeLabel.
   ///
   /// In id, this message translates to:
-  /// **'VDP Range'**
+  /// **'Rentang VPD'**
   String get agroVdpRangeLabel;
 
   /// No description provided for @agroVdpDetailTitle.
@@ -5849,7 +5951,7 @@ abstract class AppLocalizations {
   /// No description provided for @agroVdpUnavailable.
   ///
   /// In id, this message translates to:
-  /// **'Data VDP tidak tersedia'**
+  /// **'Data VPD tidak tersedia'**
   String get agroVdpUnavailable;
 
   /// No description provided for @agroVdpStatusLow.

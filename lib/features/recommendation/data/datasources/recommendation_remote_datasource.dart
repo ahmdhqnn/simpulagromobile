@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/network/response_parser.dart';
 import '../models/recommendation_model.dart';
 import '../models/recommendation_bundle_model.dart';
@@ -17,7 +16,6 @@ void _debugLog(String message) {
 
 /// Recommendation remote datasource
 abstract class RecommendationRemoteDatasource {
-  Future<List<RecommendationModel>> getRecommendations();
   Future<List<RecommendationModel>> getRecommendationsBySite(
     String siteId, {
     bool refresh = false,
@@ -25,29 +23,12 @@ abstract class RecommendationRemoteDatasource {
   Future<List<RecommendationModel>> getLatestRecommendationsForSite(
     String siteId,
   );
-  Future<List<RecommendationModel>> getRecommendationsByPlant(
-    String siteId,
-    String plantId,
-  );
-  Future<List<RecommendationModel>> getRecommendationsByType(String type);
-  Future<RecommendationModel> getRecommendationById(String recommendationId);
-  Future<RecommendationModel> applyRecommendation(String recommendationId);
-  Future<RecommendationModel> dismissRecommendation(String recommendationId);
-  Future<List<RecommendationModel>> generateRecommendations(String siteId);
   Future<List<RecommendationModel>> getRecommendationHistory(String siteId);
   Future<List<RecommendationModel>> getRecommendationsByPhase(
     String siteId,
     String phaseId,
   );
   Future<List<RecommendationModel>> postPlantRecommendation(
-    String siteId,
-    Map<String, dynamic> payload,
-  );
-  Future<Map<String, dynamic>> previewDummyRecommendation(
-    String siteId,
-    Map<String, dynamic> payload,
-  );
-  Future<Map<String, dynamic>> saveDummyRecommendation(
     String siteId,
     Map<String, dynamic> payload,
   );
@@ -58,30 +39,9 @@ class RecommendationRemoteDatasourceImpl
     implements RecommendationRemoteDatasource {
   final Dio _dio;
 
-  /// Feature flag untuk endpoint yang belum diimplementasi di backend
-  /// Set ke true ketika endpoint tersedia
-  static const _supportsGetById = false;
-  static const _supportsApply = false;
-  static const _supportsDismiss = false;
-
   RecommendationRemoteDatasourceImpl(this._dio);
 
   /// GET /api/sites/:siteId/recommendations
-  /// Mendapatkan rekomendasi NPK dan pH berdasarkan data sensor terkini
-  /// Karena endpoint ini site-scoped, kita perlu siteId.
-  /// Untuk getRecommendations() tanpa siteId, kita kembalikan list kosong.
-  ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  @override
-  Future<List<RecommendationModel>> getRecommendations() async {
-    // Endpoint ini memerlukan siteId — gunakan getRecommendationsBySite
-    // TODO: Implement global recommendations endpoint jika backend menyediakannya
-    return [];
-  }
-
-  /// GET /api/sites/:siteId/recommendations
-  ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
   @override
   Future<List<RecommendationModel>> getRecommendationsBySite(
     String siteId, {
@@ -93,19 +53,11 @@ class RecommendationRemoteDatasourceImpl
         queryParameters: refresh ? {'refresh': 'true'} : null,
       );
       final data = ResponseParser.extractDataMap(response.data);
-      final liveRecommendations = _parseRecommendationResponse(data, siteId);
-      if (liveRecommendations.isNotEmpty) {
-        return liveRecommendations;
-      }
-      return await _loadHistoryFallback(siteId);
+      return _parseRecommendationResponse(data, siteId);
     } on DioException catch (e) {
-      if (_isExpectedEmptyRecommendationError(e) ||
-          _isTransientRecommendationError(e)) {
-        _debugLog(
-          'Recommendation datasource (getBySite) returned ${e.response?.statusCode}; falling back to history endpoint',
-        );
-        return await _loadHistoryFallbackSafely(siteId);
-      }
+      final partial = _parsePartialRecommendationError(e, siteId);
+      if (partial.isNotEmpty) return partial;
+      if (_isExpectedEmptyRecommendationError(e)) return const [];
       _debugLog('Recommendation datasource error (getBySite): ${e.message}');
       rethrow;
     } catch (e) {
@@ -122,210 +74,9 @@ class RecommendationRemoteDatasourceImpl
   ) async {
     try {
       final response = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
-      final rows = ResponseParser.extractDataList(response.data);
-      if (rows.isNotEmpty) {
-        return rows
-            .whereType<Map>()
-            .expand((json) => _parseHistoryEntry(json, siteId))
-            .toList();
-      }
-
-      final data = ResponseParser.extractDataMap(response.data);
-      final parsed = _parseRecommendationResponse(data, siteId);
-      if (parsed.isNotEmpty) return parsed;
-      if (_looksLikeDirectRecommendation(data)) {
-        return [_parseDirectRecommendationItem(data, siteId)];
-      }
-      return const [];
+      return _parsePlantRecommendationEnvelope(response.data, siteId);
     } on DioException catch (e) {
-      if (_isExpectedEmptyRecommendationError(e)) return const [];
-      if (_isTransientRecommendationError(e)) {
-        return await _loadHistoryFallbackSafely(siteId);
-      }
-      rethrow;
-    }
-  }
-
-  /// GET /api/sites/:siteId/recommendations/history
-  ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  @override
-  Future<List<RecommendationModel>> getRecommendationsByPlant(
-    String siteId,
-    String plantId,
-  ) async {
-    try {
-      // API tidak memiliki endpoint per-plant, gunakan history
-      final response = await _dio.get(ApiEndpoints.recHistory(siteId));
-      final data = ResponseParser.extractDataList(response.data);
-      return data
-          .whereType<Map>()
-          .expand((json) => _parseHistoryEntry(json, siteId))
-          .toList();
-    } on DioException catch (e) {
-      if (_isExpectedEmptyRecommendationError(e)) return [];
-      _debugLog('❌ Recommendation datasource error (getByPlant): ${e.message}');
-      rethrow;
-    } catch (e) {
-      _debugLog(
-        '❌ Unexpected error in recommendation datasource (getByPlant): $e',
-      );
-      rethrow;
-    }
-  }
-
-  /// Mendapatkan rekomendasi berdasarkan type (client-side filtering)
-  /// API tidak support filter by type
-  ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  @override
-  Future<List<RecommendationModel>> getRecommendationsByType(
-    String type,
-  ) async {
-    // Filter dilakukan di client side karena API tidak support filter by type
-    // TODO: Coordinate with backend to implement server-side filtering
-    return [];
-  }
-
-  /// Mendapatkan rekomendasi berdasarkan ID
-  /// ⚠️ Endpoint belum diimplementasi di backend
-  /// Feature flag: [_supportsGetById]
-  ///
-  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
-  @override
-  Future<RecommendationModel> getRecommendationById(
-    String recommendationId,
-  ) async {
-    if (!_supportsGetById) {
-      throw const ServerFailure(
-        'Endpoint "get recommendation by ID" belum diimplementasi di backend. '
-        'Gunakan getRecommendationsBySite() lalu filter di client-side.',
-      );
-    }
-
-    try {
-      // TODO: Update path ketika backend mengimplementasikan endpoint
-      final response = await _dio.get('/recommendations/$recommendationId');
-      final data = response.data['data'] as Map<String, dynamic>?;
-
-      if (data == null) {
-        throw const NotFoundFailure('Recommendation not found');
-      }
-
-      return RecommendationModel.fromJson(data);
-    } on DioException catch (e) {
-      _debugLog('❌ Recommendation datasource error (getById): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      _debugLog(
-        '❌ Unexpected error in recommendation datasource (getById): $e',
-      );
-      rethrow;
-    }
-  }
-
-  /// Menerapkan rekomendasi
-  /// ⚠️ Endpoint belum diimplementasi di backend
-  /// Feature flag: [_supportsApply]
-  ///
-  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
-  @override
-  Future<RecommendationModel> applyRecommendation(
-    String recommendationId,
-  ) async {
-    if (!_supportsApply) {
-      throw const ServerFailure(
-        'Endpoint "apply recommendation" belum diimplementasi di backend. '
-        'Hubungi backend team untuk koordinasi implementasi.',
-      );
-    }
-
-    try {
-      // TODO: Update path dan method ketika backend mengimplementasikan endpoint
-      final response = await _dio.post(
-        '/recommendations/$recommendationId/apply',
-      );
-      final data = response.data['data'] as Map<String, dynamic>?;
-
-      if (data == null) {
-        throw const ServerFailure('No data returned from apply recommendation');
-      }
-
-      return RecommendationModel.fromJson(data);
-    } on DioException catch (e) {
-      _debugLog('❌ Recommendation datasource error (apply): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      _debugLog('❌ Unexpected error in recommendation datasource (apply): $e');
-      rethrow;
-    }
-  }
-
-  /// Menolak/membatalkan rekomendasi
-  /// ⚠️ Endpoint belum diimplementasi di backend
-  /// Feature flag: [_supportsDismiss]
-  ///
-  /// Throws: [ServerFailure] (not supported), atau [NetworkFailure], [UnknownFailure]
-  @override
-  Future<RecommendationModel> dismissRecommendation(
-    String recommendationId,
-  ) async {
-    if (!_supportsDismiss) {
-      throw const ServerFailure(
-        'Endpoint "dismiss recommendation" belum diimplementasi di backend. '
-        'Hubungi backend team untuk koordinasi implementasi.',
-      );
-    }
-
-    try {
-      // TODO: Update path dan method ketika backend mengimplementasikan endpoint
-      final response = await _dio.post(
-        '/recommendations/$recommendationId/dismiss',
-      );
-      final data = response.data['data'] as Map<String, dynamic>?;
-
-      if (data == null) {
-        throw const ServerFailure(
-          'No data returned from dismiss recommendation',
-        );
-      }
-
-      return RecommendationModel.fromJson(data);
-    } on DioException catch (e) {
-      _debugLog('❌ Recommendation datasource error (dismiss): ${e.message}');
-      rethrow;
-    } on Failure {
-      rethrow;
-    } catch (e) {
-      _debugLog(
-        '❌ Unexpected error in recommendation datasource (dismiss): $e',
-      );
-      rethrow;
-    }
-  }
-
-  /// GET /api/sites/:siteId/recommendations?refresh=true
-  /// Menghasilkan/refresh rekomendasi terbaru
-  ///
-  /// Throws: [ServerFailure], [NetworkFailure], [UnknownFailure]
-  @override
-  Future<List<RecommendationModel>> generateRecommendations(
-    String siteId,
-  ) async {
-    try {
-      return await getRecommendationsBySite(siteId, refresh: true);
-    } on DioException catch (e) {
-      if (_isExpectedEmptyRecommendationError(e)) return [];
-      _debugLog('❌ Recommendation datasource error (generate): ${e.message}');
-      rethrow;
-    } catch (e) {
-      _debugLog(
-        '❌ Unexpected error in recommendation datasource (generate): $e',
-      );
+      if (_isExpectedEmptyPlantRecommendationError(e)) return const [];
       rethrow;
     }
   }
@@ -335,7 +86,7 @@ class RecommendationRemoteDatasourceImpl
     String siteId,
   ) async {
     try {
-      return await _loadHistoryFallback(siteId);
+      return await _loadRecommendationHistory(siteId);
     } on DioException catch (e) {
       if (_isExpectedEmptyRecommendationError(e)) return [];
       rethrow;
@@ -373,43 +124,21 @@ class RecommendationRemoteDatasourceImpl
       ApiEndpoints.plantRecommendations(siteId),
       data: payload,
     );
-    final rows = ResponseParser.extractDataList(response.data);
-    if (rows.isNotEmpty) {
-      return rows
-          .whereType<Map>()
-          .expand((e) => _parseHistoryEntry(e, siteId))
-          .toList();
+    final parsedPlantRecommendations = _parsePlantRecommendationEnvelope(
+      response.data,
+      siteId,
+    );
+    if (parsedPlantRecommendations.isNotEmpty) {
+      return parsedPlantRecommendations;
     }
-    final data = ResponseParser.extractDataMap(response.data);
-    return _parseRecommendationResponse(data, siteId);
-  }
 
-  @override
-  Future<Map<String, dynamic>> previewDummyRecommendation(
-    String siteId,
-    Map<String, dynamic> payload,
-  ) async {
-    final response = await _dio.post(
-      ApiEndpoints.recPreviewDummy(siteId),
-      data: payload,
+    final responseMap = _safeExtractDataMap(response.data);
+    if (responseMap == null) return const [];
+    final plantRecommendations = _parsePlantRecommendationResponse(
+      responseMap,
+      siteId,
     );
-    final data = response.data['data'];
-    if (data is Map<String, dynamic>) return data;
-    return response.data as Map<String, dynamic>? ?? {};
-  }
-
-  @override
-  Future<Map<String, dynamic>> saveDummyRecommendation(
-    String siteId,
-    Map<String, dynamic> payload,
-  ) async {
-    final response = await _dio.post(
-      ApiEndpoints.recSaveDummy(siteId),
-      data: payload,
-    );
-    final data = response.data['data'];
-    if (data is Map<String, dynamic>) return data;
-    return response.data as Map<String, dynamic>? ?? {};
+    return plantRecommendations;
   }
 
   /// Parse response dari GET /recommendations menjadi list RecommendationModel
@@ -432,7 +161,9 @@ class RecommendationRemoteDatasourceImpl
     }
 
     final result = <RecommendationModel>[];
-    final timestamp = createdAt ?? DateTime.now();
+    final timestamp =
+        createdAt ?? _parseDate(data['cached_at']) ?? DateTime.now();
+    final sensorData = _parseSensorData(data['sensor_data']);
 
     void parseItem(
       String key,
@@ -448,6 +179,7 @@ class RecommendationRemoteDatasourceImpl
         siteId: siteId,
         createdAt: timestamp,
         idSeed: idSeed,
+        sensorData: sensorData,
       );
       if (item != null) result.add(item);
     }
@@ -518,17 +250,34 @@ class RecommendationRemoteDatasourceImpl
     final normalizedPh = _normalizeLegacyScalarRecommendation(
       phRaw ?? phFromNpk,
     );
-    final includeNpk =
-        normalizedNpk != null && !_isFailedLegacyStatus(json['npk_status']);
-    final includePh =
-        normalizedPh != null && !_isFailedLegacyStatus(json['ph_status']);
-    if (includeNpk || includePh) {
+    final normalizedNpkPayload = _legacyRecommendationPayload(
+      normalized: normalizedNpk,
+      status: json['npk_status'],
+      error: json['npk_error'],
+      fallbackError: 'Rekomendasi NPK gagal diproses',
+    );
+    final normalizedPhPayload = _legacyRecommendationPayload(
+      normalized: normalizedPh,
+      status: json['ph_status'],
+      error: json['ph_error'],
+      fallbackError: 'Rekomendasi pH gagal diproses',
+    );
+    final sensorData = <String, dynamic>{...?_asStringMap(json['sensor_data'])};
+    sensorData.addAll({
+      if (json['nitrogen'] != null) 'nitrogen': json['nitrogen'],
+      if (json['phosphorus'] != null) 'phosphorus': json['phosphorus'],
+      if (json['potassium'] != null) 'potassium': json['potassium'],
+      if (json['ph_value'] != null || json['ph'] != null)
+        'ph': json['ph_value'] ?? json['ph'],
+    });
+    if (normalizedNpkPayload != null || normalizedPhPayload != null) {
       return _parseRecommendationResponse(
         {
           'recommendations': {
-            if (includeNpk) 'npk': normalizedNpk,
-            if (includePh) 'ph': normalizedPh,
+            if (normalizedNpkPayload != null) 'npk': normalizedNpkPayload,
+            if (normalizedPhPayload != null) 'ph': normalizedPhPayload,
           },
+          if (sensorData.isNotEmpty) 'sensor_data': sensorData,
         },
         siteId,
         createdAt: createdAt,
@@ -543,7 +292,22 @@ class RecommendationRemoteDatasourceImpl
     return const [];
   }
 
-  Future<List<RecommendationModel>> _loadHistoryFallback(String siteId) async {
+  dynamic _legacyRecommendationPayload({
+    required dynamic normalized,
+    required dynamic status,
+    required dynamic error,
+    required String fallbackError,
+  }) {
+    final errorMessage = _stringOrNull(error);
+    if (_isFailedLegacyStatus(status) || errorMessage != null) {
+      return {'error': errorMessage ?? fallbackError};
+    }
+    return normalized;
+  }
+
+  Future<List<RecommendationModel>> _loadRecommendationHistory(
+    String siteId,
+  ) async {
     final response = await _dio.get(ApiEndpoints.recHistory(siteId));
     final data = ResponseParser.extractDataList(response.data);
     final parsed = data
@@ -558,20 +322,6 @@ class RecommendationRemoteDatasourceImpl
     return parsed;
   }
 
-  Future<List<RecommendationModel>> _loadHistoryFallbackSafely(
-    String siteId,
-  ) async {
-    try {
-      return await _loadHistoryFallback(siteId);
-    } on DioException catch (e) {
-      if (_isExpectedEmptyRecommendationError(e) ||
-          _isTransientRecommendationError(e)) {
-        return const [];
-      }
-      rethrow;
-    }
-  }
-
   Map<String, dynamic>? _normalizeLegacyNpkRecommendation(
     Map<String, dynamic> npk,
   ) {
@@ -581,8 +331,8 @@ class RecommendationRemoteDatasourceImpl
 
     final parts = <String>[];
     final actionItems = <String>[];
+    final statuses = <String>[];
     num totalDose = 0;
-    var highPriority = false;
 
     const nutrientAliases = {
       'N': ['n', 'nitrogen', 'nitro', 'soil_nitro'],
@@ -590,39 +340,59 @@ class RecommendationRemoteDatasourceImpl
       'K': ['k', 'potassium', 'kalium', 'pot', 'soil_pot'],
     };
 
+    String normalizeSingleStatus(String? statusText) {
+      if (statusText == null) return 'normal';
+      final normalized = statusText.toLowerCase();
+      if (normalized.contains('rendah') ||
+          normalized.contains('kurang') ||
+          normalized.contains('deficient') ||
+          normalized.contains('low')) {
+        return 'rendah';
+      }
+      if (normalized.contains('tinggi') ||
+          normalized.contains('berlebih') ||
+          normalized.contains('excess') ||
+          normalized.contains('high')) {
+        return 'tinggi';
+      }
+      return 'normal';
+    }
+
     for (final nutrient in nutrientAliases.entries) {
       final raw = _firstValueForKeys(npk, nutrient.value);
       final label = nutrient.key;
+      String? rawStatus;
+
       if (raw is String) {
         final message = raw.trim();
         if (message.isNotEmpty) {
           final line = '$label: $message';
           parts.add(line);
           actionItems.add(line);
-          if (_mapTextPriority(message) == 'high') {
-            highPriority = true;
+          rawStatus = _statusFromText(message);
+        }
+      } else {
+        final map = _asStringMap(raw);
+        if (map != null) {
+          final message = _messageFromMap(map);
+          if (message != null) {
+            final line = '$label: $message';
+            parts.add(line);
+            actionItems.add(line);
+          }
+          rawStatus = _stringOrNull(map['status']) ??
+              (message != null ? _statusFromText(message) : null);
+
+          final dose = _doseValue(map);
+          if (dose > 0) {
+            totalDose += dose;
+            actionItems.add('Dosis $label: ${_formatNumber(dose)} kg/ha');
           }
         }
-        continue;
-      }
-      final map = _asStringMap(raw);
-      if (map == null) continue;
-      final message = _messageFromMap(map);
-      if (message != null) {
-        final line = '$label: $message';
-        parts.add(line);
-        actionItems.add(line);
       }
 
-      final status = _stringOrNull(map['status']);
-      if (status != null && _mapNpkPriority(status) == 'high') {
-        highPriority = true;
-      }
-
-      final dose = _doseValue(map);
-      if (dose > 0) {
-        totalDose += dose;
-        actionItems.add('Dosis $label: ${_formatNumber(dose)} kg/ha');
+      if (rawStatus != null) {
+        statuses.add(normalizeSingleStatus(rawStatus));
       }
     }
 
@@ -634,8 +404,20 @@ class RecommendationRemoteDatasourceImpl
       );
     }
 
+    final hasLow = statuses.contains('rendah');
+    final hasHigh = statuses.contains('tinggi');
+
+    String overallStatus = 'normal';
+    if (hasLow && hasHigh) {
+      overallStatus = 'kritis';
+    } else if (hasLow) {
+      overallStatus = 'rendah';
+    } else if (hasHigh) {
+      overallStatus = 'tinggi';
+    }
+
     return {
-      'status': highPriority ? 'tinggi' : 'normal',
+      'status': overallStatus,
       'pesan': parts.join(' | '),
       if (totalDose > 0) 'dosis_kg_ha': totalDose,
       if (actionItems.isNotEmpty) 'action_items': actionItems,
@@ -706,6 +488,7 @@ class RecommendationRemoteDatasourceImpl
     required String siteId,
     required DateTime createdAt,
     String? idSeed,
+    RecommendationSensorDataModel? sensorData,
   }) {
     if (raw == null) return null;
 
@@ -721,24 +504,30 @@ class RecommendationRemoteDatasourceImpl
       if (normalized != null) itemMap = normalized;
     }
     if (itemMap != null && itemMap.isEmpty) return null;
-    if (itemMap != null &&
-        itemMap.containsKey('error') &&
-        !_hasDisplayableMessage(itemMap)) {
-      return null;
-    }
-
     final rawText = raw is String ? raw.trim() : null;
     if (itemMap == null && (rawText == null || rawText.isEmpty)) {
       return null;
     }
 
-    final title = itemMap == null
+    final errorMessage = itemMap == null
+        ? null
+        : _stringOrNull(itemMap['error']);
+    final isError = errorMessage != null;
+    final title = isError
+        ? '$defaultTitle tidak tersedia'
+        : itemMap == null
         ? defaultTitle
         : _titleFromMap(itemMap, typeStr, defaultTitle);
     final description =
-        (itemMap == null ? rawText : _messageFromMap(itemMap)) ??
+        (isError
+            ? errorMessage
+            : itemMap == null
+            ? rawText
+            : _messageFromMap(itemMap)) ??
         'Rekomendasi tersedia berdasarkan data sensor terbaru.';
-    final priority = itemMap == null
+    final priority = isError
+        ? 'high'
+        : itemMap == null
         ? _mapTextPriority(rawText)
         : _mapNpkPriority(
             _stringOrNull(
@@ -759,13 +548,15 @@ class RecommendationRemoteDatasourceImpl
       title: title,
       description: description,
       priority: priority,
-      status: 'pending',
       siteId: siteId,
       parameters: RecommendationBundleModel(
-        npk: typeStr == 'npk' ? actionModel : null,
-        ph: typeStr == 'ph' ? actionModel : null,
+        npk: !isError && typeStr == 'npk' ? actionModel : null,
+        ph: !isError && typeStr == 'ph' ? actionModel : null,
+        sensorData: sensorData,
       ),
-      actionItems: itemMap == null
+      actionItems: isError
+          ? const []
+          : itemMap == null
           ? [description]
           : _buildActionItems(itemMap, fallback: description),
       createdAt: createdAt,
@@ -773,6 +564,346 @@ class RecommendationRemoteDatasourceImpl
           ? null
           : _toConfidence(itemMap['confidence'] ?? itemMap['confidence_score']),
       reason: description,
+      errorMessage: errorMessage,
+    );
+  }
+
+  Map<String, dynamic>? _safeExtractDataMap(dynamic responseData) {
+    try {
+      return ResponseParser.extractDataMap(responseData);
+    } catch (error) {
+      _debugLog('Plant recommendation response is not a map: $error');
+      return null;
+    }
+  }
+
+  List<RecommendationModel> _parsePlantRecommendationEnvelope(
+    dynamic responseData,
+    String siteId,
+  ) {
+    final candidates = <dynamic>[responseData];
+    final rootMap = _asStringMap(responseData);
+    if (rootMap != null) {
+      candidates.add(rootMap['data']);
+      final nestedData = _asStringMap(rootMap['data']);
+      if (nestedData != null) candidates.add(nestedData['data']);
+    }
+
+    for (final candidate in candidates) {
+      if (candidate == null) continue;
+      final candidateMap = _asStringMap(candidate);
+      final parsed = candidateMap == null
+          ? _parsePlantRecommendationList(candidate, siteId)
+          : _parsePlantRecommendationResponse(candidateMap, siteId);
+      if (parsed.isNotEmpty) return parsed;
+    }
+    return const [];
+  }
+
+  List<RecommendationModel> _parsePlantRecommendationResponse(
+    Map<String, dynamic> data,
+    String siteId,
+  ) {
+    final rawPlants = _firstValueForKeys(data, const [
+      'recommended_plants',
+      'recommendedPlants',
+      'recommended_plant',
+      'recommendedPlant',
+      'plant_recommendations',
+      'plantRecommendations',
+      'plant_names',
+      'plantNames',
+      'recommendations',
+      'recommendation',
+      'recommended',
+      'plants',
+      'crops',
+      'crop_recommendations',
+      'cropRecommendations',
+      'results',
+      'result',
+      'predictions',
+      'prediction',
+      'output',
+      'outputs',
+      'data',
+    ]);
+
+    final confidenceRaw = _firstValueForKeys(data, const [
+      'confidence',
+      'confidences',
+      'scores',
+      'score',
+      'probabilities',
+      'probability',
+      'probs',
+    ]);
+    final confidence = confidenceRaw is List ? confidenceRaw : const [];
+    final confidenceMap = _asStringMap(confidenceRaw);
+    final details = _asStringMap(data['details']);
+    final createdAt =
+        _parseDate(data['created_at'] ?? data['createdAt']) ?? DateTime.now();
+
+    final rawPlantMap = _asStringMap(rawPlants);
+    if (rawPlantMap != null) {
+      final scoreMapPlants = _plantCandidatesFromScoreMap(rawPlantMap);
+      if (scoreMapPlants.isNotEmpty) {
+        return _buildPlantRecommendationModels(
+          scoreMapPlants,
+          siteId: siteId,
+          confidence: const [],
+          confidenceMap: rawPlantMap,
+          details: details,
+          createdAt: createdAt,
+        );
+      }
+      return _parsePlantRecommendationResponse(rawPlantMap, siteId);
+    }
+
+    if (rawPlants is! List) {
+      final parsedList = _parsePlantRecommendationList(rawPlants, siteId);
+      if (parsedList.isNotEmpty) return parsedList;
+      if (_looksLikePlantCandidate(data)) {
+        return _buildPlantRecommendationModels(
+          [data],
+          siteId: siteId,
+          confidence: confidence,
+          confidenceMap: confidenceMap,
+          details: details,
+          createdAt: createdAt,
+        );
+      }
+      return const [];
+    }
+
+    return _buildPlantRecommendationModels(
+      rawPlants,
+      siteId: siteId,
+      confidence: confidence,
+      confidenceMap: confidenceMap,
+      details: details,
+      createdAt: createdAt,
+    );
+  }
+
+  List<RecommendationModel> _parsePlantRecommendationList(
+    dynamic raw,
+    String siteId,
+  ) {
+    final createdAt = DateTime.now();
+    if (raw is List) {
+      return _buildPlantRecommendationModels(
+        raw,
+        siteId: siteId,
+        confidence: const [],
+        confidenceMap: null,
+        details: null,
+        createdAt: createdAt,
+      );
+    }
+
+    final rawText = _stringOrNull(raw);
+    if (rawText == null) return const [];
+    if (_isNonPlantRecommendationText(rawText)) return const [];
+    final plants = rawText.contains(RegExp(r'[,;\n]'))
+        ? rawText.split(RegExp(r'[,;\n]')).map((item) => item.trim()).toList()
+        : [rawText];
+    return _buildPlantRecommendationModels(
+      plants,
+      siteId: siteId,
+      confidence: const [],
+      confidenceMap: null,
+      details: null,
+      createdAt: createdAt,
+    );
+  }
+
+  List<RecommendationModel> _buildPlantRecommendationModels(
+    List<dynamic> rawPlants, {
+    required String siteId,
+    required List<dynamic> confidence,
+    required Map<String, dynamic>? confidenceMap,
+    required Map<String, dynamic>? details,
+    required DateTime createdAt,
+  }) {
+    final result = <RecommendationModel>[];
+    for (var index = 0; index < rawPlants.length; index++) {
+      final rawPlant = rawPlants[index];
+      final plantMap = _asStringMap(rawPlant);
+      final plantName = _stringOrNull(
+        plantMap == null
+            ? rawPlant
+            : plantMap['name'] ??
+                  plantMap['plant'] ??
+                  plantMap['plant_name'] ??
+                  plantMap['label'] ??
+                  plantMap['crop'] ??
+                  plantMap['crop_name'] ??
+                  plantMap['class'] ??
+                  plantMap['class_name'] ??
+                  plantMap['predicted_class'] ??
+                  plantMap['prediction'] ??
+                  plantMap['recommended_plant'],
+      );
+      if (plantName == null) continue;
+      if (_isNonPlantRecommendationText(plantName)) continue;
+
+      final itemConfidence = _toConfidence(
+        plantMap?['confidence'] ??
+            plantMap?['score'] ??
+            plantMap?['probability'] ??
+            plantMap?['prob'] ??
+            plantMap?['confidence_score'] ??
+            confidenceMap?[plantName] ??
+            confidenceMap?[plantName.toLowerCase()] ??
+            (index < confidence.length ? confidence[index] : null),
+      );
+      final detail = details == null
+          ? null
+          : _plantDetailText(
+              details[plantName] ??
+                  details[plantName.toLowerCase()] ??
+                  details[index.toString()],
+            );
+      final description =
+          detail ??
+          'Tanaman $plantName direkomendasikan berdasarkan rata-rata sensor '
+              'site selama 7 hari terakhir.';
+
+      result.add(
+        RecommendationModel(
+          recommendationId: _generatedId('plant', siteId, createdAt, plantName),
+          type: 'planting',
+          title: plantName,
+          description: description,
+          priority: 'medium',
+          plantName: plantName,
+          siteId: siteId,
+          actionItems: const [],
+          createdAt: createdAt,
+          confidenceScore: itemConfidence,
+          reason: description,
+        ),
+      );
+    }
+    return result;
+  }
+
+  bool _looksLikePlantCandidate(Map<String, dynamic> data) {
+    return _stringOrNull(
+          data['name'] ??
+              data['plant'] ??
+              data['plant_name'] ??
+              data['label'] ??
+              data['crop'] ??
+              data['crop_name'] ??
+              data['class'] ??
+              data['class_name'] ??
+              data['predicted_class'] ??
+              data['prediction'] ??
+              data['recommended_plant'],
+        ) !=
+        null;
+  }
+
+  List<Map<String, dynamic>> _plantCandidatesFromScoreMap(
+    Map<String, dynamic> rawPlantMap,
+  ) {
+    const nonPlantKeys = {
+      'details',
+      'sensor_data',
+      'sensordata',
+      'metadata',
+      'meta',
+      'message',
+      'status',
+      'cached',
+      'cached_at',
+      'created_at',
+      'createdat',
+    };
+    final result = <Map<String, dynamic>>[];
+    for (final entry in rawPlantMap.entries) {
+      final key = entry.key.trim();
+      if (key.isEmpty || nonPlantKeys.contains(key.toLowerCase())) continue;
+      final value = entry.value;
+      final valueMap = _asStringMap(value);
+      if (valueMap != null) {
+        final hasPlantDetail =
+            valueMap.containsKey('confidence') ||
+            valueMap.containsKey('score') ||
+            valueMap.containsKey('probability') ||
+            valueMap.containsKey('prob') ||
+            valueMap.containsKey('confidence_score') ||
+            _plantDetailText(valueMap) != null;
+        if (hasPlantDetail) result.add({'plant': key, ...valueMap});
+        continue;
+      }
+      if (value is num || value is String) {
+        final numericValue = value is num
+            ? value
+            : num.tryParse(value.toString().replaceAll(',', '.'));
+        if (numericValue != null) {
+          result.add({'plant': key, 'confidence': numericValue});
+        }
+      }
+    }
+    return result;
+  }
+
+  String? _plantDetailText(dynamic raw) {
+    final map = _asStringMap(raw);
+    if (map != null) {
+      return _stringOrNull(
+        map['description'] ??
+            map['message'] ??
+            map['reason'] ??
+            map['detail'] ??
+            map['recommendation'] ??
+            map['summary'],
+      );
+    }
+    return _stringOrNull(raw);
+  }
+
+  bool _isNonPlantRecommendationText(String text) {
+    final normalized = text.toLowerCase();
+    return normalized == 'null' ||
+        normalized.contains('no sensor') ||
+        normalized.contains('no data') ||
+        normalized.contains('not found') ||
+        normalized.contains('tidak ada') ||
+        normalized.contains('belum ada') ||
+        normalized.contains('error retrieving') ||
+        normalized.contains('failed to') ||
+        normalized.contains('gagal');
+  }
+
+  List<RecommendationModel> _parsePartialRecommendationError(
+    DioException exception,
+    String siteId,
+  ) {
+    if (exception.response?.statusCode != 400) return const [];
+    final body = exception.response?.data;
+    if (body is! Map) return const [];
+    try {
+      final data = ResponseParser.extractDataMap(
+        Map<String, dynamic>.from(body),
+      );
+      return _parseRecommendationResponse(data, siteId);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  RecommendationSensorDataModel? _parseSensorData(dynamic raw) {
+    final data = _asStringMap(raw);
+    if (data == null || data.isEmpty) return null;
+    return RecommendationSensorDataModel(
+      nitrogen: _nullableNum(data['nitrogen']),
+      phosphorus: _nullableNum(data['phosphorus']),
+      potassium: _nullableNum(data['potassium']),
+      ph: _nullableNum(data['ph']),
     );
   }
 
@@ -814,9 +945,6 @@ class RecommendationRemoteDatasourceImpl
       description: description,
       priority: _mapNpkPriority(
         _stringOrNull(json['priority'] ?? json['status'] ?? json['level']),
-      ),
-      status: _mapRecommendationStatus(
-        _stringOrNull(json['recommendation_status'] ?? json['status']),
       ),
       plantId: _stringOrNull(json['plant_id'] ?? json['plantId']),
       plantName: _stringOrNull(json['plant_name'] ?? json['plantName']),
@@ -867,7 +995,6 @@ class RecommendationRemoteDatasourceImpl
       priority: npkRec != null
           ? _mapNpkPriority(npkRec['priority'] as String?)
           : 'medium',
-      status: json['npk_status'] == 'success' ? 'applied' : 'pending',
       siteId: siteId,
       parameters: RecommendationBundleModel(
         npk: npkRec != null
@@ -933,6 +1060,12 @@ class RecommendationRemoteDatasourceImpl
     return num.tryParse(value?.toString().replaceAll(',', '.') ?? '') ?? 0;
   }
 
+  num? _nullableNum(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value;
+    return num.tryParse(value.toString().replaceAll(',', '.'));
+  }
+
   num _doseValue(Map<String, dynamic> item) {
     return _toNum(
       item['dosis_kg_ha'] ??
@@ -951,11 +1084,6 @@ class RecommendationRemoteDatasourceImpl
   String _formatNumber(num value) {
     if (value % 1 == 0) return value.toInt().toString();
     return value.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
-  }
-
-  bool _hasDisplayableMessage(Map<String, dynamic> item) {
-    return _messageFromMap(item) != null ||
-        _stringOrNull(item['title'] ?? item['description']) != null;
   }
 
   String? _messageFromMap(Map<String, dynamic> item) {
@@ -1054,22 +1182,6 @@ class RecommendationRemoteDatasourceImpl
     return 'general';
   }
 
-  String _mapRecommendationStatus(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'applied':
-      case 'success':
-      case 'done':
-        return 'applied';
-      case 'dismissed':
-      case 'ignored':
-        return 'dismissed';
-      case 'expired':
-        return 'expired';
-      default:
-        return 'pending';
-    }
-  }
-
   String _environmentType(String key) {
     final normalized = key.toLowerCase();
     if (normalized.contains('hum') || normalized.contains('moisture')) {
@@ -1131,6 +1243,10 @@ class RecommendationRemoteDatasourceImpl
       case 'berlebih':
       case 'tinggi':
         return 'Kelebihan Nutrisi NPK';
+      case 'critical':
+      case 'kritis':
+      case 'campuran':
+        return 'Penyesuaian Nutrisi NPK (Kondisi Kritis)';
       case 'optimal':
       case 'normal':
         return 'Kondisi NPK Normal';
@@ -1257,17 +1373,27 @@ class RecommendationRemoteDatasourceImpl
         normalized == 'gagal';
   }
 
-  bool _isTransientRecommendationError(DioException e) {
-    final status = e.response?.statusCode ?? 0;
-    return status == 429 || (status >= 500 && status <= 599);
-  }
-
   bool _isExpectedEmptyRecommendationError(DioException e) {
     final status = e.response?.statusCode;
     if (status == 400 || status == 404 || status == 422) return true;
     if (status != 500) return false;
     final message = _errorMessage(e.response?.data).toLowerCase();
     return message.contains('no active') ||
+        message.contains('no sensor') ||
+        message.contains('no data') ||
+        message.contains('not found') ||
+        message.contains('tidak ada') ||
+        message.contains('belum ada');
+  }
+
+  bool _isExpectedEmptyPlantRecommendationError(DioException e) {
+    final status = e.response?.statusCode;
+    if (status == 400 || status == 404 || status == 422) return true;
+    if (status != 500) return false;
+    final message = _errorMessage(e.response?.data).toLowerCase();
+    return message.contains('plant recommendation') ||
+        message.contains('recommend-plant') ||
+        message.contains('machine learning') ||
         message.contains('no sensor') ||
         message.contains('no data') ||
         message.contains('not found') ||

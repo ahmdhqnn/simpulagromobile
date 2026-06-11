@@ -158,6 +158,8 @@ final phaseStatsProvider = FutureProvider.autoDispose
         'upcoming': upcoming,
         'currentPhase': currentPhase,
         'totalGdd': totalGddReal,
-        'overallProgress': total > 0 ? completed / total : 0.0,
+        'overallProgress': total > 0
+            ? (completed + (currentPhase?.progress ?? 0.0)) / total
+            : 0.0,
       };
     });

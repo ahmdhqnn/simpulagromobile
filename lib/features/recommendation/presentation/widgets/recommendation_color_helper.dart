@@ -18,19 +18,6 @@ class RecommendationColors {
     }
   }
 
-  static Color forStatus(RecommendationStatus status) {
-    switch (status) {
-      case RecommendationStatus.pending:
-        return AppColors.warning;
-      case RecommendationStatus.applied:
-        return AppColors.success;
-      case RecommendationStatus.dismissed:
-        return AppColors.textSecondary;
-      case RecommendationStatus.expired:
-        return AppColors.muted;
-    }
-  }
-
   static String formatParameterKey(String key) {
     return key
         .replaceAll('_', ' ')

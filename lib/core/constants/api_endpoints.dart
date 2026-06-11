@@ -81,10 +81,6 @@ class ApiEndpoints {
       '/sites/$siteId/recommendations/history';
   static String recByPhase(String siteId, String phaseId) =>
       '/sites/$siteId/recommendations/by-phase/$phaseId';
-  static String recPreviewDummy(String siteId) =>
-      '/sites/$siteId/recommendations/preview-dummy';
-  static String recSaveDummy(String siteId) =>
-      '/sites/$siteId/recommendations/save-dummy';
 
   // Agro
   static String agro(String siteId) => '/sites/$siteId/agro';
@@ -95,6 +91,8 @@ class ApiEndpoints {
   static const String phasesList = '/fase/phases-list';
   static String phasesByType(String type) => '/fase/phases-list/$type';
   static String phasesByHst(String siteId) => '/fase/phases-by-hst/$siteId';
+  static const String gddStandards = '/fase/gdd-standards';
+  static const String gddCumulative = '/fase/gdd-kumulatif';
 
   // Tasks (site scoped)
   static String tasksBySite(String siteId) => '/sites/$siteId/tasks';

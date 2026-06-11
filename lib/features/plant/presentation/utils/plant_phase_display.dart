@@ -5,9 +5,11 @@ import '../../domain/entities/plant.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
 
-String phaseSiteIdForPlant(Plant plant) {
+String phaseSiteIdForPlant(Plant plant, {String? fallbackSiteId}) {
   final siteId = plant.siteId?.trim();
   if (siteId != null && siteId.isNotEmpty) return siteId;
+  final fallback = fallbackSiteId?.trim();
+  if (fallback != null && fallback.isNotEmpty) return fallback;
   return plant.plantId.trim();
 }
 
@@ -30,7 +32,11 @@ String phaseLabelFromAsync(AsyncValue<Phase?>? phaseAsync) {
   );
 }
 
-String phaseLabelForPlant(Plant plant, AsyncValue<Phase?>? phaseAsync, AppLocalizations l10n) {
+String phaseLabelForPlant(
+  Plant plant,
+  AsyncValue<Phase?>? phaseAsync,
+  AppLocalizations l10n,
+) {
   if (plant.isHarvested) return plant.localizedStatus(l10n);
   if (!plant.isCurrentPlanting) return '-';
   return phaseLabelFromAsync(phaseAsync);

@@ -76,4 +76,20 @@ class AgroRepositoryImpl implements AgroRepository {
       return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Either<Failure, AgroEnvironmentalHealthEntity>> getEnvironmentalHealth(
+    String siteId,
+  ) async {
+    try {
+      final model = await remoteDataSource.getEnvironmentalHealth(siteId);
+      return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(e.toFailure());
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
+    }
+  }
 }

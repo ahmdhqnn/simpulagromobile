@@ -24,13 +24,17 @@ class PhaseRemoteDatasource {
   Future<List<PhaseModel>> getAllPhases() async {
     try {
       final response = await _dio.get(ApiEndpoints.phasesList);
+      _throwForBodyError(response.data);
       final data = ResponseParser.extractDataList(response.data);
-      return data
+      final phases = data
           .whereType<Map>()
           .map(
             (json) => PhaseModel.fromApiJson(Map<String, dynamic>.from(json)),
           )
+          .where((phase) => phase.isStructurallyValid)
           .toList();
+      phases.sort((left, right) => left.phaseOrder.compareTo(right.phaseOrder));
+      return phases;
     } on DioException catch (e) {
       _debugLog('❌ Phase datasource error (getAllPhases): ${e.message}');
       rethrow;
@@ -44,13 +48,19 @@ class PhaseRemoteDatasource {
   Future<List<PhaseModel>> getPhasesByCropType(String cropType) async {
     try {
       final response = await _dio.get(ApiEndpoints.phasesByType(cropType));
+      final bodyStatus = _bodyStatus(response.data);
+      if (bodyStatus == 404) return [];
+      _throwForBodyError(response.data);
       final data = ResponseParser.extractDataList(response.data);
-      return data
+      final phases = data
           .whereType<Map>()
           .map(
             (json) => PhaseModel.fromApiJson(Map<String, dynamic>.from(json)),
           )
+          .where((phase) => phase.isStructurallyValid)
           .toList();
+      phases.sort((left, right) => left.phaseOrder.compareTo(right.phaseOrder));
+      return phases;
     } on DioException catch (e) {
       _debugLog('❌ Phase datasource error (getPhasesByCropType): ${e.message}');
       rethrow;
@@ -67,12 +77,18 @@ class PhaseRemoteDatasource {
   Future<CurrentPhaseData?> getCurrentPhaseByHst(String siteId) async {
     try {
       final response = await _dio.get(ApiEndpoints.phasesByHst(siteId));
+      final bodyStatus = _bodyStatus(response.data);
+      if (bodyStatus == 404 || _hasExplicitNullData(response.data)) {
+        return null;
+      }
+      _throwForBodyError(response.data);
       final data = ResponseParser.extractDataMap(response.data);
       if (data.isEmpty) return null;
 
       // API bisa mengembalikan PhaseModel langsung atau wrapper CurrentPhaseData
       if (data.containsKey('phase_id') || data.containsKey('phase_name')) {
         final phase = PhaseModel.fromApiJson(data);
+        if (!phase.isStructurallyValid) return null;
         final hstValue = _findIntByKeys(data, _hstKeys);
         final base = CurrentPhaseData(
           plantType: phase.cropType,
@@ -186,7 +202,7 @@ class PhaseRemoteDatasource {
         : await getPhasesByCropType(cropType);
     final source = phases.isEmpty ? await getAllPhases() : phases;
 
-    return source
+    final enriched = source
         .map(
           (phase) => phase.enrichWithHst(
             currentHst: currentPhaseData.hst,
@@ -195,13 +211,15 @@ class PhaseRemoteDatasource {
           ),
         )
         .toList();
+    enriched.sort((left, right) => left.phaseOrder.compareTo(right.phaseOrder));
+    return enriched;
   }
 
   Future<CurrentPhaseData> _withResolvedHst(
     String siteId,
     CurrentPhaseData data,
   ) async {
-    if (data.hasExplicitHst && data.hst > 0) return data;
+    if (data.hasExplicitHst) return data;
 
     final hstFromResponsePlantDate = _calculateHst(
       data.plantDate,
@@ -285,8 +303,11 @@ class CurrentPhaseData {
         json['active_phase'] ??
         json['activePhase'] ??
         json['phase'];
-    final currentPhase = currentPhaseRaw is Map
+    final parsedCurrentPhase = currentPhaseRaw is Map
         ? PhaseModel.fromApiJson(Map<String, dynamic>.from(currentPhaseRaw))
+        : null;
+    final currentPhase = parsedCurrentPhase?.isStructurallyValid == true
+        ? parsedCurrentPhase
         : null;
     final hstValue = _findIntByKeys(json, _hstKeys);
     final currentPhaseName =
@@ -479,4 +500,37 @@ bool _isActivePlantRow(Map<String, dynamic> row) {
       text == 'aktif' ||
       text == 'ongoing' ||
       text == 'on_going';
+}
+
+int? _bodyStatus(dynamic responseData) {
+  if (responseData is! Map) return null;
+  final direct = responseData['status'];
+  if (direct is num) return direct.toInt();
+  final directParsed = int.tryParse(direct?.toString() ?? '');
+  if (directParsed != null) return directParsed;
+  final data = responseData['data'];
+  if (data is Map) {
+    final nested = data['status'];
+    if (nested is num) return nested.toInt();
+    return int.tryParse(nested?.toString() ?? '');
+  }
+  return null;
+}
+
+bool _hasExplicitNullData(dynamic responseData) {
+  return responseData is Map &&
+      responseData.containsKey('data') &&
+      responseData['data'] == null;
+}
+
+void _throwForBodyError(dynamic responseData) {
+  final status = _bodyStatus(responseData);
+  if (status == null || status < 400) return;
+  final message = responseData is Map
+      ? (responseData['message'] ?? responseData['error'])?.toString()
+      : null;
+  throw ServerFailure(
+    message?.trim().isNotEmpty == true ? message! : 'Gagal memuat data fase',
+    statusCode: status,
+  );
 }

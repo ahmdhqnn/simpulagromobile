@@ -11,6 +11,7 @@ import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/icon_badge_widget.dart';
 import '../../../../shared/widgets/status_chip_widget.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../utils/plant_phase_display.dart';
 
@@ -22,7 +23,8 @@ class PlantHeaderCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor(plant);
-    final typeLabel = plant.plantType?.localizedLabel(l10n) ?? l10n.plantTypeHint;
+    final typeLabel =
+        plant.plantType?.localizedLabel(l10n) ?? l10n.plantTypeHint;
     final subtitle = plant.varietasId?.isNotEmpty == true
         ? '$typeLabel - ${plant.varietasId}'
         : typeLabel;
@@ -89,8 +91,10 @@ class PlantGrowthCardWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final selectedSiteId = ref.watch(selectedSiteIdProvider);
+    final siteId = phaseSiteIdForPlant(plant, fallbackSiteId: selectedSiteId);
     final phaseAsync = plant.isCurrentPlanting
-        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        ? ref.watch(currentPhaseProvider(siteId))
         : null;
     final phase = phaseAsync?.valueOrNull;
     final phaseLabel = phaseLabelForPlant(plant, phaseAsync, l10n);

@@ -1,7 +1,6 @@
 import '../features/plant/domain/entities/plant.dart';
 import '../features/recommendation/domain/entities/recommendation.dart';
 import '../features/recommendation/presentation/providers/recommendation_hub_provider.dart';
-import '../features/recommendation/presentation/providers/recommendation_provider.dart';
 import '../features/task/domain/entities/task.dart';
 import '../features/task/presentation/providers/task_provider.dart';
 import '../features/sensor/domain/entities/sensor.dart';
@@ -126,67 +125,17 @@ extension RecommendationPriorityLocalizations on RecommendationPriority {
   }
 }
 
-extension RecommendationStatusLocalizations on RecommendationStatus {
-  String localizedLabel(AppLocalizations l10n) {
-    switch (this) {
-      case RecommendationStatus.pending:
-        return l10n.commonPending;
-      case RecommendationStatus.applied:
-        return l10n.commonApplied;
-      case RecommendationStatus.dismissed:
-        return l10n.commonDismissed;
-      case RecommendationStatus.expired:
-        return l10n.commonExpired;
-    }
-  }
-}
-
-extension RecommendationFilterLocalizations on RecommendationFilter {
-  String localizedLabel(AppLocalizations l10n) {
-    switch (this) {
-      case RecommendationFilter.all:
-        return l10n.commonAll;
-      case RecommendationFilter.pending:
-        return l10n.commonPending;
-      case RecommendationFilter.applied:
-        return l10n.commonApplied;
-      case RecommendationFilter.highPriority:
-        return l10n.commonHighPriority;
-      case RecommendationFilter.actionable:
-        return l10n.commonActionRequired;
-    }
-  }
-}
-
 extension RecommendationScopeLocalizations on RecommendationScope {
   String localizedLabel(AppLocalizations l10n) {
     switch (this) {
       case RecommendationScope.all:
         return l10n.commonAll;
       case RecommendationScope.site:
-        return l10n.siteTitle;
+        return l10n.recommendationActionScopeLabel;
       case RecommendationScope.plant:
-        return l10n.plantTitle;
+        return l10n.recommendationPlantMlScopeLabel;
       case RecommendationScope.phase:
-        return l10n.plantPhaseLabel;
-    }
-  }
-}
-
-extension RecommendationStatusFilterLocalizations
-    on RecommendationStatusFilter {
-  String localizedLabel(AppLocalizations l10n) {
-    switch (this) {
-      case RecommendationStatusFilter.all:
-        return l10n.recommendationAllStatuses;
-      case RecommendationStatusFilter.pending:
-        return l10n.commonPending;
-      case RecommendationStatusFilter.applied:
-        return l10n.commonApplied;
-      case RecommendationStatusFilter.highPriority:
-        return l10n.commonHighPriority;
-      case RecommendationStatusFilter.actionable:
-        return l10n.commonActionRequired;
+        return l10n.recommendationActivePhaseScopeLabel;
     }
   }
 }

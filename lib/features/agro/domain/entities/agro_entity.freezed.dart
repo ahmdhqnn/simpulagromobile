@@ -649,6 +649,9 @@ abstract class _GddEntity extends GddEntity {
 
 /// @nodoc
 mixin _$EtcDailyEntity {
+  int? get hst => throw _privateConstructorUsedError;
+  String? get phase => throw _privateConstructorUsedError;
+  double? get et0 => throw _privateConstructorUsedError;
   String? get day => throw _privateConstructorUsedError;
   double? get tempMin => throw _privateConstructorUsedError;
   double? get tempMax => throw _privateConstructorUsedError;
@@ -657,6 +660,9 @@ mixin _$EtcDailyEntity {
   double? get etc => throw _privateConstructorUsedError;
   double? get kc => throw _privateConstructorUsedError;
   double? get waterNeeds => throw _privateConstructorUsedError;
+  String? get waterStatus => throw _privateConstructorUsedError;
+  String? get recommendation => throw _privateConstructorUsedError;
+  String? get riceType => throw _privateConstructorUsedError;
 
   /// Create a copy of EtcDailyEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -673,6 +679,9 @@ abstract class $EtcDailyEntityCopyWith<$Res> {
   ) = _$EtcDailyEntityCopyWithImpl<$Res, EtcDailyEntity>;
   @useResult
   $Res call({
+    int? hst,
+    String? phase,
+    double? et0,
     String? day,
     double? tempMin,
     double? tempMax,
@@ -681,6 +690,9 @@ abstract class $EtcDailyEntityCopyWith<$Res> {
     double? etc,
     double? kc,
     double? waterNeeds,
+    String? waterStatus,
+    String? recommendation,
+    String? riceType,
   });
 }
 
@@ -699,6 +711,9 @@ class _$EtcDailyEntityCopyWithImpl<$Res, $Val extends EtcDailyEntity>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? hst = freezed,
+    Object? phase = freezed,
+    Object? et0 = freezed,
     Object? day = freezed,
     Object? tempMin = freezed,
     Object? tempMax = freezed,
@@ -707,9 +722,24 @@ class _$EtcDailyEntityCopyWithImpl<$Res, $Val extends EtcDailyEntity>
     Object? etc = freezed,
     Object? kc = freezed,
     Object? waterNeeds = freezed,
+    Object? waterStatus = freezed,
+    Object? recommendation = freezed,
+    Object? riceType = freezed,
   }) {
     return _then(
       _value.copyWith(
+            hst: freezed == hst
+                ? _value.hst
+                : hst // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            phase: freezed == phase
+                ? _value.phase
+                : phase // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            et0: freezed == et0
+                ? _value.et0
+                : et0 // ignore: cast_nullable_to_non_nullable
+                      as double?,
             day: freezed == day
                 ? _value.day
                 : day // ignore: cast_nullable_to_non_nullable
@@ -742,6 +772,18 @@ class _$EtcDailyEntityCopyWithImpl<$Res, $Val extends EtcDailyEntity>
                 ? _value.waterNeeds
                 : waterNeeds // ignore: cast_nullable_to_non_nullable
                       as double?,
+            waterStatus: freezed == waterStatus
+                ? _value.waterStatus
+                : waterStatus // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            recommendation: freezed == recommendation
+                ? _value.recommendation
+                : recommendation // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            riceType: freezed == riceType
+                ? _value.riceType
+                : riceType // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -758,6 +800,9 @@ abstract class _$$EtcDailyEntityImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
+    int? hst,
+    String? phase,
+    double? et0,
     String? day,
     double? tempMin,
     double? tempMax,
@@ -766,6 +811,9 @@ abstract class _$$EtcDailyEntityImplCopyWith<$Res>
     double? etc,
     double? kc,
     double? waterNeeds,
+    String? waterStatus,
+    String? recommendation,
+    String? riceType,
   });
 }
 
@@ -783,6 +831,9 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? hst = freezed,
+    Object? phase = freezed,
+    Object? et0 = freezed,
     Object? day = freezed,
     Object? tempMin = freezed,
     Object? tempMax = freezed,
@@ -791,9 +842,24 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
     Object? etc = freezed,
     Object? kc = freezed,
     Object? waterNeeds = freezed,
+    Object? waterStatus = freezed,
+    Object? recommendation = freezed,
+    Object? riceType = freezed,
   }) {
     return _then(
       _$EtcDailyEntityImpl(
+        hst: freezed == hst
+            ? _value.hst
+            : hst // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        phase: freezed == phase
+            ? _value.phase
+            : phase // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        et0: freezed == et0
+            ? _value.et0
+            : et0 // ignore: cast_nullable_to_non_nullable
+                  as double?,
         day: freezed == day
             ? _value.day
             : day // ignore: cast_nullable_to_non_nullable
@@ -826,6 +892,18 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
             ? _value.waterNeeds
             : waterNeeds // ignore: cast_nullable_to_non_nullable
                   as double?,
+        waterStatus: freezed == waterStatus
+            ? _value.waterStatus
+            : waterStatus // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        recommendation: freezed == recommendation
+            ? _value.recommendation
+            : recommendation // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        riceType: freezed == riceType
+            ? _value.riceType
+            : riceType // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -835,6 +913,9 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
 
 class _$EtcDailyEntityImpl extends _EtcDailyEntity {
   const _$EtcDailyEntityImpl({
+    this.hst,
+    this.phase,
+    this.et0,
     this.day,
     this.tempMin,
     this.tempMax,
@@ -843,8 +924,17 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
     this.etc,
     this.kc,
     this.waterNeeds,
+    this.waterStatus,
+    this.recommendation,
+    this.riceType,
   }) : super._();
 
+  @override
+  final int? hst;
+  @override
+  final String? phase;
+  @override
+  final double? et0;
   @override
   final String? day;
   @override
@@ -861,10 +951,16 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
   final double? kc;
   @override
   final double? waterNeeds;
+  @override
+  final String? waterStatus;
+  @override
+  final String? recommendation;
+  @override
+  final String? riceType;
 
   @override
   String toString() {
-    return 'EtcDailyEntity(day: $day, tempMin: $tempMin, tempMax: $tempMax, rhMin: $rhMin, rhMax: $rhMax, etc: $etc, kc: $kc, waterNeeds: $waterNeeds)';
+    return 'EtcDailyEntity(hst: $hst, phase: $phase, et0: $et0, day: $day, tempMin: $tempMin, tempMax: $tempMax, rhMin: $rhMin, rhMax: $rhMax, etc: $etc, kc: $kc, waterNeeds: $waterNeeds, waterStatus: $waterStatus, recommendation: $recommendation, riceType: $riceType)';
   }
 
   @override
@@ -872,6 +968,9 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EtcDailyEntityImpl &&
+            (identical(other.hst, hst) || other.hst == hst) &&
+            (identical(other.phase, phase) || other.phase == phase) &&
+            (identical(other.et0, et0) || other.et0 == et0) &&
             (identical(other.day, day) || other.day == day) &&
             (identical(other.tempMin, tempMin) || other.tempMin == tempMin) &&
             (identical(other.tempMax, tempMax) || other.tempMax == tempMax) &&
@@ -880,12 +979,21 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
             (identical(other.etc, etc) || other.etc == etc) &&
             (identical(other.kc, kc) || other.kc == kc) &&
             (identical(other.waterNeeds, waterNeeds) ||
-                other.waterNeeds == waterNeeds));
+                other.waterNeeds == waterNeeds) &&
+            (identical(other.waterStatus, waterStatus) ||
+                other.waterStatus == waterStatus) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            (identical(other.riceType, riceType) ||
+                other.riceType == riceType));
   }
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
+    hst,
+    phase,
+    et0,
     day,
     tempMin,
     tempMax,
@@ -894,6 +1002,9 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
     etc,
     kc,
     waterNeeds,
+    waterStatus,
+    recommendation,
+    riceType,
   );
 
   /// Create a copy of EtcDailyEntity
@@ -910,6 +1021,9 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
 
 abstract class _EtcDailyEntity extends EtcDailyEntity {
   const factory _EtcDailyEntity({
+    final int? hst,
+    final String? phase,
+    final double? et0,
     final String? day,
     final double? tempMin,
     final double? tempMax,
@@ -918,9 +1032,18 @@ abstract class _EtcDailyEntity extends EtcDailyEntity {
     final double? etc,
     final double? kc,
     final double? waterNeeds,
+    final String? waterStatus,
+    final String? recommendation,
+    final String? riceType,
   }) = _$EtcDailyEntityImpl;
   const _EtcDailyEntity._() : super._();
 
+  @override
+  int? get hst;
+  @override
+  String? get phase;
+  @override
+  double? get et0;
   @override
   String? get day;
   @override
@@ -937,6 +1060,12 @@ abstract class _EtcDailyEntity extends EtcDailyEntity {
   double? get kc;
   @override
   double? get waterNeeds;
+  @override
+  String? get waterStatus;
+  @override
+  String? get recommendation;
+  @override
+  String? get riceType;
 
   /// Create a copy of EtcDailyEntity
   /// with the given fields replaced by the non-null parameter values.

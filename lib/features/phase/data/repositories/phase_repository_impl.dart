@@ -29,7 +29,9 @@ class PhaseRepositoryImpl implements PhaseRepository {
   Future<Either<Failure, Phase>> getPhaseById(String id) async {
     try {
       final model = await remoteDatasource.getPhaseById(id);
-      if (model == null) return const Left(NotFoundFailure('Fase tidak ditemukan'));
+      if (model == null) {
+        return const Left(NotFoundFailure('Fase tidak ditemukan'));
+      }
       return Right(model.toEntity());
     } on DioException catch (e) {
       return Left(e.toFailure());

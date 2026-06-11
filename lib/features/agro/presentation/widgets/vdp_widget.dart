@@ -49,7 +49,7 @@ class VdpWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'VDP',
+                      'VPD',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: context.sp(22),
@@ -164,7 +164,11 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpIndicator(BuildContext context, double? vdp, AppLocalizations l10n) {
+  Widget _buildVdpIndicator(
+    BuildContext context,
+    double? vdp,
+    AppLocalizations l10n,
+  ) {
     if (vdp == null) return const SizedBox.shrink();
 
     final percentage = (vdp / 2.0).clamp(0.0, 1.0);
@@ -241,7 +245,11 @@ class VdpWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVdpInfo(BuildContext context, double? vdp, AppLocalizations l10n) {
+  Widget _buildVdpInfo(
+    BuildContext context,
+    double? vdp,
+    AppLocalizations l10n,
+  ) {
     if (vdp == null) return const SizedBox.shrink();
 
     final title = vdpData!.status ?? _getVdpStatusLabel(vdp, l10n);
@@ -307,7 +315,7 @@ class VdpWidget extends StatelessWidget {
   Widget _buildVdpDetails(BuildContext context, AppLocalizations l10n) {
     final details = <_VdpDetailData>[
       _VdpDetailData(
-        label: 'V (VDP)',
+        label: 'V (VPD)',
         value: _formatNumberUnit(vdpData!.vdp, 2, 'kPa', l10n),
       ),
       _VdpDetailData(
@@ -444,13 +452,18 @@ class VdpWidget extends StatelessWidget {
 
   Color _getVdpColor(double? vdp) {
     if (vdp == null) return const Color(0xFF1D1D1D).withValues(alpha: 0.6);
-    if (vdp < 0.4) return AppColors.info;
+    if (vdp < 0.4) return AppColors.error;
     if (vdp <= 1.2) return AppColors.success;
     if (vdp <= 1.6) return AppColors.warning;
     return AppColors.error;
   }
 
-  String _formatNumberUnit(double? value, int fractionDigits, String unit, AppLocalizations l10n) {
+  String _formatNumberUnit(
+    double? value,
+    int fractionDigits,
+    String unit,
+    AppLocalizations l10n,
+  ) {
     if (value == null) return l10n.commonNotAvailableYet;
     final number = value.toStringAsFixed(fractionDigits);
     if (unit == '%') return '$number%';

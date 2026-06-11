@@ -4,8 +4,18 @@ import 'package:simpulagromobile/features/agro/data/models/agro_model.dart';
 import 'package:simpulagromobile/features/agro/domain/entities/agro_entity.dart';
 import 'package:simpulagromobile/features/agro/presentation/widgets/environmental_health_widget.dart';
 import 'package:simpulagromobile/features/agro/presentation/widgets/etc_widget.dart';
+import 'package:simpulagromobile/features/agro/presentation/widgets/gdd_widget.dart';
 import 'package:simpulagromobile/features/agro/presentation/widgets/vdp_widget.dart';
-import 'package:simpulagromobile/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:simpulagromobile/l10n/app_localizations.dart';
+
+Widget _testApp(Widget child) {
+  return MaterialApp(
+    locale: const Locale('id'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(body: SingleChildScrollView(child: child)),
+  );
+}
 
 void main() {
   group('VdpModel', () {
@@ -67,20 +77,14 @@ void main() {
     ) async {
       const vdp = VdpEntity(vdp: 0.5, es: 0.3, ea: 0.2);
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: VdpWidget(vdpData: vdp)),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_testApp(const VdpWidget(vdpData: vdp)));
 
       expect(find.text('0.50'), findsOneWidget);
       expect(find.text('0.50 kPa'), findsOneWidget);
       expect(find.text('0.30 kPa'), findsOneWidget);
       expect(find.text('0.20 kPa'), findsOneWidget);
       expect(find.text('Detail VPD'), findsOneWidget);
-      expect(find.text('V (VDP)'), findsOneWidget);
+      expect(find.text('V (VPD)'), findsOneWidget);
       expect(find.text('D (Es)'), findsOneWidget);
       expect(find.text('P (Ea)'), findsOneWidget);
       expect(find.text('- kPa'), findsNothing);
@@ -93,15 +97,9 @@ void main() {
     ) async {
       const vdp = VdpEntity(vdp: 1.49);
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: VdpWidget(vdpData: vdp)),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_testApp(const VdpWidget(vdpData: vdp)));
 
-      expect(find.text('V (VDP)'), findsOneWidget);
+      expect(find.text('V (VPD)'), findsOneWidget);
       expect(find.text('D (Es)'), findsOneWidget);
       expect(find.text('P (Ea)'), findsOneWidget);
       expect(find.text('1.49 kPa'), findsOneWidget);
@@ -115,27 +113,21 @@ void main() {
     testWidgets('renders backend total sensors and sensor health rows', (
       WidgetTester tester,
     ) async {
-      const health = EnvironmentalHealthEntity(
+      const health = AgroEnvironmentalHealthEntity(
         overallHealth: 88.5,
         totalSensors: 12,
         sensors: [
-          SensorHealthEntity(
+          AgroSensorHealthEntity(
             devId: 'DEV_001',
             dsId: 'DS_001',
             readUpdateValue: '25.3',
-            persentase: 85,
+            percentage: 85,
           ),
         ],
       );
 
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: EnvironmentalHealthWidget(healthData: health),
-            ),
-          ),
-        ),
+        _testApp(const EnvironmentalHealthWidget(healthData: health)),
       );
 
       expect(find.text('12 sensor dipantau'), findsOneWidget);
@@ -160,13 +152,7 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(child: EtcWidget(etcData: etc)),
-            ),
-          ),
-        );
+        await tester.pumpWidget(_testApp(const EtcWidget(etcData: etc)));
 
         expect(find.text('4.12'), findsOneWidget);
         expect(find.text('Kc'), findsNothing);
@@ -177,6 +163,33 @@ void main() {
         expect(find.text('60.0% - 85.0%'), findsOneWidget);
       },
     );
+
+    testWidgets('uses the newest ETC record for the summary', (
+      WidgetTester tester,
+    ) async {
+      const etc = [
+        EtcDailyEntity(day: '2026-05-12', etc: 2.5),
+        EtcDailyEntity(day: '2026-05-14', etc: 6.5),
+        EtcDailyEntity(day: '2026-05-13', etc: 4.5),
+      ];
+
+      await tester.pumpWidget(_testApp(const EtcWidget(etcData: etc)));
+
+      expect(find.text('6.50'), findsOneWidget);
+    });
+  });
+
+  group('GddWidget', () {
+    testWidgets('shows total GDD even when daily rows are unavailable', (
+      WidgetTester tester,
+    ) async {
+      const gdd = GddEntity(totalGDD: 1250.5);
+
+      await tester.pumpWidget(_testApp(const GddWidget(gddData: gdd)));
+
+      expect(find.text('1250.5'), findsOneWidget);
+      expect(find.text('Data GDD tidak tersedia'), findsNothing);
+    });
   });
 
   group('GddDailyModel', () {
@@ -360,6 +373,32 @@ void main() {
       expect(agro.vdp, isNotNull);
       expect(agro.gdd, isNotNull);
       expect(agro.etc, isNotEmpty);
+    });
+
+    test('fromJson preserves all documented ETC fields', () {
+      final agro = AgroModel.fromJson({
+        'etc': [
+          {
+            'hst': 42,
+            'phase': 'Vegetatif',
+            'et0': 4.2345,
+            'kc': 1.05,
+            'etc': 4.4462,
+            'waterStatus': 'Normal',
+            'recommendation': 'Pertahankan jadwal irigasi.',
+            'riceType': 'sawah',
+            'day': '2026-01-15',
+          },
+        ],
+      });
+
+      final etc = agro.etc.single;
+      expect(etc.hst, 42);
+      expect(etc.phase, 'Vegetatif');
+      expect(etc.et0, 4.2345);
+      expect(etc.waterStatus, 'Normal');
+      expect(etc.recommendation, 'Pertahankan jadwal irigasi.');
+      expect(etc.riceType, 'sawah');
     });
 
     test('fromJson accepts vpd alias for agro response', () {

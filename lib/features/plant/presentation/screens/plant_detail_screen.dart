@@ -8,6 +8,7 @@ import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../utils/plant_phase_display.dart';
@@ -41,7 +42,10 @@ class PlantDetailScreen extends ConsumerWidget {
           data: (plant) => RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
-              final siteId = phaseSiteIdForPlant(plant);
+              final siteId = phaseSiteIdForPlant(
+                plant,
+                fallbackSiteId: ref.read(selectedSiteIdProvider),
+              );
               if (plant.isCurrentPlanting) {
                 ref.invalidate(currentPhaseProvider(siteId));
               }

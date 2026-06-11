@@ -21,7 +21,7 @@ class PhaseProgress {
 }
 
 /// UseCase to calculate the progress and status of a phase
-/// 
+///
 /// This UseCase handles the business logic for calculating phase progress
 /// based on HST (Heat Sum Total), GDD (Growing Degree Days), and other metrics.
 class CalculatePhaseProgressUseCase {
@@ -31,13 +31,13 @@ class CalculatePhaseProgressUseCase {
   CalculatePhaseProgressUseCase(this.repository);
 
   /// Execute the use case to calculate phase progress
-  /// 
+  ///
   /// Parameters:
   ///   - [phase]: The Phase entity containing progress data
-  /// 
+  ///
   /// Returns:
   ///   - Either a [Failure] on error or a [PhaseProgress] object on success
-  /// 
+  ///
   /// The calculation considers:
   ///   - HST progress: (currentHst / (endHst - startHst)) * 100
   ///   - GDD progress: (currentGdd / requiredGdd) * 100
@@ -61,7 +61,9 @@ class CalculatePhaseProgressUseCase {
 
       return Right(result);
     } catch (e) {
-      return Left(UnknownFailure('Failed to calculate phase progress: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to calculate phase progress: ${e.toString()}'),
+      );
     }
   }
 }

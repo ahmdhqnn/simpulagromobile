@@ -114,6 +114,49 @@ class PlantRecommendationCardWidget extends StatelessWidget {
     Map<String, dynamic> recommendations,
   ) {
     final result = <_RecommendationItem>[];
+    final recommendedPlants =
+        recommendations['recommended_plants'] ??
+        recommendations['recommendedPlants'];
+    if (recommendedPlants is List) {
+      final confidence =
+          recommendations['confidence'] ??
+          recommendations['confidences'] ??
+          recommendations['scores'];
+      final confidenceList = confidence is List ? confidence : const [];
+      for (var index = 0; index < recommendedPlants.length; index++) {
+        final raw = recommendedPlants[index];
+        final map = _extractMap(raw);
+        final name = _stringValue(
+          map == null
+              ? raw
+              : map['name'] ??
+                    map['plant'] ??
+                    map['plant_name'] ??
+                    map['label'],
+        );
+        if (name == null) continue;
+        final rawScore =
+            map?['confidence'] ??
+            map?['score'] ??
+            (index < confidenceList.length ? confidenceList[index] : null);
+        final score = rawScore is num
+            ? rawScore.toDouble()
+            : double.tryParse(rawScore?.toString() ?? '');
+        final normalizedScore = score == null
+            ? null
+            : (score > 1 ? score / 100 : score);
+        result.add(
+          _RecommendationItem(
+            title: name,
+            message: normalizedScore == null
+                ? context.l10n.recommendationPlantDescription
+                : '${context.l10n.recommendationConfidenceLabel}: '
+                      '${(normalizedScore * 100).toStringAsFixed(0)}%',
+          ),
+        );
+      }
+      return result;
+    }
 
     void addFromRaw(String key, String fallbackTitle, dynamic raw) {
       if (raw == null) return;

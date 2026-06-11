@@ -27,6 +27,7 @@ import 'package:simpulagromobile/features/forum/domain/entities/post.dart';
 import 'package:simpulagromobile/features/site/presentation/providers/site_provider.dart';
 
 import 'package:simpulagromobile/core/error/failures.dart';
+import 'package:simpulagromobile/l10n/app_localizations.dart';
 
 // Mock Repository definitions
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -38,6 +39,15 @@ class MockForumRepository extends Mock implements ForumRepository {}
 class MockSecureStorage extends Mock implements SecureStorage {}
 
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
+Widget _localizedApp({required Widget home}) {
+  return MaterialApp(
+    locale: const Locale('id'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  );
+}
 
 void main() {
   late MockAuthRepository mockAuthRepository;
@@ -95,7 +105,7 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(home: LoginScreen()),
+          child: _localizedApp(home: const LoginScreen()),
         ),
       );
 
@@ -109,7 +119,7 @@ void main() {
       await tester.enterText(textFields.at(1), 'wrong_pass');
 
       // Click sign in button
-      final signInButton = find.text('SignIn');
+      final signInButton = find.text('Masuk');
       await tester.tap(signInButton);
 
       // Let state notifier and dialogue show up
@@ -191,8 +201,8 @@ void main() {
       (WidgetTester tester) async {
         // 1. Test Optimal threshold (>= 80)
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
+          _localizedApp(
+            home: const Scaffold(
               body: SensorStatusCard(
                 label: 'Suhu Udara',
                 value: '28.5',
@@ -208,8 +218,8 @@ void main() {
 
         // 2. Test Cukup threshold (60 - 79)
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
+          _localizedApp(
+            home: const Scaffold(
               body: SensorStatusCard(
                 label: 'Suhu Udara',
                 value: '26.0',
@@ -223,8 +233,8 @@ void main() {
 
         // 3. Test Kurang threshold (40 - 59)
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
+          _localizedApp(
+            home: const Scaffold(
               body: SensorStatusCard(
                 label: 'Suhu Udara',
                 value: '22.0',
@@ -238,8 +248,8 @@ void main() {
 
         // 4. Test Kritis threshold (< 40)
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
+          _localizedApp(
+            home: const Scaffold(
               body: SensorStatusCard(
                 label: 'Suhu Udara',
                 value: '15.0',
@@ -267,8 +277,8 @@ void main() {
           );
 
           await tester.pumpWidget(
-            const MaterialApp(
-              home: Scaffold(
+            _localizedApp(
+              home: const Scaffold(
                 body: SingleChildScrollView(
                   child: EnvironmentalHealthWidget(agroData: mockAgroData),
                 ),
@@ -278,12 +288,12 @@ void main() {
 
           // Check title and score details are rendered
           expect(find.text('Kesehatan Lingkungan'), findsOneWidget);
-          expect(find.text('Environmental Health Score'), findsOneWidget);
+          expect(find.text('Skor Kesehatan Lingkungan'), findsOneWidget);
           expect(find.text('Sangat Baik'), findsOneWidget);
 
           // Check CircularPercentIndicator widgets (should be 3 of them)
           expect(find.byType(CircularPercentIndicator), findsNWidgets(3));
-          expect(find.text('VDP'), findsOneWidget);
+          expect(find.text('VPD'), findsOneWidget);
           expect(find.text('GDD'), findsOneWidget);
           expect(find.text('ETC'), findsOneWidget);
         },

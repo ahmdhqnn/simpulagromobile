@@ -32,7 +32,8 @@ class RecommendationBundle with _$RecommendationBundle {
   const factory RecommendationBundle({
     RecommendationActionResult? npk,
     RecommendationActionResult? ph,
+    RecommendationSensorData? sensorData,
   }) = _RecommendationBundle;
 
-  bool get isNotEmpty => npk != null || ph != null;
+  bool get isNotEmpty => npk != null || ph != null || sensorData != null;
 }

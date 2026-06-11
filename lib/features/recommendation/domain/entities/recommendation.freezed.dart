@@ -22,7 +22,6 @@ mixin _$Recommendation {
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   RecommendationPriority get priority => throw _privateConstructorUsedError;
-  RecommendationStatus get status => throw _privateConstructorUsedError;
   String? get plantId => throw _privateConstructorUsedError;
   String? get plantName => throw _privateConstructorUsedError;
   String? get siteId => throw _privateConstructorUsedError;
@@ -30,10 +29,9 @@ mixin _$Recommendation {
   RecommendationBundle? get parameters => throw _privateConstructorUsedError;
   List<String>? get actionItems => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get appliedAt => throw _privateConstructorUsedError;
-  String? get appliedBy => throw _privateConstructorUsedError;
   double? get confidenceScore => throw _privateConstructorUsedError;
   String? get reason => throw _privateConstructorUsedError;
+  String? get errorMessage => throw _privateConstructorUsedError;
 
   /// Create a copy of Recommendation
   /// with the given fields replaced by the non-null parameter values.
@@ -55,7 +53,6 @@ abstract class $RecommendationCopyWith<$Res> {
     String title,
     String description,
     RecommendationPriority priority,
-    RecommendationStatus status,
     String? plantId,
     String? plantName,
     String? siteId,
@@ -63,10 +60,9 @@ abstract class $RecommendationCopyWith<$Res> {
     RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
-    DateTime? appliedAt,
-    String? appliedBy,
     double? confidenceScore,
     String? reason,
+    String? errorMessage,
   });
 
   $RecommendationBundleCopyWith<$Res>? get parameters;
@@ -92,7 +88,6 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
     Object? title = null,
     Object? description = null,
     Object? priority = null,
-    Object? status = null,
     Object? plantId = freezed,
     Object? plantName = freezed,
     Object? siteId = freezed,
@@ -100,10 +95,9 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
     Object? parameters = freezed,
     Object? actionItems = freezed,
     Object? createdAt = freezed,
-    Object? appliedAt = freezed,
-    Object? appliedBy = freezed,
     Object? confidenceScore = freezed,
     Object? reason = freezed,
+    Object? errorMessage = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -127,10 +121,6 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
                 ? _value.priority
                 : priority // ignore: cast_nullable_to_non_nullable
                       as RecommendationPriority,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as RecommendationStatus,
             plantId: freezed == plantId
                 ? _value.plantId
                 : plantId // ignore: cast_nullable_to_non_nullable
@@ -159,14 +149,6 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
-            appliedAt: freezed == appliedAt
-                ? _value.appliedAt
-                : appliedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            appliedBy: freezed == appliedBy
-                ? _value.appliedBy
-                : appliedBy // ignore: cast_nullable_to_non_nullable
-                      as String?,
             confidenceScore: freezed == confidenceScore
                 ? _value.confidenceScore
                 : confidenceScore // ignore: cast_nullable_to_non_nullable
@@ -174,6 +156,10 @@ class _$RecommendationCopyWithImpl<$Res, $Val extends Recommendation>
             reason: freezed == reason
                 ? _value.reason
                 : reason // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            errorMessage: freezed == errorMessage
+                ? _value.errorMessage
+                : errorMessage // ignore: cast_nullable_to_non_nullable
                       as String?,
           )
           as $Val,
@@ -210,7 +196,6 @@ abstract class _$$RecommendationImplCopyWith<$Res>
     String title,
     String description,
     RecommendationPriority priority,
-    RecommendationStatus status,
     String? plantId,
     String? plantName,
     String? siteId,
@@ -218,10 +203,9 @@ abstract class _$$RecommendationImplCopyWith<$Res>
     RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
-    DateTime? appliedAt,
-    String? appliedBy,
     double? confidenceScore,
     String? reason,
+    String? errorMessage,
   });
 
   @override
@@ -247,7 +231,6 @@ class __$$RecommendationImplCopyWithImpl<$Res>
     Object? title = null,
     Object? description = null,
     Object? priority = null,
-    Object? status = null,
     Object? plantId = freezed,
     Object? plantName = freezed,
     Object? siteId = freezed,
@@ -255,10 +238,9 @@ class __$$RecommendationImplCopyWithImpl<$Res>
     Object? parameters = freezed,
     Object? actionItems = freezed,
     Object? createdAt = freezed,
-    Object? appliedAt = freezed,
-    Object? appliedBy = freezed,
     Object? confidenceScore = freezed,
     Object? reason = freezed,
+    Object? errorMessage = freezed,
   }) {
     return _then(
       _$RecommendationImpl(
@@ -282,10 +264,6 @@ class __$$RecommendationImplCopyWithImpl<$Res>
             ? _value.priority
             : priority // ignore: cast_nullable_to_non_nullable
                   as RecommendationPriority,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as RecommendationStatus,
         plantId: freezed == plantId
             ? _value.plantId
             : plantId // ignore: cast_nullable_to_non_nullable
@@ -314,14 +292,6 @@ class __$$RecommendationImplCopyWithImpl<$Res>
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
-        appliedAt: freezed == appliedAt
-            ? _value.appliedAt
-            : appliedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        appliedBy: freezed == appliedBy
-            ? _value.appliedBy
-            : appliedBy // ignore: cast_nullable_to_non_nullable
-                  as String?,
         confidenceScore: freezed == confidenceScore
             ? _value.confidenceScore
             : confidenceScore // ignore: cast_nullable_to_non_nullable
@@ -329,6 +299,10 @@ class __$$RecommendationImplCopyWithImpl<$Res>
         reason: freezed == reason
             ? _value.reason
             : reason // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        errorMessage: freezed == errorMessage
+            ? _value.errorMessage
+            : errorMessage // ignore: cast_nullable_to_non_nullable
                   as String?,
       ),
     );
@@ -344,7 +318,6 @@ class _$RecommendationImpl extends _Recommendation {
     required this.title,
     required this.description,
     required this.priority,
-    required this.status,
     this.plantId,
     this.plantName,
     this.siteId,
@@ -352,10 +325,9 @@ class _$RecommendationImpl extends _Recommendation {
     this.parameters,
     final List<String>? actionItems,
     this.createdAt,
-    this.appliedAt,
-    this.appliedBy,
     this.confidenceScore,
     this.reason,
+    this.errorMessage,
   }) : _actionItems = actionItems,
        super._();
 
@@ -369,8 +341,6 @@ class _$RecommendationImpl extends _Recommendation {
   final String description;
   @override
   final RecommendationPriority priority;
-  @override
-  final RecommendationStatus status;
   @override
   final String? plantId;
   @override
@@ -394,17 +364,15 @@ class _$RecommendationImpl extends _Recommendation {
   @override
   final DateTime? createdAt;
   @override
-  final DateTime? appliedAt;
-  @override
-  final String? appliedBy;
-  @override
   final double? confidenceScore;
   @override
   final String? reason;
+  @override
+  final String? errorMessage;
 
   @override
   String toString() {
-    return 'Recommendation(recommendationId: $recommendationId, type: $type, title: $title, description: $description, priority: $priority, status: $status, plantId: $plantId, plantName: $plantName, siteId: $siteId, siteName: $siteName, parameters: $parameters, actionItems: $actionItems, createdAt: $createdAt, appliedAt: $appliedAt, appliedBy: $appliedBy, confidenceScore: $confidenceScore, reason: $reason)';
+    return 'Recommendation(recommendationId: $recommendationId, type: $type, title: $title, description: $description, priority: $priority, plantId: $plantId, plantName: $plantName, siteId: $siteId, siteName: $siteName, parameters: $parameters, actionItems: $actionItems, createdAt: $createdAt, confidenceScore: $confidenceScore, reason: $reason, errorMessage: $errorMessage)';
   }
 
   @override
@@ -420,7 +388,6 @@ class _$RecommendationImpl extends _Recommendation {
                 other.description == description) &&
             (identical(other.priority, priority) ||
                 other.priority == priority) &&
-            (identical(other.status, status) || other.status == status) &&
             (identical(other.plantId, plantId) || other.plantId == plantId) &&
             (identical(other.plantName, plantName) ||
                 other.plantName == plantName) &&
@@ -435,13 +402,11 @@ class _$RecommendationImpl extends _Recommendation {
             ) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.appliedAt, appliedAt) ||
-                other.appliedAt == appliedAt) &&
-            (identical(other.appliedBy, appliedBy) ||
-                other.appliedBy == appliedBy) &&
             (identical(other.confidenceScore, confidenceScore) ||
                 other.confidenceScore == confidenceScore) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
@@ -452,7 +417,6 @@ class _$RecommendationImpl extends _Recommendation {
     title,
     description,
     priority,
-    status,
     plantId,
     plantName,
     siteId,
@@ -460,10 +424,9 @@ class _$RecommendationImpl extends _Recommendation {
     parameters,
     const DeepCollectionEquality().hash(_actionItems),
     createdAt,
-    appliedAt,
-    appliedBy,
     confidenceScore,
     reason,
+    errorMessage,
   );
 
   /// Create a copy of Recommendation
@@ -485,7 +448,6 @@ abstract class _Recommendation extends Recommendation {
     required final String title,
     required final String description,
     required final RecommendationPriority priority,
-    required final RecommendationStatus status,
     final String? plantId,
     final String? plantName,
     final String? siteId,
@@ -493,10 +455,9 @@ abstract class _Recommendation extends Recommendation {
     final RecommendationBundle? parameters,
     final List<String>? actionItems,
     final DateTime? createdAt,
-    final DateTime? appliedAt,
-    final String? appliedBy,
     final double? confidenceScore,
     final String? reason,
+    final String? errorMessage,
   }) = _$RecommendationImpl;
   const _Recommendation._() : super._();
 
@@ -510,8 +471,6 @@ abstract class _Recommendation extends Recommendation {
   String get description;
   @override
   RecommendationPriority get priority;
-  @override
-  RecommendationStatus get status;
   @override
   String? get plantId;
   @override
@@ -527,13 +486,11 @@ abstract class _Recommendation extends Recommendation {
   @override
   DateTime? get createdAt;
   @override
-  DateTime? get appliedAt;
-  @override
-  String? get appliedBy;
-  @override
   double? get confidenceScore;
   @override
   String? get reason;
+  @override
+  String? get errorMessage;
 
   /// Create a copy of Recommendation
   /// with the given fields replaced by the non-null parameter values.
