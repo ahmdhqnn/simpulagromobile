@@ -551,13 +551,13 @@
   "commonSaveChanges": "Save Changes",
   "recommendationTitle": "Recommendations",
   "recommendationHubTitle": "Recommendation Center",
-  "recommendationSearchHint": "Search title, description, plant, or site",
+  "recommendationSearchHint": "Search title, description, plant, action, or phase",
   "recommendationEmptyTitle": "No recommendations",
   "recommendationEmptyAll": "No recommendations available yet.\nMake sure sensors are active and sending data.",
   "recommendationReload": "Reload",
   "recommendationLoadFailed": "Failed to load recommendations",
   "recommendationEmptyDataTitle": "Recommendation data is empty",
-  "recommendationEmptyForSite": "No recommendations are available for this site yet.",
+  "recommendationEmptyForSite": "No recommendations are available for this context yet.",
   "recommendationFilterCategory": "Category Filter",
   "recommendationFilterStatus": "Status Filter",
   "recommendationPriorityStat": "Priority",
@@ -761,7 +761,7 @@
       }
     }
   },
-  "monitoringPlantRecommendationEmpty": "No recommendations for this site yet",
+  "monitoringPlantRecommendationEmpty": "No ML plant recommendations for the last 7 days of sensor averages",
   "monitoringRecommendationActionCount": "{count} actions",
   "@monitoringRecommendationActionCount": {
     "placeholders": {
@@ -778,9 +778,9 @@
       }
     }
   },
-  "monitoringRecommendationSiteTitle": "Site Recommendation",
-  "monitoringRecommendationCachedSubtitle": "Based on saved sensor data",
-  "monitoringRecommendationActiveSiteSubtitle": "Based on active site sensors",
+  "monitoringRecommendationSiteTitle": "Plant ML Recommendation",
+  "monitoringRecommendationCachedSubtitle": "Fresh from the plant ML endpoint",
+  "monitoringRecommendationActiveSiteSubtitle": "Based on 7-day sensor averages",
   "monitoringNpkAdjustment": "NPK Adjustment",
   "monitoringSoilPhAdjustment": "Soil pH Adjustment",
   "monitoringSoilPhLabel": "Soil pH",
@@ -1049,15 +1049,15 @@
       }
     }
   },
-  "recommendationSiteTitle": "Site Recommendations",
-  "recommendationSiteSubtitle": "Selected site condition and required actions",
-  "recommendationSiteDescription": "General analysis of site conditions and required actions.",
+  "recommendationSiteTitle": "Action Recommendations",
+  "recommendationSiteSubtitle": "Today's actions from field sensor conditions",
+  "recommendationSiteDescription": "Action recommendations only show today's data. Database cache from other days is hidden.",
   "recommendationPlantTitle": "Plant Recommendations",
-  "recommendationPlantSubtitle": "Active plants at the selected site",
-  "recommendationPlantDescription": "Latest recommendations based on active plant data.",
+  "recommendationPlantSubtitle": "ML from 7-day sensor averages",
+  "recommendationPlantDescription": "Plant recommendations come directly from the Machine Learning endpoint and are not stored in the database.",
   "recommendationPlantLoadFailed": "Failed to load plant recommendations",
-  "recommendationPhaseTitle": "Phase Recommendations",
-  "recommendationPhaseDescription": "Action suggestions specific to the active growth phase.",
+  "recommendationPhaseTitle": "Active Phase Recommendations",
+  "recommendationPhaseDescription": "Seeded database actions for the currently active planting phase.",
   "recommendationPhaseLoadFailed": "Failed to load phase recommendations",
   "recommendationActivePhaseLoadFailed": "Failed to load active phase",
   "recommendationPhaseNoActive": "No active phase yet",
@@ -1072,6 +1072,24 @@
       }
     }
   },
+  "recommendationActionScopeLabel": "Actions",
+  "recommendationPlantMlScopeLabel": "Plant ML",
+  "recommendationActivePhaseScopeLabel": "Active Phase",
+  "recommendationSourceLabel": "Data source",
+  "recommendationDataRuleLabel": "Display rule",
+  "recommendationActionSourceTitle": "Action recommendation endpoint",
+  "recommendationActionSourceDescription": "Today's data from field conditions: environment temperature/humidity, soil temperature/humidity, NPK, and pH. DB cache from other days is hidden.",
+  "recommendationPlantSourceTitle": "Plant ML recommendation endpoint",
+  "recommendationPlantSourceDescription": "Fresh Machine Learning result from the last 7 days of sensor averages. This result is not stored in the database.",
+  "recommendationPhaseSourceTitle": "Active phase recommendation database",
+  "recommendationPhaseSourceDescription": "Seeded data based on the currently active planting phase. Shown only when active planting exists.",
+  "recommendationGeneratedTodayLabel": "Today",
+  "recommendationFreshMlLabel": "Fresh 7-day ML",
+  "recommendationSeededDatabaseLabel": "Phase database",
+  "recommendationEmptyAction": "No action recommendations for today.",
+  "recommendationEmptyPlant": "No ML plant recommendations for the last 7 days of sensor averages.",
+  "recommendationEmptyPhase": "No phase recommendations because there is no active planting phase.",
+  "recommendationEmptyAll": "No active recommendations for today's actions, plant ML, or active phase.",
   "recommendationHstLabel": "DAP {hst}",
   "@recommendationHstLabel": {
     "placeholders": {
@@ -1157,12 +1175,12 @@
   "monitoringDistributionByTypeTitle": "Distribution by Type",
   "monitoringPlantCompositionSubtitle": "Active site plant composition",
   "monitoringAverageGrowthPhase": "Average Growth Phase",
-  "agroSelectSiteMessage": "Select a site first to view agro data (VDP, GDD, ETC).",
+  "agroSelectSiteMessage": "Select a site first to view agro data (VPD, GDD, ETc).",
   "agroActionRecommendationTitle": "Action Recommendations",
   "agroPlantingPhaseTitle": "Planting Phase",
   "agroInformationTitle": "Information",
   "agroAboutTitle": "About Agro Indicator",
-  "agroVdpDescription": "Measures the water vapor pressure deficit. Optimal value: 0.4-1.2 kPa. Low VDP (<0.4) increases disease risk, while high VDP (>1.6) causes water stress.",
+  "agroVdpDescription": "Measures the vapor pressure deficit. Optimal value: 0.4-1.2 kPa. Low VPD (<0.4) increases disease risk, while high VPD (>1.6) causes water stress.",
   "agroGddDescription": "Accumulated temperature needed by plants to grow. Used to predict growth phases and harvest timing.",
   "agroEtcDescription": "Plant water requirement based on evaporation and transpiration. Helps determine optimal watering schedule and volume.",
   "agroVdpTitle": "Vapor Pressure Deficit",
@@ -1655,6 +1673,3 @@
   "errorDataNotFound": "No data found for this site.",
   "errorLoadFailed": "Failed to load data. Please try again."
 }
-
-
-

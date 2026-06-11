@@ -14,7 +14,6 @@ _$RecommendationModelImpl _$$RecommendationModelImplFromJson(
   title: json['title'] as String,
   description: json['description'] as String,
   priority: json['priority'] as String,
-  status: json['status'] as String,
   plantId: json['plant_id'] as String?,
   plantName: json['plant_name'] as String?,
   siteId: json['site_id'] as String?,
@@ -30,12 +29,9 @@ _$RecommendationModelImpl _$$RecommendationModelImplFromJson(
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
-  appliedAt: json['applied_at'] == null
-      ? null
-      : DateTime.parse(json['applied_at'] as String),
-  appliedBy: json['applied_by'] as String?,
   confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
   reason: json['reason'] as String?,
+  errorMessage: json['error_message'] as String?,
 );
 
 Map<String, dynamic> _$$RecommendationModelImplToJson(
@@ -46,7 +42,6 @@ Map<String, dynamic> _$$RecommendationModelImplToJson(
   'title': instance.title,
   'description': instance.description,
   'priority': instance.priority,
-  'status': instance.status,
   'plant_id': instance.plantId,
   'plant_name': instance.plantName,
   'site_id': instance.siteId,
@@ -54,8 +49,7 @@ Map<String, dynamic> _$$RecommendationModelImplToJson(
   'parameters': instance.parameters,
   'action_items': instance.actionItems,
   'created_at': instance.createdAt?.toIso8601String(),
-  'applied_at': instance.appliedAt?.toIso8601String(),
-  'applied_by': instance.appliedBy,
   'confidence_score': instance.confidenceScore,
   'reason': instance.reason,
+  'error_message': instance.errorMessage,
 };

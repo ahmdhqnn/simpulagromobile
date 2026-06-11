@@ -1251,14 +1251,14 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get recommendationSearchHint =>
-      'Cari judul, deskripsi, tanaman atau site';
+      'Cari judul, deskripsi, tanaman, aksi, atau fase';
 
   @override
   String get recommendationEmptyTitle => 'Tidak ada rekomendasi';
 
   @override
   String get recommendationEmptyAll =>
-      'Belum ada rekomendasi tersedia.\nPastikan sensor sudah aktif dan mengirim data.';
+      'Belum ada rekomendasi aktif untuk aksi hari ini, tanaman ML, atau fase aktif.';
 
   @override
   String get recommendationReload => 'Muat Ulang';
@@ -1271,7 +1271,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get recommendationEmptyForSite =>
-      'Belum ada rekomendasi yang tersedia untuk site ini.';
+      'Belum ada rekomendasi yang tersedia untuk konteks ini.';
 
   @override
   String get recommendationFilterCategory => 'Filter Kategori';
@@ -1747,7 +1747,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get monitoringPlantRecommendationEmpty =>
-      'Belum ada rekomendasi untuk site ini';
+      'Belum ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir';
 
   @override
   String monitoringRecommendationActionCount(int count) {
@@ -1760,15 +1760,15 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get monitoringRecommendationSiteTitle => 'Rekomendasi Site';
+  String get monitoringRecommendationSiteTitle => 'Rekomendasi Tanaman ML';
 
   @override
   String get monitoringRecommendationCachedSubtitle =>
-      'Berdasarkan data sensor tersimpan';
+      'Fresh dari endpoint ML tanaman';
 
   @override
   String get monitoringRecommendationActiveSiteSubtitle =>
-      'Berdasarkan sensor site aktif';
+      'Berdasarkan rata-rata sensor 7 hari';
 
   @override
   String get monitoringNpkAdjustment => 'Penyesuaian NPK';
@@ -2238,36 +2238,36 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get recommendationSiteTitle => 'Rekomendasi Site';
+  String get recommendationSiteTitle => 'Rekomendasi Aksi';
 
   @override
   String get recommendationSiteSubtitle =>
-      'Kondisi site terpilih dan kebutuhan tindakan';
+      'Aksi hari ini dari kondisi sensor lahan';
 
   @override
   String get recommendationSiteDescription =>
-      'Analisis umum kondisi site dan kebutuhan tindakan.';
+      'Rekomendasi aksi hanya menampilkan data hari ini. Cache database dari hari lain tidak ditampilkan.';
 
   @override
   String get recommendationPlantTitle => 'Rekomendasi Tanaman';
 
   @override
-  String get recommendationPlantSubtitle => 'Tanaman aktif di site terpilih';
+  String get recommendationPlantSubtitle => 'ML dari rata-rata sensor 7 hari';
 
   @override
   String get recommendationPlantDescription =>
-      'Rekomendasi terbaru berbasis data tanaman aktif.';
+      'Rekomendasi tanaman berasal langsung dari endpoint Machine Learning dan tidak disimpan ke database.';
 
   @override
   String get recommendationPlantLoadFailed =>
       'Gagal memuat rekomendasi tanaman';
 
   @override
-  String get recommendationPhaseTitle => 'Rekomendasi Fase';
+  String get recommendationPhaseTitle => 'Rekomendasi Fase Aktif';
 
   @override
   String get recommendationPhaseDescription =>
-      'Saran aksi spesifik sesuai fase pertumbuhan aktif.';
+      'Saran aksi dari database seeded sesuai fase penanaman yang sedang berlangsung.';
 
   @override
   String get recommendationPhaseLoadFailed => 'Gagal memuat rekomendasi fase';
@@ -2293,6 +2293,65 @@ class AppLocalizationsId extends AppLocalizations {
   String recommendationPhaseLabel(String phase) {
     return 'Fase: $phase';
   }
+
+  @override
+  String get recommendationActionScopeLabel => 'Aksi';
+
+  @override
+  String get recommendationPlantMlScopeLabel => 'Tanaman ML';
+
+  @override
+  String get recommendationActivePhaseScopeLabel => 'Fase Aktif';
+
+  @override
+  String get recommendationSourceLabel => 'Sumber data';
+
+  @override
+  String get recommendationDataRuleLabel => 'Aturan tampil';
+
+  @override
+  String get recommendationActionSourceTitle => 'Endpoint rekomendasi aksi';
+
+  @override
+  String get recommendationActionSourceDescription =>
+      'Data hari ini dari kondisi lahan: suhu/kelembaban lingkungan, suhu/kelembaban tanah, NPK, dan pH. Cache DB hari lain disembunyikan.';
+
+  @override
+  String get recommendationPlantSourceTitle =>
+      'Endpoint rekomendasi tanaman ML';
+
+  @override
+  String get recommendationPlantSourceDescription =>
+      'Fresh dari Machine Learning berdasarkan rata-rata sensor 7 hari terakhir. Hasil ini tidak disimpan ke database.';
+
+  @override
+  String get recommendationPhaseSourceTitle =>
+      'Database rekomendasi fase aktif';
+
+  @override
+  String get recommendationPhaseSourceDescription =>
+      'Data seeded berdasarkan fase penanaman yang sedang berlangsung. Ditampilkan hanya jika ada penanaman aktif.';
+
+  @override
+  String get recommendationGeneratedTodayLabel => 'Hari ini';
+
+  @override
+  String get recommendationFreshMlLabel => 'Fresh ML 7 hari';
+
+  @override
+  String get recommendationSeededDatabaseLabel => 'Database fase';
+
+  @override
+  String get recommendationEmptyAction =>
+      'Tidak ada rekomendasi aksi untuk hari ini.';
+
+  @override
+  String get recommendationEmptyPlant =>
+      'Tidak ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir.';
+
+  @override
+  String get recommendationEmptyPhase =>
+      'Tidak ada rekomendasi fase karena belum ada fase penanaman aktif.';
 
   @override
   String recommendationHstLabel(int hst) {
@@ -2430,7 +2489,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get agroSelectSiteMessage =>
-      'Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).';
+      'Pilih site terlebih dahulu untuk melihat data agro (VPD, GDD, ETc).';
 
   @override
   String get agroActionRecommendationTitle => 'Rekomendasi Tindakan';
@@ -2446,7 +2505,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get agroVdpDescription =>
-      'Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VDP rendah (<0.4) meningkatkan risiko penyakit, VDP tinggi (>1.6) menyebabkan stres air.';
+      'Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VPD rendah (<0.4) meningkatkan risiko penyakit, VPD tinggi (>1.6) menyebabkan stres air.';
 
   @override
   String get agroGddDescription =>
@@ -3135,13 +3194,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get agroVdpValueLabel => 'Nilai VPD';
 
   @override
-  String get agroVdpRangeLabel => 'VDP Range';
+  String get agroVdpRangeLabel => 'Rentang VPD';
 
   @override
   String get agroVdpDetailTitle => 'Detail VPD';
 
   @override
-  String get agroVdpUnavailable => 'Data VDP tidak tersedia';
+  String get agroVdpUnavailable => 'Data VPD tidak tersedia';
 
   @override
   String get agroVdpStatusLow => 'Terlalu Rendah';

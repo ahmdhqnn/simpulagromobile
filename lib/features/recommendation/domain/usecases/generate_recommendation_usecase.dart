@@ -45,27 +45,3 @@ class CreatePlantRecommendationUseCase {
     return repository.createPlantRecommendation(siteId, input);
   }
 }
-
-class PreviewLabRecommendationUseCase {
-  final RecommendationRepository repository;
-  PreviewLabRecommendationUseCase(this.repository);
-
-  Future<Either<Failure, RecommendationPreviewResult>> call(
-    String siteId,
-    RecommendationLabInput input,
-  ) {
-    return repository.previewLabRecommendation(siteId, input);
-  }
-}
-
-class SaveLabRecommendationUseCase {
-  final RecommendationRepository repository;
-  SaveLabRecommendationUseCase(this.repository);
-
-  Future<Either<Failure, RecommendationPreviewResult>> call(
-    String siteId,
-    RecommendationLabInput input,
-  ) {
-    return repository.saveLabRecommendation(siteId, input);
-  }
-}

@@ -11,6 +11,7 @@ import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../utils/plant_mutation_actions.dart';
 import '../utils/plant_phase_display.dart';
@@ -31,8 +32,10 @@ class PlantDetailCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final selectedSiteId = ref.watch(selectedSiteIdProvider);
+    final siteId = phaseSiteIdForPlant(plant, fallbackSiteId: selectedSiteId);
     final phaseAsync = plant.isCurrentPlanting
-        ? ref.watch(currentPhaseProvider(phaseSiteIdForPlant(plant)))
+        ? ref.watch(currentPhaseProvider(siteId))
         : null;
     final phaseLabel = phaseLabelForPlant(plant, phaseAsync, l10n);
     final gapSm = context.rh(0.012);
@@ -161,7 +164,11 @@ class _PlantImageSection extends StatelessWidget {
             GrowthPhaseButton(
               siteId: plant.siteId ?? '',
               plantName:
-                  plant.plantType?.localizedLabel(AppLocalizations.of(context)!) ?? plant.plantName ?? AppLocalizations.of(context)!.plantTitle,
+                  plant.plantType?.localizedLabel(
+                    AppLocalizations.of(context)!,
+                  ) ??
+                  plant.plantName ??
+                  AppLocalizations.of(context)!.plantTitle,
             ),
             const Spacer(),
             const AgroIndicatorButton(),

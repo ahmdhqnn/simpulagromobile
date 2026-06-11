@@ -14,10 +14,10 @@ class GetEtcUseCase {
   GetEtcUseCase(this.repository);
 
   /// Execute the use case to get ETC data
-  /// 
+  ///
   /// Parameters:
   ///   - siteId: The unique identifier of the site
-  /// 
+  ///
   /// Returns:
   ///   - [Right<List<EtcDailyEntity>>] if successful containing daily ETC values
   ///   - [Left<Failure>] if an error occurs (data not available or network error)

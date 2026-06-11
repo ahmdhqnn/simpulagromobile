@@ -14,8 +14,6 @@ import '../widgets/environmental_health_widget.dart';
 import '../widgets/agro_recommendation_widget.dart';
 import '../widgets/agro_phase_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
-import '../../../dashboard/domain/entities/dashboard_entity.dart';
-import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../../../phase/domain/entities/phase.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -55,7 +53,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
     }
 
     final agroAsync = ref.watch(agroDataProvider);
-    final healthAsync = ref.watch(environmentalHealthProvider);
+    final healthAsync = ref.watch(agroEnvironmentalHealthProvider);
 
     final phaseAsync = ref.watch(currentPhaseProvider(siteId));
     final recommendationsAsync = ref.watch(
@@ -112,7 +110,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
 
   Future<void> _refreshAgroData(WidgetRef ref) async {
     ref.invalidate(agroDataProvider);
-    ref.invalidate(environmentalHealthProvider);
+    ref.invalidate(agroEnvironmentalHealthProvider);
     final sid = ref.read(selectedSiteIdProvider);
     if (sid != null) {
       ref.invalidate(currentPhaseProvider(sid));
@@ -124,7 +122,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
   Widget _buildAgroSections(
     BuildContext context,
     AgroEntity agroData,
-    AsyncValue<EnvironmentalHealthEntity?> healthAsync,
+    AsyncValue<AgroEnvironmentalHealthEntity> healthAsync,
     AsyncValue<List<Recommendation>> recommendationsAsync,
     AsyncValue<Phase?> phaseAsync,
   ) {
@@ -188,9 +186,29 @@ class AgroIndicatorScreen extends ConsumerWidget {
 
         SectionHeaderWidget(title: l10n.healthSectionTitle),
         SizedBox(height: context.rh(0.014)),
-        EnvironmentalHealthWidget(
-          agroData: agroData,
-          healthData: healthAsync.valueOrNull,
+        healthAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          data: (health) =>
+              EnvironmentalHealthWidget(agroData: agroData, healthData: health),
+          loading: () => const AgroEnvironmentalHealthCardSkeleton(),
+          error: (error, _) => Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              error.toString(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
+                color: AppColors.error,
+              ),
+            ),
+          ),
         ),
 
         SizedBox(height: context.rh(0.024)),
@@ -410,23 +428,11 @@ class AgroIndicatorScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _buildInfoItem(
-            context,
-            l10n.agroVdpTitle,
-            l10n.agroVdpDescription,
-          ),
+          _buildInfoItem(context, l10n.agroVdpTitle, l10n.agroVdpDescription),
           const SizedBox(height: 12),
-          _buildInfoItem(
-            context,
-            l10n.agroGddTitle,
-            l10n.agroGddDescription,
-          ),
+          _buildInfoItem(context, l10n.agroGddTitle, l10n.agroGddDescription),
           const SizedBox(height: 12),
-          _buildInfoItem(
-            context,
-            l10n.agroEtcTitle,
-            l10n.agroEtcDescription,
-          ),
+          _buildInfoItem(context, l10n.agroEtcTitle, l10n.agroEtcDescription),
         ],
       ),
     );

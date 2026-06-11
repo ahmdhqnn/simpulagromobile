@@ -14,7 +14,6 @@ class Recommendation with _$Recommendation {
     required String title,
     required String description,
     required RecommendationPriority priority,
-    required RecommendationStatus status,
     String? plantId,
     String? plantName,
     String? siteId,
@@ -22,10 +21,9 @@ class Recommendation with _$Recommendation {
     RecommendationBundle? parameters,
     List<String>? actionItems,
     DateTime? createdAt,
-    DateTime? appliedAt,
-    String? appliedBy,
     double? confidenceScore,
     String? reason,
+    String? errorMessage,
   }) = _Recommendation;
 
   /// Get priority color
@@ -42,24 +40,7 @@ class Recommendation with _$Recommendation {
     }
   }
 
-  /// Get status color
-  String get statusColor {
-    switch (status) {
-      case RecommendationStatus.pending:
-        return '#FFA726'; // Orange
-      case RecommendationStatus.applied:
-        return '#66BB6A'; // Green
-      case RecommendationStatus.dismissed:
-        return '#9E9E9E'; // Grey
-      case RecommendationStatus.expired:
-        return '#757575'; // Dark Grey
-    }
-  }
-
-  /// Check if recommendation is actionable
-  bool get isActionable {
-    return status == RecommendationStatus.pending;
-  }
+  bool get hasError => errorMessage?.trim().isNotEmpty == true;
 
   /// Get confidence level text
   String get confidenceLevel {
@@ -137,27 +118,6 @@ enum RecommendationPriority {
         return 'Tinggi';
       case RecommendationPriority.critical:
         return 'Kritis';
-    }
-  }
-}
-
-/// Recommendation status enum
-enum RecommendationStatus {
-  pending,
-  applied,
-  dismissed,
-  expired;
-
-  String get label {
-    switch (this) {
-      case RecommendationStatus.pending:
-        return 'Menunggu';
-      case RecommendationStatus.applied:
-        return 'Diterapkan';
-      case RecommendationStatus.dismissed:
-        return 'Diabaikan';
-      case RecommendationStatus.expired:
-        return 'Kadaluarsa';
     }
   }
 }

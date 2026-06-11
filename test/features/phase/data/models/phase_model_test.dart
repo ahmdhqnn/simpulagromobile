@@ -32,5 +32,18 @@ void main() {
       expect(phases[1].toEntity().phaseName, 'Fase Bibit');
       expect(phases[1].toEntity().currentHst, 8);
     });
+
+    test('uses inclusive phase duration from the backend HST range', () {
+      final phase = PhaseModel.fromApiJson({
+        'phase_id': 'PH001',
+        'phase_name': 'Perkecambahan',
+        'chrop_type': 'PADI',
+        'phase_order': 1,
+        'phase_hst_min': 0,
+        'phase_hst_max': 14,
+      }).toEntity();
+
+      expect(phase.phaseDuration, 15);
+    });
   });
 }

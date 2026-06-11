@@ -442,9 +442,10 @@ class GddTrackingScreen extends ConsumerWidget {
                     x: index,
                     barRods: [
                       BarChartRodData(
-                        toY: (phase.currentHst - phase.hstMin)
-                            .clamp(0, phase.phaseDuration)
-                            .toDouble(),
+                        toY: (phase.progress * phase.phaseDuration).clamp(
+                          0,
+                          phase.phaseDuration.toDouble(),
+                        ),
                         color: _getPhaseColor(phase.status),
                         width: 20,
                       ),
@@ -601,9 +602,18 @@ class GddTrackingScreen extends ConsumerWidget {
                     color: AppColors.surfaceVariant,
                   ),
                   children: [
-                    _buildTableHeader(context, context.l10n.agroGddTrackingTablePhase),
-                    _buildTableHeader(context, context.l10n.agroGddTrackingTableCurrentHst),
-                    _buildTableHeader(context, context.l10n.agroGddTrackingTableDuration),
+                    _buildTableHeader(
+                      context,
+                      context.l10n.agroGddTrackingTablePhase,
+                    ),
+                    _buildTableHeader(
+                      context,
+                      context.l10n.agroGddTrackingTableCurrentHst,
+                    ),
+                    _buildTableHeader(
+                      context,
+                      context.l10n.agroGddTrackingTableDuration,
+                    ),
                     _buildTableHeader(context, '%'),
                   ],
                 ),
@@ -613,9 +623,12 @@ class GddTrackingScreen extends ConsumerWidget {
                       _buildTableCell(context, phase.phaseName),
                       _buildTableCell(
                         context,
-                        '${(phase.currentHst - phase.hstMin).clamp(0, phase.phaseDuration)} ${context.l10n.plantHstLabel}',
+                        '${(phase.progress * phase.phaseDuration).round()} ${context.l10n.plantHstLabel}',
                       ),
-                      _buildTableCell(context, '${phase.phaseDuration} ${context.l10n.plantHstLabel}'),
+                      _buildTableCell(
+                        context,
+                        '${phase.phaseDuration} ${context.l10n.plantHstLabel}',
+                      ),
                       _buildTableCell(
                         context,
                         '${phase.progressPercentage.toStringAsFixed(0)}%',

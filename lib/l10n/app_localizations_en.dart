@@ -1249,14 +1249,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationSearchHint =>
-      'Search title, description, plant, or site';
+      'Search title, description, plant, action, or phase';
 
   @override
   String get recommendationEmptyTitle => 'No recommendations';
 
   @override
   String get recommendationEmptyAll =>
-      'No recommendations available yet.\nMake sure sensors are active and sending data.';
+      'No active recommendations for today\'s actions, plant ML, or active phase.';
 
   @override
   String get recommendationReload => 'Reload';
@@ -1269,7 +1269,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationEmptyForSite =>
-      'No recommendations are available for this site yet.';
+      'No recommendations are available for this context yet.';
 
   @override
   String get recommendationFilterCategory => 'Category Filter';
@@ -1745,7 +1745,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monitoringPlantRecommendationEmpty =>
-      'No recommendations for this site yet';
+      'No ML plant recommendations for the last 7 days of sensor averages';
 
   @override
   String monitoringRecommendationActionCount(int count) {
@@ -1758,15 +1758,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get monitoringRecommendationSiteTitle => 'Site Recommendation';
+  String get monitoringRecommendationSiteTitle => 'Plant ML Recommendation';
 
   @override
   String get monitoringRecommendationCachedSubtitle =>
-      'Based on saved sensor data';
+      'Fresh from the plant ML endpoint';
 
   @override
   String get monitoringRecommendationActiveSiteSubtitle =>
-      'Based on active site sensors';
+      'Based on 7-day sensor averages';
 
   @override
   String get monitoringNpkAdjustment => 'NPK Adjustment';
@@ -2231,37 +2231,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recommendationSiteTitle => 'Site Recommendations';
+  String get recommendationSiteTitle => 'Action Recommendations';
 
   @override
   String get recommendationSiteSubtitle =>
-      'Selected site condition and required actions';
+      'Today\'s actions from field sensor conditions';
 
   @override
   String get recommendationSiteDescription =>
-      'General analysis of site conditions and required actions.';
+      'Action recommendations only show today\'s data. Database cache from other days is hidden.';
 
   @override
   String get recommendationPlantTitle => 'Plant Recommendations';
 
   @override
-  String get recommendationPlantSubtitle =>
-      'Active plants at the selected site';
+  String get recommendationPlantSubtitle => 'ML from 7-day sensor averages';
 
   @override
   String get recommendationPlantDescription =>
-      'Latest recommendations based on active plant data.';
+      'Plant recommendations come directly from the Machine Learning endpoint and are not stored in the database.';
 
   @override
   String get recommendationPlantLoadFailed =>
       'Failed to load plant recommendations';
 
   @override
-  String get recommendationPhaseTitle => 'Phase Recommendations';
+  String get recommendationPhaseTitle => 'Active Phase Recommendations';
 
   @override
   String get recommendationPhaseDescription =>
-      'Action suggestions specific to the active growth phase.';
+      'Seeded database actions for the currently active planting phase.';
 
   @override
   String get recommendationPhaseLoadFailed =>
@@ -2290,6 +2289,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String recommendationPhaseLabel(String phase) {
     return 'Phase: $phase';
   }
+
+  @override
+  String get recommendationActionScopeLabel => 'Actions';
+
+  @override
+  String get recommendationPlantMlScopeLabel => 'Plant ML';
+
+  @override
+  String get recommendationActivePhaseScopeLabel => 'Active Phase';
+
+  @override
+  String get recommendationSourceLabel => 'Data source';
+
+  @override
+  String get recommendationDataRuleLabel => 'Display rule';
+
+  @override
+  String get recommendationActionSourceTitle =>
+      'Action recommendation endpoint';
+
+  @override
+  String get recommendationActionSourceDescription =>
+      'Today\'s data from field conditions: environment temperature/humidity, soil temperature/humidity, NPK, and pH. DB cache from other days is hidden.';
+
+  @override
+  String get recommendationPlantSourceTitle =>
+      'Plant ML recommendation endpoint';
+
+  @override
+  String get recommendationPlantSourceDescription =>
+      'Fresh Machine Learning result from the last 7 days of sensor averages. This result is not stored in the database.';
+
+  @override
+  String get recommendationPhaseSourceTitle =>
+      'Active phase recommendation database';
+
+  @override
+  String get recommendationPhaseSourceDescription =>
+      'Seeded data based on the currently active planting phase. Shown only when active planting exists.';
+
+  @override
+  String get recommendationGeneratedTodayLabel => 'Today';
+
+  @override
+  String get recommendationFreshMlLabel => 'Fresh 7-day ML';
+
+  @override
+  String get recommendationSeededDatabaseLabel => 'Phase database';
+
+  @override
+  String get recommendationEmptyAction =>
+      'No action recommendations for today.';
+
+  @override
+  String get recommendationEmptyPlant =>
+      'No ML plant recommendations for the last 7 days of sensor averages.';
+
+  @override
+  String get recommendationEmptyPhase =>
+      'No phase recommendations because there is no active planting phase.';
 
   @override
   String recommendationHstLabel(int hst) {
@@ -2432,7 +2491,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agroSelectSiteMessage =>
-      'Select a site first to view agro data (VDP, GDD, ETC).';
+      'Select a site first to view agro data (VPD, GDD, ETc).';
 
   @override
   String get agroActionRecommendationTitle => 'Action Recommendations';
@@ -2448,7 +2507,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agroVdpDescription =>
-      'Measures the water vapor pressure deficit. Optimal value: 0.4-1.2 kPa. Low VDP (<0.4) increases disease risk, while high VDP (>1.6) causes water stress.';
+      'Measures the vapor pressure deficit. Optimal value: 0.4-1.2 kPa. Low VPD (<0.4) increases disease risk, while high VPD (>1.6) causes water stress.';
 
   @override
   String get agroGddDescription =>

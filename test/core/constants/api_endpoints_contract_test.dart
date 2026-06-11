@@ -143,14 +143,6 @@ void main() {
         ApiEndpoints.recByPhase('SITE001', 'PHASE002'),
         equals('/sites/SITE001/recommendations/by-phase/PHASE002'),
       );
-      expect(
-        ApiEndpoints.recPreviewDummy('SITE001'),
-        equals('/sites/SITE001/recommendations/preview-dummy'),
-      );
-      expect(
-        ApiEndpoints.recSaveDummy('SITE001'),
-        equals('/sites/SITE001/recommendations/save-dummy'),
-      );
     });
 
     test('Comment Endpoints', () {
@@ -176,6 +168,8 @@ void main() {
         ApiEndpoints.phasesByHst('SITE001'),
         equals('/fase/phases-by-hst/SITE001'),
       );
+      expect(ApiEndpoints.gddStandards, equals('/fase/gdd-standards'));
+      expect(ApiEndpoints.gddCumulative, equals('/fase/gdd-kumulatif'));
     });
 
     test('Task Endpoints', () {

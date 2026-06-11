@@ -50,7 +50,7 @@ class Phase with _$Phase {
   double get progressPercentage => (progress * 100).clamp(0.0, 100.0);
 
   /// Durasi fase dalam hari
-  int get phaseDuration => hstMax - hstMin;
+  int get phaseDuration => (hstMax - hstMin + 1).clamp(0, 100000);
 
   /// Sisa hari estimasi
   int get remainingDays => (hstMax - currentHst).clamp(0, hstMax);

@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/provider_utils.dart';
-import '../../../phase/domain/entities/phase.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/recommendation.dart';
@@ -14,77 +13,14 @@ enum RecommendationScope {
   plant,
   phase;
 
-  String get queryValue {
-    switch (this) {
-      case RecommendationScope.all:
-        return 'all';
-      case RecommendationScope.site:
-        return 'site';
-      case RecommendationScope.plant:
-        return 'plant';
-      case RecommendationScope.phase:
-        return 'phase';
-    }
-  }
-
-  String get label {
-    switch (this) {
-      case RecommendationScope.all:
-        return 'Semua';
-      case RecommendationScope.site:
-        return 'Site';
-      case RecommendationScope.plant:
-        return 'Plant';
-      case RecommendationScope.phase:
-        return 'Phase';
-    }
-  }
+  String get queryValue => name;
 }
 
 RecommendationScope recommendationScopeFromQuery(String? raw) {
-  switch (raw?.trim().toLowerCase()) {
-    case 'site':
-      return RecommendationScope.site;
-    case 'plant':
-      return RecommendationScope.plant;
-    case 'phase':
-      return RecommendationScope.phase;
-    default:
-      return RecommendationScope.all;
-  }
-}
-
-enum RecommendationStatusFilter {
-  all,
-  pending,
-  applied,
-  highPriority,
-  actionable;
-
-  String get label {
-    switch (this) {
-      case RecommendationStatusFilter.all:
-        return 'Semua Status';
-      case RecommendationStatusFilter.pending:
-        return 'Menunggu';
-      case RecommendationStatusFilter.applied:
-        return 'Diterapkan';
-      case RecommendationStatusFilter.highPriority:
-        return 'Prioritas Tinggi';
-      case RecommendationStatusFilter.actionable:
-        return 'Perlu Tindakan';
-    }
-  }
-}
-
-class RecommendationPhaseSelection {
-  const RecommendationPhaseSelection({
-    required this.phaseId,
-    required this.phaseName,
-  });
-
-  final String phaseId;
-  final String phaseName;
+  return RecommendationScope.values.firstWhere(
+    (scope) => scope.name == raw?.trim().toLowerCase(),
+    orElse: () => RecommendationScope.all,
+  );
 }
 
 class RecommendationPhaseSnapshot {
@@ -114,15 +50,15 @@ class RecommendationCatalogItem {
 class RecommendationHubStats {
   const RecommendationHubStats({
     this.total = 0,
-    this.pending = 0,
-    this.applied = 0,
-    this.highPriority = 0,
+    this.site = 0,
+    this.plant = 0,
+    this.phase = 0,
   });
 
   final int total;
-  final int pending;
-  final int applied;
-  final int highPriority;
+  final int site;
+  final int plant;
+  final int phase;
 }
 
 class RecommendationDashboardSnapshot {
@@ -141,16 +77,7 @@ final recommendationScopeFilterProvider = StateProvider<RecommendationScope>(
   (_) => RecommendationScope.all,
 );
 
-final recommendationStatusFilterProvider =
-    StateProvider<RecommendationStatusFilter>(
-      (_) => RecommendationStatusFilter.all,
-    );
-
 final recommendationSearchQueryProvider = StateProvider<String>((_) => '');
-
-final _recommendationPhaseSelectionSiteProvider = StateProvider<String?>(
-  (_) => null,
-);
 
 void resetRecommendationHubFilters(
   WidgetRef ref, {
@@ -158,41 +85,37 @@ void resetRecommendationHubFilters(
 }) {
   ref.read(recommendationScopeFilterProvider.notifier).state =
       scope ?? RecommendationScope.all;
-  ref.read(recommendationStatusFilterProvider.notifier).state =
-      RecommendationStatusFilter.all;
   ref.read(recommendationSearchQueryProvider.notifier).state = '';
-  ref.read(selectedPhaseIdForRecProvider.notifier).state = null;
 }
 
 void invalidateRecommendationHubData(WidgetRef ref) {
+  final siteId = ref.read(selectedSiteIdProvider);
+  if (siteId != null) {
+    ref.invalidate(recommendationsBySiteProvider(siteId));
+    ref.invalidate(plantRecommendationsBySiteProvider(siteId));
+    ref.invalidate(currentPhaseProvider(siteId));
+  }
   ref.invalidate(recommendationSiteFeedProvider);
   ref.invalidate(recommendationPlantFeedProvider);
-  ref.invalidate(recommendationPhaseSelectionProvider);
-  ref.invalidate(recommendationPhaseFeedProvider);
   ref.invalidate(recommendationActivePhaseFeedProvider);
   ref.invalidate(recommendationHubDashboardSnapshotProvider);
   ref.invalidate(recommendationCatalogProvider);
 }
 
 Future<void> invalidateRecommendationHubDataSpaced(WidgetRef ref) {
+  final siteId = ref.read(selectedSiteIdProvider);
   return runSpacedInvalidations([
+    if (siteId != null)
+      () => ref.invalidate(recommendationsBySiteProvider(siteId)),
+    if (siteId != null)
+      () => ref.invalidate(plantRecommendationsBySiteProvider(siteId)),
+    if (siteId != null) () => ref.invalidate(currentPhaseProvider(siteId)),
     () => ref.invalidate(recommendationSiteFeedProvider),
     () => ref.invalidate(recommendationPlantFeedProvider),
-    () => ref.invalidate(recommendationPhaseSelectionProvider),
-    () => ref.invalidate(recommendationPhaseFeedProvider),
     () => ref.invalidate(recommendationActivePhaseFeedProvider),
     () => ref.invalidate(recommendationHubDashboardSnapshotProvider),
     () => ref.invalidate(recommendationCatalogProvider),
   ]);
-}
-
-bool _isTransientRecommendationFailure(Failure failure) {
-  if (failure is NetworkFailure) return true;
-  if (failure is ServerFailure) {
-    final code = failure.statusCode ?? 0;
-    return code == 429 || (code >= 500 && code <= 599);
-  }
-  return false;
 }
 
 final recommendationSiteFeedProvider =
@@ -200,17 +123,7 @@ final recommendationSiteFeedProvider =
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const [];
-
-      final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
-      return ref.retryOnError(() async {
-        final result = await useCase(siteId, refresh: false);
-        return result.fold((failure) {
-          if (_isTransientRecommendationFailure(failure)) {
-            return const <Recommendation>[];
-          }
-          throw failure;
-        }, (items) => List<Recommendation>.from(items));
-      });
+      return ref.watch(recommendationsBySiteProvider(siteId).future);
     });
 
 final recommendationPlantFeedProvider =
@@ -218,135 +131,28 @@ final recommendationPlantFeedProvider =
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const [];
-
-      final useCase = ref.watch(getLatestRecommendationsForSiteUseCaseProvider);
-      return ref.retryOnError(() async {
-        final result = await useCase(siteId);
-        return result.fold((failure) {
-          if (_isTransientRecommendationFailure(failure)) {
-            return const <Recommendation>[];
-          }
-          throw failure;
-        }, (items) => List<Recommendation>.from(items));
-      });
-    });
-
-final recommendationPhaseSelectionProvider =
-    FutureProvider.autoDispose<RecommendationPhaseSelection?>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
-      final siteId = ref.watch(selectedSiteIdProvider);
-      final lastSiteId = ref.read(_recommendationPhaseSelectionSiteProvider);
-      final siteChanged = siteId != lastSiteId;
-      final selectedPhaseId = siteChanged
-          ? null
-          : ref.watch(selectedPhaseIdForRecProvider);
-      if (siteChanged) {
-        Future.microtask(() {
-          ref.read(_recommendationPhaseSelectionSiteProvider.notifier).state =
-              siteId;
-          ref.read(selectedPhaseIdForRecProvider.notifier).state = null;
-        });
-      }
-      final phases = await ref.watch(phasesForSelectedSiteProvider.future);
-      if (phases.isEmpty) return null;
-
-      Phase? selected;
-      if (selectedPhaseId != null) {
-        selected = phases
-            .where((phase) => phase.id == selectedPhaseId)
-            .firstOrNull;
-      }
-      selected ??= phases.where((phase) => phase.isActive).firstOrNull;
-      selected ??= phases.first;
-
-      if (selected.id != selectedPhaseId) {
-        ref.read(selectedPhaseIdForRecProvider.notifier).state = selected.id;
-      }
-
-      return RecommendationPhaseSelection(
-        phaseId: selected.id,
-        phaseName: selected.phaseName,
-      );
-    });
-
-final recommendationPhaseFeedProvider =
-    FutureProvider.autoDispose<RecommendationPhaseSnapshot>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
-      final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) {
-        return const RecommendationPhaseSnapshot(
-          phaseId: null,
-          phaseName: null,
-          items: <Recommendation>[],
-        );
-      }
-
-      final selected = await ref.watch(
-        recommendationPhaseSelectionProvider.future,
-      );
-      if (selected == null) {
-        return const RecommendationPhaseSnapshot(
-          phaseId: null,
-          phaseName: null,
-          items: <Recommendation>[],
-        );
-      }
-
-      final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
-      final items = await ref.retryOnError(() async {
-        final result = await useCase(siteId, selected.phaseId);
-        return result.fold((failure) {
-          if (_isTransientRecommendationFailure(failure)) {
-            return const <Recommendation>[];
-          }
-          throw failure;
-        }, (data) => List<Recommendation>.from(data));
-      });
-
-      return RecommendationPhaseSnapshot(
-        phaseId: selected.phaseId,
-        phaseName: selected.phaseName,
-        items: items,
-      );
+      return ref.watch(plantRecommendationsBySiteProvider(siteId).future);
     });
 
 final recommendationActivePhaseFeedProvider =
     FutureProvider.autoDispose<RecommendationPhaseSnapshot>((ref) async {
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
-      if (siteId == null) {
-        return const RecommendationPhaseSnapshot(
-          phaseId: null,
-          phaseName: null,
-          items: <Recommendation>[],
-        );
-      }
+      if (siteId == null) return _emptyPhaseSnapshot;
 
-      final phases = await ref.watch(phasesForSelectedSiteProvider.future);
-      final active = phases.where((phase) => phase.isActive).firstOrNull;
-      if (active == null) {
-        return const RecommendationPhaseSnapshot(
-          phaseId: null,
-          phaseName: null,
-          items: <Recommendation>[],
-        );
-      }
+      final activePhase = await ref.watch(currentPhaseProvider(siteId).future);
+      if (activePhase == null) return _emptyPhaseSnapshot;
 
-      final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
-      final items = await ref.retryOnError(() async {
-        final result = await useCase(siteId, active.id);
-        return result.fold((failure) {
-          if (_isTransientRecommendationFailure(failure)) {
-            return const <Recommendation>[];
-          }
-          throw failure;
-        }, (data) => List<Recommendation>.from(data));
-      });
-
+      final items = await ref.watch(
+        recommendationsBySitePhaseProvider((
+          siteId: siteId,
+          phaseId: activePhase.id,
+        )).future,
+      );
       return RecommendationPhaseSnapshot(
-        phaseId: active.id,
-        phaseName: active.phaseName,
-        currentHst: active.currentHst,
+        phaseId: activePhase.id,
+        phaseName: activePhase.phaseName,
+        currentHst: activePhase.currentHst,
         items: items,
       );
     });
@@ -354,15 +160,17 @@ final recommendationActivePhaseFeedProvider =
 final recommendationCatalogProvider =
     FutureProvider.autoDispose<List<RecommendationCatalogItem>>((ref) async {
       ref.cacheFor(const Duration(minutes: 5));
-      final siteItems = await ref.watch(recommendationSiteFeedProvider.future);
-      final plantItems = await ref.watch(
-        recommendationPlantFeedProvider.future,
-      );
-      final phaseSnapshot = await ref.watch(
-        recommendationPhaseFeedProvider.future,
+      final siteFuture = ref.watch(recommendationSiteFeedProvider.future);
+      final plantFuture = ref.watch(recommendationPlantFeedProvider.future);
+      final phaseFuture = ref.watch(
+        recommendationActivePhaseFeedProvider.future,
       );
 
-      final raw = <RecommendationCatalogItem>[
+      final siteItems = await siteFuture;
+      final plantItems = await plantFuture;
+      final phaseSnapshot = await phaseFuture;
+
+      return _mergeRecommendationCatalog([
         ...siteItems.map(
           (item) => RecommendationCatalogItem(
             recommendation: item,
@@ -381,293 +189,168 @@ final recommendationCatalogProvider =
             scopes: const {RecommendationScope.phase},
           ),
         ),
-      ];
-
-      return _mergeRecommendationCatalog(raw);
+      ]);
     });
 
 final recommendationHubDashboardSnapshotProvider =
     FutureProvider.autoDispose<RecommendationDashboardSnapshot>((ref) async {
       ref.cacheFor(const Duration(minutes: 5));
-
-      final siteItems = await _loadRecommendationSection(
-        ref.watch(recommendationSiteFeedProvider.future),
-        const <Recommendation>[],
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 180));
-
-      final plantItems = await _loadRecommendationSection(
-        ref.watch(recommendationPlantFeedProvider.future),
-        const <Recommendation>[],
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 180));
-
-      final phaseSnapshot = await _loadRecommendationSection(
-        ref.watch(recommendationActivePhaseFeedProvider.future),
-        const RecommendationPhaseSnapshot(
-          phaseId: null,
-          phaseName: null,
-          items: <Recommendation>[],
-        ),
+      final siteFuture = ref.watch(recommendationSiteFeedProvider.future);
+      final plantFuture = ref.watch(recommendationPlantFeedProvider.future);
+      final phaseFuture = ref.watch(
+        recommendationActivePhaseFeedProvider.future,
       );
 
       return RecommendationDashboardSnapshot(
-        siteItems: siteItems,
-        plantItems: plantItems,
-        phaseSnapshot: phaseSnapshot,
+        siteItems: await _loadRecommendationSection(siteFuture, const []),
+        plantItems: await _loadRecommendationSection(plantFuture, const []),
+        phaseSnapshot: await _loadRecommendationSection(
+          phaseFuture,
+          _emptyPhaseSnapshot,
+        ),
       );
     });
 
 final filteredRecommendationCatalogProvider =
     Provider<AsyncValue<List<RecommendationCatalogItem>>>((ref) {
       final catalogAsync = ref.watch(recommendationCatalogProvider);
-      final scopeFilter = ref.watch(recommendationScopeFilterProvider);
-      final statusFilter = ref.watch(recommendationStatusFilterProvider);
+      final scope = ref.watch(recommendationScopeFilterProvider);
       final query = ref
           .watch(recommendationSearchQueryProvider)
           .trim()
           .toLowerCase();
 
       return catalogAsync.whenData((rows) {
-        return rows.where((entry) {
-          if (scopeFilter != RecommendationScope.all &&
-              !entry.scopes.contains(scopeFilter)) {
-            return false;
-          }
+        return rows
+            .where((entry) {
+              if (scope != RecommendationScope.all &&
+                  !entry.scopes.contains(scope)) {
+                return false;
+              }
+              if (query.isEmpty) return true;
 
-          final recommendation = entry.recommendation;
-          if (!_matchStatusFilter(recommendation, statusFilter)) return false;
-
-          if (query.isEmpty) return true;
-          final haystack = [
-            recommendation.title,
-            recommendation.description,
-            recommendation.type.label,
-            recommendation.siteName ?? '',
-            recommendation.plantName ?? '',
-          ].join(' ').toLowerCase();
-          return haystack.contains(query);
-        }).toList();
+              final item = entry.recommendation;
+              return [
+                item.title,
+                item.description,
+                item.type.label,
+                item.siteName ?? '',
+                item.plantName ?? '',
+                item.reason ?? '',
+              ].join(' ').toLowerCase().contains(query);
+            })
+            .toList(growable: false);
       });
     });
 
 final recommendationHubStatsProvider =
     Provider<AsyncValue<RecommendationHubStats>>((ref) {
-      final filteredAsync = ref.watch(filteredRecommendationCatalogProvider);
-      return filteredAsync.whenData((rows) {
-        final total = rows.length;
-        final pending = rows
-            .where(
-              (entry) =>
-                  entry.recommendation.status == RecommendationStatus.pending,
-            )
-            .length;
-        final applied = rows
-            .where(
-              (entry) =>
-                  entry.recommendation.status == RecommendationStatus.applied,
-            )
-            .length;
-        final highPriority = rows
-            .where(
-              (entry) =>
-                  entry.recommendation.priority ==
-                      RecommendationPriority.high ||
-                  entry.recommendation.priority ==
-                      RecommendationPriority.critical,
-            )
-            .length;
-
+      return ref.watch(recommendationCatalogProvider).whenData((rows) {
         return RecommendationHubStats(
-          total: total,
-          pending: pending,
-          applied: applied,
-          highPriority: highPriority,
+          total: rows.length,
+          site: rows
+              .where((row) => row.scopes.contains(RecommendationScope.site))
+              .length,
+          plant: rows
+              .where((row) => row.scopes.contains(RecommendationScope.plant))
+              .length,
+          phase: rows
+              .where((row) => row.scopes.contains(RecommendationScope.phase))
+              .length,
         );
       });
     });
 
-final recommendationHubDetailProvider = FutureProvider.autoDispose
-    .family<Recommendation, String>((ref, recommendationId) async {
-      Recommendation? findInCatalog(List<RecommendationCatalogItem> rows) {
-        for (final entry in rows) {
-          if (entry.recommendation.recommendationId == recommendationId) {
-            return entry.recommendation;
+final recommendationHubDetailItemProvider = FutureProvider.autoDispose
+    .family<RecommendationCatalogItem, String>((ref, recommendationId) async {
+      RecommendationCatalogItem? find(List<RecommendationCatalogItem> rows) {
+        for (final row in rows) {
+          if (row.recommendation.recommendationId == recommendationId) {
+            return row;
           }
         }
         return null;
       }
 
-      Recommendation? findInList(List<Recommendation> rows) {
-        for (final item in rows) {
-          if (item.recommendationId == recommendationId) return item;
-        }
-        return null;
-      }
-
-      Future<Recommendation?> findInFutureList(
-        Future<List<Recommendation>> future,
-      ) async {
-        try {
-          return findInList(await future);
-        } on Failure catch (failure) {
-          if (failure is AuthFailure || failure is PermissionFailure) {
-            rethrow;
-          }
-          return null;
-        } catch (_) {
-          return null;
-        }
-      }
-
-      Future<Recommendation?> findInPhaseSnapshot(
-        Future<RecommendationPhaseSnapshot> future,
-      ) async {
-        try {
-          return findInList((await future).items);
-        } on Failure catch (failure) {
-          if (failure is AuthFailure || failure is PermissionFailure) {
-            rethrow;
-          }
-          return null;
-        } catch (_) {
-          return null;
-        }
-      }
-
-      Future<Recommendation?> findInCatalogFuture(
-        Future<List<RecommendationCatalogItem>> future,
-      ) async {
-        try {
-          return findInCatalog(await future);
-        } on Failure catch (failure) {
-          if (failure is AuthFailure || failure is PermissionFailure) {
-            rethrow;
-          }
-          return null;
-        } catch (_) {
-          return null;
-        }
-      }
-
-      Future<Recommendation?> findInSecondaryFeeds() async {
-        final sources = <Future<Recommendation?> Function()>[
-          () =>
-              findInFutureList(ref.read(recommendationSiteFeedProvider.future)),
-          () => findInFutureList(
-            ref.read(recommendationPlantFeedProvider.future),
-          ),
-          () =>
-              findInFutureList(ref.read(recommendationHistoryProvider.future)),
-          () => findInPhaseSnapshot(
-            ref.read(recommendationPhaseFeedProvider.future),
-          ),
-          () => findInPhaseSnapshot(
-            ref.read(recommendationActivePhaseFeedProvider.future),
-          ),
-        ];
-
-        for (final source in sources) {
-          final found = await source();
-          if (found != null) return found;
-        }
-        return null;
-      }
-
-      final firstCatalog = await findInCatalogFuture(
-        ref.read(recommendationCatalogProvider.future),
+      final current = find(
+        await ref.read(recommendationCatalogProvider.future),
       );
-      final cached = firstCatalog ?? await findInSecondaryFeeds();
-      if (cached != null) return cached;
+      if (current != null) return current;
 
       ref.invalidate(recommendationSiteFeedProvider);
       ref.invalidate(recommendationPlantFeedProvider);
-      ref.invalidate(recommendationHistoryProvider);
-      ref.invalidate(recommendationPhaseSelectionProvider);
-      ref.invalidate(recommendationPhaseFeedProvider);
       ref.invalidate(recommendationActivePhaseFeedProvider);
       ref.invalidate(recommendationCatalogProvider);
-      final refreshedCatalog = await findInCatalogFuture(
-        ref.read(recommendationCatalogProvider.future),
+      final refreshed = find(
+        await ref.read(recommendationCatalogProvider.future),
       );
-      final loaded = refreshedCatalog ?? await findInSecondaryFeeds();
-      if (loaded != null) return loaded;
+      if (refreshed != null) return refreshed;
 
       throw const NotFoundFailure(
-        'Rekomendasi tidak ditemukan. Coba muat ulang daftar rekomendasi.',
+        'Rekomendasi tidak ditemukan pada data aktif saat ini.',
       );
     });
+
+final recommendationHubDetailProvider = FutureProvider.autoDispose
+    .family<Recommendation, String>((ref, recommendationId) async {
+      final item = await ref.watch(
+        recommendationHubDetailItemProvider(recommendationId).future,
+      );
+      return item.recommendation;
+    });
+
+const _emptyPhaseSnapshot = RecommendationPhaseSnapshot(
+  phaseId: null,
+  phaseName: null,
+  items: <Recommendation>[],
+);
 
 List<RecommendationCatalogItem> _mergeRecommendationCatalog(
   List<RecommendationCatalogItem> rows,
 ) {
-  final map = <String, RecommendationCatalogItem>{};
+  final merged = <String, RecommendationCatalogItem>{};
   for (final row in rows) {
     final id = row.recommendation.recommendationId.trim();
     if (id.isEmpty) continue;
 
-    final previous = map[id];
+    final previous = merged[id];
     if (previous == null) {
-      map[id] = row;
+      merged[id] = row;
       continue;
     }
 
-    final mergedScopes = {...previous.scopes, ...row.scopes};
-    final prevDate =
+    final previousDate =
         previous.recommendation.createdAt ??
         DateTime.fromMillisecondsSinceEpoch(0);
     final nextDate =
         row.recommendation.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-    final newest = nextDate.isAfter(prevDate)
-        ? row.recommendation
-        : previous.recommendation;
-
-    map[id] = RecommendationCatalogItem(
-      recommendation: newest,
-      scopes: mergedScopes,
+    merged[id] = RecommendationCatalogItem(
+      recommendation: nextDate.isAfter(previousDate)
+          ? row.recommendation
+          : previous.recommendation,
+      scopes: {...previous.scopes, ...row.scopes},
     );
   }
 
-  final merged = map.values.toList()
-    ..sort((left, right) {
-      final leftDate =
-          left.recommendation.createdAt ??
-          DateTime.fromMillisecondsSinceEpoch(0);
-      final rightDate =
-          right.recommendation.createdAt ??
-          DateTime.fromMillisecondsSinceEpoch(0);
-      return rightDate.compareTo(leftDate);
-    });
-
-  return merged;
-}
-
-bool _matchStatusFilter(
-  Recommendation recommendation,
-  RecommendationStatusFilter filter,
-) {
-  switch (filter) {
-    case RecommendationStatusFilter.all:
-      return true;
-    case RecommendationStatusFilter.pending:
-      return recommendation.status == RecommendationStatus.pending;
-    case RecommendationStatusFilter.applied:
-      return recommendation.status == RecommendationStatus.applied;
-    case RecommendationStatusFilter.highPriority:
-      return recommendation.priority == RecommendationPriority.high ||
-          recommendation.priority == RecommendationPriority.critical;
-    case RecommendationStatusFilter.actionable:
-      return recommendation.isActionable;
-  }
+  return merged.values.toList()..sort((left, right) {
+    final leftDate =
+        left.recommendation.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+    final rightDate =
+        right.recommendation.createdAt ??
+        DateTime.fromMillisecondsSinceEpoch(0);
+    final dateComparison = rightDate.compareTo(leftDate);
+    if (dateComparison != 0) return dateComparison;
+    return right.recommendation.priority.index.compareTo(
+      left.recommendation.priority.index,
+    );
+  });
 }
 
 Future<T> _loadRecommendationSection<T>(Future<T> future, T fallback) async {
   try {
     return await future;
   } on Failure catch (failure) {
-    if (failure is AuthFailure || failure is PermissionFailure) {
-      rethrow;
-    }
+    if (failure is AuthFailure || failure is PermissionFailure) rethrow;
     return fallback;
   } catch (_) {
     return fallback;

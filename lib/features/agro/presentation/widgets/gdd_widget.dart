@@ -13,7 +13,7 @@ class GddWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    if (gddData == null || gddData!.daily.isEmpty) {
+    if (gddData == null || gddData!.isEmpty) {
       return _buildEmptyState(context, l10n);
     }
 
@@ -150,8 +150,11 @@ class GddWidget extends StatelessWidget {
   }
 
   Widget _buildGddChart(BuildContext context, AppLocalizations l10n) {
-    final dailyData = gddData!.daily.take(7).toList();
+    final dailyData = _recentDailyData(limit: 7).reversed.toList();
     if (dailyData.isEmpty) return const SizedBox.shrink();
+    final highestGdd = dailyData
+        .map((item) => item.gdd ?? 0)
+        .reduce((left, right) => left > right ? left : right);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,11 +174,7 @@ class GddWidget extends StatelessWidget {
           child: BarChart(
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
-              maxY:
-                  dailyData
-                      .map((e) => e.gdd ?? 0)
-                      .reduce((a, b) => a > b ? a : b) *
-                  1.2,
+              maxY: (highestGdd * 1.2).clamp(1, double.infinity).toDouble(),
               barTouchData: BarTouchData(
                 enabled: true,
                 touchTooltipData: BarTouchTooltipData(
@@ -277,7 +276,7 @@ class GddWidget extends StatelessWidget {
   }
 
   Widget _buildGddTable(BuildContext context, AppLocalizations l10n) {
-    final recentData = gddData!.daily.take(5).toList();
+    final recentData = _recentDailyData(limit: 5);
     if (recentData.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -459,5 +458,18 @@ class GddWidget extends StatelessWidget {
   String _formatTemperature(double? value) {
     if (value == null) return '-';
     return '${value.toStringAsFixed(1)} C';
+  }
+
+  List<GddDailyEntity> _recentDailyData({required int limit}) {
+    final sorted = List<GddDailyEntity>.from(gddData!.daily)
+      ..sort((left, right) {
+        final leftDate = DateTime.tryParse(left.day ?? '');
+        final rightDate = DateTime.tryParse(right.day ?? '');
+        if (leftDate == null && rightDate == null) return 0;
+        if (leftDate == null) return 1;
+        if (rightDate == null) return -1;
+        return rightDate.compareTo(leftDate);
+      });
+    return sorted.take(limit).toList();
   }
 }

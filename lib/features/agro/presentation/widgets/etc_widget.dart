@@ -16,8 +16,9 @@ class EtcWidget extends StatelessWidget {
       return _buildEmptyState(context);
     }
 
-    final latestData = etcData.first;
-    final weekData = etcData.take(7).toList();
+    final recentData = _recentEtcData(limit: 7);
+    final latestData = recentData.first;
+    final weekData = recentData.reversed.toList();
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
@@ -108,6 +109,14 @@ class EtcWidget extends StatelessWidget {
           color: AppColors.accent,
           icon: Icons.eco,
         ),
+      if (data.et0 != null)
+        _EtcMetricData(
+          label: 'ET0',
+          value: data.et0!.toStringAsFixed(2),
+          unit: l10n.agroUnitMmPerDay,
+          color: AppColors.warning,
+          icon: Icons.wb_sunny_outlined,
+        ),
       if (data.waterNeeds != null)
         _EtcMetricData(
           label: l10n.agroWaterNeedsLabel,
@@ -125,25 +134,76 @@ class EtcWidget extends StatelessWidget {
             : metrics.length.clamp(2, 3).toInt();
         final width = (constraints.maxWidth - ((columns - 1) * 12)) / columns;
 
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final metric in metrics)
-              SizedBox(
-                width: width,
-                child: _buildMetricCard(
-                  context,
-                  metric.label,
-                  metric.value,
-                  metric.unit,
-                  metric.color,
-                  metric.icon,
-                ),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final metric in metrics)
+                  SizedBox(
+                    width: width,
+                    child: _buildMetricCard(
+                      context,
+                      metric.label,
+                      metric.value,
+                      metric.unit,
+                      metric.color,
+                      metric.icon,
+                    ),
+                  ),
+              ],
+            ),
+            if (data.phase != null ||
+                data.hst != null ||
+                data.riceType != null) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (data.phase != null)
+                    _buildContextChip(Icons.eco_outlined, data.phase!),
+                  if (data.hst != null)
+                    _buildContextChip(
+                      Icons.calendar_today_outlined,
+                      '${data.hst} HST',
+                    ),
+                  if (data.riceType != null)
+                    _buildContextChip(Icons.grass_outlined, data.riceType!),
+                ],
               ),
+            ],
           ],
         );
       },
+    );
+  }
+
+  Widget _buildContextChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -325,7 +385,9 @@ class EtcWidget extends StatelessWidget {
                   getTooltipItems: (touchedSpots) {
                     return touchedSpots.map((spot) {
                       final day = weekData[spot.x.toInt()].day ?? '';
-                      final label = spot.barIndex == 0 ? 'ETC' : l10n.agroWaterNeedsLabel;
+                      final label = spot.barIndex == 0
+                          ? 'ETC'
+                          : l10n.agroWaterNeedsLabel;
                       return LineTooltipItem(
                         '$label\n$day\n${spot.y.toStringAsFixed(2)}',
                         TextStyle(
@@ -348,7 +410,12 @@ class EtcWidget extends StatelessWidget {
             _buildLegendItem(context, 'ETC', AppColors.primary, false),
             if (hasWaterNeeds) ...[
               const SizedBox(width: 16),
-              _buildLegendItem(context, l10n.agroWaterNeedsLabel, AppColors.info, true),
+              _buildLegendItem(
+                context,
+                l10n.agroWaterNeedsLabel,
+                AppColors.info,
+                true,
+              ),
             ],
           ],
         ),
@@ -389,7 +456,9 @@ class EtcWidget extends StatelessWidget {
   }
 
   Widget _buildWaterNeedsInfo(BuildContext context, EtcDailyEntity data) {
-    if (data.waterNeeds == null && data.etc == null) {
+    if (data.recommendation == null &&
+        data.waterNeeds == null &&
+        data.etc == null) {
       return const SizedBox.shrink();
     }
 
@@ -401,7 +470,26 @@ class EtcWidget extends StatelessWidget {
     IconData icon;
     String title;
 
-    if (waterNeeds != null) {
+    if (data.recommendation != null) {
+      title = data.waterStatus?.trim().isNotEmpty == true
+          ? data.waterStatus!
+          : l10n.agroWateringRecommendation;
+      recommendation = data.recommendation!;
+      final normalized = (data.waterStatus ?? '').toLowerCase();
+      if (normalized.contains('sangat')) {
+        color = AppColors.error;
+        icon = Icons.error_outline;
+      } else if (normalized.contains('tinggi')) {
+        color = AppColors.warning;
+        icon = Icons.warning_amber_outlined;
+      } else if (normalized.contains('normal')) {
+        color = AppColors.info;
+        icon = Icons.info_outline;
+      } else {
+        color = AppColors.success;
+        icon = Icons.check_circle_outline;
+      }
+    } else if (waterNeeds != null) {
       title = l10n.agroWateringRecommendation;
       if (waterNeeds < 3) {
         recommendation = l10n.agroRecWaterNeedsLow;
@@ -653,6 +741,19 @@ class EtcWidget extends StatelessWidget {
     final number = value.toStringAsFixed(fractionDigits);
     if (unit == '%') return '$number%';
     return '$number $unit';
+  }
+
+  List<EtcDailyEntity> _recentEtcData({required int limit}) {
+    final sorted = List<EtcDailyEntity>.from(etcData)
+      ..sort((left, right) {
+        final leftDate = DateTime.tryParse(left.day ?? '');
+        final rightDate = DateTime.tryParse(right.day ?? '');
+        if (leftDate == null && rightDate == null) return 0;
+        if (leftDate == null) return 1;
+        if (rightDate == null) return -1;
+        return rightDate.compareTo(leftDate);
+      });
+    return sorted.take(limit).toList();
   }
 }
 

@@ -16,6 +16,7 @@ import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/plant.dart';
 import '../utils/plant_phase_display.dart';
 
@@ -26,10 +27,10 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final siteId = phaseSiteIdForPlant(plant);
-    final plantKey = (siteId: siteId, plantId: plant.plantId);
+    final selectedSiteId = ref.watch(selectedSiteIdProvider);
+    final siteId = phaseSiteIdForPlant(plant, fallbackSiteId: selectedSiteId);
     final plantRecommendations = ref.watch(
-      recommendationsByPlantForSiteProvider(plantKey),
+      plantRecommendationsBySiteProvider(siteId),
     );
 
     return Column(
@@ -44,7 +45,7 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
             description: context.l10n.recommendationPlantDescription,
             icon: Icons.eco_outlined,
             color: AppColors.success,
-            items: _filterForPlant(items, plant),
+            items: items,
             onViewAll: () => _openHub(context, ref, RecommendationScope.plant),
           ),
           loading: () => const RecommendationOverviewCardSkeleton(),
@@ -54,7 +55,7 @@ class PlantRecommendationCardsWidget extends ConsumerWidget {
             icon: Icons.eco_outlined,
             color: AppColors.success,
             onRetry: () =>
-                ref.invalidate(recommendationsByPlantForSiteProvider(plantKey)),
+                ref.invalidate(plantRecommendationsBySiteProvider(siteId)),
           ),
         ),
         SizedBox(height: context.rh(0.012)),
@@ -170,10 +171,15 @@ class _RecommendationSectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sortedItems = _sortRecommendations(items);
-    final pendingCount = sortedItems
-        .where((item) => item.status == RecommendationStatus.pending)
-        .length;
     final latest = sortedItems.isEmpty ? null : sortedItems.first;
+    final confidenceValues = sortedItems
+        .map((item) => item.confidenceScore)
+        .whereType<double>()
+        .toList();
+    final averageConfidence = confidenceValues.isEmpty
+        ? null
+        : confidenceValues.reduce((left, right) => left + right) /
+              confidenceValues.length;
 
     return AppCardWidget(
       width: double.infinity,
@@ -231,12 +237,14 @@ class _RecommendationSectionCard extends StatelessWidget {
                 value: sortedItems.length.toString(),
                 color: color,
               ),
-              const SizedBox(width: 8),
-              _MetricPill(
-                label: context.l10n.commonPending,
-                value: pendingCount.toString(),
-                color: AppColors.warning,
-              ),
+              if (averageConfidence != null) ...[
+                const SizedBox(width: 8),
+                _MetricPill(
+                  label: context.l10n.recommendationConfidenceLabel,
+                  value: '${(averageConfidence * 100).round()}%',
+                  color: AppColors.info,
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 16),
@@ -429,20 +437,6 @@ class _MetricPill extends StatelessWidget {
   }
 }
 
-List<Recommendation> _filterForPlant(List<Recommendation> items, Plant plant) {
-  final byPlantId = items
-      .where((item) => _sameText(item.plantId, plant.plantId))
-      .toList();
-  if (byPlantId.isNotEmpty) return byPlantId;
-
-  final byPlantName = items
-      .where((item) => _sameText(item.plantName, plant.displayName))
-      .toList();
-  if (byPlantName.isNotEmpty) return byPlantName;
-
-  return items;
-}
-
 List<Recommendation> _sortRecommendations(List<Recommendation> items) {
   final byId = <String, Recommendation>{};
   for (final item in items) {
@@ -468,12 +462,6 @@ List<Recommendation> _sortRecommendations(List<Recommendation> items) {
       return rightDate.compareTo(leftDate);
     });
   return sorted;
-}
-
-bool _sameText(String? left, String right) {
-  final normalizedLeft = left?.trim().toLowerCase();
-  if (normalizedLeft == null || normalizedLeft.isEmpty) return false;
-  return normalizedLeft == right.trim().toLowerCase();
 }
 
 String _phaseSubtitle(Phase phase, Plant plant, AppLocalizations l10n) {

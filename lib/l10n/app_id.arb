@@ -568,13 +568,13 @@
   "commonSaveChanges": "Simpan Perubahan",
   "recommendationTitle": "Rekomendasi",
   "recommendationHubTitle": "Pusat Rekomendasi",
-  "recommendationSearchHint": "Cari judul, deskripsi, tanaman atau site",
+  "recommendationSearchHint": "Cari judul, deskripsi, tanaman, aksi, atau fase",
   "recommendationEmptyTitle": "Tidak ada rekomendasi",
   "recommendationEmptyAll": "Belum ada rekomendasi tersedia.\nPastikan sensor sudah aktif dan mengirim data.",
   "recommendationReload": "Muat Ulang",
   "recommendationLoadFailed": "Gagal memuat rekomendasi",
   "recommendationEmptyDataTitle": "Data rekomendasi kosong",
-  "recommendationEmptyForSite": "Belum ada rekomendasi yang tersedia untuk site ini.",
+  "recommendationEmptyForSite": "Belum ada rekomendasi yang tersedia untuk konteks ini.",
   "recommendationFilterCategory": "Filter Kategori",
   "recommendationFilterStatus": "Filter Status",
   "recommendationPriorityStat": "Prioritas",
@@ -778,7 +778,7 @@
       }
     }
   },
-  "monitoringPlantRecommendationEmpty": "Belum ada rekomendasi untuk site ini",
+  "monitoringPlantRecommendationEmpty": "Belum ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir",
   "monitoringRecommendationActionCount": "{count} aksi",
   "@monitoringRecommendationActionCount": {
     "placeholders": {
@@ -795,9 +795,9 @@
       }
     }
   },
-  "monitoringRecommendationSiteTitle": "Rekomendasi Site",
-  "monitoringRecommendationCachedSubtitle": "Berdasarkan data sensor tersimpan",
-  "monitoringRecommendationActiveSiteSubtitle": "Berdasarkan sensor site aktif",
+  "monitoringRecommendationSiteTitle": "Rekomendasi Tanaman ML",
+  "monitoringRecommendationCachedSubtitle": "Fresh dari endpoint ML tanaman",
+  "monitoringRecommendationActiveSiteSubtitle": "Berdasarkan rata-rata sensor 7 hari",
   "monitoringNpkAdjustment": "Penyesuaian NPK",
   "monitoringSoilPhAdjustment": "Penyesuaian pH Tanah",
   "monitoringSoilPhLabel": "pH Tanah",
@@ -1066,15 +1066,15 @@
       }
     }
   },
-  "recommendationSiteTitle": "Rekomendasi Site",
-  "recommendationSiteSubtitle": "Kondisi site terpilih dan kebutuhan tindakan",
-  "recommendationSiteDescription": "Analisis umum kondisi site dan kebutuhan tindakan.",
+  "recommendationSiteTitle": "Rekomendasi Aksi",
+  "recommendationSiteSubtitle": "Aksi hari ini dari kondisi sensor lahan",
+  "recommendationSiteDescription": "Rekomendasi aksi hanya menampilkan data hari ini. Cache database dari hari lain tidak ditampilkan.",
   "recommendationPlantTitle": "Rekomendasi Tanaman",
-  "recommendationPlantSubtitle": "Tanaman aktif di site terpilih",
-  "recommendationPlantDescription": "Rekomendasi terbaru berbasis data tanaman aktif.",
+  "recommendationPlantSubtitle": "ML dari rata-rata sensor 7 hari",
+  "recommendationPlantDescription": "Rekomendasi tanaman berasal langsung dari endpoint Machine Learning dan tidak disimpan ke database.",
   "recommendationPlantLoadFailed": "Gagal memuat rekomendasi tanaman",
-  "recommendationPhaseTitle": "Rekomendasi Fase",
-  "recommendationPhaseDescription": "Saran aksi spesifik sesuai fase pertumbuhan aktif.",
+  "recommendationPhaseTitle": "Rekomendasi Fase Aktif",
+  "recommendationPhaseDescription": "Saran aksi dari database seeded sesuai fase penanaman yang sedang berlangsung.",
   "recommendationPhaseLoadFailed": "Gagal memuat rekomendasi fase",
   "recommendationActivePhaseLoadFailed": "Gagal memuat fase aktif",
   "recommendationPhaseNoActive": "Belum ada fase aktif",
@@ -1089,6 +1089,24 @@
       }
     }
   },
+  "recommendationActionScopeLabel": "Aksi",
+  "recommendationPlantMlScopeLabel": "Tanaman ML",
+  "recommendationActivePhaseScopeLabel": "Fase Aktif",
+  "recommendationSourceLabel": "Sumber data",
+  "recommendationDataRuleLabel": "Aturan tampil",
+  "recommendationActionSourceTitle": "Endpoint rekomendasi aksi",
+  "recommendationActionSourceDescription": "Data hari ini dari kondisi lahan: suhu/kelembaban lingkungan, suhu/kelembaban tanah, NPK, dan pH. Cache DB hari lain disembunyikan.",
+  "recommendationPlantSourceTitle": "Endpoint rekomendasi tanaman ML",
+  "recommendationPlantSourceDescription": "Fresh dari Machine Learning berdasarkan rata-rata sensor 7 hari terakhir. Hasil ini tidak disimpan ke database.",
+  "recommendationPhaseSourceTitle": "Database rekomendasi fase aktif",
+  "recommendationPhaseSourceDescription": "Data seeded berdasarkan fase penanaman yang sedang berlangsung. Ditampilkan hanya jika ada penanaman aktif.",
+  "recommendationGeneratedTodayLabel": "Hari ini",
+  "recommendationFreshMlLabel": "Fresh ML 7 hari",
+  "recommendationSeededDatabaseLabel": "Database fase",
+  "recommendationEmptyAction": "Tidak ada rekomendasi aksi untuk hari ini.",
+  "recommendationEmptyPlant": "Tidak ada rekomendasi tanaman ML untuk rata-rata sensor 7 hari terakhir.",
+  "recommendationEmptyPhase": "Tidak ada rekomendasi fase karena belum ada fase penanaman aktif.",
+  "recommendationEmptyAll": "Belum ada rekomendasi aktif untuk aksi hari ini, tanaman ML, atau fase aktif.",
   "recommendationHstLabel": "HST {hst}",
   "@recommendationHstLabel": {
     "placeholders": {
@@ -1174,12 +1192,12 @@
   "monitoringDistributionByTypeTitle": "Distribusi Berdasarkan Jenis",
   "monitoringPlantCompositionSubtitle": "Komposisi tanaman site aktif",
   "monitoringAverageGrowthPhase": "Fase Pertumbuhan Rata-rata",
-  "agroSelectSiteMessage": "Pilih site terlebih dahulu untuk melihat data agro (VDP, GDD, ETC).",
+  "agroSelectSiteMessage": "Pilih site terlebih dahulu untuk melihat data agro (VPD, GDD, ETc).",
   "agroActionRecommendationTitle": "Rekomendasi Tindakan",
   "agroPlantingPhaseTitle": "Fase Tanam",
   "agroInformationTitle": "Informasi",
   "agroAboutTitle": "Tentang Agro Indicator",
-  "agroVdpDescription": "Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VDP rendah (<0.4) meningkatkan risiko penyakit, VDP tinggi (>1.6) menyebabkan stres air.",
+  "agroVdpDescription": "Mengukur defisit tekanan uap air. Nilai optimal: 0.4-1.2 kPa. VPD rendah (<0.4) meningkatkan risiko penyakit, VPD tinggi (>1.6) menyebabkan stres air.",
   "agroGddDescription": "Akumulasi suhu yang diperlukan tanaman untuk tumbuh. Digunakan untuk memprediksi fase pertumbuhan dan waktu panen.",
   "agroEtcDescription": "Kebutuhan air tanaman berdasarkan evaporasi dan transpirasi. Membantu menentukan jadwal dan volume penyiraman yang optimal.",
   "agroVdpTitle": "Vapor Pressure Deficit",
@@ -1471,9 +1489,9 @@
   "sensorTypeWindSpeed": "Kecepatan Angin",
   "agroVdpDeficitTitle": "Defisit Tekanan Uap",
   "agroVdpValueLabel": "Nilai VPD",
-  "agroVdpRangeLabel": "VDP Range",
+  "agroVdpRangeLabel": "Rentang VPD",
   "agroVdpDetailTitle": "Detail VPD",
-  "agroVdpUnavailable": "Data VDP tidak tersedia",
+  "agroVdpUnavailable": "Data VPD tidak tersedia",
   "agroVdpStatusLow": "Terlalu Rendah",
   "agroVdpStatusOptimal": "Optimal",
   "agroVdpStatusWarning": "Waspada",
@@ -1672,6 +1690,3 @@
   "errorDataNotFound": "Data tidak ditemukan untuk site ini.",
   "errorLoadFailed": "Terjadi kendala saat memuat data. Silakan coba lagi."
 }
-
-
-

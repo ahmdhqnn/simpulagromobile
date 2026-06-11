@@ -261,54 +261,46 @@ void main() {
       },
     );
 
-    test(
-      'falls back to site recommendation when plant-by-site is empty',
-      () async {
-        when(
-          () => mockDio.get(ApiEndpoints.plantRecBySite('SITE001')),
-        ).thenThrow(
-          DioException(
+    test('keeps plant recommendation empty on a documented 404', () async {
+      when(() => mockDio.get(ApiEndpoints.plantRecBySite('SITE001'))).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(
+            path: ApiEndpoints.plantRecBySite('SITE001'),
+          ),
+          response: Response(
             requestOptions: RequestOptions(
               path: ApiEndpoints.plantRecBySite('SITE001'),
             ),
-            response: Response(
-              requestOptions: RequestOptions(
-                path: ApiEndpoints.plantRecBySite('SITE001'),
-              ),
-              statusCode: 404,
-              data: {'message': 'No sensor data found'},
-            ),
-            type: DioExceptionType.badResponse,
+            statusCode: 404,
+            data: {'message': 'No sensor data found'},
           ),
-        );
-        when(
-          () => mockDio.get(ApiEndpoints.recommendations('SITE001')),
-        ).thenAnswer(
-          (_) async => Response(
+          type: DioExceptionType.badResponse,
+        ),
+      );
+      final result = await datasource.getPlantRecommendation('SITE001');
+
+      expect(result, isEmpty);
+    });
+
+    test('keeps plant recommendation empty on documented ML failure', () async {
+      when(() => mockDio.get(ApiEndpoints.plantRecBySite('SITE001'))).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(
+            path: ApiEndpoints.plantRecBySite('SITE001'),
+          ),
+          response: Response(
             requestOptions: RequestOptions(
-              path: ApiEndpoints.recommendations('SITE001'),
+              path: ApiEndpoints.plantRecBySite('SITE001'),
             ),
-            statusCode: 200,
-            data: {
-              'status': 200,
-              'data': {
-                'site_id': 'SITE001',
-                'sensor_data': {'nitrogen': 80},
-                'recommendations': {
-                  'npk': {
-                    'n': {'status': 'normal', 'pesan': 'Nitrogen cukup'},
-                  },
-                },
-              },
-            },
+            statusCode: 500,
+            data: {'message': 'Error retrieving plant recommendations'},
           ),
-        );
+          type: DioExceptionType.badResponse,
+        ),
+      );
+      final result = await datasource.getPlantRecommendation('SITE001');
 
-        final result = await datasource.getPlantRecommendation('SITE001');
-
-        expect(result['recommendations'], isA<Map>());
-        expect((result['sensor_data'] as Map)['nitrogen'], 80);
-      },
-    );
+      expect(result, isEmpty);
+    });
   });
 }

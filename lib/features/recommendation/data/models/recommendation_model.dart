@@ -18,7 +18,6 @@ class RecommendationModel with _$RecommendationModel {
     @JsonKey(name: 'title') required String title,
     @JsonKey(name: 'description') required String description,
     @JsonKey(name: 'priority') required String priority,
-    @JsonKey(name: 'status') required String status,
     @JsonKey(name: 'plant_id') String? plantId,
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
@@ -26,10 +25,9 @@ class RecommendationModel with _$RecommendationModel {
     @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'applied_at') DateTime? appliedAt,
-    @JsonKey(name: 'applied_by') String? appliedBy,
     @JsonKey(name: 'confidence_score') double? confidenceScore,
     @JsonKey(name: 'reason') String? reason,
+    @JsonKey(name: 'error_message') String? errorMessage,
   }) = _RecommendationModel;
 
   factory RecommendationModel.fromJson(Map<String, dynamic> json) =>
@@ -43,7 +41,6 @@ class RecommendationModel with _$RecommendationModel {
       title: title,
       description: description,
       priority: _parsePriority(priority),
-      status: _parseStatus(status),
       plantId: plantId,
       plantName: plantName,
       siteId: siteId,
@@ -51,10 +48,9 @@ class RecommendationModel with _$RecommendationModel {
       parameters: parameters?.toEntity(),
       actionItems: actionItems,
       createdAt: createdAt,
-      appliedAt: appliedAt,
-      appliedBy: appliedBy,
       confidenceScore: confidenceScore,
       reason: reason,
+      errorMessage: errorMessage,
     );
   }
 
@@ -66,18 +62,18 @@ class RecommendationModel with _$RecommendationModel {
       title: recommendation.title,
       description: recommendation.description,
       priority: recommendation.priority.name,
-      status: recommendation.status.name,
       plantId: recommendation.plantId,
       plantName: recommendation.plantName,
       siteId: recommendation.siteId,
       siteName: recommendation.siteName,
-      parameters: recommendation.parameters != null ? RecommendationBundleModel.fromEntity(recommendation.parameters!) : null,
+      parameters: recommendation.parameters != null
+          ? RecommendationBundleModel.fromEntity(recommendation.parameters!)
+          : null,
       actionItems: recommendation.actionItems,
       createdAt: recommendation.createdAt,
-      appliedAt: recommendation.appliedAt,
-      appliedBy: recommendation.appliedBy,
       confidenceScore: recommendation.confidenceScore,
       reason: recommendation.reason,
+      errorMessage: recommendation.errorMessage,
     );
   }
 
@@ -92,13 +88,6 @@ class RecommendationModel with _$RecommendationModel {
     return RecommendationPriority.values.firstWhere(
       (e) => e.name == priority,
       orElse: () => RecommendationPriority.medium,
-    );
-  }
-
-  static RecommendationStatus _parseStatus(String status) {
-    return RecommendationStatus.values.firstWhere(
-      (e) => e.name == status,
-      orElse: () => RecommendationStatus.pending,
     );
   }
 }

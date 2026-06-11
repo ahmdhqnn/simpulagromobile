@@ -6,11 +6,17 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../domain/entities/recommendation.dart';
+import '../providers/recommendation_hub_provider.dart';
 
 class RecommendationInfoCardWidget extends StatelessWidget {
   final Recommendation recommendation;
+  final Set<RecommendationScope> sourceScopes;
 
-  const RecommendationInfoCardWidget({super.key, required this.recommendation});
+  const RecommendationInfoCardWidget({
+    super.key,
+    required this.recommendation,
+    this.sourceScopes = const {},
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +32,16 @@ class RecommendationInfoCardWidget extends StatelessWidget {
             style: AppTextStyles.cardTitle(context),
           ),
           const SizedBox(height: 12),
+          _InfoRow(
+            icon: _sourceIcon(_primaryScope),
+            label: context.l10n.recommendationSourceLabel,
+            value: _sourceTitle(context, _primaryScope),
+          ),
+          _InfoRow(
+            icon: Icons.rule_folder_outlined,
+            label: context.l10n.recommendationDataRuleLabel,
+            value: _sourceDescription(context, _primaryScope),
+          ),
           if (recommendation.siteName != null)
             _InfoRow(
               icon: Icons.location_on_outlined,
@@ -54,24 +70,52 @@ class RecommendationInfoCardWidget extends StatelessWidget {
                 locale: context.localeTag,
               ),
             ),
-          if (recommendation.appliedAt != null)
-            _InfoRow(
-              icon: Icons.check_circle_outline,
-              label: context.l10n.commonApplied,
-              value: DateFormatter.formatDateTime(
-                recommendation.appliedAt!,
-                locale: context.localeTag,
-              ),
-            ),
-          if (recommendation.appliedBy != null)
-            _InfoRow(
-              icon: Icons.person_outline,
-              label: context.l10n.recommendationAppliedBy,
-              value: recommendation.appliedBy!,
-            ),
         ],
       ),
     );
+  }
+
+  RecommendationScope get _primaryScope {
+    if (sourceScopes.contains(RecommendationScope.site)) {
+      return RecommendationScope.site;
+    }
+    if (sourceScopes.contains(RecommendationScope.plant)) {
+      return RecommendationScope.plant;
+    }
+    if (sourceScopes.contains(RecommendationScope.phase)) {
+      return RecommendationScope.phase;
+    }
+    return RecommendationScope.all;
+  }
+
+  String _sourceTitle(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site => context.l10n.recommendationActionSourceTitle,
+      RecommendationScope.plant => context.l10n.recommendationPlantSourceTitle,
+      RecommendationScope.phase => context.l10n.recommendationPhaseSourceTitle,
+      RecommendationScope.all => context.l10n.commonAll,
+    };
+  }
+
+  String _sourceDescription(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site =>
+        context.l10n.recommendationActionSourceDescription,
+      RecommendationScope.plant =>
+        context.l10n.recommendationPlantSourceDescription,
+      RecommendationScope.phase =>
+        context.l10n.recommendationPhaseSourceDescription,
+      RecommendationScope.all => context.l10n.recommendationEmptyAll,
+    };
+  }
+
+  IconData _sourceIcon(RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site => Icons.task_alt_rounded,
+      RecommendationScope.plant => Icons.psychology_alt_outlined,
+      RecommendationScope.phase => Icons.storage_rounded,
+      RecommendationScope.all => Icons.layers_outlined,
+    };
   }
 
   String _confidenceLabel(BuildContext context, double? score) {

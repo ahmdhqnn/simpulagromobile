@@ -36,6 +36,8 @@ bool _isExpectedEmptyResponse(DioException e) {
             .toLowerCase()
       : body?.toString().toLowerCase() ?? '';
   return message.contains('no data') ||
+      message.contains('plant recommendation') ||
+      message.contains('recommend-plant') ||
       message.contains('not found') ||
       message.contains('tidak ada') ||
       message.contains('belum ada');
@@ -295,37 +297,16 @@ class MonitoringRemoteDataSource {
     try {
       final res = await _dio.get(ApiEndpoints.plantRecBySite(siteId));
       final data = _siteDataMap(res.data, siteId);
-      if (data.isNotEmpty) return data;
-      return _loadSiteRecommendation(siteId);
+      return data;
     } on DioException catch (e) {
-      if (_isExpectedEmptyResponse(e)) {
-        return _loadSiteRecommendationSafely(siteId);
-      }
+      if (_isExpectedEmptyResponse(e)) return <String, dynamic>{};
       rethrow;
     }
-  }
-
-  Future<Map<String, dynamic>> _loadSiteRecommendation(String siteId) async {
-    final res = await _dio.get(ApiEndpoints.recommendations(siteId));
-    return _siteDataMap(res.data, siteId);
   }
 
   Map<String, dynamic> _siteDataMap(dynamic responseData, String siteId) {
     final data = ResponseParser.extractDataMap(responseData);
     return _matchesSite(data, siteId) ? data : <String, dynamic>{};
-  }
-
-  Future<Map<String, dynamic>> _loadSiteRecommendationSafely(
-    String siteId,
-  ) async {
-    try {
-      return await _loadSiteRecommendation(siteId);
-    } on DioException catch (e) {
-      if (_isExpectedEmptyResponse(e) || _isRecoverableDailyRecapError(e)) {
-        return <String, dynamic>{};
-      }
-      rethrow;
-    }
   }
 
   // ── Alarms ──────────────────────────────────────────────────────────────────

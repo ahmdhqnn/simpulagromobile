@@ -14,10 +14,10 @@ class GetGddUseCase {
   GetGddUseCase(this.repository);
 
   /// Execute the use case to get GDD data
-  /// 
+  ///
   /// Parameters:
   ///   - siteId: The unique identifier of the site
-  /// 
+  ///
   /// Returns:
   ///   - [Right<GddEntity>] if successful containing total GDD and daily breakdown
   ///   - [Left<Failure>] if an error occurs (data not available or network error)

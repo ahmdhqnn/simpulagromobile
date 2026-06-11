@@ -17,4 +17,8 @@ abstract class AgroRepository {
 
   /// Mengambil hanya data ETC
   Future<Either<Failure, List<EtcDailyEntity>>> getEtcData(String siteId);
+
+  Future<Either<Failure, AgroEnvironmentalHealthEntity>> getEnvironmentalHealth(
+    String siteId,
+  );
 }

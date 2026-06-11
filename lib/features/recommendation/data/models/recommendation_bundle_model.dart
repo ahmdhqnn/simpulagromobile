@@ -29,7 +29,9 @@ class RecommendationSensorDataModel with _$RecommendationSensorDataModel {
     );
   }
 
-  factory RecommendationSensorDataModel.fromEntity(RecommendationSensorData entity) {
+  factory RecommendationSensorDataModel.fromEntity(
+    RecommendationSensorData entity,
+  ) {
     return RecommendationSensorDataModel(
       nitrogen: entity.nitrogen,
       phosphorus: entity.phosphorus,
@@ -60,7 +62,9 @@ class RecommendationActionResultModel with _$RecommendationActionResultModel {
     );
   }
 
-  factory RecommendationActionResultModel.fromEntity(RecommendationActionResult entity) {
+  factory RecommendationActionResultModel.fromEntity(
+    RecommendationActionResult entity,
+  ) {
     return RecommendationActionResultModel(
       status: entity.status,
       pesan: entity.pesan,
@@ -76,6 +80,7 @@ class RecommendationBundleModel with _$RecommendationBundleModel {
   const factory RecommendationBundleModel({
     @JsonKey(name: 'npk') RecommendationActionResultModel? npk,
     @JsonKey(name: 'ph') RecommendationActionResultModel? ph,
+    @JsonKey(name: 'sensor_data') RecommendationSensorDataModel? sensorData,
   }) = _RecommendationBundleModel;
 
   factory RecommendationBundleModel.fromJson(Map<String, dynamic> json) =>
@@ -85,13 +90,21 @@ class RecommendationBundleModel with _$RecommendationBundleModel {
     return RecommendationBundle(
       npk: npk?.toEntity(),
       ph: ph?.toEntity(),
+      sensorData: sensorData?.toEntity(),
     );
   }
 
   factory RecommendationBundleModel.fromEntity(RecommendationBundle entity) {
     return RecommendationBundleModel(
-      npk: entity.npk != null ? RecommendationActionResultModel.fromEntity(entity.npk!) : null,
-      ph: entity.ph != null ? RecommendationActionResultModel.fromEntity(entity.ph!) : null,
+      npk: entity.npk != null
+          ? RecommendationActionResultModel.fromEntity(entity.npk!)
+          : null,
+      ph: entity.ph != null
+          ? RecommendationActionResultModel.fromEntity(entity.ph!)
+          : null,
+      sensorData: entity.sensorData != null
+          ? RecommendationSensorDataModel.fromEntity(entity.sensorData!)
+          : null,
     );
   }
 }

@@ -2,6 +2,34 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'agro_entity.freezed.dart';
 
+class AgroSensorHealthEntity {
+  const AgroSensorHealthEntity({
+    required this.devId,
+    required this.dsId,
+    required this.readUpdateValue,
+    required this.percentage,
+  });
+
+  final String devId;
+  final String dsId;
+  final String readUpdateValue;
+  final double percentage;
+}
+
+class AgroEnvironmentalHealthEntity {
+  const AgroEnvironmentalHealthEntity({
+    required this.overallHealth,
+    required this.totalSensors,
+    required this.sensors,
+  });
+
+  final double overallHealth;
+  final int totalSensors;
+  final List<AgroSensorHealthEntity> sensors;
+
+  bool get isEmpty => totalSensors == 0 && sensors.isEmpty;
+}
+
 @freezed
 class VdpEntity with _$VdpEntity {
   const VdpEntity._();
@@ -51,6 +79,9 @@ class GddEntity with _$GddEntity {
 class EtcDailyEntity with _$EtcDailyEntity {
   const EtcDailyEntity._();
   const factory EtcDailyEntity({
+    int? hst,
+    String? phase,
+    double? et0,
     String? day,
     double? tempMin,
     double? tempMax,
@@ -59,9 +90,18 @@ class EtcDailyEntity with _$EtcDailyEntity {
     double? etc,
     double? kc,
     double? waterNeeds,
+    String? waterStatus,
+    String? recommendation,
+    String? riceType,
   }) = _EtcDailyEntity;
 
-  bool get isEmpty => etc == null && waterNeeds == null && kc == null;
+  bool get isEmpty =>
+      etc == null &&
+      waterNeeds == null &&
+      kc == null &&
+      et0 == null &&
+      phase == null &&
+      recommendation == null;
 }
 
 @freezed

@@ -31,8 +31,6 @@ mixin _$RecommendationModel {
   String get description => throw _privateConstructorUsedError;
   @JsonKey(name: 'priority')
   String get priority => throw _privateConstructorUsedError;
-  @JsonKey(name: 'status')
-  String get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_id')
   String? get plantId => throw _privateConstructorUsedError;
   @JsonKey(name: 'plant_name')
@@ -48,14 +46,12 @@ mixin _$RecommendationModel {
   List<String>? get actionItems => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'applied_at')
-  DateTime? get appliedAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'applied_by')
-  String? get appliedBy => throw _privateConstructorUsedError;
   @JsonKey(name: 'confidence_score')
   double? get confidenceScore => throw _privateConstructorUsedError;
   @JsonKey(name: 'reason')
   String? get reason => throw _privateConstructorUsedError;
+  @JsonKey(name: 'error_message')
+  String? get errorMessage => throw _privateConstructorUsedError;
 
   /// Serializes this RecommendationModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -80,7 +76,6 @@ abstract class $RecommendationModelCopyWith<$Res> {
     @JsonKey(name: 'title') String title,
     @JsonKey(name: 'description') String description,
     @JsonKey(name: 'priority') String priority,
-    @JsonKey(name: 'status') String status,
     @JsonKey(name: 'plant_id') String? plantId,
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
@@ -88,10 +83,9 @@ abstract class $RecommendationModelCopyWith<$Res> {
     @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'applied_at') DateTime? appliedAt,
-    @JsonKey(name: 'applied_by') String? appliedBy,
     @JsonKey(name: 'confidence_score') double? confidenceScore,
     @JsonKey(name: 'reason') String? reason,
+    @JsonKey(name: 'error_message') String? errorMessage,
   });
 
   $RecommendationBundleModelCopyWith<$Res>? get parameters;
@@ -117,7 +111,6 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
     Object? title = null,
     Object? description = null,
     Object? priority = null,
-    Object? status = null,
     Object? plantId = freezed,
     Object? plantName = freezed,
     Object? siteId = freezed,
@@ -125,10 +118,9 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
     Object? parameters = freezed,
     Object? actionItems = freezed,
     Object? createdAt = freezed,
-    Object? appliedAt = freezed,
-    Object? appliedBy = freezed,
     Object? confidenceScore = freezed,
     Object? reason = freezed,
+    Object? errorMessage = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -151,10 +143,6 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
             priority: null == priority
                 ? _value.priority
                 : priority // ignore: cast_nullable_to_non_nullable
-                      as String,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
                       as String,
             plantId: freezed == plantId
                 ? _value.plantId
@@ -184,14 +172,6 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
-            appliedAt: freezed == appliedAt
-                ? _value.appliedAt
-                : appliedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            appliedBy: freezed == appliedBy
-                ? _value.appliedBy
-                : appliedBy // ignore: cast_nullable_to_non_nullable
-                      as String?,
             confidenceScore: freezed == confidenceScore
                 ? _value.confidenceScore
                 : confidenceScore // ignore: cast_nullable_to_non_nullable
@@ -199,6 +179,10 @@ class _$RecommendationModelCopyWithImpl<$Res, $Val extends RecommendationModel>
             reason: freezed == reason
                 ? _value.reason
                 : reason // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            errorMessage: freezed == errorMessage
+                ? _value.errorMessage
+                : errorMessage // ignore: cast_nullable_to_non_nullable
                       as String?,
           )
           as $Val,
@@ -237,7 +221,6 @@ abstract class _$$RecommendationModelImplCopyWith<$Res>
     @JsonKey(name: 'title') String title,
     @JsonKey(name: 'description') String description,
     @JsonKey(name: 'priority') String priority,
-    @JsonKey(name: 'status') String status,
     @JsonKey(name: 'plant_id') String? plantId,
     @JsonKey(name: 'plant_name') String? plantName,
     @JsonKey(name: 'site_id') String? siteId,
@@ -245,10 +228,9 @@ abstract class _$$RecommendationModelImplCopyWith<$Res>
     @JsonKey(name: 'parameters') RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') List<String>? actionItems,
     @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'applied_at') DateTime? appliedAt,
-    @JsonKey(name: 'applied_by') String? appliedBy,
     @JsonKey(name: 'confidence_score') double? confidenceScore,
     @JsonKey(name: 'reason') String? reason,
+    @JsonKey(name: 'error_message') String? errorMessage,
   });
 
   @override
@@ -274,7 +256,6 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
     Object? title = null,
     Object? description = null,
     Object? priority = null,
-    Object? status = null,
     Object? plantId = freezed,
     Object? plantName = freezed,
     Object? siteId = freezed,
@@ -282,10 +263,9 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
     Object? parameters = freezed,
     Object? actionItems = freezed,
     Object? createdAt = freezed,
-    Object? appliedAt = freezed,
-    Object? appliedBy = freezed,
     Object? confidenceScore = freezed,
     Object? reason = freezed,
+    Object? errorMessage = freezed,
   }) {
     return _then(
       _$RecommendationModelImpl(
@@ -308,10 +288,6 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
         priority: null == priority
             ? _value.priority
             : priority // ignore: cast_nullable_to_non_nullable
-                  as String,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
                   as String,
         plantId: freezed == plantId
             ? _value.plantId
@@ -341,14 +317,6 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
-        appliedAt: freezed == appliedAt
-            ? _value.appliedAt
-            : appliedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        appliedBy: freezed == appliedBy
-            ? _value.appliedBy
-            : appliedBy // ignore: cast_nullable_to_non_nullable
-                  as String?,
         confidenceScore: freezed == confidenceScore
             ? _value.confidenceScore
             : confidenceScore // ignore: cast_nullable_to_non_nullable
@@ -356,6 +324,10 @@ class __$$RecommendationModelImplCopyWithImpl<$Res>
         reason: freezed == reason
             ? _value.reason
             : reason // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        errorMessage: freezed == errorMessage
+            ? _value.errorMessage
+            : errorMessage // ignore: cast_nullable_to_non_nullable
                   as String?,
       ),
     );
@@ -371,7 +343,6 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     @JsonKey(name: 'title') required this.title,
     @JsonKey(name: 'description') required this.description,
     @JsonKey(name: 'priority') required this.priority,
-    @JsonKey(name: 'status') required this.status,
     @JsonKey(name: 'plant_id') this.plantId,
     @JsonKey(name: 'plant_name') this.plantName,
     @JsonKey(name: 'site_id') this.siteId,
@@ -379,10 +350,9 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     @JsonKey(name: 'parameters') this.parameters,
     @JsonKey(name: 'action_items') final List<String>? actionItems,
     @JsonKey(name: 'created_at') this.createdAt,
-    @JsonKey(name: 'applied_at') this.appliedAt,
-    @JsonKey(name: 'applied_by') this.appliedBy,
     @JsonKey(name: 'confidence_score') this.confidenceScore,
     @JsonKey(name: 'reason') this.reason,
+    @JsonKey(name: 'error_message') this.errorMessage,
   }) : _actionItems = actionItems,
        super._();
 
@@ -404,9 +374,6 @@ class _$RecommendationModelImpl extends _RecommendationModel {
   @override
   @JsonKey(name: 'priority')
   final String priority;
-  @override
-  @JsonKey(name: 'status')
-  final String status;
   @override
   @JsonKey(name: 'plant_id')
   final String? plantId;
@@ -437,21 +404,18 @@ class _$RecommendationModelImpl extends _RecommendationModel {
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @override
-  @JsonKey(name: 'applied_at')
-  final DateTime? appliedAt;
-  @override
-  @JsonKey(name: 'applied_by')
-  final String? appliedBy;
-  @override
   @JsonKey(name: 'confidence_score')
   final double? confidenceScore;
   @override
   @JsonKey(name: 'reason')
   final String? reason;
+  @override
+  @JsonKey(name: 'error_message')
+  final String? errorMessage;
 
   @override
   String toString() {
-    return 'RecommendationModel(recommendationId: $recommendationId, type: $type, title: $title, description: $description, priority: $priority, status: $status, plantId: $plantId, plantName: $plantName, siteId: $siteId, siteName: $siteName, parameters: $parameters, actionItems: $actionItems, createdAt: $createdAt, appliedAt: $appliedAt, appliedBy: $appliedBy, confidenceScore: $confidenceScore, reason: $reason)';
+    return 'RecommendationModel(recommendationId: $recommendationId, type: $type, title: $title, description: $description, priority: $priority, plantId: $plantId, plantName: $plantName, siteId: $siteId, siteName: $siteName, parameters: $parameters, actionItems: $actionItems, createdAt: $createdAt, confidenceScore: $confidenceScore, reason: $reason, errorMessage: $errorMessage)';
   }
 
   @override
@@ -467,7 +431,6 @@ class _$RecommendationModelImpl extends _RecommendationModel {
                 other.description == description) &&
             (identical(other.priority, priority) ||
                 other.priority == priority) &&
-            (identical(other.status, status) || other.status == status) &&
             (identical(other.plantId, plantId) || other.plantId == plantId) &&
             (identical(other.plantName, plantName) ||
                 other.plantName == plantName) &&
@@ -482,13 +445,11 @@ class _$RecommendationModelImpl extends _RecommendationModel {
             ) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.appliedAt, appliedAt) ||
-                other.appliedAt == appliedAt) &&
-            (identical(other.appliedBy, appliedBy) ||
-                other.appliedBy == appliedBy) &&
             (identical(other.confidenceScore, confidenceScore) ||
                 other.confidenceScore == confidenceScore) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -500,7 +461,6 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     title,
     description,
     priority,
-    status,
     plantId,
     plantName,
     siteId,
@@ -508,10 +468,9 @@ class _$RecommendationModelImpl extends _RecommendationModel {
     parameters,
     const DeepCollectionEquality().hash(_actionItems),
     createdAt,
-    appliedAt,
-    appliedBy,
     confidenceScore,
     reason,
+    errorMessage,
   );
 
   /// Create a copy of RecommendationModel
@@ -538,7 +497,6 @@ abstract class _RecommendationModel extends RecommendationModel {
     @JsonKey(name: 'title') required final String title,
     @JsonKey(name: 'description') required final String description,
     @JsonKey(name: 'priority') required final String priority,
-    @JsonKey(name: 'status') required final String status,
     @JsonKey(name: 'plant_id') final String? plantId,
     @JsonKey(name: 'plant_name') final String? plantName,
     @JsonKey(name: 'site_id') final String? siteId,
@@ -546,10 +504,9 @@ abstract class _RecommendationModel extends RecommendationModel {
     @JsonKey(name: 'parameters') final RecommendationBundleModel? parameters,
     @JsonKey(name: 'action_items') final List<String>? actionItems,
     @JsonKey(name: 'created_at') final DateTime? createdAt,
-    @JsonKey(name: 'applied_at') final DateTime? appliedAt,
-    @JsonKey(name: 'applied_by') final String? appliedBy,
     @JsonKey(name: 'confidence_score') final double? confidenceScore,
     @JsonKey(name: 'reason') final String? reason,
+    @JsonKey(name: 'error_message') final String? errorMessage,
   }) = _$RecommendationModelImpl;
   const _RecommendationModel._() : super._();
 
@@ -572,9 +529,6 @@ abstract class _RecommendationModel extends RecommendationModel {
   @JsonKey(name: 'priority')
   String get priority;
   @override
-  @JsonKey(name: 'status')
-  String get status;
-  @override
   @JsonKey(name: 'plant_id')
   String? get plantId;
   @override
@@ -596,17 +550,14 @@ abstract class _RecommendationModel extends RecommendationModel {
   @JsonKey(name: 'created_at')
   DateTime? get createdAt;
   @override
-  @JsonKey(name: 'applied_at')
-  DateTime? get appliedAt;
-  @override
-  @JsonKey(name: 'applied_by')
-  String? get appliedBy;
-  @override
   @JsonKey(name: 'confidence_score')
   double? get confidenceScore;
   @override
   @JsonKey(name: 'reason')
   String? get reason;
+  @override
+  @JsonKey(name: 'error_message')
+  String? get errorMessage;
 
   /// Create a copy of RecommendationModel
   /// with the given fields replaced by the non-null parameter values.

@@ -56,6 +56,14 @@ class PhaseModel with _$PhaseModel {
   factory PhaseModel.fromJson(Map<String, dynamic> json) =>
       _$PhaseModelFromJson(json);
 
+  bool get isStructurallyValid =>
+      id.isNotEmpty &&
+      cropType.isNotEmpty &&
+      phaseName.isNotEmpty &&
+      phaseOrder > 0 &&
+      hstMin >= 0 &&
+      hstMax >= hstMin;
+
   /// Buat PhaseModel dari response API backend.
   /// Menangani kedua format: field langsung atau nested.
   factory PhaseModel.fromApiJson(Map<String, dynamic> json) {
@@ -105,16 +113,21 @@ class PhaseModel with _$PhaseModel {
         : _normalizePhaseName(phaseName) ==
               _normalizePhaseName(currentPhaseName ?? '');
 
-    if (currentHst > hstMax) {
-      phaseStatus = 'completed';
-      phaseProgress = 1.0;
-    } else if (matchesBackendPhase ||
-        (currentHst >= hstMin && currentHst <= hstMax)) {
+    if (matchesBackendPhase) {
       phaseStatus = 'active';
       final range = hstMax - hstMin;
       phaseProgress = range > 0
           ? ((currentHst - hstMin) / range).clamp(0.0, 1.0)
-          : 0.0;
+          : 1.0;
+    } else if (currentHst > hstMax) {
+      phaseStatus = 'completed';
+      phaseProgress = 1.0;
+    } else if (currentHst >= hstMin && currentHst <= hstMax) {
+      phaseStatus = 'active';
+      final range = hstMax - hstMin;
+      phaseProgress = range > 0
+          ? ((currentHst - hstMin) / range).clamp(0.0, 1.0)
+          : 1.0;
     } else {
       phaseStatus = 'upcoming';
       phaseProgress = 0.0;

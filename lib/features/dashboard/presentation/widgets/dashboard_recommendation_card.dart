@@ -8,6 +8,7 @@ import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
+import '../../../recommendation/domain/entities/recommendation_bundle.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 
 class DashboardRecommendationCard extends ConsumerWidget {
@@ -31,7 +32,8 @@ class DashboardRecommendationCard extends ConsumerWidget {
         ],
       ),
       loading: () => const RecommendationOverviewListSkeleton(),
-      error: (error, _) => _buildErrorCard(context, toUiErrorMessage(error, context.l10n)),
+      error: (error, _) =>
+          _buildErrorCard(context, toUiErrorMessage(error, context.l10n)),
     );
   }
 
@@ -116,10 +118,10 @@ class DashboardRecommendationCard extends ConsumerWidget {
     required List<Recommendation> items,
     required VoidCallback onTap,
   }) {
-    final pending = items
-        .where((item) => item.status == RecommendationStatus.pending)
-        .length;
-    final latest = items.isEmpty ? null : items.first;
+    final sortedItems = List<Recommendation>.from(items)
+      ..sort((a, b) => b.priority.index.compareTo(a.priority.index));
+    final latest = sortedItems.isEmpty ? null : sortedItems.first;
+    final confidence = latest?.confidenceScore;
 
     return GestureDetector(
       onTap: onTap,
@@ -184,14 +186,16 @@ class DashboardRecommendationCard extends ConsumerWidget {
                   color.withValues(alpha: 0.1),
                   color,
                 ),
-                const SizedBox(width: 8),
-                _metricPill(
-                  context,
-                  context.l10n.commonPending,
-                  '$pending',
-                  AppColors.warning.withValues(alpha: 0.1),
-                  AppColors.warning,
-                ),
+                if (confidence != null) ...[
+                  const SizedBox(width: 8),
+                  _metricPill(
+                    context,
+                    context.l10n.recommendationConfidenceLabel,
+                    '${(confidence * 100).round()}%',
+                    AppColors.info.withValues(alpha: 0.1),
+                    AppColors.info,
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 16),
@@ -224,6 +228,10 @@ class DashboardRecommendationCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.hint(context),
                     ),
+                    if (latest.type == RecommendationType.npk && latest.parameters?.sensorData != null) ...[
+                      const SizedBox(height: 10),
+                      _buildCompactSensorRow(context, latest.parameters!.sensorData!),
+                    ],
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -306,6 +314,77 @@ class DashboardRecommendationCard extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCompactSensorRow(BuildContext context, RecommendationSensorData sensorData) {
+    Widget sensorBadge(String label, String value, Color dotColor) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.xs),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              '$label: ',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(11),
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(11),
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Color dotColor(num? value) {
+      if (value == null || value == 0) return AppColors.textSecondary.withValues(alpha: 0.4);
+      return AppColors.success;
+    }
+
+    String formatVal(num? val, String unit) {
+      if (val == null) return '-';
+      if (val % 1 == 0) return '${val.toInt()} $unit';
+      return '${val.toStringAsFixed(1)} $unit';
+    }
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        if (sensorData.nitrogen != null)
+          sensorBadge('N', formatVal(sensorData.nitrogen, 'mg/kg'), dotColor(sensorData.nitrogen)),
+        if (sensorData.phosphorus != null)
+          sensorBadge('P', formatVal(sensorData.phosphorus, 'mg/kg'), dotColor(sensorData.phosphorus)),
+        if (sensorData.potassium != null)
+          sensorBadge('K', formatVal(sensorData.potassium, 'mg/kg'), dotColor(sensorData.potassium)),
+        if (sensorData.ph != null)
+          sensorBadge('pH', formatVal(sensorData.ph, ''), sensorData.ph! >= 6.0 && sensorData.ph! <= 7.0 ? AppColors.success : AppColors.warning),
+      ],
     );
   }
 

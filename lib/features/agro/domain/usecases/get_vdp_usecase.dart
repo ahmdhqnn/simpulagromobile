@@ -14,10 +14,10 @@ class GetVdpUseCase {
   GetVdpUseCase(this.repository);
 
   /// Execute the use case to get VDP data
-  /// 
+  ///
   /// Parameters:
   ///   - siteId: The unique identifier of the site
-  /// 
+  ///
   /// Returns:
   ///   - [Right<VdpEntity>] if successful
   ///   - [Left<Failure>] if an error occurs (data not available or network error)

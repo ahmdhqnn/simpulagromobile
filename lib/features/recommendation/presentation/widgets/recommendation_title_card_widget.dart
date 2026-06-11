@@ -21,7 +21,6 @@ class RecommendationTitleCardWidget extends StatelessWidget {
     final priorityColor = RecommendationColors.forPriority(
       recommendation.priority,
     );
-    final statusColor = RecommendationColors.forStatus(recommendation.status);
 
     return AppCardWidget(
       width: double.infinity,
@@ -33,8 +32,13 @@ class RecommendationTitleCardWidget extends StatelessWidget {
           Row(
             children: [
               Text(
-                recommendation.type.icon,
-                style: TextStyle(fontSize: context.sp(40)),
+                recommendation.hasError ? '!' : recommendation.type.icon,
+                style: TextStyle(
+                  fontSize: context.sp(40),
+                  color: recommendation.hasError
+                      ? AppColors.warning
+                      : AppColors.textPrimary,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -71,11 +75,6 @@ class RecommendationTitleCardWidget extends StatelessWidget {
               StatusChipWidget(
                 label: recommendation.priority.localizedLabel(context.l10n),
                 color: priorityColor,
-              ),
-              const SizedBox(width: 8),
-              StatusChipWidget(
-                label: recommendation.status.localizedLabel(context.l10n),
-                color: statusColor,
               ),
             ],
           ),

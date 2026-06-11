@@ -528,6 +528,9 @@ mixin _$RecommendationBundleModel {
       throw _privateConstructorUsedError;
   @JsonKey(name: 'ph')
   RecommendationActionResultModel? get ph => throw _privateConstructorUsedError;
+  @JsonKey(name: 'sensor_data')
+  RecommendationSensorDataModel? get sensorData =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this RecommendationBundleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -549,10 +552,12 @@ abstract class $RecommendationBundleModelCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'npk') RecommendationActionResultModel? npk,
     @JsonKey(name: 'ph') RecommendationActionResultModel? ph,
+    @JsonKey(name: 'sensor_data') RecommendationSensorDataModel? sensorData,
   });
 
   $RecommendationActionResultModelCopyWith<$Res>? get npk;
   $RecommendationActionResultModelCopyWith<$Res>? get ph;
+  $RecommendationSensorDataModelCopyWith<$Res>? get sensorData;
 }
 
 /// @nodoc
@@ -572,7 +577,11 @@ class _$RecommendationBundleModelCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? npk = freezed, Object? ph = freezed}) {
+  $Res call({
+    Object? npk = freezed,
+    Object? ph = freezed,
+    Object? sensorData = freezed,
+  }) {
     return _then(
       _value.copyWith(
             npk: freezed == npk
@@ -583,6 +592,10 @@ class _$RecommendationBundleModelCopyWithImpl<
                 ? _value.ph
                 : ph // ignore: cast_nullable_to_non_nullable
                       as RecommendationActionResultModel?,
+            sensorData: freezed == sensorData
+                ? _value.sensorData
+                : sensorData // ignore: cast_nullable_to_non_nullable
+                      as RecommendationSensorDataModel?,
           )
           as $Val,
     );
@@ -615,6 +628,22 @@ class _$RecommendationBundleModelCopyWithImpl<
       return _then(_value.copyWith(ph: value) as $Val);
     });
   }
+
+  /// Create a copy of RecommendationBundleModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RecommendationSensorDataModelCopyWith<$Res>? get sensorData {
+    if (_value.sensorData == null) {
+      return null;
+    }
+
+    return $RecommendationSensorDataModelCopyWith<$Res>(_value.sensorData!, (
+      value,
+    ) {
+      return _then(_value.copyWith(sensorData: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -629,12 +658,15 @@ abstract class _$$RecommendationBundleModelImplCopyWith<$Res>
   $Res call({
     @JsonKey(name: 'npk') RecommendationActionResultModel? npk,
     @JsonKey(name: 'ph') RecommendationActionResultModel? ph,
+    @JsonKey(name: 'sensor_data') RecommendationSensorDataModel? sensorData,
   });
 
   @override
   $RecommendationActionResultModelCopyWith<$Res>? get npk;
   @override
   $RecommendationActionResultModelCopyWith<$Res>? get ph;
+  @override
+  $RecommendationSensorDataModelCopyWith<$Res>? get sensorData;
 }
 
 /// @nodoc
@@ -654,7 +686,11 @@ class __$$RecommendationBundleModelImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? npk = freezed, Object? ph = freezed}) {
+  $Res call({
+    Object? npk = freezed,
+    Object? ph = freezed,
+    Object? sensorData = freezed,
+  }) {
     return _then(
       _$RecommendationBundleModelImpl(
         npk: freezed == npk
@@ -665,6 +701,10 @@ class __$$RecommendationBundleModelImplCopyWithImpl<$Res>
             ? _value.ph
             : ph // ignore: cast_nullable_to_non_nullable
                   as RecommendationActionResultModel?,
+        sensorData: freezed == sensorData
+            ? _value.sensorData
+            : sensorData // ignore: cast_nullable_to_non_nullable
+                  as RecommendationSensorDataModel?,
       ),
     );
   }
@@ -676,6 +716,7 @@ class _$RecommendationBundleModelImpl extends _RecommendationBundleModel {
   const _$RecommendationBundleModelImpl({
     @JsonKey(name: 'npk') this.npk,
     @JsonKey(name: 'ph') this.ph,
+    @JsonKey(name: 'sensor_data') this.sensorData,
   }) : super._();
 
   factory _$RecommendationBundleModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -687,10 +728,13 @@ class _$RecommendationBundleModelImpl extends _RecommendationBundleModel {
   @override
   @JsonKey(name: 'ph')
   final RecommendationActionResultModel? ph;
+  @override
+  @JsonKey(name: 'sensor_data')
+  final RecommendationSensorDataModel? sensorData;
 
   @override
   String toString() {
-    return 'RecommendationBundleModel(npk: $npk, ph: $ph)';
+    return 'RecommendationBundleModel(npk: $npk, ph: $ph, sensorData: $sensorData)';
   }
 
   @override
@@ -699,12 +743,14 @@ class _$RecommendationBundleModelImpl extends _RecommendationBundleModel {
         (other.runtimeType == runtimeType &&
             other is _$RecommendationBundleModelImpl &&
             (identical(other.npk, npk) || other.npk == npk) &&
-            (identical(other.ph, ph) || other.ph == ph));
+            (identical(other.ph, ph) || other.ph == ph) &&
+            (identical(other.sensorData, sensorData) ||
+                other.sensorData == sensorData));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, npk, ph);
+  int get hashCode => Object.hash(runtimeType, npk, ph, sensorData);
 
   /// Create a copy of RecommendationBundleModel
   /// with the given fields replaced by the non-null parameter values.
@@ -727,6 +773,8 @@ abstract class _RecommendationBundleModel extends RecommendationBundleModel {
   const factory _RecommendationBundleModel({
     @JsonKey(name: 'npk') final RecommendationActionResultModel? npk,
     @JsonKey(name: 'ph') final RecommendationActionResultModel? ph,
+    @JsonKey(name: 'sensor_data')
+    final RecommendationSensorDataModel? sensorData,
   }) = _$RecommendationBundleModelImpl;
   const _RecommendationBundleModel._() : super._();
 
@@ -739,6 +787,9 @@ abstract class _RecommendationBundleModel extends RecommendationBundleModel {
   @override
   @JsonKey(name: 'ph')
   RecommendationActionResultModel? get ph;
+  @override
+  @JsonKey(name: 'sensor_data')
+  RecommendationSensorDataModel? get sensorData;
 
   /// Create a copy of RecommendationBundleModel
   /// with the given fields replaced by the non-null parameter values.

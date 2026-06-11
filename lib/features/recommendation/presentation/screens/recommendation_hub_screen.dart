@@ -11,10 +11,8 @@ import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
-import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../domain/entities/recommendation.dart';
 import '../providers/recommendation_hub_provider.dart';
-import '../providers/recommendation_provider.dart';
 
 class RecommendationHubScreen extends ConsumerStatefulWidget {
   const RecommendationHubScreen({
@@ -36,15 +34,14 @@ class _RecommendationHubScreenState
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _searchController.addListener(() {
-      ref.read(recommendationSearchQueryProvider.notifier).state =
-          _searchController.text;
-      setState(() {});
-    });
+    _searchController = TextEditingController()
+      ..addListener(() {
+        ref.read(recommendationSearchQueryProvider.notifier).state =
+            _searchController.text;
+        setState(() {});
+      });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       resetRecommendationHubFilters(ref, scope: widget.initialScope);
-      _searchController.clear();
     });
   }
 
@@ -55,8 +52,7 @@ class _RecommendationHubScreenState
   }
 
   Future<void> _refreshAll() async {
-    invalidateRecommendationHubData(ref);
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    await invalidateRecommendationHubDataSpaced(ref);
   }
 
   @override
@@ -64,8 +60,7 @@ class _RecommendationHubScreenState
     final filteredAsync = ref.watch(filteredRecommendationCatalogProvider);
     final statsAsync = ref.watch(recommendationHubStatsProvider);
     final scope = ref.watch(recommendationScopeFilterProvider);
-    final status = ref.watch(recommendationStatusFilterProvider);
-    final hPad = context.rw(0.051);
+    final horizontalPadding = context.rw(0.051);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -77,62 +72,40 @@ class _RecommendationHubScreenState
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: hPad),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTopBar(context),
-                          SizedBox(height: context.rh(0.024)),
-
-                          Text(
-                            context.l10n.recommendationHubTitle,
-                            style: TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              fontSize: context.sp(22),
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.textPrimary,
-                              height: 1.0,
-                            ),
-                          ),
-                          SizedBox(height: context.rh(0.016)),
-                        ],
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTopBar(context),
+                      SizedBox(height: context.rh(0.024)),
+                      Text(
+                        context.l10n.recommendationHubTitle,
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: context.sp(22),
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textPrimary,
+                          height: 1,
+                        ),
                       ),
-                    ),
-
-                    _buildStatusChips(context, status, hPad),
-                    SizedBox(height: context.rh(0.012)),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: hPad),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildScopeAndFilterRow(context, scope),
-                          SizedBox(height: context.rh(0.012)),
-
-                          if (scope == RecommendationScope.phase) ...[
-                            _buildPhaseSelector(context),
-                            SizedBox(height: context.rh(0.012)),
-                          ],
-
-                          _buildSearchField(context),
-                          SizedBox(height: context.rh(0.012)),
-
-                          _buildStatsCard(context, statsAsync),
-                          SizedBox(height: context.rh(0.012)),
-                        ],
-                      ),
-                    ),
-                  ],
+                      SizedBox(height: context.rh(0.016)),
+                      _buildScopeChips(context, scope),
+                      SizedBox(height: context.rh(0.012)),
+                      _buildSearchField(context),
+                      SizedBox(height: context.rh(0.012)),
+                      _buildStatsCard(context, statsAsync),
+                      SizedBox(height: context.rh(0.012)),
+                    ],
+                  ),
                 ),
               ),
-
-              _buildListSliver(context, filteredAsync, scope, status, hPad),
-
+              _buildListSliver(
+                context,
+                filteredAsync,
+                scope,
+                horizontalPadding,
+              ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
@@ -148,91 +121,66 @@ class _RecommendationHubScreenState
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
           const Spacer(),
-          _buildRefreshButton(),
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(29),
+            ),
+            child: IconButton(
+              onPressed: _refreshAll,
+              icon: SvgPicture.asset(
+                'assets/icons/arrow-rotate-left.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textPrimary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildRefreshButton() {
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(29),
-      ),
-      child: IconButton(
-        onPressed: _refreshAll,
-        icon: SvgPicture.asset(
-          'assets/icons/arrow-rotate-left.svg',
-          width: 24,
-          height: 24,
-          colorFilter: const ColorFilter.mode(
-            AppColors.textPrimary,
-            BlendMode.srcIn,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChips(
-    BuildContext context,
-    RecommendationStatusFilter current,
-    double horizontalInset,
-  ) {
-    final quickFilters = [
-      RecommendationStatusFilter.all,
-      RecommendationStatusFilter.pending,
-      RecommendationStatusFilter.applied,
-      RecommendationStatusFilter.highPriority,
-    ];
-
+  Widget _buildScopeChips(BuildContext context, RecommendationScope current) {
     return SizedBox(
-      width: double.infinity,
       height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: horizontalInset),
-        itemCount: quickFilters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 2),
-        itemBuilder: (context, i) {
-          final filter = quickFilters[i];
-          final selected = filter == current;
-          return GestureDetector(
+        itemCount: RecommendationScope.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final scope = RecommendationScope.values[index];
+          final selected = scope == current;
+          return InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             onTap: () {
-              ref.read(recommendationStatusFilterProvider.notifier).state =
-                  filter;
+              ref.read(recommendationScopeFilterProvider.notifier).state =
+                  scope;
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              height: 36,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: selected ? Colors.white : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: Border.all(
+                  color: selected ? AppColors.primary : AppColors.divider,
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    filter.localizedLabel(context.l10n),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(12),
-                      fontWeight: FontWeight.w400,
-                      height: 1.83,
-                      color: selected
-                          ? AppColors.textPrimary
-                          : AppColors.textPrimary.withValues(alpha: 0.50),
-                    ),
-                  ),
-                ],
+              alignment: Alignment.center,
+              child: Text(
+                scope.localizedLabel(context.l10n),
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(12),
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? AppColors.primary : AppColors.textSecondary,
+                ),
               ),
             ),
           );
@@ -241,167 +189,26 @@ class _RecommendationHubScreenState
     );
   }
 
-  Widget _buildScopeAndFilterRow(
-    BuildContext context,
-    RecommendationScope current,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () => _showScopeSheet(context, current),
-          child: Container(
-            width: 123,
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  current.localizedLabel(context.l10n),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w400,
-                    height: 1.83,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        GestureDetector(
-          onTap: () => _showStatusSheet(
-            context,
-            ref.read(recommendationStatusFilterProvider),
-          ),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Container(
-              width: 35,
-              height: 35,
-              padding: const EdgeInsets.all(5),
-              decoration: ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: SvgPicture.asset(
-                'assets/icons/filter_icon.svg',
-                width: 20,
-                height: 20,
-                colorFilter: ColorFilter.mode(
-                  AppColors.textSecondary,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhaseSelector(BuildContext context) {
-    final phasesAsync = ref.watch(phasesForSelectedSiteProvider);
-    final selectedPhase = ref.watch(selectedPhaseIdForRecProvider);
-
-    return phasesAsync.when(
-      skipLoadingOnReload: true,
-      skipLoadingOnRefresh: true,
-      skipError: true,
-      data: (phases) {
-        if (phases.isEmpty) return const SizedBox.shrink();
-        final ids = phases.map((p) => p.id).toSet();
-        final dropdownValue = ids.contains(selectedPhase)
-            ? selectedPhase
-            : phases.first.id;
-
-        return DropdownButtonFormField<String>(
-          value: dropdownValue,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 10,
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          items: phases
-              .map(
-                (p) => DropdownMenuItem<String>(
-                  value: p.id,
-                  child: Text(
-                    p.phaseName,
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: context.sp(12),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: (id) {
-            if (id == null) return;
-            ref.read(selectedPhaseIdForRecProvider.notifier).state = id;
-            ref.invalidate(recommendationPhaseSelectionProvider);
-            ref.invalidate(recommendationPhaseFeedProvider);
-            ref.invalidate(recommendationCatalogProvider);
-          },
-        );
-      },
-      loading: () => const DropdownFieldSkeleton(
-        height: 42,
-        radius: AppRadius.pill,
-        padding: EdgeInsets.zero,
-      ),
-      error: (_, __) => const SizedBox.shrink(),
-    );
-  }
-
   Widget _buildSearchField(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: ShapeDecoration(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
         color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SvgPicture.asset(
             'assets/icons/search-outline-icon.svg',
             width: 18,
             height: 18,
-            colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+            colorFilter: const ColorFilter.mode(
+              AppColors.textSecondary,
+              BlendMode.srcIn,
+            ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: _searchController,
@@ -415,28 +222,19 @@ class _RecommendationHubScreenState
                 hintStyle: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
-                  fontWeight: FontWeight.w400,
-                  height: 1.83,
-                  color: AppColors.textPrimary.withValues(alpha: 0.50),
+                  color: AppColors.textSecondary,
                 ),
                 border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                filled: false,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
             ),
           ),
           if (_searchController.text.isNotEmpty)
-            GestureDetector(
-              onTap: () => _searchController.clear(),
-              child: const Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: Colors.black,
-              ),
+            IconButton(
+              onPressed: _searchController.clear,
+              icon: const Icon(Icons.close_rounded, size: 17),
+              visualDensity: VisualDensity.compact,
             ),
         ],
       ),
@@ -450,10 +248,9 @@ class _RecommendationHubScreenState
     return statsAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
-      skipError: true,
       data: (stats) => Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -469,21 +266,21 @@ class _RecommendationHubScreenState
             ),
             _statCell(
               context,
-              context.l10n.commonPending,
-              stats.pending,
-              AppColors.warning,
+              RecommendationScope.site.localizedLabel(context.l10n),
+              stats.site,
+              AppColors.primary,
             ),
             _statCell(
               context,
-              context.l10n.commonApplied,
-              stats.applied,
+              RecommendationScope.plant.localizedLabel(context.l10n),
+              stats.plant,
               AppColors.success,
             ),
             _statCell(
               context,
-              context.l10n.recommendationPriorityStat,
-              stats.highPriority,
-              AppColors.error,
+              RecommendationScope.phase.localizedLabel(context.l10n),
+              stats.phase,
+              AppColors.info,
             ),
           ],
         ),
@@ -494,27 +291,31 @@ class _RecommendationHubScreenState
   }
 
   Widget _statCell(BuildContext context, String label, int value, Color color) {
-    return Column(
-      children: [
-        Text(
-          value.toString(),
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(16),
-            fontWeight: FontWeight.w700,
-            color: color,
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value.toString(),
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(16),
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: context.sp(11),
-            color: AppColors.textSecondary,
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(10),
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -522,26 +323,22 @@ class _RecommendationHubScreenState
     BuildContext context,
     AsyncValue<List<RecommendationCatalogItem>> filteredAsync,
     RecommendationScope scope,
-    RecommendationStatusFilter status,
-    double hPad,
+    double horizontalPadding,
   ) {
     return filteredAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
-      skipError: true,
       data: (rows) {
         if (rows.isEmpty) {
-          return SliverToBoxAdapter(
-            child: _buildEmptyState(context, scope, status),
-          );
+          return SliverToBoxAdapter(child: _buildEmptyState(context, scope));
         }
         return SliverPadding(
-          padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 0),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (ctx, i) => Padding(
+              (context, index) => Padding(
                 padding: EdgeInsets.only(bottom: context.rh(0.012)),
-                child: _buildRecommendationCard(ctx, rows[i]),
+                child: _buildRecommendationCard(context, rows[index]),
               ),
               childCount: rows.length,
             ),
@@ -550,9 +347,9 @@ class _RecommendationHubScreenState
       },
       loading: () => SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: hPad),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: buildListSkeleton(
-            count: 6,
+            count: 5,
             type: 'recommendation',
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
@@ -565,108 +362,152 @@ class _RecommendationHubScreenState
 
   Widget _buildRecommendationCard(
     BuildContext context,
-    RecommendationCatalogItem item,
+    RecommendationCatalogItem catalogItem,
   ) {
-    final sources = item.scopes.toList()
-      ..sort((a, b) => a.index.compareTo(b.index));
-    final rec = item.recommendation;
-    final priorityColor = _priorityColor(rec.priority);
-    final statusColor = _statusColor(rec.status);
-    final typeColor = _typeColor(rec.type);
+    final recommendation = catalogItem.recommendation;
+    final sourceScopes = catalogItem.scopes.toList()
+      ..sort((left, right) => left.index.compareTo(right.index));
+    final primaryScope = sourceScopes.isEmpty
+        ? RecommendationScope.all
+        : sourceScopes.first;
+    final typeColor = _typeColor(recommendation.type);
+    final priorityColor = _priorityColor(recommendation.priority);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        onTap: () => context.push('/recommendation/${rec.recommendationId}'),
+        onTap: () =>
+            context.push('/recommendation/${recommendation.recommendationId}'),
         child: Ink(
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppRadius.md),
+            border: recommendation.hasError
+                ? Border.all(color: AppColors.warning.withValues(alpha: 0.45))
+                : null,
           ),
-          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: typeColor.withValues(alpha: 0.14),
+                      color: typeColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      _typeIcon(rec.type),
-                      size: 18,
-                      color: typeColor,
+                      recommendation.hasError
+                          ? Icons.warning_amber_rounded
+                          : _typeIcon(recommendation.type),
+                      size: 19,
+                      color: recommendation.hasError
+                          ? AppColors.warning
+                          : typeColor,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      rec.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(14),
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          recommendation.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: context.sp(14),
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _sourceTitle(context, primaryScope),
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: context.sp(11),
+                            color: typeColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 8),
                   _pill(
                     context,
-                    rec.priority.localizedLabel(context.l10n),
+                    recommendation.priority.localizedLabel(context.l10n),
                     priorityColor,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    _sourceIcon(primaryScope),
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      _sourceDescription(context, primaryScope),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(11),
+                        color: AppColors.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               Text(
-                rec.description,
-                maxLines: 2,
+                recommendation.description,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: context.sp(12),
                   color: AppColors.textSecondary,
-                  height: 1.35,
+                  height: 1.4,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: sources.map(_sourceChip).toList(),
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  _pill(
-                    context,
-                    rec.status.localizedLabel(context.l10n),
-                    statusColor,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ...sourceScopes.map(_sourceChip),
+                        _ruleChip(context, primaryScope),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  _pill(
-                    context,
-                    rec.type.localizedLabel(context.l10n),
-                    typeColor,
-                  ),
-                  const Spacer(),
-                  if (rec.createdAt != null)
+                  if (recommendation.createdAt != null) ...[
+                    const SizedBox(width: 8),
                     Text(
-                      _dateText(context, rec.createdAt!),
+                      _dateLabel(context, recommendation, primaryScope),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(11),
+                        fontSize: context.sp(10),
                         color: AppColors.textSecondary,
                       ),
                     ),
+                  ],
                 ],
               ),
             ],
@@ -676,23 +517,20 @@ class _RecommendationHubScreenState
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-    RecommendationScope scope,
-    RecommendationStatusFilter status,
-  ) {
-    final msg = scope == RecommendationScope.all
-        ? context.l10n.recommendationEmptyForSite
-        : context.l10n.recommendationEmptyScoped(
-            scope.localizedLabel(context.l10n),
-            status.localizedLabel(context.l10n),
-          );
+  Widget _buildEmptyState(BuildContext context, RecommendationScope scope) {
     return Padding(
-      padding: EdgeInsets.only(top: context.rh(0.10)),
+      padding: EdgeInsets.fromLTRB(
+        context.rw(0.12),
+        context.rh(0.09),
+        context.rw(0.12),
+        0,
+      ),
       child: Column(
         children: [
           Icon(
-            Icons.lightbulb_outline_rounded,
+            scope == RecommendationScope.phase
+                ? Icons.timeline_outlined
+                : Icons.lightbulb_outline_rounded,
             size: context.rw(0.16).clamp(56.0, 72.0),
             color: AppColors.textSecondary.withValues(alpha: 0.4),
           ),
@@ -708,17 +546,14 @@ class _RecommendationHubScreenState
             ),
           ),
           SizedBox(height: context.rh(0.008)),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.rw(0.12)),
-            child: Text(
-              msg,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(13),
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+          Text(
+            _emptyMessage(context, scope),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(13),
+              color: AppColors.textSecondary,
+              height: 1.5,
             ),
           ),
         ],
@@ -728,12 +563,17 @@ class _RecommendationHubScreenState
 
   Widget _buildErrorState(BuildContext context, Object error) {
     return Padding(
-      padding: EdgeInsets.only(top: context.rh(0.10)),
+      padding: EdgeInsets.fromLTRB(
+        context.rw(0.12),
+        context.rh(0.09),
+        context.rw(0.12),
+        0,
+      ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline_rounded,
-            size: context.rw(0.16).clamp(56.0, 72.0),
+            size: 64,
             color: AppColors.error,
           ),
           SizedBox(height: context.rh(0.016)),
@@ -748,172 +588,24 @@ class _RecommendationHubScreenState
             ),
           ),
           SizedBox(height: context.rh(0.008)),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.rw(0.12)),
-            child: Text(
-              toUiErrorMessage(error, context.l10n),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(13),
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+          Text(
+            toUiErrorMessage(error, context.l10n),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(13),
+              color: AppColors.textSecondary,
+              height: 1.5,
             ),
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: _refreshAll,
+            icon: const Icon(Icons.refresh_rounded),
+            label: Text(context.l10n.retry),
           ),
         ],
       ),
-    );
-  }
-
-  void _showScopeSheet(BuildContext context, RecommendationScope current) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.recommendationFilterCategory,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...RecommendationScope.values.map((scope) {
-              final sel = scope == current;
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: _radioCircle(sel),
-                title: Text(
-                  scope.localizedLabel(context.l10n),
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: 14,
-                    fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                onTap: () {
-                  ref.read(recommendationScopeFilterProvider.notifier).state =
-                      scope;
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showStatusSheet(
-    BuildContext context,
-    RecommendationStatusFilter current,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.recommendationFilterStatus,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...RecommendationStatusFilter.values.map((filter) {
-              final sel = filter == current;
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: _radioCircle(sel),
-                title: Text(
-                  filter.localizedLabel(context.l10n),
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: 14,
-                    fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                onTap: () {
-                  ref.read(recommendationStatusFilterProvider.notifier).state =
-                      filter;
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _radioCircle(bool selected) {
-    return Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? AppColors.primary : AppColors.divider,
-          width: 2,
-        ),
-      ),
-      child: selected
-          ? Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                ),
-              ),
-            )
-          : null,
     );
   }
 
@@ -961,9 +653,89 @@ class _RecommendationHubScreenState
     );
   }
 
-  String _dateText(BuildContext context, DateTime date) {
-    return context.dateFormat('dd MMM yyyy').format(date);
+  Widget _ruleChip(BuildContext context, RecommendationScope scope) {
+    final color = switch (scope) {
+      RecommendationScope.site => AppColors.primary,
+      RecommendationScope.plant => AppColors.success,
+      RecommendationScope.phase => AppColors.info,
+      RecommendationScope.all => AppColors.textSecondary,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+      ),
+      child: Text(
+        _ruleLabel(context, scope),
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: context.sp(10),
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
   }
+
+  String _sourceTitle(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site => context.l10n.recommendationActionSourceTitle,
+      RecommendationScope.plant => context.l10n.recommendationPlantSourceTitle,
+      RecommendationScope.phase => context.l10n.recommendationPhaseSourceTitle,
+      RecommendationScope.all => context.l10n.commonAll,
+    };
+  }
+
+  String _sourceDescription(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site =>
+        context.l10n.recommendationActionSourceDescription,
+      RecommendationScope.plant =>
+        context.l10n.recommendationPlantSourceDescription,
+      RecommendationScope.phase =>
+        context.l10n.recommendationPhaseSourceDescription,
+      RecommendationScope.all => context.l10n.recommendationEmptyAll,
+    };
+  }
+
+  String _ruleLabel(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site =>
+        context.l10n.recommendationGeneratedTodayLabel,
+      RecommendationScope.plant => context.l10n.recommendationFreshMlLabel,
+      RecommendationScope.phase =>
+        context.l10n.recommendationSeededDatabaseLabel,
+      RecommendationScope.all => context.l10n.commonAll,
+    };
+  }
+
+  String _dateLabel(
+    BuildContext context,
+    Recommendation recommendation,
+    RecommendationScope scope,
+  ) {
+    if (recommendation.createdAt == null) return '';
+    return context
+        .dateFormat('dd MMM yyyy')
+        .format(recommendation.createdAt!.toLocal());
+  }
+
+  String _emptyMessage(BuildContext context, RecommendationScope scope) {
+    return switch (scope) {
+      RecommendationScope.site => context.l10n.recommendationEmptyAction,
+      RecommendationScope.plant => context.l10n.recommendationEmptyPlant,
+      RecommendationScope.phase => context.l10n.recommendationEmptyPhase,
+      RecommendationScope.all => context.l10n.recommendationEmptyAll,
+    };
+  }
+
+  IconData _sourceIcon(RecommendationScope scope) => switch (scope) {
+    RecommendationScope.site => Icons.task_alt_rounded,
+    RecommendationScope.plant => Icons.psychology_alt_outlined,
+    RecommendationScope.phase => Icons.storage_rounded,
+    RecommendationScope.all => Icons.layers_outlined,
+  };
 
   IconData _typeIcon(RecommendationType type) => switch (type) {
     RecommendationType.npk => Icons.grass_rounded,
@@ -985,17 +757,10 @@ class _RecommendationHubScreenState
     RecommendationType.general => AppColors.primary,
   };
 
-  Color _priorityColor(RecommendationPriority p) => switch (p) {
+  Color _priorityColor(RecommendationPriority priority) => switch (priority) {
     RecommendationPriority.low => AppColors.success,
     RecommendationPriority.medium => AppColors.warning,
     RecommendationPriority.high => AppColors.error,
     RecommendationPriority.critical => AppColors.errorDark,
-  };
-
-  Color _statusColor(RecommendationStatus s) => switch (s) {
-    RecommendationStatus.pending => AppColors.warning,
-    RecommendationStatus.applied => AppColors.success,
-    RecommendationStatus.dismissed => AppColors.textSecondary,
-    RecommendationStatus.expired => AppColors.muted,
   };
 }
