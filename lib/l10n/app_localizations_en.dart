@@ -2239,17 +2239,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationSiteDescription =>
-      'Action recommendations only show today\'s data. Database cache from other days is hidden.';
+      'Direct action suggestions for today based on your field\'s current conditions.';
 
   @override
   String get recommendationPlantTitle => 'Plant Recommendations';
 
   @override
-  String get recommendationPlantSubtitle => 'ML from 7-day sensor averages';
+  String get recommendationPlantSubtitle => '7-day sensor average analysis';
 
   @override
   String get recommendationPlantDescription =>
-      'Plant recommendations come directly from the Machine Learning endpoint and are not stored in the database.';
+      'Recommendations for the most suitable types of plants based on soil condition history over the last week.';
 
   @override
   String get recommendationPlantLoadFailed =>
@@ -2260,7 +2260,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationPhaseDescription =>
-      'Seeded database actions for the currently active planting phase.';
+      'Crop care guide tailored to the current age and growth phase.';
 
   @override
   String get recommendationPhaseLoadFailed =>
@@ -2306,37 +2306,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recommendationDataRuleLabel => 'Display rule';
 
   @override
-  String get recommendationActionSourceTitle =>
-      'Action recommendation endpoint';
+  String get recommendationActionSourceTitle => 'Action Recommendation';
 
   @override
   String get recommendationActionSourceDescription =>
-      'Today\'s data from field conditions: environment temperature/humidity, soil temperature/humidity, NPK, and pH. DB cache from other days is hidden.';
+      'Direct action suggestions based on the latest conditions of your land today.';
 
   @override
-  String get recommendationPlantSourceTitle =>
-      'Plant ML recommendation endpoint';
+  String get recommendationPlantSourceTitle => 'Plant Recommendation';
 
   @override
   String get recommendationPlantSourceDescription =>
-      'Fresh Machine Learning result from the last 7 days of sensor averages. This result is not stored in the database.';
+      'Recommendations for the most suitable types of plants based on soil condition history over the last week.';
 
   @override
-  String get recommendationPhaseSourceTitle =>
-      'Active phase recommendation database';
+  String get recommendationPhaseSourceTitle => 'Active Phase Recommendation';
 
   @override
   String get recommendationPhaseSourceDescription =>
-      'Seeded data based on the currently active planting phase. Shown only when active planting exists.';
+      'Crop care guide tailored to the current age and growth phase.';
 
   @override
   String get recommendationGeneratedTodayLabel => 'Today';
 
   @override
-  String get recommendationFreshMlLabel => 'Fresh 7-day ML';
+  String get recommendationFreshMlLabel => '7-day analysis';
 
   @override
-  String get recommendationSeededDatabaseLabel => 'Phase database';
+  String get recommendationSeededDatabaseLabel => 'Planting phase';
 
   @override
   String get recommendationEmptyAction =>

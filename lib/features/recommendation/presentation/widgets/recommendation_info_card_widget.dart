@@ -38,9 +38,9 @@ class RecommendationInfoCardWidget extends StatelessWidget {
             value: _sourceTitle(context, _primaryScope),
           ),
           _InfoRow(
-            icon: Icons.rule_folder_outlined,
-            label: context.l10n.recommendationDataRuleLabel,
-            value: _sourceDescription(context, _primaryScope),
+            icon: Icons.info_outline_rounded,
+            label: 'Metode Analisis',
+            value: _sourceDescription(context, _primaryScope, recommendation.createdAt),
           ),
           if (recommendation.siteName != null)
             _InfoRow(
@@ -90,23 +90,38 @@ class RecommendationInfoCardWidget extends StatelessWidget {
 
   String _sourceTitle(BuildContext context, RecommendationScope scope) {
     return switch (scope) {
-      RecommendationScope.site => context.l10n.recommendationActionSourceTitle,
-      RecommendationScope.plant => context.l10n.recommendationPlantSourceTitle,
-      RecommendationScope.phase => context.l10n.recommendationPhaseSourceTitle,
-      RecommendationScope.all => context.l10n.commonAll,
+      RecommendationScope.site => 'Rekomendasi Aksi',
+      RecommendationScope.plant => 'Rekomendasi Tanaman',
+      RecommendationScope.phase => 'Rekomendasi Fase Aktif',
+      RecommendationScope.all => 'Semua Rekomendasi',
     };
   }
 
-  String _sourceDescription(BuildContext context, RecommendationScope scope) {
+  String _sourceDescription(
+    BuildContext context,
+    RecommendationScope scope,
+    DateTime? createdAt,
+  ) {
+    final isToday = _isToday(createdAt);
     return switch (scope) {
-      RecommendationScope.site =>
-        context.l10n.recommendationActionSourceDescription,
+      RecommendationScope.site => isToday
+          ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
+          : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
       RecommendationScope.plant =>
-        context.l10n.recommendationPlantSourceDescription,
+        'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.',
       RecommendationScope.phase =>
-        context.l10n.recommendationPhaseSourceDescription,
-      RecommendationScope.all => context.l10n.recommendationEmptyAll,
+        'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.',
+      RecommendationScope.all => 'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
     };
+  }
+
+  bool _isToday(DateTime? dateTime) {
+    if (dateTime == null) return true;
+    final now = DateTime.now();
+    final local = dateTime.toLocal();
+    return local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
   }
 
   IconData _sourceIcon(RecommendationScope scope) {

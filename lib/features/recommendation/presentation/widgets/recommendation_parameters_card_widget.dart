@@ -104,7 +104,6 @@ class RecommendationParametersCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +224,6 @@ class RecommendationParametersCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,6 +367,12 @@ class RecommendationParametersCardWidget extends StatelessWidget {
     final showVisualNpk = npkDetails.isNotEmpty;
     final showVisualPh = phValue != null;
 
+    final hasEnvironmentalData = parameters.sensorData != null &&
+        (parameters.sensorData!.envTemp != null ||
+            parameters.sensorData!.envHum != null ||
+            parameters.sensorData!.soilTemp != null ||
+            parameters.sensorData!.soilHum != null);
+
     return AppCardWidget(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -453,6 +457,46 @@ class RecommendationParametersCardWidget extends StatelessWidget {
                 context,
                 'pH',
                 _formatNumber(parameters.sensorData!.ph!),
+              ),
+          ],
+
+          if (hasEnvironmentalData) ...[
+            const Divider(height: 20, color: AppColors.divider),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Parameter Lingkungan & Tanah',
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            if (parameters.sensorData!.envTemp != null)
+              _buildRow(
+                context,
+                'Suhu Udara',
+                '${_formatNumber(parameters.sensorData!.envTemp!)} °C',
+              ),
+            if (parameters.sensorData!.envHum != null)
+              _buildRow(
+                context,
+                'Kelembaban Udara',
+                '${_formatNumber(parameters.sensorData!.envHum!)} %',
+              ),
+            if (parameters.sensorData!.soilTemp != null)
+              _buildRow(
+                context,
+                'Suhu Tanah',
+                '${_formatNumber(parameters.sensorData!.soilTemp!)} °C',
+              ),
+            if (parameters.sensorData!.soilHum != null)
+              _buildRow(
+                context,
+                'Kelembaban Tanah',
+                '${_formatNumber(parameters.sensorData!.soilHum!)} %',
               ),
           ],
         ],

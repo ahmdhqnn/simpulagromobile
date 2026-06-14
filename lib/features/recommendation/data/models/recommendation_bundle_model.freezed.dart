@@ -31,6 +31,14 @@ mixin _$RecommendationSensorDataModel {
   num? get potassium => throw _privateConstructorUsedError;
   @JsonKey(name: 'ph')
   num? get ph => throw _privateConstructorUsedError;
+  @JsonKey(name: 'env_temp')
+  num? get envTemp => throw _privateConstructorUsedError;
+  @JsonKey(name: 'env_hum')
+  num? get envHum => throw _privateConstructorUsedError;
+  @JsonKey(name: 'soil_temp')
+  num? get soilTemp => throw _privateConstructorUsedError;
+  @JsonKey(name: 'soil_hum')
+  num? get soilHum => throw _privateConstructorUsedError;
 
   /// Serializes this RecommendationSensorDataModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,6 +66,10 @@ abstract class $RecommendationSensorDataModelCopyWith<$Res> {
     @JsonKey(name: 'phosphorus') num? phosphorus,
     @JsonKey(name: 'potassium') num? potassium,
     @JsonKey(name: 'ph') num? ph,
+    @JsonKey(name: 'env_temp') num? envTemp,
+    @JsonKey(name: 'env_hum') num? envHum,
+    @JsonKey(name: 'soil_temp') num? soilTemp,
+    @JsonKey(name: 'soil_hum') num? soilHum,
   });
 }
 
@@ -83,6 +95,10 @@ class _$RecommendationSensorDataModelCopyWithImpl<
     Object? phosphorus = freezed,
     Object? potassium = freezed,
     Object? ph = freezed,
+    Object? envTemp = freezed,
+    Object? envHum = freezed,
+    Object? soilTemp = freezed,
+    Object? soilHum = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -101,6 +117,22 @@ class _$RecommendationSensorDataModelCopyWithImpl<
             ph: freezed == ph
                 ? _value.ph
                 : ph // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            envTemp: freezed == envTemp
+                ? _value.envTemp
+                : envTemp // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            envHum: freezed == envHum
+                ? _value.envHum
+                : envHum // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            soilTemp: freezed == soilTemp
+                ? _value.soilTemp
+                : soilTemp // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            soilHum: freezed == soilHum
+                ? _value.soilHum
+                : soilHum // ignore: cast_nullable_to_non_nullable
                       as num?,
           )
           as $Val,
@@ -122,6 +154,10 @@ abstract class _$$RecommendationSensorDataModelImplCopyWith<$Res>
     @JsonKey(name: 'phosphorus') num? phosphorus,
     @JsonKey(name: 'potassium') num? potassium,
     @JsonKey(name: 'ph') num? ph,
+    @JsonKey(name: 'env_temp') num? envTemp,
+    @JsonKey(name: 'env_hum') num? envHum,
+    @JsonKey(name: 'soil_temp') num? soilTemp,
+    @JsonKey(name: 'soil_hum') num? soilHum,
   });
 }
 
@@ -147,6 +183,10 @@ class __$$RecommendationSensorDataModelImplCopyWithImpl<$Res>
     Object? phosphorus = freezed,
     Object? potassium = freezed,
     Object? ph = freezed,
+    Object? envTemp = freezed,
+    Object? envHum = freezed,
+    Object? soilTemp = freezed,
+    Object? soilHum = freezed,
   }) {
     return _then(
       _$RecommendationSensorDataModelImpl(
@@ -166,6 +206,22 @@ class __$$RecommendationSensorDataModelImplCopyWithImpl<$Res>
             ? _value.ph
             : ph // ignore: cast_nullable_to_non_nullable
                   as num?,
+        envTemp: freezed == envTemp
+            ? _value.envTemp
+            : envTemp // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        envHum: freezed == envHum
+            ? _value.envHum
+            : envHum // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        soilTemp: freezed == soilTemp
+            ? _value.soilTemp
+            : soilTemp // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        soilHum: freezed == soilHum
+            ? _value.soilHum
+            : soilHum // ignore: cast_nullable_to_non_nullable
+                  as num?,
       ),
     );
   }
@@ -180,6 +236,10 @@ class _$RecommendationSensorDataModelImpl
     @JsonKey(name: 'phosphorus') this.phosphorus,
     @JsonKey(name: 'potassium') this.potassium,
     @JsonKey(name: 'ph') this.ph,
+    @JsonKey(name: 'env_temp') this.envTemp,
+    @JsonKey(name: 'env_hum') this.envHum,
+    @JsonKey(name: 'soil_temp') this.soilTemp,
+    @JsonKey(name: 'soil_hum') this.soilHum,
   }) : super._();
 
   factory _$RecommendationSensorDataModelImpl.fromJson(
@@ -198,10 +258,22 @@ class _$RecommendationSensorDataModelImpl
   @override
   @JsonKey(name: 'ph')
   final num? ph;
+  @override
+  @JsonKey(name: 'env_temp')
+  final num? envTemp;
+  @override
+  @JsonKey(name: 'env_hum')
+  final num? envHum;
+  @override
+  @JsonKey(name: 'soil_temp')
+  final num? soilTemp;
+  @override
+  @JsonKey(name: 'soil_hum')
+  final num? soilHum;
 
   @override
   String toString() {
-    return 'RecommendationSensorDataModel(nitrogen: $nitrogen, phosphorus: $phosphorus, potassium: $potassium, ph: $ph)';
+    return 'RecommendationSensorDataModel(nitrogen: $nitrogen, phosphorus: $phosphorus, potassium: $potassium, ph: $ph, envTemp: $envTemp, envHum: $envHum, soilTemp: $soilTemp, soilHum: $soilHum)';
   }
 
   @override
@@ -215,13 +287,27 @@ class _$RecommendationSensorDataModelImpl
                 other.phosphorus == phosphorus) &&
             (identical(other.potassium, potassium) ||
                 other.potassium == potassium) &&
-            (identical(other.ph, ph) || other.ph == ph));
+            (identical(other.ph, ph) || other.ph == ph) &&
+            (identical(other.envTemp, envTemp) || other.envTemp == envTemp) &&
+            (identical(other.envHum, envHum) || other.envHum == envHum) &&
+            (identical(other.soilTemp, soilTemp) ||
+                other.soilTemp == soilTemp) &&
+            (identical(other.soilHum, soilHum) || other.soilHum == soilHum));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, nitrogen, phosphorus, potassium, ph);
+  int get hashCode => Object.hash(
+    runtimeType,
+    nitrogen,
+    phosphorus,
+    potassium,
+    ph,
+    envTemp,
+    envHum,
+    soilTemp,
+    soilHum,
+  );
 
   /// Create a copy of RecommendationSensorDataModel
   /// with the given fields replaced by the non-null parameter values.
@@ -249,6 +335,10 @@ abstract class _RecommendationSensorDataModel
     @JsonKey(name: 'phosphorus') final num? phosphorus,
     @JsonKey(name: 'potassium') final num? potassium,
     @JsonKey(name: 'ph') final num? ph,
+    @JsonKey(name: 'env_temp') final num? envTemp,
+    @JsonKey(name: 'env_hum') final num? envHum,
+    @JsonKey(name: 'soil_temp') final num? soilTemp,
+    @JsonKey(name: 'soil_hum') final num? soilHum,
   }) = _$RecommendationSensorDataModelImpl;
   const _RecommendationSensorDataModel._() : super._();
 
@@ -267,6 +357,18 @@ abstract class _RecommendationSensorDataModel
   @override
   @JsonKey(name: 'ph')
   num? get ph;
+  @override
+  @JsonKey(name: 'env_temp')
+  num? get envTemp;
+  @override
+  @JsonKey(name: 'env_hum')
+  num? get envHum;
+  @override
+  @JsonKey(name: 'soil_temp')
+  num? get soilTemp;
+  @override
+  @JsonKey(name: 'soil_hum')
+  num? get soilHum;
 
   /// Create a copy of RecommendationSensorDataModel
   /// with the given fields replaced by the non-null parameter values.

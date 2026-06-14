@@ -15,6 +15,10 @@ class RecommendationSensorDataModel with _$RecommendationSensorDataModel {
     @JsonKey(name: 'phosphorus') num? phosphorus,
     @JsonKey(name: 'potassium') num? potassium,
     @JsonKey(name: 'ph') num? ph,
+    @JsonKey(name: 'env_temp') num? envTemp,
+    @JsonKey(name: 'env_hum') num? envHum,
+    @JsonKey(name: 'soil_temp') num? soilTemp,
+    @JsonKey(name: 'soil_hum') num? soilHum,
   }) = _RecommendationSensorDataModel;
 
   factory RecommendationSensorDataModel.fromJson(Map<String, dynamic> json) =>
@@ -26,6 +30,10 @@ class RecommendationSensorDataModel with _$RecommendationSensorDataModel {
       phosphorus: phosphorus,
       potassium: potassium,
       ph: ph,
+      envTemp: envTemp,
+      envHum: envHum,
+      soilTemp: soilTemp,
+      soilHum: soilHum,
     );
   }
 
@@ -37,6 +45,10 @@ class RecommendationSensorDataModel with _$RecommendationSensorDataModel {
       phosphorus: entity.phosphorus,
       potassium: entity.potassium,
       ph: entity.ph,
+      envTemp: entity.envTemp,
+      envHum: entity.envHum,
+      soilTemp: entity.soilTemp,
+      soilHum: entity.soilHum,
     );
   }
 }

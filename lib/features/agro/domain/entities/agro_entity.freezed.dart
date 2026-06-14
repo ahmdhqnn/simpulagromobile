@@ -663,6 +663,12 @@ mixin _$EtcDailyEntity {
   String? get waterStatus => throw _privateConstructorUsedError;
   String? get recommendation => throw _privateConstructorUsedError;
   String? get riceType => throw _privateConstructorUsedError;
+  double? get waterNeededMM => throw _privateConstructorUsedError;
+  int? get waterNeededLiter => throw _privateConstructorUsedError;
+  String? get waterManagement => throw _privateConstructorUsedError;
+  int? get daysToHarvest => throw _privateConstructorUsedError;
+  bool? get isCriticalPhase => throw _privateConstructorUsedError;
+  DateTime? get harvestDate => throw _privateConstructorUsedError;
 
   /// Create a copy of EtcDailyEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -693,6 +699,12 @@ abstract class $EtcDailyEntityCopyWith<$Res> {
     String? waterStatus,
     String? recommendation,
     String? riceType,
+    double? waterNeededMM,
+    int? waterNeededLiter,
+    String? waterManagement,
+    int? daysToHarvest,
+    bool? isCriticalPhase,
+    DateTime? harvestDate,
   });
 }
 
@@ -725,6 +737,12 @@ class _$EtcDailyEntityCopyWithImpl<$Res, $Val extends EtcDailyEntity>
     Object? waterStatus = freezed,
     Object? recommendation = freezed,
     Object? riceType = freezed,
+    Object? waterNeededMM = freezed,
+    Object? waterNeededLiter = freezed,
+    Object? waterManagement = freezed,
+    Object? daysToHarvest = freezed,
+    Object? isCriticalPhase = freezed,
+    Object? harvestDate = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -784,6 +802,30 @@ class _$EtcDailyEntityCopyWithImpl<$Res, $Val extends EtcDailyEntity>
                 ? _value.riceType
                 : riceType // ignore: cast_nullable_to_non_nullable
                       as String?,
+            waterNeededMM: freezed == waterNeededMM
+                ? _value.waterNeededMM
+                : waterNeededMM // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            waterNeededLiter: freezed == waterNeededLiter
+                ? _value.waterNeededLiter
+                : waterNeededLiter // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            waterManagement: freezed == waterManagement
+                ? _value.waterManagement
+                : waterManagement // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            daysToHarvest: freezed == daysToHarvest
+                ? _value.daysToHarvest
+                : daysToHarvest // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            isCriticalPhase: freezed == isCriticalPhase
+                ? _value.isCriticalPhase
+                : isCriticalPhase // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            harvestDate: freezed == harvestDate
+                ? _value.harvestDate
+                : harvestDate // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -814,6 +856,12 @@ abstract class _$$EtcDailyEntityImplCopyWith<$Res>
     String? waterStatus,
     String? recommendation,
     String? riceType,
+    double? waterNeededMM,
+    int? waterNeededLiter,
+    String? waterManagement,
+    int? daysToHarvest,
+    bool? isCriticalPhase,
+    DateTime? harvestDate,
   });
 }
 
@@ -845,6 +893,12 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
     Object? waterStatus = freezed,
     Object? recommendation = freezed,
     Object? riceType = freezed,
+    Object? waterNeededMM = freezed,
+    Object? waterNeededLiter = freezed,
+    Object? waterManagement = freezed,
+    Object? daysToHarvest = freezed,
+    Object? isCriticalPhase = freezed,
+    Object? harvestDate = freezed,
   }) {
     return _then(
       _$EtcDailyEntityImpl(
@@ -904,6 +958,30 @@ class __$$EtcDailyEntityImplCopyWithImpl<$Res>
             ? _value.riceType
             : riceType // ignore: cast_nullable_to_non_nullable
                   as String?,
+        waterNeededMM: freezed == waterNeededMM
+            ? _value.waterNeededMM
+            : waterNeededMM // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        waterNeededLiter: freezed == waterNeededLiter
+            ? _value.waterNeededLiter
+            : waterNeededLiter // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        waterManagement: freezed == waterManagement
+            ? _value.waterManagement
+            : waterManagement // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        daysToHarvest: freezed == daysToHarvest
+            ? _value.daysToHarvest
+            : daysToHarvest // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        isCriticalPhase: freezed == isCriticalPhase
+            ? _value.isCriticalPhase
+            : isCriticalPhase // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        harvestDate: freezed == harvestDate
+            ? _value.harvestDate
+            : harvestDate // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -927,6 +1005,12 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
     this.waterStatus,
     this.recommendation,
     this.riceType,
+    this.waterNeededMM,
+    this.waterNeededLiter,
+    this.waterManagement,
+    this.daysToHarvest,
+    this.isCriticalPhase,
+    this.harvestDate,
   }) : super._();
 
   @override
@@ -957,10 +1041,22 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
   final String? recommendation;
   @override
   final String? riceType;
+  @override
+  final double? waterNeededMM;
+  @override
+  final int? waterNeededLiter;
+  @override
+  final String? waterManagement;
+  @override
+  final int? daysToHarvest;
+  @override
+  final bool? isCriticalPhase;
+  @override
+  final DateTime? harvestDate;
 
   @override
   String toString() {
-    return 'EtcDailyEntity(hst: $hst, phase: $phase, et0: $et0, day: $day, tempMin: $tempMin, tempMax: $tempMax, rhMin: $rhMin, rhMax: $rhMax, etc: $etc, kc: $kc, waterNeeds: $waterNeeds, waterStatus: $waterStatus, recommendation: $recommendation, riceType: $riceType)';
+    return 'EtcDailyEntity(hst: $hst, phase: $phase, et0: $et0, day: $day, tempMin: $tempMin, tempMax: $tempMax, rhMin: $rhMin, rhMax: $rhMax, etc: $etc, kc: $kc, waterNeeds: $waterNeeds, waterStatus: $waterStatus, recommendation: $recommendation, riceType: $riceType, waterNeededMM: $waterNeededMM, waterNeededLiter: $waterNeededLiter, waterManagement: $waterManagement, daysToHarvest: $daysToHarvest, isCriticalPhase: $isCriticalPhase, harvestDate: $harvestDate)';
   }
 
   @override
@@ -985,11 +1081,23 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
             (identical(other.recommendation, recommendation) ||
                 other.recommendation == recommendation) &&
             (identical(other.riceType, riceType) ||
-                other.riceType == riceType));
+                other.riceType == riceType) &&
+            (identical(other.waterNeededMM, waterNeededMM) ||
+                other.waterNeededMM == waterNeededMM) &&
+            (identical(other.waterNeededLiter, waterNeededLiter) ||
+                other.waterNeededLiter == waterNeededLiter) &&
+            (identical(other.waterManagement, waterManagement) ||
+                other.waterManagement == waterManagement) &&
+            (identical(other.daysToHarvest, daysToHarvest) ||
+                other.daysToHarvest == daysToHarvest) &&
+            (identical(other.isCriticalPhase, isCriticalPhase) ||
+                other.isCriticalPhase == isCriticalPhase) &&
+            (identical(other.harvestDate, harvestDate) ||
+                other.harvestDate == harvestDate));
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     hst,
     phase,
@@ -1005,7 +1113,13 @@ class _$EtcDailyEntityImpl extends _EtcDailyEntity {
     waterStatus,
     recommendation,
     riceType,
-  );
+    waterNeededMM,
+    waterNeededLiter,
+    waterManagement,
+    daysToHarvest,
+    isCriticalPhase,
+    harvestDate,
+  ]);
 
   /// Create a copy of EtcDailyEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -1035,6 +1149,12 @@ abstract class _EtcDailyEntity extends EtcDailyEntity {
     final String? waterStatus,
     final String? recommendation,
     final String? riceType,
+    final double? waterNeededMM,
+    final int? waterNeededLiter,
+    final String? waterManagement,
+    final int? daysToHarvest,
+    final bool? isCriticalPhase,
+    final DateTime? harvestDate,
   }) = _$EtcDailyEntityImpl;
   const _EtcDailyEntity._() : super._();
 
@@ -1066,6 +1186,18 @@ abstract class _EtcDailyEntity extends EtcDailyEntity {
   String? get recommendation;
   @override
   String? get riceType;
+  @override
+  double? get waterNeededMM;
+  @override
+  int? get waterNeededLiter;
+  @override
+  String? get waterManagement;
+  @override
+  int? get daysToHarvest;
+  @override
+  bool? get isCriticalPhase;
+  @override
+  DateTime? get harvestDate;
 
   /// Create a copy of EtcDailyEntity
   /// with the given fields replaced by the non-null parameter values.

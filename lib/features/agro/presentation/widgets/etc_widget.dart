@@ -157,7 +157,9 @@ class EtcWidget extends StatelessWidget {
             ),
             if (data.phase != null ||
                 data.hst != null ||
-                data.riceType != null) ...[
+                data.riceType != null ||
+                data.daysToHarvest != null ||
+                data.isCriticalPhase == true) ...[
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -172,6 +174,18 @@ class EtcWidget extends StatelessWidget {
                     ),
                   if (data.riceType != null)
                     _buildContextChip(Icons.grass_outlined, data.riceType!),
+                  if (data.daysToHarvest != null)
+                    _buildContextChip(
+                      Icons.hourglass_empty_outlined,
+                      '${data.daysToHarvest} hari lagi panen',
+                    ),
+                  if (data.isCriticalPhase == true)
+                    _buildContextChip(
+                      Icons.warning_amber_rounded,
+                      'Fase Kritis',
+                      backgroundColor: Colors.red.shade50,
+                      textColor: Colors.red.shade700,
+                    ),
                 ],
               ),
             ],
@@ -181,25 +195,34 @@ class EtcWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildContextChip(IconData icon, String label) {
+  Widget _buildContextChip(
+    IconData icon,
+    String label, {
+    Color? backgroundColor,
+    Color? textColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: backgroundColor ?? AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.textSecondary),
+          Icon(
+            icon,
+            size: 14,
+            color: textColor ?? AppColors.textSecondary,
+          ),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: textColor ?? AppColors.textPrimary,
             ),
           ),
         ],
@@ -475,6 +498,13 @@ class EtcWidget extends StatelessWidget {
           ? data.waterStatus!
           : l10n.agroWateringRecommendation;
       recommendation = data.recommendation!;
+      if (data.waterNeededLiter != null) {
+        final literStr = data.waterNeededLiter.toString();
+        final formatted = literStr.length > 3 
+            ? '${literStr.substring(0, literStr.length - 3)}.${literStr.substring(literStr.length - 3)}' 
+            : literStr;
+        recommendation += '\nTotal Kebutuhan: $formatted Liter';
+      }
       final normalized = (data.waterStatus ?? '').toLowerCase();
       if (normalized.contains('sangat')) {
         color = AppColors.error;

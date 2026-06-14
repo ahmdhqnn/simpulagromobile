@@ -11,8 +11,10 @@ import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/recommendation.dart';
 import '../providers/recommendation_hub_provider.dart';
+import '../providers/recommendation_provider.dart';
 
 class RecommendationHubScreen extends ConsumerStatefulWidget {
   const RecommendationHubScreen({
@@ -60,6 +62,8 @@ class _RecommendationHubScreenState
     final filteredAsync = ref.watch(filteredRecommendationCatalogProvider);
     final statsAsync = ref.watch(recommendationHubStatsProvider);
     final scope = ref.watch(recommendationScopeFilterProvider);
+    final tab = ref.watch(recommendationHubTabProvider);
+    final filter = ref.watch(recommendationHubFilterProvider);
     final horizontalPadding = context.rw(0.051);
 
     return Scaffold(
@@ -72,44 +76,234 @@ class _RecommendationHubScreenState
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTopBar(context),
-                      SizedBox(height: context.rh(0.024)),
-                      Text(
-                        context.l10n.recommendationHubTitle,
-                        style: TextStyle(
-                          fontFamily: AppTextStyles.fontFamily,
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textPrimary,
-                          height: 1,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTopBar(context),
+                          SizedBox(height: context.rh(0.024)),
+                          Text(
+                            context.l10n.recommendationHubTitle,
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: context.sp(22),
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textPrimary,
+                              height: 1,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: context.rh(0.016)),
-                      _buildScopeChips(context, scope),
-                      SizedBox(height: context.rh(0.012)),
-                      _buildSearchField(context),
-                      SizedBox(height: context.rh(0.012)),
-                      _buildStatsCard(context, statsAsync),
-                      SizedBox(height: context.rh(0.012)),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                    _buildFilterChips(context, filter, horizontalPadding),
+                    SizedBox(height: context.rh(0.016)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSearchField(context),
+                          SizedBox(height: context.rh(0.012)),
+                          if (tab == RecommendationHubTab.active) ...[
+                            _buildStatsCard(context, statsAsync),
+                            SizedBox(height: context.rh(0.012)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              _buildListSliver(
-                context,
-                filteredAsync,
-                scope,
-                horizontalPadding,
-              ),
+              if (tab == RecommendationHubTab.active)
+                _buildListSliver(
+                  context,
+                  filteredAsync,
+                  scope,
+                  horizontalPadding,
+                )
+              else
+                _buildHistoryListSliver(
+                  context,
+                  horizontalPadding,
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(
+    BuildContext context,
+    RecommendationHubFilter current,
+    double horizontalInset,
+  ) {
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+        itemCount: RecommendationHubFilter.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 2),
+        itemBuilder: (context, index) {
+          final filterVal = RecommendationHubFilter.values[index];
+          final selected = filterVal == current;
+          return InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              ref.read(recommendationHubFilterProvider.notifier).state = filterVal;
+              if (filterVal == RecommendationHubFilter.history) {
+                ref.read(recommendationHubTabProvider.notifier).state =
+                    RecommendationHubTab.history;
+              } else {
+                ref.read(recommendationHubTabProvider.notifier).state =
+                    RecommendationHubTab.active;
+                final scope = switch (filterVal) {
+                  RecommendationHubFilter.all => RecommendationScope.all,
+                  RecommendationHubFilter.site => RecommendationScope.site,
+                  RecommendationHubFilter.plant => RecommendationScope.plant,
+                  RecommendationHubFilter.phase => RecommendationScope.phase,
+                  _ => RecommendationScope.all,
+                };
+                ref.read(recommendationScopeFilterProvider.notifier).state = scope;
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _filterLabel(filterVal),
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(12),
+                  fontWeight: FontWeight.w400,
+                  color: selected
+                      ? AppColors.textPrimary
+                      : AppColors.textPrimary.withValues(alpha: 0.50),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _filterLabel(RecommendationHubFilter filter) {
+    switch (filter) {
+      case RecommendationHubFilter.all:
+        return 'Semua';
+      case RecommendationHubFilter.site:
+        return 'Rekomendasi Aksi';
+      case RecommendationHubFilter.plant:
+        return 'Tanaman ML';
+      case RecommendationHubFilter.phase:
+        return 'Fase';
+      case RecommendationHubFilter.history:
+        return 'Riwayat';
+    }
+  }
+
+  Widget _buildHistoryListSliver(BuildContext context, double horizontalPadding) {
+    final siteId = ref.watch(selectedSiteIdProvider);
+    if (siteId == null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    final historyAsync = ref.watch(recommendationHistoryProvider(siteId));
+    final query = ref.watch(recommendationSearchQueryProvider).trim().toLowerCase();
+
+    return historyAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      data: (items) {
+        final filteredItems = items.where((item) {
+          if (query.isEmpty) return true;
+          return [
+            item.title,
+            item.description,
+            item.type.label,
+            item.reason ?? '',
+          ].join(' ').toLowerCase().contains(query);
+        }).toList();
+
+        if (filteredItems.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off_rounded,
+                      size: 64,
+                      color: AppColors.textSecondary.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Tidak ada riwayat rekomendasi',
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(14),
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        return SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final item = filteredItems[index];
+                final catalogItem = RecommendationCatalogItem(
+                  recommendation: item,
+                  scopes: const {RecommendationScope.site},
+                );
+                return Padding(
+                  padding: EdgeInsets.only(bottom: context.rh(0.012)),
+                  child: _buildRecommendationCard(
+                    context,
+                    catalogItem,
+                    isHistory: true,
+                  ),
+                );
+              },
+              childCount: filteredItems.length,
+            ),
+          ),
+        );
+      },
+      loading: () => SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: buildListSkeleton(
+            count: 5,
+            type: 'recommendation',
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+      ),
+      error: (error, _) => SliverToBoxAdapter(
+        child: _buildErrorState(context, error),
       ),
     );
   }
@@ -146,48 +340,7 @@ class _RecommendationHubScreenState
     );
   }
 
-  Widget _buildScopeChips(BuildContext context, RecommendationScope current) {
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: RecommendationScope.values.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (context, index) {
-          final scope = RecommendationScope.values[index];
-          final selected = scope == current;
-          return InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            onTap: () {
-              ref.read(recommendationScopeFilterProvider.notifier).state =
-                  scope;
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: selected ? Colors.white : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                border: Border.all(
-                  color: selected ? AppColors.primary : AppColors.divider,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                scope.localizedLabel(context.l10n),
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: context.sp(12),
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: selected ? AppColors.primary : AppColors.textSecondary,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+
 
   Widget _buildSearchField(BuildContext context) {
     return Container(
@@ -224,7 +377,14 @@ class _RecommendationHubScreenState
                   fontSize: context.sp(12),
                   color: AppColors.textSecondary,
                 ),
+                filled: true,
+                fillColor: Colors.white,
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
@@ -362,8 +522,9 @@ class _RecommendationHubScreenState
 
   Widget _buildRecommendationCard(
     BuildContext context,
-    RecommendationCatalogItem catalogItem,
-  ) {
+    RecommendationCatalogItem catalogItem, {
+    bool isHistory = false,
+  }) {
     final recommendation = catalogItem.recommendation;
     final sourceScopes = catalogItem.scopes.toList()
       ..sort((left, right) => left.index.compareTo(right.index));
@@ -459,7 +620,7 @@ class _RecommendationHubScreenState
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      _sourceDescription(context, primaryScope),
+                      _sourceDescription(context, primaryScope, recommendation.createdAt),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -484,23 +645,19 @@ class _RecommendationHubScreenState
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        ...sourceScopes.map(_sourceChip),
-                        _ruleChip(context, primaryScope),
-                      ],
+              if (recommendation.createdAt != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 11,
+                      color: AppColors.textSecondary,
                     ),
-                  ),
-                  if (recommendation.createdAt != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     Text(
-                      _dateLabel(context, recommendation, primaryScope),
+                      context.dateFormat('dd MMM yyyy').format(recommendation.createdAt!.toLocal()),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(10),
@@ -508,8 +665,8 @@ class _RecommendationHubScreenState
                       ),
                     ),
                   ],
-                ],
-              ),
+                ),
+              ],
             ],
           ),
         ),
@@ -628,98 +785,44 @@ class _RecommendationHubScreenState
     );
   }
 
-  Widget _sourceChip(RecommendationScope scope) {
-    final color = switch (scope) {
-      RecommendationScope.site => AppColors.primary,
-      RecommendationScope.plant => AppColors.success,
-      RecommendationScope.phase => AppColors.info,
-      RecommendationScope.all => AppColors.textSecondary,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppRadius.xs),
-      ),
-      child: Text(
-        scope.localizedLabel(context.l10n),
-        style: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: context.sp(10),
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _ruleChip(BuildContext context, RecommendationScope scope) {
-    final color = switch (scope) {
-      RecommendationScope.site => AppColors.primary,
-      RecommendationScope.plant => AppColors.success,
-      RecommendationScope.phase => AppColors.info,
-      RecommendationScope.all => AppColors.textSecondary,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppRadius.xs),
-      ),
-      child: Text(
-        _ruleLabel(context, scope),
-        style: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: context.sp(10),
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
 
   String _sourceTitle(BuildContext context, RecommendationScope scope) {
     return switch (scope) {
-      RecommendationScope.site => context.l10n.recommendationActionSourceTitle,
-      RecommendationScope.plant => context.l10n.recommendationPlantSourceTitle,
-      RecommendationScope.phase => context.l10n.recommendationPhaseSourceTitle,
-      RecommendationScope.all => context.l10n.commonAll,
+      RecommendationScope.site => 'Rekomendasi Aksi',
+      RecommendationScope.plant => 'Rekomendasi Tanaman',
+      RecommendationScope.phase => 'Rekomendasi Fase Aktif',
+      RecommendationScope.all => 'Semua Rekomendasi',
     };
   }
 
-  String _sourceDescription(BuildContext context, RecommendationScope scope) {
-    return switch (scope) {
-      RecommendationScope.site =>
-        context.l10n.recommendationActionSourceDescription,
-      RecommendationScope.plant =>
-        context.l10n.recommendationPlantSourceDescription,
-      RecommendationScope.phase =>
-        context.l10n.recommendationPhaseSourceDescription,
-      RecommendationScope.all => context.l10n.recommendationEmptyAll,
-    };
-  }
-
-  String _ruleLabel(BuildContext context, RecommendationScope scope) {
-    return switch (scope) {
-      RecommendationScope.site =>
-        context.l10n.recommendationGeneratedTodayLabel,
-      RecommendationScope.plant => context.l10n.recommendationFreshMlLabel,
-      RecommendationScope.phase =>
-        context.l10n.recommendationSeededDatabaseLabel,
-      RecommendationScope.all => context.l10n.commonAll,
-    };
-  }
-
-  String _dateLabel(
+  String _sourceDescription(
     BuildContext context,
-    Recommendation recommendation,
     RecommendationScope scope,
+    DateTime? createdAt,
   ) {
-    if (recommendation.createdAt == null) return '';
-    return context
-        .dateFormat('dd MMM yyyy')
-        .format(recommendation.createdAt!.toLocal());
+    final isToday = _isToday(createdAt);
+    return switch (scope) {
+      RecommendationScope.site => isToday
+          ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
+          : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
+      RecommendationScope.plant =>
+        'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.',
+      RecommendationScope.phase =>
+        'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.',
+      RecommendationScope.all => 'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
+    };
   }
+
+  bool _isToday(DateTime? dateTime) {
+    if (dateTime == null) return true;
+    final now = DateTime.now();
+    final local = dateTime.toLocal();
+    return local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
+  }
+
+
 
   String _emptyMessage(BuildContext context, RecommendationScope scope) {
     return switch (scope) {

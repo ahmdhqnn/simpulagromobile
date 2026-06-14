@@ -11,6 +11,10 @@ class RecommendationSensorData with _$RecommendationSensorData {
     num? phosphorus,
     num? potassium,
     num? ph,
+    num? envTemp,
+    num? envHum,
+    num? soilTemp,
+    num? soilHum,
   }) = _RecommendationSensorData;
 }
 

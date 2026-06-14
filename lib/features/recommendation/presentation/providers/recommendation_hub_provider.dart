@@ -73,6 +73,24 @@ class RecommendationDashboardSnapshot {
   final RecommendationPhaseSnapshot phaseSnapshot;
 }
 
+enum RecommendationHubTab { active, history }
+
+final recommendationHubTabProvider = StateProvider<RecommendationHubTab>(
+  (_) => RecommendationHubTab.active,
+);
+
+enum RecommendationHubFilter {
+  all,
+  site,
+  plant,
+  phase,
+  history,
+}
+
+final recommendationHubFilterProvider = StateProvider<RecommendationHubFilter>(
+  (_) => RecommendationHubFilter.all,
+);
+
 final recommendationScopeFilterProvider = StateProvider<RecommendationScope>(
   (_) => RecommendationScope.all,
 );
@@ -83,9 +101,18 @@ void resetRecommendationHubFilters(
   WidgetRef ref, {
   RecommendationScope? scope,
 }) {
-  ref.read(recommendationScopeFilterProvider.notifier).state =
-      scope ?? RecommendationScope.all;
+  final resolvedScope = scope ?? RecommendationScope.all;
+  ref.read(recommendationScopeFilterProvider.notifier).state = resolvedScope;
   ref.read(recommendationSearchQueryProvider.notifier).state = '';
+  
+  final filter = switch (resolvedScope) {
+    RecommendationScope.all => RecommendationHubFilter.all,
+    RecommendationScope.site => RecommendationHubFilter.site,
+    RecommendationScope.plant => RecommendationHubFilter.plant,
+    RecommendationScope.phase => RecommendationHubFilter.phase,
+  };
+  ref.read(recommendationHubFilterProvider.notifier).state = filter;
+  ref.read(recommendationHubTabProvider.notifier).state = RecommendationHubTab.active;
 }
 
 void invalidateRecommendationHubData(WidgetRef ref) {
@@ -94,6 +121,7 @@ void invalidateRecommendationHubData(WidgetRef ref) {
     ref.invalidate(recommendationsBySiteProvider(siteId));
     ref.invalidate(plantRecommendationsBySiteProvider(siteId));
     ref.invalidate(currentPhaseProvider(siteId));
+    ref.invalidate(recommendationHistoryProvider(siteId));
   }
   ref.invalidate(recommendationSiteFeedProvider);
   ref.invalidate(recommendationPlantFeedProvider);
@@ -110,6 +138,7 @@ Future<void> invalidateRecommendationHubDataSpaced(WidgetRef ref) {
     if (siteId != null)
       () => ref.invalidate(plantRecommendationsBySiteProvider(siteId)),
     if (siteId != null) () => ref.invalidate(currentPhaseProvider(siteId)),
+    if (siteId != null) () => ref.invalidate(recommendationHistoryProvider(siteId)),
     () => ref.invalidate(recommendationSiteFeedProvider),
     () => ref.invalidate(recommendationPlantFeedProvider),
     () => ref.invalidate(recommendationActivePhaseFeedProvider),
@@ -263,31 +292,53 @@ final recommendationHubStatsProvider =
 
 final recommendationHubDetailItemProvider = FutureProvider.autoDispose
     .family<RecommendationCatalogItem, String>((ref, recommendationId) async {
-      RecommendationCatalogItem? find(List<RecommendationCatalogItem> rows) {
+      RecommendationCatalogItem? find(
+        List<RecommendationCatalogItem> rows,
+        List<Recommendation> history,
+      ) {
         for (final row in rows) {
           if (row.recommendation.recommendationId == recommendationId) {
             return row;
           }
         }
+        for (final item in history) {
+          if (item.recommendationId == recommendationId) {
+            return RecommendationCatalogItem(
+              recommendation: item,
+              scopes: const {RecommendationScope.site},
+            );
+          }
+        }
         return null;
       }
 
-      final current = find(
-        await ref.read(recommendationCatalogProvider.future),
-      );
+      final siteId = ref.read(selectedSiteIdProvider);
+      final activeCatalog = await ref.read(recommendationCatalogProvider.future);
+      final historyItems = siteId != null
+          ? await ref.read(recommendationHistoryProvider(siteId).future).catchError((_) => <Recommendation>[])
+          : const <Recommendation>[];
+
+      final current = find(activeCatalog, historyItems);
       if (current != null) return current;
 
       ref.invalidate(recommendationSiteFeedProvider);
       ref.invalidate(recommendationPlantFeedProvider);
       ref.invalidate(recommendationActivePhaseFeedProvider);
       ref.invalidate(recommendationCatalogProvider);
-      final refreshed = find(
-        await ref.read(recommendationCatalogProvider.future),
-      );
+      if (siteId != null) {
+        ref.invalidate(recommendationHistoryProvider(siteId));
+      }
+
+      final refCatalog = await ref.read(recommendationCatalogProvider.future);
+      final refHistory = siteId != null
+          ? await ref.read(recommendationHistoryProvider(siteId).future).catchError((_) => <Recommendation>[])
+          : const <Recommendation>[];
+
+      final refreshed = find(refCatalog, refHistory);
       if (refreshed != null) return refreshed;
 
       throw const NotFoundFailure(
-        'Rekomendasi tidak ditemukan pada data aktif saat ini.',
+        'Rekomendasi tidak ditemukan pada data aktif maupun riwayat saat ini.',
       );
     });
 

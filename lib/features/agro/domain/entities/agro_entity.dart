@@ -93,6 +93,12 @@ class EtcDailyEntity with _$EtcDailyEntity {
     String? waterStatus,
     String? recommendation,
     String? riceType,
+    double? waterNeededMM,
+    int? waterNeededLiter,
+    String? waterManagement,
+    int? daysToHarvest,
+    bool? isCriticalPhase,
+    DateTime? harvestDate,
   }) = _EtcDailyEntity;
 
   bool get isEmpty =>
@@ -101,7 +107,10 @@ class EtcDailyEntity with _$EtcDailyEntity {
       kc == null &&
       et0 == null &&
       phase == null &&
-      recommendation == null;
+      recommendation == null &&
+      waterNeededMM == null &&
+      waterNeededLiter == null &&
+      waterManagement == null;
 }
 
 @freezed
