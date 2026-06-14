@@ -13,6 +13,10 @@ _$$RecommendationSensorDataModelImplFromJson(Map<String, dynamic> json) =>
       phosphorus: json['phosphorus'] as num?,
       potassium: json['potassium'] as num?,
       ph: json['ph'] as num?,
+      envTemp: json['env_temp'] as num?,
+      envHum: json['env_hum'] as num?,
+      soilTemp: json['soil_temp'] as num?,
+      soilHum: json['soil_hum'] as num?,
     );
 
 Map<String, dynamic> _$$RecommendationSensorDataModelImplToJson(
@@ -22,6 +26,10 @@ Map<String, dynamic> _$$RecommendationSensorDataModelImplToJson(
   'phosphorus': instance.phosphorus,
   'potassium': instance.potassium,
   'ph': instance.ph,
+  'env_temp': instance.envTemp,
+  'env_hum': instance.envHum,
+  'soil_temp': instance.soilTemp,
+  'soil_hum': instance.soilHum,
 };
 
 _$RecommendationActionResultModelImpl

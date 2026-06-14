@@ -162,7 +162,7 @@ class RecommendationRemoteDatasourceImpl
 
     final result = <RecommendationModel>[];
     final timestamp =
-        createdAt ?? _parseDate(data['cached_at']) ?? DateTime.now();
+        createdAt ?? _parseDate(data['generated_at']) ?? _parseDate(data['cached_at']) ?? DateTime.now();
     final sensorData = _parseSensorData(data['sensor_data']);
 
     void parseItem(
@@ -223,17 +223,50 @@ class RecommendationRemoteDatasourceImpl
   ) {
     final json = Map<String, dynamic>.from(raw);
     final createdAt = _parseDate(
-      json['created_at'] ??
+      json['generated_at'] ??
+          json['created_at'] ??
           json['rec_created'] ??
           json['date'] ??
           json['rec_date'],
     );
     final idSeed = _stringOrNull(json['rec_id'] ?? json['date']);
 
+    // Parse sensor data (both nested and flat root-level columns)
+    final sensorData = <String, dynamic>{...?_asStringMap(json['sensor_data'])};
+    sensorData.addAll({
+      if (json['nitrogen'] != null) 'nitrogen': json['nitrogen'],
+      if (json['phosphorus'] != null) 'phosphorus': json['phosphorus'],
+      if (json['potassium'] != null) 'potassium': json['potassium'],
+      if (json['ph_value'] != null || json['ph'] != null)
+        'ph': json['ph_value'] ?? json['ph'],
+      if (json['env_temp'] != null || json['envTemp'] != null || json['temperature'] != null)
+        'env_temp': json['env_temp'] ?? json['envTemp'] ?? json['temperature'],
+      if (json['env_hum'] != null || json['envHum'] != null || json['humidity'] != null)
+        'env_hum': json['env_hum'] ?? json['envHum'] ?? json['humidity'],
+      if (json['soil_temp'] != null || json['soilTemp'] != null)
+        'soil_temp': json['soil_temp'] ?? json['soilTemp'],
+      if (json['soil_hum'] != null || json['soilHum'] != null)
+        'soil_hum': json['soil_hum'] ?? json['soilHum'],
+    });
+
     final liveBundle = _asStringMap(json['recommendations']);
     if (liveBundle != null && liveBundle.isNotEmpty) {
+      final recommendationsMap = <String, dynamic>{...liveBundle};
+      
+      // Inject lingkungan if missing from recommendations but present at root level
+      if (!recommendationsMap.containsKey('lingkungan') &&
+          json.containsKey('lingkungan_recommendation')) {
+        final lingkunganRaw = _parseJsonRecommendation(json['lingkungan_recommendation']);
+        if (lingkunganRaw != null) {
+          recommendationsMap['lingkungan'] = lingkunganRaw;
+        }
+      }
+
       return _parseRecommendationResponse(
-        json,
+        {
+          'recommendations': recommendationsMap,
+          if (sensorData.isNotEmpty) 'sensor_data': sensorData,
+        },
         siteId,
         createdAt: createdAt,
         idSeed: idSeed,
@@ -242,6 +275,7 @@ class RecommendationRemoteDatasourceImpl
 
     final npkRaw = _parseJsonRecommendation(json['npk_recommendation']);
     final phRaw = _parseJsonRecommendation(json['ph_recommendation']);
+    final lingkunganRaw = _parseJsonRecommendation(json['lingkungan_recommendation']);
     final npkMap = _asStringMap(npkRaw);
     final phFromNpk = npkMap == null ? null : npkMap['ph'];
     final normalizedNpk = npkMap == null
@@ -262,20 +296,16 @@ class RecommendationRemoteDatasourceImpl
       error: json['ph_error'],
       fallbackError: 'Rekomendasi pH gagal diproses',
     );
-    final sensorData = <String, dynamic>{...?_asStringMap(json['sensor_data'])};
-    sensorData.addAll({
-      if (json['nitrogen'] != null) 'nitrogen': json['nitrogen'],
-      if (json['phosphorus'] != null) 'phosphorus': json['phosphorus'],
-      if (json['potassium'] != null) 'potassium': json['potassium'],
-      if (json['ph_value'] != null || json['ph'] != null)
-        'ph': json['ph_value'] ?? json['ph'],
-    });
-    if (normalizedNpkPayload != null || normalizedPhPayload != null) {
+
+    if (normalizedNpkPayload != null ||
+        normalizedPhPayload != null ||
+        lingkunganRaw != null) {
       return _parseRecommendationResponse(
         {
           'recommendations': {
             if (normalizedNpkPayload != null) 'npk': normalizedNpkPayload,
             if (normalizedPhPayload != null) 'ph': normalizedPhPayload,
+            if (lingkunganRaw != null) 'lingkungan': lingkunganRaw,
           },
           if (sensorData.isNotEmpty) 'sensor_data': sensorData,
         },
@@ -765,10 +795,38 @@ class RecommendationRemoteDatasourceImpl
                   details[plantName.toLowerCase()] ??
                   details[index.toString()],
             );
-      final description =
-          detail ??
-          'Tanaman $plantName direkomendasikan berdasarkan rata-rata sensor '
-              'site selama 7 hari terakhir.';
+      String priority = 'medium';
+      if (plantMap != null) {
+        final level = _stringOrNull(plantMap['recommendation_level'] ?? plantMap['category'])?.toLowerCase();
+        if (level != null) {
+          if (level.contains('highly_recommended') || 
+              level.contains('highly recommended') || 
+              level.contains('sangat cocok') || 
+              level == 'high' || 
+              level == 'tinggi') {
+            priority = 'high';
+          } else if (level.contains('less_recommended') || 
+                     level.contains('less recommended') || 
+                     level.contains('not_recommended') || 
+                     level.contains('not recommended') || 
+                     level.contains('kurang cocok') || 
+                     level.contains('tidak cocok') || 
+                     level == 'low' || 
+                     level == 'rendah') {
+            priority = 'low';
+          } else if (level.contains('recommended') || 
+                     level.contains('cocok') || 
+                     level == 'medium' || 
+                     level == 'sedang') {
+            priority = 'medium';
+          }
+        }
+      }
+
+      final category = plantMap != null ? _stringOrNull(plantMap['category']) : null;
+      final description = detail ?? (category != null 
+          ? 'Tanaman $plantName memiliki tingkat kesesuaian "$category" berdasarkan hasil analisis parameter tanah.'
+          : 'Tanaman $plantName direkomendasikan berdasarkan rata-rata sensor site selama 7 hari terakhir.');
 
       result.add(
         RecommendationModel(
@@ -776,7 +834,7 @@ class RecommendationRemoteDatasourceImpl
           type: 'planting',
           title: plantName,
           description: description,
-          priority: 'medium',
+          priority: priority,
           plantName: plantName,
           siteId: siteId,
           actionItems: const [],
@@ -821,6 +879,43 @@ class RecommendationRemoteDatasourceImpl
       'cached_at',
       'created_at',
       'createdat',
+      'success',
+      'total_recommendations',
+      'total_recommendation',
+      'total',
+      'count',
+      'size',
+      'top_recommendation',
+      'top_recommendations',
+      'toprecommendation',
+      'toprecommendations',
+      'input_data',
+      'inputdata',
+      'recommendations',
+      'recommendation',
+      'recommended',
+      'recommended_plants',
+      'recommendedPlants',
+      'recommended_plant',
+      'recommendedPlant',
+      'plant_recommendations',
+      'plantRecommendations',
+      'plant_names',
+      'plantNames',
+      'plants',
+      'crops',
+      'crop_recommendations',
+      'cropRecommendations',
+      'results',
+      'result',
+      'predictions',
+      'prediction',
+      'output',
+      'outputs',
+      'data',
+      'error',
+      'errors',
+      'code',
     };
     final result = <Map<String, dynamic>>[];
     for (final entry in rawPlantMap.entries) {
@@ -904,6 +999,10 @@ class RecommendationRemoteDatasourceImpl
       phosphorus: _nullableNum(data['phosphorus']),
       potassium: _nullableNum(data['potassium']),
       ph: _nullableNum(data['ph']),
+      envTemp: _nullableNum(data['env_temp'] ?? data['envTemp'] ?? data['temperature']),
+      envHum: _nullableNum(data['env_hum'] ?? data['envHum'] ?? data['humidity']),
+      soilTemp: _nullableNum(data['soil_temp'] ?? data['soilTemp']),
+      soilHum: _nullableNum(data['soil_hum'] ?? data['soilHum']),
     );
   }
 

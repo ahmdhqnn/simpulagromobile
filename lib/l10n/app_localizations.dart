@@ -4217,7 +4217,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationSiteDescription.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi aksi hanya menampilkan data hari ini. Cache database dari hari lain tidak ditampilkan.'**
+  /// **'Rekomendasi tindakan langsung untuk hari ini berdasarkan kondisi terkini lahan Anda.'**
   String get recommendationSiteDescription;
 
   /// No description provided for @recommendationPlantTitle.
@@ -4229,13 +4229,13 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationPlantSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'ML dari rata-rata sensor 7 hari'**
+  /// **'Analisis rata-rata sensor 7 hari'**
   String get recommendationPlantSubtitle;
 
   /// No description provided for @recommendationPlantDescription.
   ///
   /// In id, this message translates to:
-  /// **'Rekomendasi tanaman berasal langsung dari endpoint Machine Learning dan tidak disimpan ke database.'**
+  /// **'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.'**
   String get recommendationPlantDescription;
 
   /// No description provided for @recommendationPlantLoadFailed.
@@ -4253,7 +4253,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationPhaseDescription.
   ///
   /// In id, this message translates to:
-  /// **'Saran aksi dari database seeded sesuai fase penanaman yang sedang berlangsung.'**
+  /// **'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.'**
   String get recommendationPhaseDescription;
 
   /// No description provided for @recommendationPhaseLoadFailed.
@@ -4331,37 +4331,37 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationActionSourceTitle.
   ///
   /// In id, this message translates to:
-  /// **'Endpoint rekomendasi aksi'**
+  /// **'Rekomendasi Aksi'**
   String get recommendationActionSourceTitle;
 
   /// No description provided for @recommendationActionSourceDescription.
   ///
   /// In id, this message translates to:
-  /// **'Data hari ini dari kondisi lahan: suhu/kelembaban lingkungan, suhu/kelembaban tanah, NPK, dan pH. Cache DB hari lain disembunyikan.'**
+  /// **'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'**
   String get recommendationActionSourceDescription;
 
   /// No description provided for @recommendationPlantSourceTitle.
   ///
   /// In id, this message translates to:
-  /// **'Endpoint rekomendasi tanaman ML'**
+  /// **'Rekomendasi Tanaman'**
   String get recommendationPlantSourceTitle;
 
   /// No description provided for @recommendationPlantSourceDescription.
   ///
   /// In id, this message translates to:
-  /// **'Fresh dari Machine Learning berdasarkan rata-rata sensor 7 hari terakhir. Hasil ini tidak disimpan ke database.'**
+  /// **'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.'**
   String get recommendationPlantSourceDescription;
 
   /// No description provided for @recommendationPhaseSourceTitle.
   ///
   /// In id, this message translates to:
-  /// **'Database rekomendasi fase aktif'**
+  /// **'Rekomendasi Fase Aktif'**
   String get recommendationPhaseSourceTitle;
 
   /// No description provided for @recommendationPhaseSourceDescription.
   ///
   /// In id, this message translates to:
-  /// **'Data seeded berdasarkan fase penanaman yang sedang berlangsung. Ditampilkan hanya jika ada penanaman aktif.'**
+  /// **'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.'**
   String get recommendationPhaseSourceDescription;
 
   /// No description provided for @recommendationGeneratedTodayLabel.
@@ -4373,13 +4373,13 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationFreshMlLabel.
   ///
   /// In id, this message translates to:
-  /// **'Fresh ML 7 hari'**
+  /// **'Analisis 7 hari'**
   String get recommendationFreshMlLabel;
 
   /// No description provided for @recommendationSeededDatabaseLabel.
   ///
   /// In id, this message translates to:
-  /// **'Database fase'**
+  /// **'Fase tanaman'**
   String get recommendationSeededDatabaseLabel;
 
   /// No description provided for @recommendationEmptyAction.

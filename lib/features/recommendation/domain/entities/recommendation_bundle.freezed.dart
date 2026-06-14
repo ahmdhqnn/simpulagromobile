@@ -21,6 +21,10 @@ mixin _$RecommendationSensorData {
   num? get phosphorus => throw _privateConstructorUsedError;
   num? get potassium => throw _privateConstructorUsedError;
   num? get ph => throw _privateConstructorUsedError;
+  num? get envTemp => throw _privateConstructorUsedError;
+  num? get envHum => throw _privateConstructorUsedError;
+  num? get soilTemp => throw _privateConstructorUsedError;
+  num? get soilHum => throw _privateConstructorUsedError;
 
   /// Create a copy of RecommendationSensorData
   /// with the given fields replaced by the non-null parameter values.
@@ -36,7 +40,16 @@ abstract class $RecommendationSensorDataCopyWith<$Res> {
     $Res Function(RecommendationSensorData) then,
   ) = _$RecommendationSensorDataCopyWithImpl<$Res, RecommendationSensorData>;
   @useResult
-  $Res call({num? nitrogen, num? phosphorus, num? potassium, num? ph});
+  $Res call({
+    num? nitrogen,
+    num? phosphorus,
+    num? potassium,
+    num? ph,
+    num? envTemp,
+    num? envHum,
+    num? soilTemp,
+    num? soilHum,
+  });
 }
 
 /// @nodoc
@@ -61,6 +74,10 @@ class _$RecommendationSensorDataCopyWithImpl<
     Object? phosphorus = freezed,
     Object? potassium = freezed,
     Object? ph = freezed,
+    Object? envTemp = freezed,
+    Object? envHum = freezed,
+    Object? soilTemp = freezed,
+    Object? soilHum = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -80,6 +97,22 @@ class _$RecommendationSensorDataCopyWithImpl<
                 ? _value.ph
                 : ph // ignore: cast_nullable_to_non_nullable
                       as num?,
+            envTemp: freezed == envTemp
+                ? _value.envTemp
+                : envTemp // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            envHum: freezed == envHum
+                ? _value.envHum
+                : envHum // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            soilTemp: freezed == soilTemp
+                ? _value.soilTemp
+                : soilTemp // ignore: cast_nullable_to_non_nullable
+                      as num?,
+            soilHum: freezed == soilHum
+                ? _value.soilHum
+                : soilHum // ignore: cast_nullable_to_non_nullable
+                      as num?,
           )
           as $Val,
     );
@@ -95,7 +128,16 @@ abstract class _$$RecommendationSensorDataImplCopyWith<$Res>
   ) = __$$RecommendationSensorDataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({num? nitrogen, num? phosphorus, num? potassium, num? ph});
+  $Res call({
+    num? nitrogen,
+    num? phosphorus,
+    num? potassium,
+    num? ph,
+    num? envTemp,
+    num? envHum,
+    num? soilTemp,
+    num? soilHum,
+  });
 }
 
 /// @nodoc
@@ -120,6 +162,10 @@ class __$$RecommendationSensorDataImplCopyWithImpl<$Res>
     Object? phosphorus = freezed,
     Object? potassium = freezed,
     Object? ph = freezed,
+    Object? envTemp = freezed,
+    Object? envHum = freezed,
+    Object? soilTemp = freezed,
+    Object? soilHum = freezed,
   }) {
     return _then(
       _$RecommendationSensorDataImpl(
@@ -139,6 +185,22 @@ class __$$RecommendationSensorDataImplCopyWithImpl<$Res>
             ? _value.ph
             : ph // ignore: cast_nullable_to_non_nullable
                   as num?,
+        envTemp: freezed == envTemp
+            ? _value.envTemp
+            : envTemp // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        envHum: freezed == envHum
+            ? _value.envHum
+            : envHum // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        soilTemp: freezed == soilTemp
+            ? _value.soilTemp
+            : soilTemp // ignore: cast_nullable_to_non_nullable
+                  as num?,
+        soilHum: freezed == soilHum
+            ? _value.soilHum
+            : soilHum // ignore: cast_nullable_to_non_nullable
+                  as num?,
       ),
     );
   }
@@ -152,6 +214,10 @@ class _$RecommendationSensorDataImpl extends _RecommendationSensorData {
     this.phosphorus,
     this.potassium,
     this.ph,
+    this.envTemp,
+    this.envHum,
+    this.soilTemp,
+    this.soilHum,
   }) : super._();
 
   @override
@@ -162,10 +228,18 @@ class _$RecommendationSensorDataImpl extends _RecommendationSensorData {
   final num? potassium;
   @override
   final num? ph;
+  @override
+  final num? envTemp;
+  @override
+  final num? envHum;
+  @override
+  final num? soilTemp;
+  @override
+  final num? soilHum;
 
   @override
   String toString() {
-    return 'RecommendationSensorData(nitrogen: $nitrogen, phosphorus: $phosphorus, potassium: $potassium, ph: $ph)';
+    return 'RecommendationSensorData(nitrogen: $nitrogen, phosphorus: $phosphorus, potassium: $potassium, ph: $ph, envTemp: $envTemp, envHum: $envHum, soilTemp: $soilTemp, soilHum: $soilHum)';
   }
 
   @override
@@ -179,12 +253,26 @@ class _$RecommendationSensorDataImpl extends _RecommendationSensorData {
                 other.phosphorus == phosphorus) &&
             (identical(other.potassium, potassium) ||
                 other.potassium == potassium) &&
-            (identical(other.ph, ph) || other.ph == ph));
+            (identical(other.ph, ph) || other.ph == ph) &&
+            (identical(other.envTemp, envTemp) || other.envTemp == envTemp) &&
+            (identical(other.envHum, envHum) || other.envHum == envHum) &&
+            (identical(other.soilTemp, soilTemp) ||
+                other.soilTemp == soilTemp) &&
+            (identical(other.soilHum, soilHum) || other.soilHum == soilHum));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, nitrogen, phosphorus, potassium, ph);
+  int get hashCode => Object.hash(
+    runtimeType,
+    nitrogen,
+    phosphorus,
+    potassium,
+    ph,
+    envTemp,
+    envHum,
+    soilTemp,
+    soilHum,
+  );
 
   /// Create a copy of RecommendationSensorData
   /// with the given fields replaced by the non-null parameter values.
@@ -204,6 +292,10 @@ abstract class _RecommendationSensorData extends RecommendationSensorData {
     final num? phosphorus,
     final num? potassium,
     final num? ph,
+    final num? envTemp,
+    final num? envHum,
+    final num? soilTemp,
+    final num? soilHum,
   }) = _$RecommendationSensorDataImpl;
   const _RecommendationSensorData._() : super._();
 
@@ -215,6 +307,14 @@ abstract class _RecommendationSensorData extends RecommendationSensorData {
   num? get potassium;
   @override
   num? get ph;
+  @override
+  num? get envTemp;
+  @override
+  num? get envHum;
+  @override
+  num? get soilTemp;
+  @override
+  num? get soilHum;
 
   /// Create a copy of RecommendationSensorData
   /// with the given fields replaced by the non-null parameter values.

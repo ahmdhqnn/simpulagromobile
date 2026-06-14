@@ -323,6 +323,12 @@ class EtcDailyModel with _$EtcDailyModel {
     String? waterStatus,
     String? recommendation,
     String? riceType,
+    double? waterNeededMM,
+    int? waterNeededLiter,
+    String? waterManagement,
+    int? daysToHarvest,
+    bool? isCriticalPhase,
+    DateTime? harvestDate,
   }) = _EtcDailyModel;
 
   factory EtcDailyModel.fromJson(Map<String, dynamic> json) {
@@ -348,6 +354,15 @@ class EtcDailyModel with _$EtcDailyModel {
       return _parseNullableDouble(json['waterNeeds']);
     }
 
+    final waterNeededMMVal = _readDouble(json, ['waterNeededMM', 'water_needed_mm']);
+    final waterNeededLiterVal = _parseNullableDouble(_readRaw(json, ['waterNeededLiter', 'water_needed_liter']))?.toInt();
+    final waterManagementVal = _readString(json, ['waterManagement', 'water_management']);
+    final daysToHarvestVal = _parseNullableDouble(_readRaw(json, ['daysToHarvest', 'days_to_harvest']))?.toInt();
+    final isCriticalPhaseVal = json['isCriticalPhase'] == true || json['is_critical_phase'] == true;
+    final harvestDateVal = json['harvestDate'] != null 
+        ? DateTime.tryParse(json['harvestDate'].toString()) 
+        : (json['harvest_date'] != null ? DateTime.tryParse(json['harvest_date'].toString()) : null);
+
     return EtcDailyModel(
       hst: _parseNullableDouble(
         _readRaw(json, ['hst', 'currentHst', 'current_hst']),
@@ -361,14 +376,20 @@ class EtcDailyModel with _$EtcDailyModel {
       rhMax: _readDouble(json, ['rhMax', 'rh_max']),
       etc: readEtc(),
       kc: readKc(),
-      waterNeeds: readWaterNeeds(),
+      waterNeeds: readWaterNeeds() ?? waterNeededMMVal,
       waterStatus: _readString(json, ['waterStatus', 'water_status']),
       recommendation: _readString(json, [
         'recommendation',
         'recommendationText',
         'message',
-      ]),
+      ]) ?? waterManagementVal,
       riceType: _readString(json, ['riceType', 'rice_type']),
+      waterNeededMM: waterNeededMMVal,
+      waterNeededLiter: waterNeededLiterVal,
+      waterManagement: waterManagementVal,
+      daysToHarvest: daysToHarvestVal,
+      isCriticalPhase: isCriticalPhaseVal,
+      harvestDate: harvestDateVal,
     );
   }
 
@@ -387,6 +408,12 @@ class EtcDailyModel with _$EtcDailyModel {
     waterStatus: waterStatus,
     recommendation: recommendation,
     riceType: riceType,
+    waterNeededMM: waterNeededMM,
+    waterNeededLiter: waterNeededLiter,
+    waterManagement: waterManagement,
+    daysToHarvest: daysToHarvest,
+    isCriticalPhase: isCriticalPhase,
+    harvestDate: harvestDate,
   );
 
   bool get isEmpty =>
@@ -395,7 +422,10 @@ class EtcDailyModel with _$EtcDailyModel {
       kc == null &&
       et0 == null &&
       phase == null &&
-      recommendation == null;
+      recommendation == null &&
+      waterNeededMM == null &&
+      waterNeededLiter == null &&
+      waterManagement == null;
 
   bool isValid() {
     if (etc != null && etc! < 0) {

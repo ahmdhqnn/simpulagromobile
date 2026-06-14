@@ -2246,17 +2246,17 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get recommendationSiteDescription =>
-      'Rekomendasi aksi hanya menampilkan data hari ini. Cache database dari hari lain tidak ditampilkan.';
+      'Rekomendasi tindakan langsung untuk hari ini berdasarkan kondisi terkini lahan Anda.';
 
   @override
   String get recommendationPlantTitle => 'Rekomendasi Tanaman';
 
   @override
-  String get recommendationPlantSubtitle => 'ML dari rata-rata sensor 7 hari';
+  String get recommendationPlantSubtitle => 'Analisis rata-rata sensor 7 hari';
 
   @override
   String get recommendationPlantDescription =>
-      'Rekomendasi tanaman berasal langsung dari endpoint Machine Learning dan tidak disimpan ke database.';
+      'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.';
 
   @override
   String get recommendationPlantLoadFailed =>
@@ -2267,7 +2267,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get recommendationPhaseDescription =>
-      'Saran aksi dari database seeded sesuai fase penanaman yang sedang berlangsung.';
+      'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.';
 
   @override
   String get recommendationPhaseLoadFailed => 'Gagal memuat rekomendasi fase';
@@ -2310,36 +2310,34 @@ class AppLocalizationsId extends AppLocalizations {
   String get recommendationDataRuleLabel => 'Aturan tampil';
 
   @override
-  String get recommendationActionSourceTitle => 'Endpoint rekomendasi aksi';
+  String get recommendationActionSourceTitle => 'Rekomendasi Aksi';
 
   @override
   String get recommendationActionSourceDescription =>
-      'Data hari ini dari kondisi lahan: suhu/kelembaban lingkungan, suhu/kelembaban tanah, NPK, dan pH. Cache DB hari lain disembunyikan.';
+      'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.';
 
   @override
-  String get recommendationPlantSourceTitle =>
-      'Endpoint rekomendasi tanaman ML';
+  String get recommendationPlantSourceTitle => 'Rekomendasi Tanaman';
 
   @override
   String get recommendationPlantSourceDescription =>
-      'Fresh dari Machine Learning berdasarkan rata-rata sensor 7 hari terakhir. Hasil ini tidak disimpan ke database.';
+      'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.';
 
   @override
-  String get recommendationPhaseSourceTitle =>
-      'Database rekomendasi fase aktif';
+  String get recommendationPhaseSourceTitle => 'Rekomendasi Fase Aktif';
 
   @override
   String get recommendationPhaseSourceDescription =>
-      'Data seeded berdasarkan fase penanaman yang sedang berlangsung. Ditampilkan hanya jika ada penanaman aktif.';
+      'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.';
 
   @override
   String get recommendationGeneratedTodayLabel => 'Hari ini';
 
   @override
-  String get recommendationFreshMlLabel => 'Fresh ML 7 hari';
+  String get recommendationFreshMlLabel => 'Analisis 7 hari';
 
   @override
-  String get recommendationSeededDatabaseLabel => 'Database fase';
+  String get recommendationSeededDatabaseLabel => 'Fase tanaman';
 
   @override
   String get recommendationEmptyAction =>

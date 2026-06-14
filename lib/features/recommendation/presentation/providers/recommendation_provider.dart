@@ -105,3 +105,26 @@ bool isRecommendationFromToday(Recommendation recommendation, {DateTime? now}) {
       localCreatedAt.month == localNow.month &&
       localCreatedAt.day == localNow.day;
 }
+
+final getRecommendationHistoryUseCaseProvider =
+    Provider<GetRecommendationHistoryUseCase>((ref) {
+      return GetRecommendationHistoryUseCase(
+        ref.watch(recommendationRepositoryProvider),
+      );
+    });
+
+final recommendationHistoryProvider = FutureProvider.autoDispose
+    .family<List<Recommendation>, String>((ref, rawSiteId) async {
+      ref.cacheFor(const Duration(minutes: 5));
+      final siteId = rawSiteId.trim();
+      if (siteId.isEmpty) return const [];
+
+      final useCase = ref.watch(getRecommendationHistoryUseCaseProvider);
+      return ref.retryOnError(() async {
+        final result = await useCase(siteId);
+        return result.fold(
+          (failure) => throw failure,
+          (items) => List<Recommendation>.unmodifiable(items),
+        );
+      });
+    });

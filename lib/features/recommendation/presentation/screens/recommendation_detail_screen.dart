@@ -71,59 +71,58 @@ class RecommendationDetailScreen extends ConsumerWidget {
                 );
                 await Future.delayed(const Duration(milliseconds: 500));
               },
-              child: Column(
-                children: [
-                  RecommendationDetailHeaderWidget(
-                    onBack: () => context.pop(),
-                    onRefresh: () => ref.invalidate(
-                      recommendationHubDetailItemProvider(recommendationId),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RecommendationDetailHeaderWidget(
+                      onBack: () => context.pop(),
+                      onRefresh: () => ref.invalidate(
+                        recommendationHubDetailItemProvider(recommendationId),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
+                    Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: context.rw(0.051),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: context.rh(0.01)),
                           RecommendationTitleCardWidget(
                             recommendation: recommendation,
                           ),
-                          SizedBox(height: context.rh(0.02)),
+                          SizedBox(height: context.rh(0.012)),
                           RecommendationInfoCardWidget(
                             recommendation: recommendation,
                             sourceScopes: catalogItem.scopes,
                           ),
                           if (recommendation.parameters != null &&
                               recommendation.parameters!.isNotEmpty) ...[
-                            SizedBox(height: context.rh(0.02)),
+                            SizedBox(height: context.rh(0.012)),
                             RecommendationParametersCardWidget(
                               parameters: recommendation.parameters!,
                             ),
                           ],
                           if (recommendation.actionItems != null &&
                               recommendation.actionItems!.isNotEmpty) ...[
-                            SizedBox(height: context.rh(0.02)),
+                            SizedBox(height: context.rh(0.012)),
                             RecommendationActionItemsCardWidget(
                               actionItems: recommendation.actionItems!,
                             ),
                           ],
                           if (recommendation.reason != null) ...[
-                            SizedBox(height: context.rh(0.02)),
+                            SizedBox(height: context.rh(0.012)),
                             RecommendationReasonCardWidget(
                               reason: recommendation.reason!,
                             ),
                           ],
-                          const SizedBox.shrink(),
-                          SizedBox(height: context.rh(0.02)),
+                          SizedBox(height: context.rh(0.024)),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

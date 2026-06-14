@@ -529,5 +529,88 @@ void main() {
       expect(result[0].confidenceScore, 0.85);
       expect(result[1].confidenceScore, 0.72);
     });
+
+    test('parses plant ML result with nested recommendations array and total_recommendations correctly', () async {
+      const payload = {
+        'soil_nitro': 55.88,
+        'soil_phos': 108.32,
+        'soil_pot': 237.7,
+        'env_temp': 32.32,
+        'env_hum': 71.93,
+        'soil_ph': 6.51,
+      };
+      when(
+        () => mockDio.post(
+          ApiEndpoints.plantRecommendations('SITE001'),
+          data: payload,
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: ApiEndpoints.plantRecommendations('SITE001'),
+          ),
+          statusCode: 200,
+          data: {
+            'message': 'Plant recommendations retrieved successfully',
+            'data': {
+              'success': true,
+              'total_recommendations': 3,
+              'top_recommendation': 'papaya',
+              'recommendations': [
+                {
+                  'plant': 'papaya',
+                  'confidence': 18.45,
+                  'confidence_text': '18.45%',
+                  'rank': 1,
+                  'category': 'Kurang Cocok',
+                  'recommendation_level': 'less_recommended'
+                },
+                {
+                  'plant': 'grapes',
+                  'confidence': 17.43,
+                  'confidence_text': '17.43%',
+                  'rank': 2,
+                  'category': 'Kurang Cocok',
+                  'recommendation_level': 'less_recommended'
+                },
+                {
+                  'plant': 'blackgram',
+                  'confidence': 11.04,
+                  'confidence_text': '11.04%',
+                  'rank': 3,
+                  'category': 'Kurang Cocok',
+                  'recommendation_level': 'less_recommended'
+                }
+              ],
+              'input_data': {
+                'N': 55.88,
+                'P': 108.32,
+                'K': 237.7,
+                'temperature': 32.32,
+                'humidity': 71.93,
+                'ph': 6.51
+              }
+            }
+          },
+        ),
+      );
+
+      final result = await datasource.postPlantRecommendation(
+        'SITE001',
+        payload,
+      );
+
+      expect(result.map((item) => item.title), ['papaya', 'grapes', 'blackgram']);
+      expect(result.every((item) => item.type == 'planting'), isTrue);
+      expect(result[0].confidenceScore, 0.1845);
+      expect(result[1].confidenceScore, 0.1743);
+      expect(result[2].confidenceScore, 0.1104);
+      expect(result[0].priority, 'low');
+      expect(result[0].description, 'Tanaman papaya memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
+      expect(result[1].priority, 'low');
+      expect(result[1].description, 'Tanaman grapes memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
+      expect(result[2].priority, 'low');
+      expect(result[2].description, 'Tanaman blackgram memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
+    });
   });
 }
