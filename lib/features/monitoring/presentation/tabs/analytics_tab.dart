@@ -9,6 +9,9 @@ import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/analytics/action_required_card_widget.dart';
 import '../widgets/analytics/daily_sensor_chart_widget.dart';
@@ -28,7 +31,7 @@ class AnalyticsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final envAsync = ref.watch(envHealthProvider);
-    final plantRecAsync = ref.watch(plantRecommendationProvider);
+    final plantRecAsync = ref.watch(recommendationPlantFeedProvider);
     final dailyAsync = ref.watch(dailyReadsProvider);
     final devicesAsync = ref.watch(devicesProvider);
     final activePlantAsync = ref.watch(ongoingPlantProvider);
@@ -41,7 +44,7 @@ class AnalyticsTab extends ConsumerWidget {
       onRefresh: () async {
         await runSpacedInvalidations([
           () => ref.invalidate(envHealthProvider),
-          () => ref.invalidate(plantRecommendationProvider),
+          () => ref.invalidate(recommendationPlantFeedProvider),
           () => ref.invalidate(dailyReadsProvider),
           () => ref.invalidate(devicesProvider),
           () => ref.invalidate(monthlyReadsProvider),
@@ -145,12 +148,16 @@ class AnalyticsTab extends ConsumerWidget {
               loading: () => const RecommendationOverviewCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
                 message: e.toString(),
-                onRetry: () => ref.invalidate(plantRecommendationProvider),
+                onRetry: () {
+                  final siteId = ref.read(selectedSiteIdProvider);
+                  if (siteId != null) {
+                    ref.invalidate(plantRecommendationsBySiteProvider(siteId));
+                  }
+                  ref.invalidate(recommendationPlantFeedProvider);
+                },
               ),
-              data: (rec) => PlantRecommendationCardWidget(
-                data: rec,
-                metadataAdapter: metadataAdapter,
-              ),
+              data: (rec) =>
+                  PlantRecommendationCardWidget(recommendations: rec),
             ),
             SizedBox(height: context.rh(0.025)),
 

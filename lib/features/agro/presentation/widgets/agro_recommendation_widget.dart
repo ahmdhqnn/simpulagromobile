@@ -1,18 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../recommendation/presentation/widgets/recommendation_color_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
 
 class AgroRecommendationWidget extends StatelessWidget {
-  final List<Recommendation> recommendations;
+  const AgroRecommendationWidget({super.key, required this.recommendations})
+    : errorMessage = null,
+      onRetry = null;
 
-  const AgroRecommendationWidget({super.key, required this.recommendations});
+  const AgroRecommendationWidget.error({
+    super.key,
+    required String message,
+    required this.onRetry,
+  }) : recommendations = const <Recommendation>[],
+       errorMessage = message;
+
+  final List<Recommendation> recommendations;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
-    if (recommendations.isEmpty) {
+    if (errorMessage != null) {
+      return _buildErrorState(context, errorMessage!, onRetry);
+    }
+
+    final sortedRecommendations = sortRecommendationOverviewItems(
+      recommendations,
+    );
+
+    if (sortedRecommendations.isEmpty) {
       return _buildEmptyState(context);
     }
 
@@ -76,7 +98,7 @@ class AgroRecommendationWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          ...recommendations.map(
+          ...sortedRecommendations.map(
             (rec) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _buildRecommendationCard(context, rec),
@@ -88,117 +110,141 @@ class AgroRecommendationWidget extends StatelessWidget {
   }
 
   Widget _buildRecommendationCard(BuildContext context, Recommendation rec) {
-    // Parse color strings like "#EF5350" to Color objects
-    Color priorityColor = AppColors.info;
-    try {
-      priorityColor = Color(
-        int.parse(rec.priorityColor.replaceAll('#', '0xFF')),
-      );
-    } catch (_) {}
-
+    final priorityColor = RecommendationColors.forPriority(rec.priority);
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: priorityColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        onTap: () => context.push('/recommendation/${rec.recommendationId}'),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: priorityColor.withValues(alpha: rec.hasError ? 0.08 : 0.05),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: rec.hasError
+                ? Border.all(color: AppColors.warning.withValues(alpha: 0.36))
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: priorityColor,
-                  borderRadius: BorderRadius.circular(12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: priorityColor,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Text(
+                      rec.priority.localizedLabel(l10n).toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(10),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      rec.type.localizedLabel(l10n),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.w600,
+                        color: priorityColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    rec.hasError
+                        ? Icons.warning_amber_rounded
+                        : Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: rec.hasError ? AppColors.warning : priorityColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                rec.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(16),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
-                child: Text(
-                  rec.priority.localizedLabel(l10n).toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(10),
-                    fontWeight: FontWeight.bold,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                rec.description,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: context.sp(13),
+                  color: AppColors.textPrimary.withValues(alpha: 0.75),
+                  height: 1.4,
+                ),
+              ),
+              if (rec.actionItems != null && rec.actionItems!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
                     color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppRadius.xs),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: rec.actionItems!
+                        .take(3)
+                        .map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 16,
+                                  color: priorityColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(
+                                      fontFamily: AppTextStyles.fontFamily,
+                                      fontSize: context.sp(12),
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                rec.type.localizedLabel(l10n),
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(12),
-                  fontWeight: FontWeight.w600,
-                  color: priorityColor,
-                ),
-              ),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            rec.title,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(16),
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1D1D1D),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            rec.description,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.8),
-              height: 1.4,
-            ),
-          ),
-          if (rec.actionItems != null && rec.actionItems!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: rec.actionItems!
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              size: 16,
-                              color: priorityColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                item,
-                                style: TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans',
-                                  fontSize: context.sp(12),
-                                  color: const Color(0xFF1D1D1D),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -230,6 +276,54 @@ class AgroRecommendationWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(
+    BuildContext context,
+    String message,
+    VoidCallback? onRetry,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded, color: AppColors.error),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: context.sp(13),
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+          if (onRetry != null) ...[
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(l10n.retry),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

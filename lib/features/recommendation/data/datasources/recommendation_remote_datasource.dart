@@ -162,7 +162,10 @@ class RecommendationRemoteDatasourceImpl
 
     final result = <RecommendationModel>[];
     final timestamp =
-        createdAt ?? _parseDate(data['generated_at']) ?? _parseDate(data['cached_at']) ?? DateTime.now();
+        createdAt ??
+        _parseDate(data['generated_at']) ??
+        _parseDate(data['cached_at']) ??
+        DateTime.now();
     final sensorData = _parseSensorData(data['sensor_data']);
 
     void parseItem(
@@ -239,9 +242,13 @@ class RecommendationRemoteDatasourceImpl
       if (json['potassium'] != null) 'potassium': json['potassium'],
       if (json['ph_value'] != null || json['ph'] != null)
         'ph': json['ph_value'] ?? json['ph'],
-      if (json['env_temp'] != null || json['envTemp'] != null || json['temperature'] != null)
+      if (json['env_temp'] != null ||
+          json['envTemp'] != null ||
+          json['temperature'] != null)
         'env_temp': json['env_temp'] ?? json['envTemp'] ?? json['temperature'],
-      if (json['env_hum'] != null || json['envHum'] != null || json['humidity'] != null)
+      if (json['env_hum'] != null ||
+          json['envHum'] != null ||
+          json['humidity'] != null)
         'env_hum': json['env_hum'] ?? json['envHum'] ?? json['humidity'],
       if (json['soil_temp'] != null || json['soilTemp'] != null)
         'soil_temp': json['soil_temp'] ?? json['soilTemp'],
@@ -252,11 +259,13 @@ class RecommendationRemoteDatasourceImpl
     final liveBundle = _asStringMap(json['recommendations']);
     if (liveBundle != null && liveBundle.isNotEmpty) {
       final recommendationsMap = <String, dynamic>{...liveBundle};
-      
+
       // Inject lingkungan if missing from recommendations but present at root level
       if (!recommendationsMap.containsKey('lingkungan') &&
           json.containsKey('lingkungan_recommendation')) {
-        final lingkunganRaw = _parseJsonRecommendation(json['lingkungan_recommendation']);
+        final lingkunganRaw = _parseJsonRecommendation(
+          json['lingkungan_recommendation'],
+        );
         if (lingkunganRaw != null) {
           recommendationsMap['lingkungan'] = lingkunganRaw;
         }
@@ -275,7 +284,9 @@ class RecommendationRemoteDatasourceImpl
 
     final npkRaw = _parseJsonRecommendation(json['npk_recommendation']);
     final phRaw = _parseJsonRecommendation(json['ph_recommendation']);
-    final lingkunganRaw = _parseJsonRecommendation(json['lingkungan_recommendation']);
+    final lingkunganRaw = _parseJsonRecommendation(
+      json['lingkungan_recommendation'],
+    );
     final npkMap = _asStringMap(npkRaw);
     final phFromNpk = npkMap == null ? null : npkMap['ph'];
     final normalizedNpk = npkMap == null
@@ -410,7 +421,8 @@ class RecommendationRemoteDatasourceImpl
             parts.add(line);
             actionItems.add(line);
           }
-          rawStatus = _stringOrNull(map['status']) ??
+          rawStatus =
+              _stringOrNull(map['status']) ??
               (message != null ? _statusFromText(message) : null);
 
           final dose = _doseValue(map);
@@ -784,6 +796,9 @@ class RecommendationRemoteDatasourceImpl
             plantMap?['probability'] ??
             plantMap?['prob'] ??
             plantMap?['confidence_score'] ??
+            plantMap?['confidence_text'] ??
+            plantMap?['score_text'] ??
+            plantMap?['probability_text'] ??
             confidenceMap?[plantName] ??
             confidenceMap?[plantName.toLowerCase()] ??
             (index < confidence.length ? confidence[index] : null),
@@ -797,36 +812,42 @@ class RecommendationRemoteDatasourceImpl
             );
       String priority = 'medium';
       if (plantMap != null) {
-        final level = _stringOrNull(plantMap['recommendation_level'] ?? plantMap['category'])?.toLowerCase();
+        final level = _stringOrNull(
+          plantMap['recommendation_level'] ?? plantMap['category'],
+        )?.toLowerCase();
         if (level != null) {
-          if (level.contains('highly_recommended') || 
-              level.contains('highly recommended') || 
-              level.contains('sangat cocok') || 
-              level == 'high' || 
+          if (level.contains('highly_recommended') ||
+              level.contains('highly recommended') ||
+              level.contains('sangat cocok') ||
+              level == 'high' ||
               level == 'tinggi') {
             priority = 'high';
-          } else if (level.contains('less_recommended') || 
-                     level.contains('less recommended') || 
-                     level.contains('not_recommended') || 
-                     level.contains('not recommended') || 
-                     level.contains('kurang cocok') || 
-                     level.contains('tidak cocok') || 
-                     level == 'low' || 
-                     level == 'rendah') {
+          } else if (level.contains('less_recommended') ||
+              level.contains('less recommended') ||
+              level.contains('not_recommended') ||
+              level.contains('not recommended') ||
+              level.contains('kurang cocok') ||
+              level.contains('tidak cocok') ||
+              level == 'low' ||
+              level == 'rendah') {
             priority = 'low';
-          } else if (level.contains('recommended') || 
-                     level.contains('cocok') || 
-                     level == 'medium' || 
-                     level == 'sedang') {
+          } else if (level.contains('recommended') ||
+              level.contains('cocok') ||
+              level == 'medium' ||
+              level == 'sedang') {
             priority = 'medium';
           }
         }
       }
 
-      final category = plantMap != null ? _stringOrNull(plantMap['category']) : null;
-      final description = detail ?? (category != null 
-          ? 'Tanaman $plantName memiliki tingkat kesesuaian "$category" berdasarkan hasil analisis parameter tanah.'
-          : 'Tanaman $plantName direkomendasikan berdasarkan rata-rata sensor site selama 7 hari terakhir.');
+      final category = plantMap != null
+          ? _stringOrNull(plantMap['category'])
+          : null;
+      final description =
+          detail ??
+          (category != null
+              ? 'Tanaman $plantName memiliki tingkat kesesuaian "$category" berdasarkan hasil analisis parameter tanah.'
+              : 'Tanaman $plantName direkomendasikan berdasarkan rata-rata sensor site selama 7 hari terakhir.');
 
       result.add(
         RecommendationModel(
@@ -930,6 +951,7 @@ class RecommendationRemoteDatasourceImpl
             valueMap.containsKey('probability') ||
             valueMap.containsKey('prob') ||
             valueMap.containsKey('confidence_score') ||
+            valueMap.containsKey('confidence_text') ||
             _plantDetailText(valueMap) != null;
         if (hasPlantDetail) result.add({'plant': key, ...valueMap});
         continue;
@@ -999,8 +1021,12 @@ class RecommendationRemoteDatasourceImpl
       phosphorus: _nullableNum(data['phosphorus']),
       potassium: _nullableNum(data['potassium']),
       ph: _nullableNum(data['ph']),
-      envTemp: _nullableNum(data['env_temp'] ?? data['envTemp'] ?? data['temperature']),
-      envHum: _nullableNum(data['env_hum'] ?? data['envHum'] ?? data['humidity']),
+      envTemp: _nullableNum(
+        data['env_temp'] ?? data['envTemp'] ?? data['temperature'],
+      ),
+      envHum: _nullableNum(
+        data['env_hum'] ?? data['envHum'] ?? data['humidity'],
+      ),
       soilTemp: _nullableNum(data['soil_temp'] ?? data['soilTemp']),
       soilHum: _nullableNum(data['soil_hum'] ?? data['soilHum']),
     );
@@ -1149,9 +1175,12 @@ class RecommendationRemoteDatasourceImpl
     if (value == null) return null;
     final raw = value is num
         ? value.toDouble()
-        : double.tryParse(value.toString().replaceAll(',', '.'));
+        : double.tryParse(
+            value.toString().trim().replaceAll('%', '').replaceAll(',', '.'),
+          );
     if (raw == null) return null;
-    return raw > 1 ? raw / 100 : raw;
+    final normalized = raw > 1 ? raw / 100 : raw;
+    return normalized.clamp(0.0, 1.0).toDouble();
   }
 
   num _toNum(dynamic value) {

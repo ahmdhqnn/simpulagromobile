@@ -44,4 +44,56 @@ void main() {
       );
     });
   });
+
+  group('primaryRecommendationForOverview', () {
+    Recommendation plantRecommendation(
+      String id,
+      double confidence, {
+      RecommendationPriority priority = RecommendationPriority.medium,
+    }) {
+      return Recommendation(
+        recommendationId: id,
+        type: RecommendationType.planting,
+        title: id,
+        description: 'Rekomendasi tanaman',
+        priority: priority,
+        createdAt: DateTime(2026, 6, 11, 8),
+        confidenceScore: confidence,
+      );
+    }
+
+    test(
+      'uses top recommendation confidence instead of average confidence',
+      () {
+        final items = [
+          plantRecommendation('padi', 0.56),
+          plantRecommendation('jagung', 0.18),
+          plantRecommendation('kedelai', 0.37),
+        ];
+
+        final primary = primaryRecommendationForOverview(items);
+        final sorted = sortRecommendationOverviewItems(items);
+
+        expect(primary?.recommendationId, 'padi');
+        expect(primary?.confidenceScore, 0.56);
+        expect(sorted.map((item) => item.confidenceScore), [0.56, 0.37, 0.18]);
+      },
+    );
+
+    test('keeps error recommendations after valid recommendations', () {
+      final items = [
+        Recommendation(
+          recommendationId: 'error',
+          type: RecommendationType.ph,
+          title: 'pH tidak tersedia',
+          description: 'Data pH tidak cukup',
+          priority: RecommendationPriority.high,
+          errorMessage: 'Data pH tidak cukup',
+        ),
+        plantRecommendation('padi', 0.56),
+      ];
+
+      expect(primaryRecommendationForOverview(items)?.recommendationId, 'padi');
+    });
+  });
 }
