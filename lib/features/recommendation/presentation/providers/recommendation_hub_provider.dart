@@ -79,13 +79,7 @@ final recommendationHubTabProvider = StateProvider<RecommendationHubTab>(
   (_) => RecommendationHubTab.active,
 );
 
-enum RecommendationHubFilter {
-  all,
-  site,
-  plant,
-  phase,
-  history,
-}
+enum RecommendationHubFilter { all, site, plant, phase, history }
 
 final recommendationHubFilterProvider = StateProvider<RecommendationHubFilter>(
   (_) => RecommendationHubFilter.all,
@@ -104,7 +98,7 @@ void resetRecommendationHubFilters(
   final resolvedScope = scope ?? RecommendationScope.all;
   ref.read(recommendationScopeFilterProvider.notifier).state = resolvedScope;
   ref.read(recommendationSearchQueryProvider.notifier).state = '';
-  
+
   final filter = switch (resolvedScope) {
     RecommendationScope.all => RecommendationHubFilter.all,
     RecommendationScope.site => RecommendationHubFilter.site,
@@ -112,7 +106,8 @@ void resetRecommendationHubFilters(
     RecommendationScope.phase => RecommendationHubFilter.phase,
   };
   ref.read(recommendationHubFilterProvider.notifier).state = filter;
-  ref.read(recommendationHubTabProvider.notifier).state = RecommendationHubTab.active;
+  ref.read(recommendationHubTabProvider.notifier).state =
+      RecommendationHubTab.active;
 }
 
 void invalidateRecommendationHubData(WidgetRef ref) {
@@ -138,7 +133,8 @@ Future<void> invalidateRecommendationHubDataSpaced(WidgetRef ref) {
     if (siteId != null)
       () => ref.invalidate(plantRecommendationsBySiteProvider(siteId)),
     if (siteId != null) () => ref.invalidate(currentPhaseProvider(siteId)),
-    if (siteId != null) () => ref.invalidate(recommendationHistoryProvider(siteId)),
+    if (siteId != null)
+      () => ref.invalidate(recommendationHistoryProvider(siteId)),
     () => ref.invalidate(recommendationSiteFeedProvider),
     () => ref.invalidate(recommendationPlantFeedProvider),
     () => ref.invalidate(recommendationActivePhaseFeedProvider),
@@ -313,9 +309,13 @@ final recommendationHubDetailItemProvider = FutureProvider.autoDispose
       }
 
       final siteId = ref.read(selectedSiteIdProvider);
-      final activeCatalog = await ref.read(recommendationCatalogProvider.future);
+      final activeCatalog = await ref.read(
+        recommendationCatalogProvider.future,
+      );
       final historyItems = siteId != null
-          ? await ref.read(recommendationHistoryProvider(siteId).future).catchError((_) => <Recommendation>[])
+          ? await ref
+                .read(recommendationHistoryProvider(siteId).future)
+                .catchError((_) => <Recommendation>[])
           : const <Recommendation>[];
 
       final current = find(activeCatalog, historyItems);
@@ -331,7 +331,9 @@ final recommendationHubDetailItemProvider = FutureProvider.autoDispose
 
       final refCatalog = await ref.read(recommendationCatalogProvider.future);
       final refHistory = siteId != null
-          ? await ref.read(recommendationHistoryProvider(siteId).future).catchError((_) => <Recommendation>[])
+          ? await ref
+                .read(recommendationHistoryProvider(siteId).future)
+                .catchError((_) => <Recommendation>[])
           : const <Recommendation>[];
 
       final refreshed = find(refCatalog, refHistory);
@@ -384,6 +386,11 @@ List<RecommendationCatalogItem> _mergeRecommendationCatalog(
   }
 
   return merged.values.toList()..sort((left, right) {
+    final errorComparison = (left.recommendation.hasError ? 1 : 0).compareTo(
+      right.recommendation.hasError ? 1 : 0,
+    );
+    if (errorComparison != 0) return errorComparison;
+
     final leftDate =
         left.recommendation.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
     final rightDate =
@@ -391,9 +398,15 @@ List<RecommendationCatalogItem> _mergeRecommendationCatalog(
         DateTime.fromMillisecondsSinceEpoch(0);
     final dateComparison = rightDate.compareTo(leftDate);
     if (dateComparison != 0) return dateComparison;
-    return right.recommendation.priority.index.compareTo(
+
+    final priorityComparison = right.recommendation.priority.index.compareTo(
       left.recommendation.priority.index,
     );
+    if (priorityComparison != 0) return priorityComparison;
+
+    final leftConfidence = left.recommendation.confidenceScore ?? -1;
+    final rightConfidence = right.recommendation.confidenceScore ?? -1;
+    return rightConfidence.compareTo(leftConfidence);
   });
 }
 

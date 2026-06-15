@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
@@ -90,6 +91,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
                           ),
                           child: _buildAgroSections(
                             context,
+                            ref,
                             agroData,
                             healthAsync,
                             recommendationsAsync,
@@ -121,6 +123,7 @@ class AgroIndicatorScreen extends ConsumerWidget {
 
   Widget _buildAgroSections(
     BuildContext context,
+    WidgetRef ref,
     AgroEntity agroData,
     AsyncValue<AgroEnvironmentalHealthEntity> healthAsync,
     AsyncValue<List<Recommendation>> recommendationsAsync,
@@ -154,7 +157,23 @@ class AgroIndicatorScreen extends ConsumerWidget {
               SizedBox(height: context.rh(0.024)),
             ],
           ),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (error, _) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
+              SizedBox(height: context.rh(0.014)),
+              AgroRecommendationWidget.error(
+                message: toUiErrorMessage(error, l10n),
+                onRetry: () {
+                  final sid = ref.read(selectedSiteIdProvider);
+                  if (sid != null) {
+                    ref.invalidate(recommendationsBySiteProvider(sid));
+                  }
+                },
+              ),
+              SizedBox(height: context.rh(0.024)),
+            ],
+          ),
         ),
 
         phaseAsync.when(

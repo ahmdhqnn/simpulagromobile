@@ -170,16 +170,9 @@ class _RecommendationSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sortedItems = _sortRecommendations(items);
-    final latest = sortedItems.isEmpty ? null : sortedItems.first;
-    final confidenceValues = sortedItems
-        .map((item) => item.confidenceScore)
-        .whereType<double>()
-        .toList();
-    final averageConfidence = confidenceValues.isEmpty
-        ? null
-        : confidenceValues.reduce((left, right) => left + right) /
-              confidenceValues.length;
+    final sortedItems = sortRecommendationOverviewItems(items);
+    final latest = primaryRecommendationForOverview(items);
+    final confidence = latest?.confidenceScore;
 
     return AppCardWidget(
       width: double.infinity,
@@ -237,11 +230,11 @@ class _RecommendationSectionCard extends StatelessWidget {
                 value: sortedItems.length.toString(),
                 color: color,
               ),
-              if (averageConfidence != null) ...[
+              if (confidence != null) ...[
                 const SizedBox(width: 8),
                 _MetricPill(
                   label: context.l10n.recommendationConfidenceLabel,
-                  value: '${(averageConfidence * 100).round()}%',
+                  value: '${(confidence * 100).round()}%',
                   color: AppColors.info,
                 ),
               ],
@@ -435,33 +428,6 @@ class _MetricPill extends StatelessWidget {
       ),
     );
   }
-}
-
-List<Recommendation> _sortRecommendations(List<Recommendation> items) {
-  final byId = <String, Recommendation>{};
-  for (final item in items) {
-    final id = item.recommendationId.trim();
-    if (id.isEmpty) continue;
-    final previous = byId[id];
-    if (previous == null) {
-      byId[id] = item;
-      continue;
-    }
-    final previousDate =
-        previous.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-    final currentDate =
-        item.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-    if (currentDate.isAfter(previousDate)) byId[id] = item;
-  }
-
-  final sorted = byId.values.toList()
-    ..sort((left, right) {
-      final leftDate = left.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final rightDate =
-          right.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return rightDate.compareTo(leftDate);
-    });
-  return sorted;
 }
 
 String _phaseSubtitle(Phase phase, Plant plant, AppLocalizations l10n) {

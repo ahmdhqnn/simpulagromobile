@@ -9,6 +9,7 @@ import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../plant/presentation/providers/plant_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 import '../providers/monitoring_provider.dart';
 import '../tabs/admin_read_tab.dart';
 import '../tabs/analytics_tab.dart';
@@ -80,7 +81,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen>
       case 5:
         await runSpacedInvalidations([
           () => ref.invalidate(envHealthProvider),
-          () => ref.invalidate(plantRecommendationProvider),
+          () => ref.invalidate(recommendationPlantFeedProvider),
           () => ref.invalidate(dailyReadsProvider),
           () => ref.invalidate(devicesProvider),
           () => ref.invalidate(monitoringSensorCountProvider),

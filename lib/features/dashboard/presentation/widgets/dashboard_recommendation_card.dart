@@ -10,6 +10,7 @@ import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/domain/entities/recommendation_bundle.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
+import '../../../recommendation/presentation/providers/recommendation_provider.dart';
 
 class DashboardRecommendationCard extends ConsumerWidget {
   const DashboardRecommendationCard({super.key});
@@ -118,9 +119,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
     required List<Recommendation> items,
     required VoidCallback onTap,
   }) {
-    final sortedItems = List<Recommendation>.from(items)
-      ..sort((a, b) => b.priority.index.compareTo(a.priority.index));
-    final latest = sortedItems.isEmpty ? null : sortedItems.first;
+    final latest = primaryRecommendationForOverview(items);
     final confidence = latest?.confidenceScore;
 
     return GestureDetector(
@@ -228,9 +227,13 @@ class DashboardRecommendationCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.hint(context),
                     ),
-                    if (latest.type == RecommendationType.npk && latest.parameters?.sensorData != null) ...[
+                    if (latest.type == RecommendationType.npk &&
+                        latest.parameters?.sensorData != null) ...[
                       const SizedBox(height: 10),
-                      _buildCompactSensorRow(context, latest.parameters!.sensorData!),
+                      _buildCompactSensorRow(
+                        context,
+                        latest.parameters!.sensorData!,
+                      ),
                     ],
                     const SizedBox(height: 8),
                     Row(
@@ -317,7 +320,10 @@ class DashboardRecommendationCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildCompactSensorRow(BuildContext context, RecommendationSensorData sensorData) {
+  Widget _buildCompactSensorRow(
+    BuildContext context,
+    RecommendationSensorData sensorData,
+  ) {
     Widget sensorBadge(String label, String value, Color dotColor) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -362,7 +368,9 @@ class DashboardRecommendationCard extends ConsumerWidget {
     }
 
     Color dotColor(num? value) {
-      if (value == null || value == 0) return AppColors.textSecondary.withValues(alpha: 0.4);
+      if (value == null || value == 0) {
+        return AppColors.textSecondary.withValues(alpha: 0.4);
+      }
       return AppColors.success;
     }
 
@@ -377,13 +385,31 @@ class DashboardRecommendationCard extends ConsumerWidget {
       runSpacing: 6,
       children: [
         if (sensorData.nitrogen != null)
-          sensorBadge('N', formatVal(sensorData.nitrogen, 'mg/kg'), dotColor(sensorData.nitrogen)),
+          sensorBadge(
+            'N',
+            formatVal(sensorData.nitrogen, 'mg/kg'),
+            dotColor(sensorData.nitrogen),
+          ),
         if (sensorData.phosphorus != null)
-          sensorBadge('P', formatVal(sensorData.phosphorus, 'mg/kg'), dotColor(sensorData.phosphorus)),
+          sensorBadge(
+            'P',
+            formatVal(sensorData.phosphorus, 'mg/kg'),
+            dotColor(sensorData.phosphorus),
+          ),
         if (sensorData.potassium != null)
-          sensorBadge('K', formatVal(sensorData.potassium, 'mg/kg'), dotColor(sensorData.potassium)),
+          sensorBadge(
+            'K',
+            formatVal(sensorData.potassium, 'mg/kg'),
+            dotColor(sensorData.potassium),
+          ),
         if (sensorData.ph != null)
-          sensorBadge('pH', formatVal(sensorData.ph, ''), sensorData.ph! >= 6.0 && sensorData.ph! <= 7.0 ? AppColors.success : AppColors.warning),
+          sensorBadge(
+            'pH',
+            formatVal(sensorData.ph, ''),
+            sensorData.ph! >= 6.0 && sensorData.ph! <= 7.0
+                ? AppColors.success
+                : AppColors.warning,
+          ),
       ],
     );
   }

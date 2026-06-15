@@ -180,88 +180,91 @@ void main() {
       expect(result.first.actionItems, contains('Dosis N: 54 kg/ha'));
     });
 
-    test('parses NPK with deficient elements and sets correct priority, status, and title', () async {
-      when(
-        () => mockDio.get(
-          ApiEndpoints.recommendations('SITE001'),
-          queryParameters: null,
-        ),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(
-            path: ApiEndpoints.recommendations('SITE001'),
+    test(
+      'parses NPK with deficient elements and sets correct priority, status, and title',
+      () async {
+        when(
+          () => mockDio.get(
+            ApiEndpoints.recommendations('SITE001'),
+            queryParameters: null,
           ),
-          statusCode: 200,
-          data: {
-            'status': 200,
-            'data': {
-              'recommendations': {
-                'npk': {
-                  'n': {
-                    'status': 'rendah',
-                    'pesan': 'Tambah Urea',
-                    'dosis_kg_ha': 54,
-                  },
-                  'p': 'Kondisi normal',
-                  'k': 'Kondisi normal',
-                },
-              },
-            },
-          },
-        ),
-      );
-
-      final result = await datasource.getRecommendationsBySite('SITE001');
-
-      expect(result, hasLength(1));
-      final npk = result.first;
-      expect(npk.type, 'npk');
-      expect(npk.priority, 'high');
-      expect(npk.title, 'Pemupukan NPK Diperlukan (Nutrisi Rendah)');
-    });
-
-    test('parses NPK with mixed (deficient and excess) elements and sets correct priority, status, and title', () async {
-      when(
-        () => mockDio.get(
-          ApiEndpoints.recommendations('SITE001'),
-          queryParameters: null,
-        ),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(
-            path: ApiEndpoints.recommendations('SITE001'),
-          ),
-          statusCode: 200,
-          data: {
-            'status': 200,
-            'data': {
-              'recommendations': {
-                'npk': {
-                  'n': {
-                    'status': 'rendah',
-                    'pesan': 'Tambah Urea',
-                    'dosis_kg_ha': 54,
-                  },
-                  'p': 'Kondisi normal',
-                  'k': {
-                    'status': 'tinggi',
-                    'pesan': 'Kelebihan Kalium',
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(
+              path: ApiEndpoints.recommendations('SITE001'),
+            ),
+            statusCode: 200,
+            data: {
+              'status': 200,
+              'data': {
+                'recommendations': {
+                  'npk': {
+                    'n': {
+                      'status': 'rendah',
+                      'pesan': 'Tambah Urea',
+                      'dosis_kg_ha': 54,
+                    },
+                    'p': 'Kondisi normal',
+                    'k': 'Kondisi normal',
                   },
                 },
               },
             },
-          },
-        ),
-      );
+          ),
+        );
 
-      final result = await datasource.getRecommendationsBySite('SITE001');
+        final result = await datasource.getRecommendationsBySite('SITE001');
 
-      expect(result, hasLength(1));
-      final npk = result.first;
-      expect(npk.type, 'npk');
-      expect(npk.priority, 'critical');
-      expect(npk.title, 'Penyesuaian Nutrisi NPK (Kondisi Kritis)');
-    });
+        expect(result, hasLength(1));
+        final npk = result.first;
+        expect(npk.type, 'npk');
+        expect(npk.priority, 'high');
+        expect(npk.title, 'Pemupukan NPK Diperlukan (Nutrisi Rendah)');
+      },
+    );
+
+    test(
+      'parses NPK with mixed (deficient and excess) elements and sets correct priority, status, and title',
+      () async {
+        when(
+          () => mockDio.get(
+            ApiEndpoints.recommendations('SITE001'),
+            queryParameters: null,
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(
+              path: ApiEndpoints.recommendations('SITE001'),
+            ),
+            statusCode: 200,
+            data: {
+              'status': 200,
+              'data': {
+                'recommendations': {
+                  'npk': {
+                    'n': {
+                      'status': 'rendah',
+                      'pesan': 'Tambah Urea',
+                      'dosis_kg_ha': 54,
+                    },
+                    'p': 'Kondisi normal',
+                    'k': {'status': 'tinggi', 'pesan': 'Kelebihan Kalium'},
+                  },
+                },
+              },
+            },
+          ),
+        );
+
+        final result = await datasource.getRecommendationsBySite('SITE001');
+
+        expect(result, hasLength(1));
+        final npk = result.first;
+        expect(npk.type, 'npk');
+        expect(npk.priority, 'critical');
+        expect(npk.title, 'Penyesuaian Nutrisi NPK (Kondisi Kritis)');
+      },
+    );
 
     test(
       'keeps sensor data and exposes partial ML errors from a 400 response',
@@ -530,14 +533,113 @@ void main() {
       expect(result[1].confidenceScore, 0.72);
     });
 
-    test('parses plant ML result with nested recommendations array and total_recommendations correctly', () async {
+    test(
+      'parses plant ML result with nested recommendations array and total_recommendations correctly',
+      () async {
+        const payload = {
+          'soil_nitro': 55.88,
+          'soil_phos': 108.32,
+          'soil_pot': 237.7,
+          'env_temp': 32.32,
+          'env_hum': 71.93,
+          'soil_ph': 6.51,
+        };
+        when(
+          () => mockDio.post(
+            ApiEndpoints.plantRecommendations('SITE001'),
+            data: payload,
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(
+              path: ApiEndpoints.plantRecommendations('SITE001'),
+            ),
+            statusCode: 200,
+            data: {
+              'message': 'Plant recommendations retrieved successfully',
+              'data': {
+                'success': true,
+                'total_recommendations': 3,
+                'top_recommendation': 'papaya',
+                'recommendations': [
+                  {
+                    'plant': 'papaya',
+                    'confidence': 18.45,
+                    'confidence_text': '18.45%',
+                    'rank': 1,
+                    'category': 'Kurang Cocok',
+                    'recommendation_level': 'less_recommended',
+                  },
+                  {
+                    'plant': 'grapes',
+                    'confidence': 17.43,
+                    'confidence_text': '17.43%',
+                    'rank': 2,
+                    'category': 'Kurang Cocok',
+                    'recommendation_level': 'less_recommended',
+                  },
+                  {
+                    'plant': 'blackgram',
+                    'confidence': 11.04,
+                    'confidence_text': '11.04%',
+                    'rank': 3,
+                    'category': 'Kurang Cocok',
+                    'recommendation_level': 'less_recommended',
+                  },
+                ],
+                'input_data': {
+                  'N': 55.88,
+                  'P': 108.32,
+                  'K': 237.7,
+                  'temperature': 32.32,
+                  'humidity': 71.93,
+                  'ph': 6.51,
+                },
+              },
+            },
+          ),
+        );
+
+        final result = await datasource.postPlantRecommendation(
+          'SITE001',
+          payload,
+        );
+
+        expect(result.map((item) => item.title), [
+          'papaya',
+          'grapes',
+          'blackgram',
+        ]);
+        expect(result.every((item) => item.type == 'planting'), isTrue);
+        expect(result[0].confidenceScore, 0.1845);
+        expect(result[1].confidenceScore, 0.1743);
+        expect(result[2].confidenceScore, 0.1104);
+        expect(result[0].priority, 'low');
+        expect(
+          result[0].description,
+          'Tanaman papaya memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.',
+        );
+        expect(result[1].priority, 'low');
+        expect(
+          result[1].description,
+          'Tanaman grapes memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.',
+        );
+        expect(result[2].priority, 'low');
+        expect(
+          result[2].description,
+          'Tanaman blackgram memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.',
+        );
+      },
+    );
+
+    test('parses plant ML confidence from percent text', () async {
       const payload = {
-        'soil_nitro': 55.88,
-        'soil_phos': 108.32,
-        'soil_pot': 237.7,
-        'env_temp': 32.32,
-        'env_hum': 71.93,
-        'soil_ph': 6.51,
+        'soil_nitro': 40.0,
+        'soil_phos': 15.0,
+        'soil_pot': 200.0,
+        'env_temp': 28.0,
+        'env_hum': 75.0,
+        'soil_ph': 6.5,
       };
       when(
         () => mockDio.post(
@@ -553,44 +655,11 @@ void main() {
           data: {
             'message': 'Plant recommendations retrieved successfully',
             'data': {
-              'success': true,
-              'total_recommendations': 3,
-              'top_recommendation': 'papaya',
               'recommendations': [
-                {
-                  'plant': 'papaya',
-                  'confidence': 18.45,
-                  'confidence_text': '18.45%',
-                  'rank': 1,
-                  'category': 'Kurang Cocok',
-                  'recommendation_level': 'less_recommended'
-                },
-                {
-                  'plant': 'grapes',
-                  'confidence': 17.43,
-                  'confidence_text': '17.43%',
-                  'rank': 2,
-                  'category': 'Kurang Cocok',
-                  'recommendation_level': 'less_recommended'
-                },
-                {
-                  'plant': 'blackgram',
-                  'confidence': 11.04,
-                  'confidence_text': '11.04%',
-                  'rank': 3,
-                  'category': 'Kurang Cocok',
-                  'recommendation_level': 'less_recommended'
-                }
+                {'plant': 'padi', 'confidence_text': '56%', 'rank': 1},
+                {'plant': 'jagung', 'confidence_text': '37.5%', 'rank': 2},
               ],
-              'input_data': {
-                'N': 55.88,
-                'P': 108.32,
-                'K': 237.7,
-                'temperature': 32.32,
-                'humidity': 71.93,
-                'ph': 6.51
-              }
-            }
+            },
           },
         ),
       );
@@ -600,17 +669,9 @@ void main() {
         payload,
       );
 
-      expect(result.map((item) => item.title), ['papaya', 'grapes', 'blackgram']);
-      expect(result.every((item) => item.type == 'planting'), isTrue);
-      expect(result[0].confidenceScore, 0.1845);
-      expect(result[1].confidenceScore, 0.1743);
-      expect(result[2].confidenceScore, 0.1104);
-      expect(result[0].priority, 'low');
-      expect(result[0].description, 'Tanaman papaya memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
-      expect(result[1].priority, 'low');
-      expect(result[1].description, 'Tanaman grapes memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
-      expect(result[2].priority, 'low');
-      expect(result[2].description, 'Tanaman blackgram memiliki tingkat kesesuaian "Kurang Cocok" berdasarkan hasil analisis parameter tanah.');
+      expect(result.map((item) => item.title), ['padi', 'jagung']);
+      expect(result[0].confidenceScore, 0.56);
+      expect(result[1].confidenceScore, 0.375);
     });
   });
 }

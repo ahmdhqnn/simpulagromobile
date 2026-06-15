@@ -106,6 +106,65 @@ bool isRecommendationFromToday(Recommendation recommendation, {DateTime? now}) {
       localCreatedAt.day == localNow.day;
 }
 
+List<Recommendation> sortRecommendationOverviewItems(
+  List<Recommendation> items,
+) {
+  final byId = <String, ({Recommendation item, int index})>{};
+  for (var index = 0; index < items.length; index++) {
+    final item = items[index];
+    final id = item.recommendationId.trim();
+    if (id.isEmpty) continue;
+
+    final previous = byId[id];
+    if (previous == null) {
+      byId[id] = (item: item, index: index);
+      continue;
+    }
+
+    final previousDate =
+        previous.item.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+    final currentDate =
+        item.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+    if (currentDate.isAfter(previousDate)) {
+      byId[id] = (item: item, index: previous.index);
+    }
+  }
+
+  final rows = byId.values.toList()
+    ..sort((left, right) {
+      final errorComparison = (left.item.hasError ? 1 : 0).compareTo(
+        right.item.hasError ? 1 : 0,
+      );
+      if (errorComparison != 0) return errorComparison;
+
+      final leftDate =
+          left.item.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final rightDate =
+          right.item.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final dateComparison = rightDate.compareTo(leftDate);
+      if (dateComparison != 0) return dateComparison;
+
+      final priorityComparison = right.item.priority.index.compareTo(
+        left.item.priority.index,
+      );
+      if (priorityComparison != 0) return priorityComparison;
+
+      final leftConfidence = left.item.confidenceScore ?? -1;
+      final rightConfidence = right.item.confidenceScore ?? -1;
+      final confidenceComparison = rightConfidence.compareTo(leftConfidence);
+      if (confidenceComparison != 0) return confidenceComparison;
+
+      return left.index.compareTo(right.index);
+    });
+
+  return rows.map((row) => row.item).toList(growable: false);
+}
+
+Recommendation? primaryRecommendationForOverview(List<Recommendation> items) {
+  final sortedItems = sortRecommendationOverviewItems(items);
+  return sortedItems.isEmpty ? null : sortedItems.first;
+}
+
 final getRecommendationHistoryUseCaseProvider =
     Provider<GetRecommendationHistoryUseCase>((ref) {
       return GetRecommendationHistoryUseCase(
