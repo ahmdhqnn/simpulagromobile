@@ -36,8 +36,10 @@ class RolePermissionRowModel {
       canCreate: _toBool(json['can_create']),
       canEdit: _toBool(json['can_edit']),
       canDelete: _toBool(json['can_delete']),
-      permission: nested is Map<String, dynamic>
-          ? PermissionModel.fromJson(_normalizePermission(nested))
+      permission: nested is Map
+          ? PermissionModel.fromJson(
+              _normalizePermission(Map<String, dynamic>.from(nested)),
+            )
           : null,
     );
   }
@@ -73,8 +75,12 @@ class RoleWithPermissionsModel {
       roleName: json['role_name']?.toString(),
       listPermission: list is List
           ? list
-                .whereType<Map<String, dynamic>>()
-                .map(RolePermissionRowModel.fromJson)
+                .whereType<Map>()
+                .map(
+                  (json) => RolePermissionRowModel.fromJson(
+                    Map<String, dynamic>.from(json),
+                  ),
+                )
                 .toList()
           : const [],
     );

@@ -69,6 +69,20 @@ void main() {
       expect(user.userName, equals(''));
     });
 
+    test('fromJson normalizes numeric ids and statuses', () {
+      final user = UserModel.fromJson({
+        'user_id': 12,
+        'user_name': 99,
+        'user_sts': 1,
+        'role_id': 1,
+      });
+
+      expect(user.userId, '12');
+      expect(user.userName, '99');
+      expect(user.userSts, 'active');
+      expect(user.roleId, '1');
+    });
+
     test('isAdmin returns true for ROLE001', () {
       final user = UserModel.fromJson(testJson);
       expect(user.isAdmin, isTrue);
@@ -143,6 +157,24 @@ void main() {
       expect(response.refreshToken, equals(''));
       expect(response.expiresIn, equals(3600));
       expect(response.tokenType, equals('Bearer'));
+    });
+
+    test('fromJson handles data-wrapped response and string expires_in', () {
+      final response = LoginResponseModel.fromJson({
+        'data': {
+          'access_token': 'access',
+          'refresh_token': 'refresh',
+          'expires_in': '7200',
+          'token_type': 'Bearer',
+          'user': {'user_id': 7, 'user_name': 'Admin', 'user_sts': 1},
+        },
+      });
+
+      expect(response.accessToken, 'access');
+      expect(response.refreshToken, 'refresh');
+      expect(response.expiresIn, 7200);
+      expect(response.user.userId, '7');
+      expect(response.user.userSts, 'active');
     });
 
     test('fromJson handles completely empty response', () {

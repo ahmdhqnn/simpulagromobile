@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/site_note.dart';
@@ -25,16 +27,35 @@ class LatestNotesCardWidget extends ConsumerWidget {
           return InfoStateWidget.icon(
             icon: Icons.note_alt_outlined,
             message: context.l10n.notesEmptyForSite,
-            height: 80,
+            height: 104,
+            radius: AppRadius.lg,
           );
         }
-        return Column(children: notes.map((n) => _NoteTile(note: n)).toList());
+        final visibleNotes = notes.take(3).toList();
+        return AppCardWidget(
+          width: double.infinity,
+          radius: AppRadius.lg,
+          padding: EdgeInsets.zero,
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: visibleNotes.length,
+            separatorBuilder: (_, __) => const Divider(
+              color: AppColors.divider,
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
+            itemBuilder: (_, index) => _NoteTile(note: visibleNotes[index]),
+          ),
+        );
       },
-      loading: () => const CompactTextRowsSkeleton(rowCount: 3),
+      loading: () => const LatestNotesCardSkeleton(rowCount: 3),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
         message: toUiErrorMessage(e, context.l10n),
-        height: 80,
+        height: 104,
+        radius: AppRadius.lg,
       ),
     );
   }
@@ -51,38 +72,68 @@ class _NoteTile extends StatelessWidget {
     final dateStr = date != null
         ? context.dateFormat('dd MMM yyyy').format(date)
         : '';
+    final title = note.noteTitle.trim().isEmpty
+        ? note.noteContent
+        : note.noteTitle;
+    final desc = note.noteDesc.trim();
 
-    return Container(
-      margin: EdgeInsets.only(bottom: context.rh(0.01)),
-      padding: EdgeInsets.all(context.rw(0.04)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            note.noteContent,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: const Color(0xFF1D1D1D),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.softGreenAlt,
+              borderRadius: BorderRadius.circular(AppRadius.xs),
+            ),
+            child: const Icon(
+              Icons.note_alt_outlined,
+              size: 20,
+              color: AppColors.primary,
             ),
           ),
-          if (dateStr.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${note.userId} - $dateStr',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(11),
-                color: Colors.grey[600],
-              ),
+          SizedBox(width: context.rw(0.03)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.label(
+                    context,
+                    size: 14,
+                    weight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+                if (desc.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption(context, size: 11),
+                  ),
+                ],
+                if (dateStr.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    [if (note.userId.isNotEmpty) note.userId, dateStr].join(
+                      ' - ',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption2(context, size: 10),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );

@@ -34,14 +34,13 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
       if (data == null) throw Exception('Response data is null');
 
       // API returns {"message":"...", "data":[]} — handle empty gracefully
-      final dsData = data['data'];
-      if (dsData == null || (dsData is List && dsData.isEmpty)) return [];
-      if (dsData is! List) throw Exception('Invalid response format');
+      final dsData = ResponseParser.extractDataList(data);
 
       return dsData
+          .whereType<Map>()
           .map(
             (json) => DeviceSensorModel.fromJson(
-              _normalizeDs(json as Map<String, dynamic>),
+              _normalizeDs(Map<String, dynamic>.from(json)),
             ),
           )
           .toList();
@@ -56,9 +55,10 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   Future<List<Map<String, dynamic>>> getThresholdValues(String siteId) async {
     try {
       final response = await dio.get(ApiEndpoints.deviceSensorValues(siteId));
-      return ResponseParser.extractDataList(
-        response.data,
-      ).whereType<Map<String, dynamic>>().toList();
+      return ResponseParser.extractDataList(response.data)
+          .whereType<Map>()
+          .map((json) => Map<String, dynamic>.from(json))
+          .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -93,9 +93,8 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
-      final dsData = responseData['data'] ?? responseData;
       return DeviceSensorModel.fromJson(
-        _normalizeDs(dsData as Map<String, dynamic>),
+        _normalizeDs(ResponseParser.extractDataMap(responseData)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -119,9 +118,8 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
-      final dsData = responseData['data'] ?? responseData;
       return DeviceSensorModel.fromJson(
-        _normalizeDs(dsData as Map<String, dynamic>),
+        _normalizeDs(ResponseParser.extractDataMap(responseData)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -144,10 +142,30 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
   /// Normalize device sensor JSON — API sometimes returns sts/seq as String
   Map<String, dynamic> _normalizeDs(Map<String, dynamic> json) {
     final normalized = Map<String, dynamic>.from(json);
+    const stringKeys = [
+      'ds_id',
+      'dev_id',
+      'unit_id',
+      'sens_id',
+      'ds_name',
+      'ds_address',
+    ];
+    for (final key in stringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
     final sts = normalized['ds_sts'];
     if (sts is String) normalized['ds_sts'] = int.tryParse(sts);
     final seq = normalized['ds_seq'];
     if (seq is String) normalized['ds_seq'] = int.tryParse(seq);
+    final sequence = normalized['ds_sequence'];
+    if (normalized['ds_seq'] == null && sequence != null) {
+      normalized['ds_seq'] = sequence is String
+          ? int.tryParse(sequence)
+          : sequence;
+    }
     return normalized;
   }
 
@@ -159,10 +177,13 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
         return Exception('Koneksi timeout. Periksa koneksi internet Anda.');
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -178,7 +199,7 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
       case DioExceptionType.connectionError:
         return Exception('Tidak dapat terhubung ke server.');

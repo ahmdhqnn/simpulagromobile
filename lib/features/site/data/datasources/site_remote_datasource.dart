@@ -20,11 +20,14 @@ class SiteRemoteDataSource {
         .toList();
   }
 
-  /// GET /api/sites/:siteId
-  /// Fetch site by ID
+  /// GET /api/sites?site_id=:siteId
+  /// Fetch site by ID using the documented site_id query filter.
   Future<SiteModel> getSiteById(String siteId) async {
-    final response = await _dio.get(ApiEndpoints.siteById(siteId));
-    return SiteModel.fromJson(ResponseParser.extractDataMap(response.data));
+    final response = await _dio.get(
+      ApiEndpoints.sites,
+      queryParameters: {'site_id': siteId},
+    );
+    return _siteFromResponse(response.data, siteId);
   }
 
   /// POST /api/sites
@@ -68,5 +71,29 @@ class SiteRemoteDataSource {
       ApiEndpoints.siteMemberInvite(siteId),
       data: {'user_id': userId},
     );
+  }
+
+  SiteModel _siteFromResponse(dynamic body, String siteId) {
+    try {
+      final map = ResponseParser.extractDataMap(body);
+      final site = SiteModel.fromJson(map);
+      if (site.siteId.isNotEmpty) return site;
+    } catch (_) {
+      // Fallback to collection parsing below.
+    }
+
+    final rows = ResponseParser.extractDataList(body)
+        .whereType<Map>()
+        .map((json) => SiteModel.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
+
+    if (rows.isNotEmpty) {
+      return rows.firstWhere(
+        (site) => site.siteId == siteId,
+        orElse: () => rows.first,
+      );
+    }
+
+    return SiteModel.fromJson(ResponseParser.extractDataMap(body));
   }
 }

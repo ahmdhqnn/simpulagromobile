@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/user_profile_model.dart';
 
 class ProfileRemoteDatasource {
@@ -14,8 +15,10 @@ class ProfileRemoteDatasource {
     try {
       final response = await _dio.get(ApiEndpoints.profileMe);
 
-      if (response.statusCode == 200 && response.data['data'] != null) {
-        return UserProfileModel.fromJson(response.data['data']);
+      if (response.statusCode == 200) {
+        return UserProfileModel.fromJson(
+          ResponseParser.extractDataMap(response.data),
+        );
       }
 
       throw Exception('Failed to load profile');
@@ -33,10 +36,17 @@ class ProfileRemoteDatasource {
     try {
       final response = await _dio.get(ApiEndpoints.profilePermissions);
 
-      if (response.statusCode == 200 && response.data['data'] != null) {
-        final permissions =
-            response.data['data']['permissions'] as List<dynamic>?;
-        return permissions?.map((e) => e.toString()).toList() ?? [];
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          return _normalizePermissions(response.data);
+        }
+        final data = ResponseParser.extractDataMap(response.data);
+        if (data.containsKey('permissions')) {
+          return _normalizePermissions(data['permissions']);
+        }
+        return _normalizePermissions(
+          ResponseParser.extractDataList(response.data),
+        );
       }
 
       return [];
@@ -53,5 +63,23 @@ class ProfileRemoteDatasource {
     throw const UnsupportedBackendEndpointException(
       'Update profil belum didukung oleh server',
     );
+  }
+
+  List<String> _normalizePermissions(dynamic raw) {
+    if (raw is! List) return [];
+    return raw
+        .map((item) {
+          if (item is Map) {
+            final permission = item['permission'];
+            return item['perm_name'] ??
+                item['perm_slug'] ??
+                (permission is Map ? permission['perm_name'] : null) ??
+                (permission is Map ? permission['perm_slug'] : null);
+          }
+          return item;
+        })
+        .map((item) => item?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty)
+        .toList();
   }
 }

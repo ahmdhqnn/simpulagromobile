@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
+import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/role_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
@@ -17,6 +18,7 @@ class RoleListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final roleListAsync = ref.watch(adminRoleListProvider);
+    final rolePermissionCounts = ref.watch(rolePermissionCountsProvider);
 
     return PermissionGuardScreen(
       permission: 'role:read',
@@ -45,6 +47,7 @@ class RoleListScreen extends ConsumerWidget {
               color: const Color(0xFF1B5E20),
               onRefresh: () async {
                 ref.invalidate(adminRoleListProvider);
+                ref.invalidate(rolePermissionsProvider);
                 await Future.delayed(const Duration(milliseconds: 300));
               },
               child: ListView.builder(
@@ -71,9 +74,15 @@ class RoleListScreen extends ConsumerWidget {
                     );
                   }
                   final role = roles[index - 1];
+                  final permissionCount =
+                      rolePermissionCounts.asData?.value[role.roleId] ??
+                      role.permissionCount;
                   return Padding(
                     padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                    child: _RoleCard(role: role),
+                    child: _RoleCard(
+                      role: role,
+                      permissionCount: permissionCount,
+                    ),
                   );
                 },
               ),
@@ -90,10 +99,21 @@ class RoleListScreen extends ConsumerWidget {
   }
 }
 
+final rolePermissionCountsProvider = FutureProvider<Map<String, int>>((
+  ref,
+) async {
+  final rows = await ref.watch(rolePermissionsProvider.future);
+  return {
+    for (final row in rows)
+      if (row.roleId != null) row.roleId!: row.listPermission.length,
+  };
+});
+
 class _RoleCard extends ConsumerWidget {
   final Role role;
+  final int permissionCount;
 
-  const _RoleCard({required this.role});
+  const _RoleCard({required this.role, required this.permissionCount});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,7 +126,7 @@ class _RoleCard extends ConsumerWidget {
       onTap: () => _showOptions(context, ref),
       badges: [
         AdminBadge(
-          label: context.l10n.adminPermissionBadge(role.permissionCount),
+          label: context.l10n.adminPermissionBadge(permissionCount),
           color: const Color(0xFF42A5F5),
           icon: Icons.lock_outline,
         ),

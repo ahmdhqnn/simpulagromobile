@@ -101,7 +101,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? context.l10n.adminEditSensorTitle : context.l10n.adminAddSensorTitle,
+        title: isEditMode
+            ? context.l10n.adminEditSensorTitle
+            : context.l10n.adminAddSensorTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
             ? context.l10n.adminSavingChanges
@@ -116,7 +118,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? context.l10n.adminEditSensorTitle : context.l10n.adminAddSensorTitle,
+                isEditMode
+                    ? context.l10n.adminEditSensorTitle
+                    : context.l10n.adminAddSensorTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -277,7 +281,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
               // ── Submit ───────────────────────────────────
               AdminSubmitButton(
-                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddSensorTitle,
+                label: isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddSensorTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -377,8 +383,10 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           color: const Color(0xFF1D1D1D),
         ),
         decoration: InputDecoration(
-          labelText: context.l10n.adminDeviceLabel,
-          hintText: context.l10n.adminSelectDeviceOptional,
+          labelText: isEditMode
+              ? context.l10n.adminDeviceLabel
+              : '${context.l10n.adminDeviceLabel} *',
+          hintText: context.l10n.adminSelectDeviceHint,
           prefixIcon: const Icon(Icons.device_hub, size: 20),
           filled: true,
           fillColor: AppColors.surfaceVariant,
@@ -405,7 +413,10 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           ),
         ),
         items: [
-          DropdownMenuItem(value: null, child: Text(context.l10n.adminNoDevice)),
+          DropdownMenuItem(
+            value: null,
+            child: Text(context.l10n.adminNoDevice),
+          ),
           ...devices.map(
             (d) => DropdownMenuItem(
               value: d.devId,
@@ -414,6 +425,8 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           ),
         ],
         onChanged: (v) => setState(() => _selectedDeviceId = v),
+        validator: (v) =>
+            !isEditMode && v == null ? context.l10n.adminDeviceRequired : null,
       ),
       loading: () => Container(
         height: 52,
@@ -510,6 +523,11 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (!isEditMode && _selectedDeviceId == null) {
+      SnackbarHelper.showError(context, context.l10n.adminDeviceRequired);
+      return;
+    }
 
     final sensor = Sensor(
       sensId: _idController.text.trim(),

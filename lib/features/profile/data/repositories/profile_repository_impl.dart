@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/profile_remote_datasource.dart';
@@ -20,12 +21,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const NetworkFailure('No internet connection');
     }
     final statusCode = e.response?.statusCode;
-    String message = 'Unknown error';
-    if (e.response?.data is Map) {
-      message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
-    } else {
-      message = e.message ?? 'Unknown error';
-    }
+    final message = ResponseParser.extractMessage(
+      e.response?.data,
+      e.message ?? 'Unknown error',
+    );
 
     switch (statusCode) {
       case 401:

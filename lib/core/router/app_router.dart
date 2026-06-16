@@ -20,6 +20,7 @@ import '../../features/profile/presentation/screens/change_password_screen.dart'
 import '../../features/site/presentation/screens/site_detail_screen.dart';
 import '../../features/site/presentation/screens/site_member_invite_screen.dart';
 import '../../features/site/presentation/screens/site_form_screen.dart';
+import '../../features/site/presentation/screens/site_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart';
 import '../../features/plant/presentation/screens/plant_form_screen.dart';
@@ -42,6 +43,7 @@ import '../../features/admin/presentation/screens/units/unit_list_screen.dart';
 import '../../features/admin/presentation/screens/units/unit_form_screen.dart';
 import '../../features/admin/presentation/screens/users/user_list_screen.dart';
 import '../../features/admin/presentation/screens/users/user_form_screen.dart';
+import '../../features/admin/presentation/screens/users/user_detail_screen.dart';
 import '../../features/admin/presentation/screens/roles/role_list_screen.dart';
 import '../../features/admin/presentation/screens/roles/role_form_screen.dart';
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_list_screen.dart';
@@ -301,6 +303,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(path: '/admin', builder: (_, __) => const AdminMenuScreen()),
       GoRoute(
+        path: '/admin/sites',
+        builder: (_, __) => const SiteListScreen(managementMode: true),
+      ),
+      GoRoute(
         path: '/admin/sensors',
         builder: (_, __) => const SensorListScreen(),
       ),
@@ -374,7 +380,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/users/:id',
         builder: (_, state) =>
-            UserFormScreen(userId: state.pathParameters['id']),
+            UserDetailScreen(userId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/admin/roles', builder: (_, __) => const RoleListScreen()),
       GoRoute(

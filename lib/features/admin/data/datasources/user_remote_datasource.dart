@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../../auth/domain/entities/user.dart';
 
 /// Remote datasource for User operations
@@ -20,20 +21,10 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
   Future<List<User>> getAllUsers() async {
     try {
       final response = await dio.get(ApiEndpoints.users);
-
-      final data = response.data;
-      if (data == null) throw Exception('Response data is null');
-
-      // Handle both {"data": [...]} and direct list
-      final usersData = data['data'] ?? data;
-
-      if (usersData is! List) {
-        // Some backends return empty object on no data
-        return [];
-      }
-
+      final usersData = ResponseParser.extractDataList(response.data);
       return usersData
-          .map((json) => _userFromJson(json as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((json) => _userFromJson(Map<String, dynamic>.from(json)))
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -45,14 +36,11 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
   @override
   Future<User> getUserById(String userId) async {
     try {
-      final response = await dio.get(ApiEndpoints.userById(userId));
-
-      final data = response.data;
-      if (data == null) throw Exception('Response data is null');
-
-      final userData = data['data'] ?? data;
-
-      return _userFromJson(userData as Map<String, dynamic>);
+      final users = await getAllUsers();
+      return users.firstWhere(
+        (user) => user.userId == userId,
+        orElse: () => throw Exception('User tidak ditemukan'),
+      );
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -63,15 +51,12 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
   @override
   Future<User> createUser(Map<String, dynamic> data) async {
     try {
-      // Create user uses /auth/new-users endpoint
+      // Backend contract: POST /sites/users/new-users.
       final response = await dio.post(ApiEndpoints.register, data: data);
 
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
-
-      final userData = responseData['data'] ?? responseData;
-
-      return _userFromJson(userData as Map<String, dynamic>);
+      return _userFromJson(ResponseParser.extractDataMap(responseData));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -86,10 +71,7 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
 
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
-
-      final userData = responseData['data'] ?? responseData;
-
-      return _userFromJson(userData as Map<String, dynamic>);
+      return _userFromJson(ResponseParser.extractDataMap(responseData));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -114,9 +96,19 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
       userName: (json['user_name'] ?? json['name'] ?? '').toString(),
       userEmail: json['user_email']?.toString(),
       userPhone: json['user_phone']?.toString(),
-      userSts: json['user_sts']?.toString(),
+      userSts: _statusValue(json['user_sts']),
       roleId: json['role_id']?.toString(),
     );
+  }
+
+  String? _statusValue(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value ? 'active' : 'inactive';
+    if (value is num) return value.toInt() == 1 ? 'active' : 'inactive';
+    final text = value.toString().trim();
+    if (text == '1') return 'active';
+    if (text == '0') return 'inactive';
+    return text.isEmpty ? null : text;
   }
 
   Exception _handleDioError(DioException error) {
@@ -127,10 +119,13 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
         return Exception('Koneksi timeout. Periksa koneksi internet Anda.');
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -146,7 +141,7 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
       case DioExceptionType.cancel:
         return Exception('Request dibatalkan');

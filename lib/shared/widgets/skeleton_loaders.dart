@@ -768,6 +768,77 @@ class SimpleRowsCardSkeleton extends StatelessWidget {
   }
 }
 
+class LatestNotesCardSkeleton extends StatelessWidget {
+  final int rowCount;
+
+  const LatestNotesCardSkeleton({super.key, this.rowCount = 3});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonPanel(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      radius: AppRadius.lg,
+      child: Column(
+        children: List.generate(
+          rowCount,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: index == rowCount - 1 ? 0 : 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SkeletonBox(width: 40, height: 40, borderRadius: 8),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLine(
+                        width: index.isEven ? 156 : 126,
+                        height: 14,
+                      ),
+                      const SizedBox(height: 6),
+                      const SkeletonLine(width: double.infinity, height: 11),
+                      const SizedBox(height: 5),
+                      SkeletonLine(
+                        width: index.isEven ? 210 : 172,
+                        height: 11,
+                      ),
+                      const SizedBox(height: 7),
+                      const SkeletonLine(width: 92, height: 10),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SiteNotesSectionSkeleton extends StatelessWidget {
+  const SiteNotesSectionSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: const [
+        Align(
+          alignment: Alignment.centerRight,
+          child: SkeletonContainer(
+            child: SkeletonBox(width: 132, height: 40, borderRadius: 20),
+          ),
+        ),
+        SizedBox(height: 12),
+        Expanded(child: LatestNotesCardSkeleton(rowCount: 4)),
+      ],
+    );
+  }
+}
+
 class CompactTextRowsSkeleton extends StatelessWidget {
   final int rowCount;
   final bool hasSubtitle;
@@ -3186,76 +3257,252 @@ class SiteDetailOverviewSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.only(bottom: 20),
       child: Column(
         children: [
-          _SkeletonCard(
+          _SkeletonPanel(
+            width: double.infinity,
             padding: EdgeInsets.all(16),
+            radius: 20,
             child: Row(
               children: [
-                SkeletonBox(width: 64, height: 64, borderRadius: 12),
-                SizedBox(width: 16),
+                SkeletonBox(width: 56, height: 56, borderRadius: 16),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SkeletonLine(width: 140, height: 20),
-                      SizedBox(height: 6),
-                      SkeletonBox(width: 60, height: 20, borderRadius: 8),
+                      SkeletonLine(width: 156, height: 18),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          SkeletonBox(width: 76, height: 26, borderRadius: 12),
+                          SizedBox(width: 8),
+                          SkeletonBox(width: 96, height: 26, borderRadius: 12),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
-          _SkeletonCard(
-            padding: EdgeInsets.all(16),
+          SizedBox(height: 14),
+          _SkeletonPanel(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            radius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonLine(width: 80, height: 16),
-                SizedBox(height: 16),
-                SiteDetailRowSkeleton(),
                 SizedBox(height: 12),
                 SiteDetailRowSkeleton(),
-                SizedBox(height: 12),
+                SiteDetailRowSkeleton(),
                 SiteDetailRowSkeleton(),
               ],
             ),
           ),
-          SizedBox(height: 16),
-          _SkeletonCard(
-            padding: EdgeInsets.all(16),
+          SizedBox(height: 14),
+          _SkeletonPanel(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            radius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonLine(width: 120, height: 16),
-                SizedBox(height: 16),
-                SiteDetailRowSkeleton(),
                 SizedBox(height: 12),
                 SiteDetailRowSkeleton(),
-                SizedBox(height: 12),
+                SiteDetailRowSkeleton(),
                 SiteDetailRowSkeleton(),
               ],
             ),
           ),
-          SizedBox(height: 16),
-          _SkeletonCard(
-            padding: EdgeInsets.all(16),
+          SizedBox(height: 14),
+          _SkeletonPanel(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            radius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonLine(width: 140, height: 16),
-                SizedBox(height: 16),
-                SiteDetailRowSkeleton(),
                 SizedBox(height: 12),
+                SiteDetailRowSkeleton(),
                 SiteDetailRowSkeleton(),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class SiteDetailScreenSkeleton extends StatelessWidget {
+  const SiteDetailScreenSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonContainer(child: SkeletonLine(width: 142, height: 22)),
+          SizedBox(height: 14),
+          SkeletonContainer(
+            child: SkeletonBox(
+              width: double.infinity,
+              height: 44,
+              borderRadius: 16,
+            ),
+          ),
+          SizedBox(height: 12),
+          Expanded(child: SiteDetailOverviewSkeleton()),
+        ],
+      ),
+    );
+  }
+}
+
+class AdminUserDetailSkeleton extends StatelessWidget {
+  const AdminUserDetailSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SingleChildScrollView(
+      physics: NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonContainer(child: SkeletonLine(width: 92, height: 22)),
+          SizedBox(height: 14),
+          _SkeletonPanel(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            radius: 20,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    SkeletonCircle(size: 56),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SkeletonLine(width: 160, height: 18),
+                          SizedBox(height: 6),
+                          SkeletonLine(width: 76, height: 12),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                _AdminUserDetailRowSkeleton(),
+                _AdminUserDetailRowSkeleton(),
+                _AdminUserDetailRowSkeleton(),
+                _AdminUserDetailRowSkeleton(),
+                _AdminUserDetailRowSkeleton(),
+                _AdminUserDetailRowSkeleton(showDivider: false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AdminListScreenSkeleton extends StatelessWidget {
+  final double titleWidth;
+  final int itemCount;
+
+  const AdminListScreenSkeleton({
+    super.key,
+    this.titleWidth = 120,
+    this.itemCount = 6,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      itemCount: itemCount + 1,
+      itemBuilder: (_, index) {
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: SkeletonContainer(
+              child: SkeletonLine(width: titleWidth, height: 22),
+            ),
+          );
+        }
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 14),
+          child: AdminListItemSkeleton(),
+        );
+      },
+    );
+  }
+}
+
+class SiteManagementListSkeleton extends StatelessWidget {
+  const SiteManagementListSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      itemCount: 7,
+      itemBuilder: (_, index) {
+        if (index == 0) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: SkeletonContainer(
+              child: SkeletonLine(width: 72, height: 22),
+            ),
+          );
+        }
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: SiteCardSkeleton(),
+        );
+      },
+    );
+  }
+}
+
+class _AdminUserDetailRowSkeleton extends StatelessWidget {
+  final bool showDivider;
+
+  const _AdminUserDetailRowSkeleton({this.showDivider = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: const [
+              SkeletonBox(width: 20, height: 20, borderRadius: 5),
+              SizedBox(width: 12),
+              Expanded(child: SkeletonLine(width: 92, height: 12)),
+              SizedBox(width: 12),
+              SkeletonLine(width: 118, height: 13),
+            ],
+          ),
+        ),
+        if (showDivider)
+          const SkeletonBox(width: double.infinity, height: 1, borderRadius: 0),
+      ],
     );
   }
 }

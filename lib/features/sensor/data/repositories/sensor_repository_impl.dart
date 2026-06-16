@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../domain/entities/sensor.dart';
 import '../../domain/repositories/sensor_repository.dart';
 import '../datasources/sensor_remote_datasource.dart';
@@ -23,13 +24,10 @@ class SensorRepositoryImpl implements SensorRepository {
         return const NetworkFailure('Tidak dapat terhubung ke server.');
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
-        String message = 'Terjadi kesalahan';
-        if (e.response?.data is Map) {
-          message =
-              e.response?.data['message'] ?? e.message ?? 'Terjadi kesalahan';
-        } else {
-          message = e.message ?? 'Terjadi kesalahan';
-        }
+        final message = ResponseParser.extractMessage(
+          e.response?.data,
+          e.message ?? 'Terjadi kesalahan',
+        );
         switch (statusCode) {
           case 401:
             return AuthFailure(message);
