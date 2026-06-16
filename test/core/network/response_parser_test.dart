@@ -157,6 +157,19 @@ void main() {
           equals('Default'),
         );
       });
+
+      test('extracts message from non-map and list message responses', () {
+        expect(
+          ResponseParser.extractMessage('Plain backend error', 'Default'),
+          'Plain backend error',
+        );
+        expect(
+          ResponseParser.extractMessage({
+            'message': ['Name is required', 'Email is invalid'],
+          }, 'Default'),
+          'Name is required, Email is invalid',
+        );
+      });
     });
 
     group('extractPaginationMeta', () {

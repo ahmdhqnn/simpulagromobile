@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/response_parser.dart';
 import '../../domain/entities/device.dart';
 import '../../domain/repositories/device_repository.dart';
 import '../datasources/device_remote_datasource.dart';
@@ -109,13 +110,10 @@ class DeviceRepositoryImpl implements DeviceRepository {
 
     final statusCode = e.response?.statusCode;
 
-    // Safely extract message
-    String message = 'Unknown error';
-    if (e.response?.data is Map) {
-      message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
-    } else {
-      message = e.message ?? 'Unknown error';
-    }
+    final message = ResponseParser.extractMessage(
+      e.response?.data,
+      e.message ?? 'Unknown error',
+    );
 
     switch (statusCode) {
       case 401:

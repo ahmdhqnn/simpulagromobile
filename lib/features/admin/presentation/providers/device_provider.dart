@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../data/datasources/device_remote_datasource.dart';
 import '../../data/repositories/device_repository_impl.dart';
@@ -97,10 +98,14 @@ class DeviceFormNotifier extends StateNotifier<DeviceFormState> {
       if (selectedSite == null) {
         throw Exception('Tidak ada site yang dipilih');
       }
+      final currentUserId = _ref.read(authProvider).user?.userId;
+      if (currentUserId == null || currentUserId.trim().isEmpty) {
+        throw Exception('User login tidak ditemukan');
+      }
 
       final savedDevice = await _repository.createDevice(
         selectedSite.siteId,
-        device,
+        device.copyWith(userId: currentUserId),
       );
 
       state = DeviceFormState(savedDevice: savedDevice);

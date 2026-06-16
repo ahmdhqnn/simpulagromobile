@@ -22,8 +22,21 @@ class SiteModel with _$SiteModel {
     @JsonKey(name: 'site_update') DateTime? siteUpdate,
   }) = _SiteModel;
 
-  factory SiteModel.fromJson(Map<String, dynamic> json) =>
-      _$SiteModelFromJson(json);
+  factory SiteModel.fromJson(Map<String, dynamic> json) => SiteModel(
+    siteId: _stringValue(json['site_id'] ?? json['siteId'] ?? json['id']),
+    siteName: _nullableString(
+      json['site_name'] ?? json['siteName'] ?? json['name'],
+    ),
+    siteAddress: _nullableString(
+      json['site_address'] ?? json['siteAddress'] ?? json['address'],
+    ),
+    siteLon: _toDouble(json['site_lon'] ?? json['siteLon'] ?? json['lon']),
+    siteLat: _toDouble(json['site_lat'] ?? json['siteLat'] ?? json['lat']),
+    siteAlt: _toDouble(json['site_alt'] ?? json['siteAlt'] ?? json['alt']),
+    siteSts: _toInt(json['site_sts'] ?? json['siteSts'] ?? json['status']),
+    siteCreated: _toDateTime(json['site_created'] ?? json['siteCreated']),
+    siteUpdate: _toDateTime(json['site_update'] ?? json['siteUpdate']),
+  );
 
   /// Convert Model to Entity
   Site toEntity() => Site(
@@ -50,4 +63,33 @@ class SiteModel with _$SiteModel {
     siteCreated: entity.siteCreated,
     siteUpdate: entity.siteUpdate,
   );
+}
+
+String _stringValue(dynamic value) => value?.toString().trim() ?? '';
+
+String? _nullableString(dynamic value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
+}
+
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString().trim());
+}
+
+int? _toInt(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value ? 1 : 0;
+  if (value is num) return value.toInt();
+  final text = value.toString().trim().toLowerCase();
+  if (text == 'active' || text == 'aktif' || text == 'true') return 1;
+  if (text == 'inactive' || text == 'nonaktif' || text == 'false') return 0;
+  return int.tryParse(text);
+}
+
+DateTime? _toDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  return DateTime.tryParse(value.toString().trim());
 }

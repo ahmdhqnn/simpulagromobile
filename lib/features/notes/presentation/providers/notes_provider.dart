@@ -61,11 +61,19 @@ class CreateNoteNotifier extends StateNotifier<AsyncValue<void>> {
   final NotesRemoteDataSource _ds;
   final Ref _ref;
 
-  Future<bool> create(String siteId, String content) async {
-    if (content.trim().isEmpty) return false;
+  Future<bool> create({
+    required String siteId,
+    required String title,
+    required String desc,
+  }) async {
+    if (title.trim().isEmpty || desc.trim().isEmpty) return false;
     state = const AsyncLoading();
     try {
-      await _ds.createNote(siteId, content.trim());
+      await _ds.createNote(
+        siteId: siteId,
+        noteTitle: title.trim(),
+        noteDesc: desc.trim(),
+      );
       _ref.invalidate(siteNotesProvider);
       _ref.invalidate(siteNotesBySiteProvider(siteId));
       _ref.invalidate(latestNotesProvider);

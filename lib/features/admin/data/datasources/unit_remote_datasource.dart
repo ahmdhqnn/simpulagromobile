@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/unit_model.dart';
 
 /// Remote datasource for Unit operations
@@ -22,21 +23,13 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
     try {
       final response = await dio.get(ApiEndpoints.units);
 
-      final data = response.data;
-      if (data == null) {
-        throw Exception('Response data is null');
-      }
-
-      final unitsData = data['data'] ?? data;
-
-      if (unitsData is! List) {
-        throw Exception('Invalid response format: expected List');
-      }
+      final unitsData = ResponseParser.extractDataList(response.data);
 
       return unitsData
+          .whereType<Map>()
           .map(
             (json) => UnitModel.fromJson(
-              _normalizeUnit(json as Map<String, dynamic>),
+              _normalizeUnit(Map<String, dynamic>.from(json)),
             ),
           )
           .toList();
@@ -71,10 +64,8 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
         throw Exception('Response data is null');
       }
 
-      final unitData = responseData['data'] ?? responseData;
-
       return UnitModel.fromJson(
-        _normalizeUnit(unitData as Map<String, dynamic>),
+        _normalizeUnit(ResponseParser.extractDataMap(responseData)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -99,6 +90,13 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
 
   Map<String, dynamic> _normalizeUnit(Map<String, dynamic> json) {
     final normalized = Map<String, dynamic>.from(json);
+    const stringKeys = ['unit_id', 'unit_name', 'unit_symbol', 'unit_desc'];
+    for (final key in stringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
     final sts = normalized['unit_sts'];
     if (sts is String) normalized['unit_sts'] = int.tryParse(sts);
     return normalized;
@@ -113,11 +111,14 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
 
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -133,7 +134,7 @@ class UnitRemoteDatasourceImpl implements UnitRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
 
       case DioExceptionType.cancel:

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/role_model.dart';
 
 abstract class RoleRemoteDatasource {
@@ -21,16 +22,13 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
   Future<List<RoleModel>> getAllRoles() async {
     try {
       final response = await dio.get(ApiEndpoints.roles);
-      final data = response.data;
-      if (data == null) throw Exception('Response data is null');
-
-      final rolesData = data['data'] ?? data;
-      if (rolesData is! List) throw Exception('Invalid response format');
+      final rolesData = ResponseParser.extractDataList(response.data);
 
       return rolesData
+          .whereType<Map>()
           .map(
             (json) => RoleModel.fromJson(
-              _normalizeRole(json as Map<String, dynamic>),
+              _normalizeRole(Map<String, dynamic>.from(json)),
             ),
           )
           .toList();
@@ -45,12 +43,8 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
   Future<RoleModel> getRoleById(String roleId) async {
     try {
       final response = await dio.get(ApiEndpoints.roleById(roleId));
-      final data = response.data;
-      if (data == null) throw Exception('Response data is null');
-
-      final roleData = data['data'] ?? data;
       return RoleModel.fromJson(
-        _normalizeRole(roleData as Map<String, dynamic>),
+        _normalizeRole(ResponseParser.extractDataMap(response.data)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -66,9 +60,8 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
-      final roleData = responseData['data'] ?? responseData;
       return RoleModel.fromJson(
-        _normalizeRole(roleData as Map<String, dynamic>),
+        _normalizeRole(ResponseParser.extractDataMap(responseData)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -84,9 +77,8 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
       final responseData = response.data;
       if (responseData == null) throw Exception('Response data is null');
 
-      final roleData = responseData['data'] ?? responseData;
       return RoleModel.fromJson(
-        _normalizeRole(roleData as Map<String, dynamic>),
+        _normalizeRole(ResponseParser.extractDataMap(responseData)),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -98,6 +90,13 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
   /// Normalize role JSON — API sometimes returns sts as String
   Map<String, dynamic> _normalizeRole(Map<String, dynamic> json) {
     final normalized = Map<String, dynamic>.from(json);
+    const roleStringKeys = ['role_id', 'role_name', 'role_desc'];
+    for (final key in roleStringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
 
     // Normalize role_sts
     final sts = normalized['role_sts'];
@@ -107,20 +106,55 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
     final perms = normalized['list_permission'];
     if (perms is List) {
       normalized['list_permission'] = perms.map((p) {
-        if (p is Map<String, dynamic>) {
+        if (p is Map) {
           final pNorm = Map<String, dynamic>.from(p);
+          const relationStringKeys = ['rp_id', 'role_id', 'perm_id'];
+          for (final key in relationStringKeys) {
+            final value = pNorm[key];
+            if (value != null && value is! String) {
+              pNorm[key] = value.toString();
+            }
+          }
           final rpSts = pNorm['rp_sts'];
           if (rpSts is String) pNorm['rp_sts'] = int.tryParse(rpSts) ?? 1;
           pNorm['can_view'] = _toBool(pNorm['can_view']);
           pNorm['can_create'] = _toBool(pNorm['can_create']);
           pNorm['can_edit'] = _toBool(pNorm['can_edit']);
           pNorm['can_delete'] = _toBool(pNorm['can_delete']);
+          final permission = pNorm['permission'];
+          if (permission is Map) {
+            pNorm['permission'] = _normalizePermission(
+              Map<String, dynamic>.from(permission),
+            );
+          }
           return pNorm;
         }
         return p;
       }).toList();
     }
 
+    return normalized;
+  }
+
+  Map<String, dynamic> _normalizePermission(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    const stringKeys = [
+      'perm_id',
+      'perm_name',
+      'perm_slug',
+      'perm_desc',
+      'perm_page',
+    ];
+    for (final key in stringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
+    final sts = normalized['perm_sts'];
+    if (sts is String) {
+      normalized['perm_sts'] = int.tryParse(sts);
+    }
     return normalized;
   }
 
@@ -205,10 +239,13 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
         return Exception('Koneksi timeout. Periksa koneksi internet Anda.');
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -224,7 +261,7 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
       case DioExceptionType.connectionError:
         return Exception('Tidak dapat terhubung ke server.');

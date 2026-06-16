@@ -35,19 +35,22 @@ class AuthRemoteDataSource {
   /// GET /api/profile/me
   Future<UserModel> getProfile() async {
     final response = await _dio.get(ApiEndpoints.profileMe);
-    return UserModel.fromJson(response.data['data']);
+    return UserModel.fromJson(ResponseParser.extractDataMap(response.data));
   }
 
   /// GET /api/profile/permissions
   Future<List<String>> getPermissions() async {
     final response = await _dio.get(ApiEndpoints.profilePermissions);
-    final data = response.data['data'];
-    if (data is Map && data.containsKey('permissions')) {
-      final permissions = data['permissions'] as List;
-      return permissions.map((p) => p.toString()).toList();
+    if (response.data is List) {
+      return _normalizePermissions(response.data);
     }
-    if (data is List) {
-      return data.map((p) => p['perm_name']?.toString() ?? '').toList();
+    final data = ResponseParser.extractDataMap(response.data);
+    if (data.containsKey('permissions')) {
+      return _normalizePermissions(data['permissions']);
+    }
+    final rows = ResponseParser.extractDataList(response.data);
+    if (rows.isNotEmpty) {
+      return _normalizePermissions(rows);
     }
     return [];
   }
@@ -70,5 +73,23 @@ class AuthRemoteDataSource {
       response.data,
       'Password berhasil diubah',
     );
+  }
+
+  List<String> _normalizePermissions(dynamic raw) {
+    if (raw is! List) return [];
+    return raw
+        .map((item) {
+          if (item is Map) {
+            final permission = item['permission'];
+            return item['perm_name'] ??
+                item['perm_slug'] ??
+                (permission is Map ? permission['perm_name'] : null) ??
+                (permission is Map ? permission['perm_slug'] : null);
+          }
+          return item;
+        })
+        .map((item) => item?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty)
+        .toList();
   }
 }

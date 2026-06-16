@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/sensor_model.dart';
 
 /// Remote datasource for Sensor operations
@@ -39,23 +40,13 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
     try {
       final response = await dio.get(ApiEndpoints.sensors(siteId));
 
-      // Handle response structure
-      final data = response.data;
-      if (data == null) {
-        throw Exception('Response data is null');
-      }
-
-      // Check if data has 'data' field
-      final sensorsData = data['data'] ?? data;
-
-      if (sensorsData is! List) {
-        throw Exception('Invalid response format: expected List');
-      }
+      final sensorsData = ResponseParser.extractDataList(response.data);
 
       return sensorsData
+          .whereType<Map>()
           .map(
             (json) => SensorModel.fromJson(
-              _normalizeSensor(json as Map<String, dynamic>),
+              _normalizeSensor(Map<String, dynamic>.from(json)),
             ),
           )
           .toList();
@@ -149,16 +140,24 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
   }
 
   Map<String, dynamic> _extractSensorData(dynamic body) {
-    final raw = body is Map ? (body['data'] ?? body) : body;
-    if (raw is Map && raw['sensor'] is Map<String, dynamic>) {
-      return raw['sensor'] as Map<String, dynamic>;
-    }
-    if (raw is Map<String, dynamic>) return raw;
-    throw Exception('Invalid response format: expected sensor object');
+    return ResponseParser.extractDataMap(body);
   }
 
   Map<String, dynamic> _normalizeSensor(Map<String, dynamic> json) {
     final normalized = Map<String, dynamic>.from(json);
+    const stringKeys = [
+      'sens_id',
+      'dev_id',
+      'sens_name',
+      'sens_address',
+      'sens_location',
+    ];
+    for (final key in stringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
     final sts = normalized['sens_sts'];
     if (sts is String) normalized['sens_sts'] = int.tryParse(sts);
     return normalized;
@@ -174,11 +173,14 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
 
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -194,7 +196,7 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
 
       case DioExceptionType.cancel:

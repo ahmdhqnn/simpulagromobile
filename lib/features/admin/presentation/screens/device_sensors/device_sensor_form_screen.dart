@@ -103,7 +103,9 @@ class _DeviceSensorFormScreenState
     }
 
     final permission = _isEditMode ? 'ds:update' : 'ds:create';
-    final title = _isEditMode ? context.l10n.adminEditDeviceSensorTitle : context.l10n.adminAddDeviceSensorTitle;
+    final title = _isEditMode
+        ? context.l10n.adminEditDeviceSensorTitle
+        : context.l10n.adminAddDeviceSensorTitle;
 
     return PermissionGuardScreen(
       permission: permission,
@@ -159,7 +161,9 @@ class _DeviceSensorFormScreenState
               ),
               SizedBox(height: context.rh(0.03)),
               AdminSubmitButton(
-                label: _isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddDeviceSensorTitle,
+                label: _isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddDeviceSensorTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -209,6 +213,22 @@ class _DeviceSensorFormScreenState
     final maxValue = _parseDouble(_maxValueController.text);
     final minWarn = _parseDouble(_minWarnController.text);
     final maxWarn = _parseDouble(_maxWarnController.text);
+
+    if (!_isEditMode &&
+        (_selectedSensorId == null ||
+            _selectedUnitId == null ||
+            _addressController.text.trim().isEmpty ||
+            _parseInt(_seqController.text) == null ||
+            _parseDouble(_normalValueController.text) == null ||
+            minNorm == null ||
+            maxNorm == null ||
+            minValue == null ||
+            maxValue == null ||
+            minWarn == null ||
+            maxWarn == null)) {
+      SnackbarHelper.showError(context, context.l10n.commonRequired);
+      return;
+    }
 
     if (minNorm != null && maxNorm != null && minNorm > maxNorm) {
       SnackbarHelper.showError(
@@ -313,15 +333,20 @@ class _DeviceSensorFormScreenState
       SnackbarHelper.showSuccess(
         context,
         _isEditMode
-            ? context.l10n.adminUpdateSuccess(context.l10n.adminDeviceSensorTitle)
-            : context.l10n.adminCreateSuccess(context.l10n.adminDeviceSensorTitle),
+            ? context.l10n.adminUpdateSuccess(
+                context.l10n.adminDeviceSensorTitle,
+              )
+            : context.l10n.adminCreateSuccess(
+                context.l10n.adminDeviceSensorTitle,
+              ),
       );
       context.pop();
     } else {
       final error = ref.read(adminDeviceSensorFormProvider).error;
       SnackbarHelper.showError(
         context,
-        error ?? context.l10n.adminSaveFailed(context.l10n.adminDeviceSensorTitle),
+        error ??
+            context.l10n.adminSaveFailed(context.l10n.adminDeviceSensorTitle),
       );
     }
   }
@@ -368,8 +393,9 @@ class _MappingInfoSection extends ConsumerWidget {
             icon: Icons.tag,
             enabled: !isEditMode,
             required: true,
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? context.l10n.adminDsIdRequired : null,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? context.l10n.adminDsIdRequired
+                : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AdminFormFields.buildField(
@@ -379,8 +405,9 @@ class _MappingInfoSection extends ConsumerWidget {
             hint: context.l10n.adminMappingNameHint,
             icon: Icons.cable,
             required: true,
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? context.l10n.adminNameRequired : null,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? context.l10n.adminNameRequired
+                : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AsyncDropdownWidget<dynamic, String>(
@@ -399,13 +426,14 @@ class _MappingInfoSection extends ConsumerWidget {
                 )
                 .toList(),
             onChanged: onDeviceChanged,
-            validator: (v) => v == null ? context.l10n.adminDeviceRequired : null,
+            validator: (v) =>
+                v == null ? context.l10n.adminDeviceRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminSensorListProvider),
             value: selectedSensorId,
-            label: context.l10n.adminSensorLabel,
+            label: '${context.l10n.adminSensorLabel} *',
             hint: context.l10n.adminSelectSensorOptional,
             icon: Icons.sensors,
             errorMessage: context.l10n.adminNoSensorsMessage,
@@ -422,12 +450,13 @@ class _MappingInfoSection extends ConsumerWidget {
               ),
             ],
             onChanged: onSensorChanged,
+            validator: (v) => v == null ? context.l10n.commonRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminUnitListProvider),
             value: selectedUnitId,
-            label: context.l10n.adminUnitLabel,
+            label: '${context.l10n.adminUnitLabel} *',
             hint: context.l10n.adminSelectUnitOptional,
             icon: Icons.straighten,
             errorMessage: context.l10n.adminNoUnitsMessage,
@@ -444,6 +473,7 @@ class _MappingInfoSection extends ConsumerWidget {
               ),
             ],
             onChanged: onUnitChanged,
+            validator: (v) => v == null ? context.l10n.commonRequired : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AdminFormFields.buildField(
@@ -452,6 +482,10 @@ class _MappingInfoSection extends ConsumerWidget {
             label: context.l10n.adminAddressLabel,
             hint: 'Contoh: 0x10',
             icon: Icons.location_searching,
+            required: true,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? context.l10n.commonRequired
+                : null,
           ),
           SizedBox(height: context.rh(0.016)),
           AdminFormFields.buildField(
@@ -461,6 +495,10 @@ class _MappingInfoSection extends ConsumerWidget {
             hint: context.l10n.adminSequenceHint,
             icon: Icons.format_list_numbered,
             keyboardType: TextInputType.number,
+            required: true,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? context.l10n.commonRequired
+                : null,
           ),
         ],
       ),

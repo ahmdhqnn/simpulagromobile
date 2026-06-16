@@ -8,8 +8,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
-import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
-import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
+import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class UserListScreen extends ConsumerWidget {
   const UserListScreen({super.key});
@@ -79,7 +78,7 @@ class UserListScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const AdminLoadingState(),
+          loading: () => const AdminListScreenSkeleton(titleWidth: 92),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () => ref.invalidate(adminUserListProvider),
@@ -90,13 +89,13 @@ class UserListScreen extends ConsumerWidget {
   }
 }
 
-class _UserCard extends ConsumerWidget {
+class _UserCard extends StatelessWidget {
   final User user;
 
   const _UserCard({required this.user});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final badges = <Widget>[
       AdminBadge(
         label: user.isAdmin ? 'Admin' : 'User',
@@ -117,107 +116,8 @@ class _UserCard extends ConsumerWidget {
       icon: Icons.person,
       iconColor: user.isActive ? const Color(0xFFFFA726) : Colors.grey,
       isActive: user.isActive,
-      onTap: () => _showOptions(context, ref),
+      onTap: () => context.push('/admin/users/${user.userId}'),
       badges: badges,
     );
-  }
-
-  void _showOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                user.userName,
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            PermissionGuard(
-              permission: 'user:update',
-              child: ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: Text(
-                  context.l10n.commonEdit,
-                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/admin/users/${user.userId}/edit');
-                },
-              ),
-            ),
-            PermissionGuard(
-              permission: 'user:delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDeleteConfirmationDialog(
-      context,
-      itemName: 'User "${user.userName}"',
-    );
-
-    if (!confirmed || !context.mounted) return;
-
-    final success = await ref
-        .read(adminUserFormProvider.notifier)
-        .deleteUser(user.userId);
-
-    if (!context.mounted) return;
-
-    if (success) {
-      SnackbarHelper.showSuccess(
-        context,
-        context.l10n.adminDeleteSuccess('User'),
-      );
-    } else {
-      final error = ref.read(adminUserFormProvider).error;
-      SnackbarHelper.showError(
-        context,
-        error ?? context.l10n.adminDeleteFailed('User'),
-      );
-    }
   }
 }

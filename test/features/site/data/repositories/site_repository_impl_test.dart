@@ -8,6 +8,37 @@ import 'package:simpulagromobile/features/site/data/repositories/site_repository
 class _MockSiteRemoteDataSource extends Mock implements SiteRemoteDataSource {}
 
 void main() {
+  group('SiteRepositoryImpl errors', () {
+    late _MockSiteRemoteDataSource remoteDataSource;
+    late SiteRepositoryImpl repository;
+
+    setUp(() {
+      remoteDataSource = _MockSiteRemoteDataSource();
+      repository = SiteRepositoryImpl(remoteDataSource);
+    });
+
+    test('maps non-map error bodies without index type crash', () async {
+      when(() => remoteDataSource.getSiteById('SITE_1')).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/sites'),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: '/sites'),
+            statusCode: 500,
+            data: ['backend error'],
+          ),
+        ),
+      );
+
+      final result = await repository.getSiteById('SITE_1');
+
+      result.fold(
+        (failure) => expect(failure, isA<ServerFailure>()),
+        (_) => fail('Should fail'),
+      );
+    });
+  });
+
   group('SiteRepositoryImpl inviteMember', () {
     late _MockSiteRemoteDataSource remoteDataSource;
     late SiteRepositoryImpl repository;

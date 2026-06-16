@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/response_parser.dart';
 import '../models/plant_model.dart';
 
 /// Remote datasource for Plant operations
@@ -38,19 +39,11 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
     try {
       final response = await dio.get(ApiEndpoints.plants(siteId));
 
-      final data = response.data;
-      if (data == null) {
-        throw Exception('Response data is null');
-      }
-
-      final plantsData = data['data'] ?? data;
-
-      if (plantsData is! List) {
-        throw Exception('Invalid response format: expected List');
-      }
+      final plantsData = ResponseParser.extractDataList(response.data);
 
       return plantsData
-          .map((json) => PlantModel.fromJson(json as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((json) => PlantModel.fromJson(Map<String, dynamic>.from(json)))
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -64,14 +57,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
     try {
       final response = await dio.get(ApiEndpoints.plantById(siteId, plantId));
 
-      final data = response.data;
-      if (data == null) {
-        throw Exception('Response data is null');
-      }
-
-      final plantData = data['data'] ?? data;
-
-      return PlantModel.fromJson(plantData as Map<String, dynamic>);
+      return PlantModel.fromJson(ResponseParser.extractDataMap(response.data));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -92,9 +78,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
         throw Exception('Response data is null');
       }
 
-      final plantData = responseData['data'] ?? responseData;
-
-      return PlantModel.fromJson(plantData as Map<String, dynamic>);
+      return PlantModel.fromJson(ResponseParser.extractDataMap(responseData));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -119,9 +103,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
         throw Exception('Response data is null');
       }
 
-      final plantData = responseData['data'] ?? responseData;
-
-      return PlantModel.fromJson(plantData as Map<String, dynamic>);
+      return PlantModel.fromJson(ResponseParser.extractDataMap(responseData));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -141,9 +123,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
         throw Exception('Response data is null');
       }
 
-      final plantData = responseData['data'] ?? responseData;
-
-      return PlantModel.fromJson(plantData as Map<String, dynamic>);
+      return PlantModel.fromJson(ResponseParser.extractDataMap(responseData));
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
@@ -172,11 +152,14 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?['message'];
+        final message = ResponseParser.extractMessage(
+          error.response?.data,
+          'Terjadi kesalahan: $statusCode',
+        );
 
         switch (statusCode) {
           case 400:
-            return Exception(message ?? 'Data tidak valid');
+            return Exception(message);
           case 401:
             return Exception(
               'Sesi Anda telah berakhir. Silakan login kembali.',
@@ -192,7 +175,7 @@ class PlantRemoteDatasourceImpl implements PlantRemoteDatasource {
           case 500:
             return Exception('Terjadi kesalahan pada server');
           default:
-            return Exception(message ?? 'Terjadi kesalahan: $statusCode');
+            return Exception(message);
         }
 
       case DioExceptionType.cancel:

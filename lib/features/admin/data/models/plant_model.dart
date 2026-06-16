@@ -37,12 +37,12 @@ class PlantModel with _$PlantModel {
     }
 
     return PlantModel(
-      plantId: (json['plant_id'] as String?) ?? '',
-      siteId: json['site_id'] as String?,
-      varietasId: json['varietas_id'] as String?,
-      plantName: json['plant_name'] as String?,
+      plantId: _stringValue(json['plant_id']),
+      siteId: _nullableString(json['site_id']),
+      varietasId: _nullableString(json['varietas_id']),
+      plantName: _nullableString(json['plant_name']),
       plantType: parseCropType(json['plant_type']),
-      plantSpecies: json['plant_species'] as String?,
+      plantSpecies: _nullableString(json['plant_species']),
       plantDate: parsePlantDateValue(json['plant_date']),
       plantHarvest: parsePlantDateValue(json['plant_harvest']),
       plantSts: parsePlantStatusCode(json['plant_sts']),
@@ -80,4 +80,11 @@ class PlantModel with _$PlantModel {
     plantCreated: entity.plantCreated,
     plantUpdate: entity.plantUpdate,
   );
+}
+
+String _stringValue(dynamic value) => value?.toString().trim() ?? '';
+
+String? _nullableString(dynamic value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
 }

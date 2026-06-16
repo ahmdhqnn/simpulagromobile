@@ -172,11 +172,19 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       ),
                       const Gap(16),
                       _buildField(
-                        label: context.l10n.commonAddress,
+                        label: isEdit
+                            ? context.l10n.commonAddress
+                            : '${context.l10n.commonAddress} *',
                         controller: _addressController,
                         hint: context.l10n.siteAddressHint,
                         icon: Icons.location_city,
                         maxLines: 2,
+                        validator: (v) {
+                          if (!isEdit && (v == null || v.trim().isEmpty)) {
+                            return context.l10n.commonRequired;
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),
@@ -198,9 +206,11 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       const Gap(12),
                       Row(
                         children: [
-                           Expanded(
+                          Expanded(
                             child: _buildField(
-                              label: context.l10n.commonLatitude,
+                              label: isEdit
+                                  ? context.l10n.commonLatitude
+                                  : '${context.l10n.commonLatitude} *',
                               controller: _latController,
                               hint: '-6.200000',
                               icon: Icons.explore,
@@ -210,8 +220,12 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                                     signed: true,
                                   ),
                               validator: (v) {
-                                if (v != null && v.isNotEmpty) {
-                                  final lat = double.tryParse(v);
+                                if (!isEdit &&
+                                    (v == null || v.trim().isEmpty)) {
+                                  return context.l10n.commonRequired;
+                                }
+                                if (v != null && v.trim().isNotEmpty) {
+                                  final lat = double.tryParse(v.trim());
                                   if (lat == null || lat < -90 || lat > 90) {
                                     return context.l10n.commonInvalid;
                                   }
@@ -223,7 +237,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           const Gap(12),
                           Expanded(
                             child: _buildField(
-                              label: context.l10n.commonLongitude,
+                              label: isEdit
+                                  ? context.l10n.commonLongitude
+                                  : '${context.l10n.commonLongitude} *',
                               controller: _lonController,
                               hint: '106.816666',
                               icon: Icons.explore,
@@ -233,8 +249,12 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                                     signed: true,
                                   ),
                               validator: (v) {
-                                if (v != null && v.isNotEmpty) {
-                                  final lon = double.tryParse(v);
+                                if (!isEdit &&
+                                    (v == null || v.trim().isEmpty)) {
+                                  return context.l10n.commonRequired;
+                                }
+                                if (v != null && v.trim().isNotEmpty) {
+                                  final lon = double.tryParse(v.trim());
                                   if (lon == null || lon < -180 || lon > 180) {
                                     return context.l10n.commonInvalid;
                                   }
@@ -247,7 +267,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                       ),
                       const Gap(16),
                       _buildField(
-                        label: context.l10n.siteAltitudeLabel,
+                        label: isEdit
+                            ? context.l10n.siteAltitudeLabel
+                            : '${context.l10n.siteAltitudeLabel} *',
                         controller: _altController,
                         hint: context.l10n.siteAltitudeHint,
                         icon: Icons.terrain,
@@ -255,6 +277,17 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           decimal: true,
                         ),
                         suffix: 'm',
+                        validator: (v) {
+                          if (!isEdit && (v == null || v.trim().isEmpty)) {
+                            return context.l10n.commonRequired;
+                          }
+                          if (v != null &&
+                              v.trim().isNotEmpty &&
+                              double.tryParse(v.trim()) == null) {
+                            return context.l10n.commonInvalid;
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),

@@ -93,7 +93,9 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? context.l10n.adminEditUserTitle : context.l10n.adminAddUserTitle,
+        title: isEditMode
+            ? context.l10n.adminEditUserTitle
+            : context.l10n.adminAddUserTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
             ? context.l10n.adminSavingChanges
@@ -108,7 +110,9 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? context.l10n.adminEditUserTitle : context.l10n.adminAddUserTitle,
+                isEditMode
+                    ? context.l10n.adminEditUserTitle
+                    : context.l10n.adminAddUserTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -165,13 +169,17 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                       label: context.l10n.adminEmailLabel,
                       hint: context.l10n.adminEmailHint,
                       icon: Icons.email,
+                      required: !isEditMode,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v != null && v.isNotEmpty) {
+                        if (!isEditMode && (v == null || v.trim().isEmpty)) {
+                          return context.l10n.commonRequired;
+                        }
+                        if (v != null && v.trim().isNotEmpty) {
                           final emailRegex = RegExp(
                             r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                           );
-                          if (!emailRegex.hasMatch(v)) {
+                          if (!emailRegex.hasMatch(v.trim())) {
                             return context.l10n.adminEmailInvalid;
                           }
                         }
@@ -212,30 +220,38 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                 title: context.l10n.adminRoleStatusSection,
                 child: Column(
                   children: [
-                    AdminFormFields.buildDropdown<String>(
-                      context,
-                      value: _selectedRoleId,
-                      label: '${context.l10n.adminRoleLabel} *',
-                      hint: context.l10n.adminSelectRoleHint,
-                      icon: Icons.admin_panel_settings,
-                      items: [
-                        DropdownMenuItem(
-                          value: 'ROLE001',
-                          child: Text(context.l10n.roleAdmin),
-                        ),
-                        DropdownMenuItem(
-                          value: 'ROLE002',
-                          child: Text(context.l10n.roleUser),
-                        ),
-                        DropdownMenuItem(
-                          value: 'ROLE003',
-                          child: Text(context.l10n.roleViewer),
-                        ),
-                      ],
-                      onChanged: (v) => setState(() => _selectedRoleId = v),
-                      validator: (v) => v == null ? context.l10n.adminRoleRequired : null,
-                    ),
-                    SizedBox(height: context.rh(0.016)),
+                    if (!isEditMode) ...[
+                      AdminFormFields.buildDropdown<String>(
+                        context,
+                        value: _selectedRoleId,
+                        label: context.l10n.adminRoleLabel,
+                        hint: context.l10n.adminSelectRoleHint,
+                        icon: Icons.admin_panel_settings,
+                        items: [
+                          DropdownMenuItem(
+                            value: 'ROLE001',
+                            child: Text(context.l10n.roleAdmin),
+                          ),
+                          DropdownMenuItem(
+                            value: 'ROLE002',
+                            child: Text(context.l10n.roleUser),
+                          ),
+                          DropdownMenuItem(
+                            value: 'ROLE003',
+                            child: Text(context.l10n.roleViewer),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _selectedRoleId = v),
+                      ),
+                      SizedBox(height: context.rh(0.016)),
+                    ] else if (_selectedRoleId != null) ...[
+                      _ReadOnlyInfoRow(
+                        icon: Icons.admin_panel_settings,
+                        label: context.l10n.adminRoleLabel,
+                        value: _roleLabel(context, _selectedRoleId!),
+                      ),
+                      SizedBox(height: context.rh(0.016)),
+                    ],
                     AdminFormFields.buildDropdown<String>(
                       context,
                       value: _status,
@@ -260,7 +276,9 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddUserTitle,
+                label: isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddUserTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),
@@ -277,8 +295,25 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     _emailController.text = user.userEmail ?? '';
     _phoneController.text = user.userPhone ?? '';
     _selectedRoleId = user.roleId;
-    _status = user.userSts ?? 'active';
+    _status = _normalizeStatus(user.userSts) ?? 'active';
     _isInitialized = true;
+  }
+
+  String? _normalizeStatus(String? value) {
+    if (value == null) return null;
+    final text = value.trim().toLowerCase();
+    if (text == '1') return 'active';
+    if (text == '0') return 'inactive';
+    return text;
+  }
+
+  String _roleLabel(BuildContext context, String roleId) {
+    return switch (roleId) {
+      'ROLE001' => context.l10n.roleAdmin,
+      'ROLE002' => context.l10n.roleUser,
+      'ROLE003' => context.l10n.roleViewer,
+      _ => roleId,
+    };
   }
 
   Widget _buildPasswordField(BuildContext context) {
@@ -379,5 +414,61 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         error ?? context.l10n.adminSaveFailed(context.l10n.roleUser),
       );
     }
+  }
+}
+
+class _ReadOnlyInfoRow extends StatelessWidget {
+  const _ReadOnlyInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF1D1D1D).withValues(alpha: 0.5)),
+          SizedBox(width: context.rw(0.03)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(12),
+                    fontWeight: FontWeight.w300,
+                    color: const Color(0xFF1D1D1D).withValues(alpha: 0.55),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: context.sp(14),
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1D1D1D),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

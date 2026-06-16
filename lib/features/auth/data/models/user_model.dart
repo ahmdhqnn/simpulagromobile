@@ -13,12 +13,14 @@ class UserModel extends User {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      userId: json['user_id'] ?? '',
-      userName: json['user_name'] ?? '',
-      userEmail: json['user_email'],
-      userPhone: json['user_phone'],
-      userSts: json['user_sts'],
-      roleId: json['role_id'],
+      userId: _stringValue(json['user_id'] ?? json['userId'] ?? json['id']),
+      userName: _stringValue(
+        json['user_name'] ?? json['userName'] ?? json['name'],
+      ),
+      userEmail: _nullableString(json['user_email'] ?? json['userEmail']),
+      userPhone: _nullableString(json['user_phone'] ?? json['userPhone']),
+      userSts: _statusValue(json['user_sts'] ?? json['userSts']),
+      roleId: _nullableString(json['role_id'] ?? json['roleId']),
     );
   }
 
@@ -58,12 +60,49 @@ class LoginResponseModel {
   });
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
+    final source = json['data'] is Map
+        ? Map<String, dynamic>.from(json['data'] as Map)
+        : json;
+    final userData = source['user'] ?? {};
     return LoginResponseModel(
-      accessToken: json['access_token'] ?? json['token'] ?? '',
-      refreshToken: json['refresh_token'] ?? '',
-      expiresIn: json['expires_in'] ?? 3600,
-      tokenType: json['token_type'] ?? 'Bearer',
-      user: UserModel.fromJson(json['user'] ?? {}),
+      accessToken: _stringValue(
+        source['access_token'] ?? source['accessToken'] ?? source['token'],
+      ),
+      refreshToken: _stringValue(
+        source['refresh_token'] ?? source['refreshToken'],
+      ),
+      expiresIn: _intValue(source['expires_in'] ?? source['expiresIn']) ?? 3600,
+      tokenType:
+          _stringValue(source['token_type'] ?? source['tokenType']).isEmpty
+          ? 'Bearer'
+          : _stringValue(source['token_type'] ?? source['tokenType']),
+      user: UserModel.fromJson(
+        userData is Map ? Map<String, dynamic>.from(userData) : {},
+      ),
     );
   }
+}
+
+String _stringValue(dynamic value) => value?.toString().trim() ?? '';
+
+String? _nullableString(dynamic value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
+}
+
+String? _statusValue(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value ? 'active' : 'inactive';
+  if (value is num) return value.toInt() == 1 ? 'active' : 'inactive';
+  final text = value.toString().trim();
+  if (text == '1') return 'active';
+  if (text == '0') return 'inactive';
+  return text.isEmpty ? null : text;
+}
+
+int? _intValue(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString().trim());
 }

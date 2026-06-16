@@ -21,6 +21,12 @@ class AdminMenuScreen extends ConsumerWidget {
 
     final menuItems = [
       AdminMenuItem(
+        title: context.l10n.siteTitle,
+        iconPath: 'assets/icons/maps-dot-outline-icon.svg',
+        onTap: () => context.push('/admin/sites'),
+        color: const Color(0xFF26A69A),
+      ),
+      AdminMenuItem(
         title: context.l10n.plantTitle,
         iconPath: 'assets/icons/plant-outline-icon.svg',
         onTap: () => context.push('/admin/plants'),

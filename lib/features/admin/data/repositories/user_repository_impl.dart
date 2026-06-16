@@ -34,6 +34,7 @@ class UserRepositoryImpl implements UserRepository {
         'user_email': user.userEmail,
         'user_phone': user.userPhone,
         'user_pass': password,
+        'user_sts': user.userSts,
         'role_id': user.roleId,
       };
 
@@ -54,7 +55,6 @@ class UserRepositoryImpl implements UserRepository {
         'user_email': user.userEmail,
         'user_phone': user.userPhone,
         'user_sts': user.userSts,
-        'role_id': user.roleId,
       };
 
       // Remove null values

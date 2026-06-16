@@ -54,6 +54,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
         (key, value) =>
             value == null || key == 'ds_created' || key == 'ds_update',
       );
+      _normalizeMutationPayload(data);
 
       final createdModel = await remoteDatasource.createDeviceSensor(
         siteId,
@@ -82,6 +83,7 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
             key == 'ds_created' ||
             key == 'ds_update',
       );
+      _normalizeMutationPayload(data);
 
       final updatedModel = await remoteDatasource.updateDeviceSensor(
         siteId,
@@ -103,6 +105,13 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
       await remoteDatasource.deleteDeviceSensor(siteId, dsId, ds.devId);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  void _normalizeMutationPayload(Map<String, dynamic> data) {
+    final sequence = data.remove('ds_seq');
+    if (sequence != null) {
+      data['ds_sequence'] = sequence;
     }
   }
 }

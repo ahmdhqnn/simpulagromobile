@@ -7,17 +7,21 @@ void main() {
       'note_id': 'NOTE_001',
       'site_id': 'SITE_001',
       'user_id': 'USR_001',
-      'note_content': 'Catatan penting',
-      'created_at': '2026-05-13T00:00:00.000Z',
+      'note_title': 'Irigasi',
+      'note_desc': 'Catatan penting',
+      'note_createed': '2026-05-13T00:00:00.000Z',
     });
 
     expect(model.noteId, 'NOTE_001');
     expect(model.siteId, 'SITE_001');
     expect(model.userId, 'USR_001');
-    expect(model.noteContent, 'Catatan penting');
+    expect(model.noteTitle, 'Irigasi');
+    expect(model.noteDesc, 'Catatan penting');
+    expect(model.noteContent, 'Irigasi');
     expect(model.createdAt, isNotNull);
 
     final entity = model.toEntity();
-    expect(entity.noteContent, 'Catatan penting');
+    expect(entity.noteTitle, 'Irigasi');
+    expect(entity.noteDesc, 'Catatan penting');
   });
 }

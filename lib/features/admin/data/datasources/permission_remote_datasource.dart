@@ -26,8 +26,8 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
       final response = await dio.get(ApiEndpoints.permissionsAll);
       final rows = ResponseParser.extractDataList(response.data);
       return rows
-          .whereType<Map<String, dynamic>>()
-          .map(_toPermissionModel)
+          .whereType<Map>()
+          .map((json) => _toPermissionModel(Map<String, dynamic>.from(json)))
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -42,8 +42,8 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
       final response = await dio.get(ApiEndpoints.permissionsByRole(roleId));
       final rows = ResponseParser.extractDataList(response.data);
       return rows
-          .whereType<Map<String, dynamic>>()
-          .map(_toPermissionModel)
+          .whereType<Map>()
+          .map((json) => _toPermissionModel(Map<String, dynamic>.from(json)))
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -58,8 +58,12 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
       final response = await dio.get(ApiEndpoints.permissionsRolePermissions);
       final rows = ResponseParser.extractDataList(response.data);
       return rows
-          .whereType<Map<String, dynamic>>()
-          .map(RoleWithPermissionsModel.fromJson)
+          .whereType<Map>()
+          .map(
+            (json) => RoleWithPermissionsModel.fromJson(
+              Map<String, dynamic>.from(json),
+            ),
+          )
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -140,12 +144,25 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
 
   PermissionModel _toPermissionModel(Map<String, dynamic> json) {
     final nested = json['permission'];
-    final source = nested is Map<String, dynamic> ? nested : json;
+    final source = nested is Map ? Map<String, dynamic>.from(nested) : json;
     return PermissionModel.fromJson(_normalizePermission(source));
   }
 
   Map<String, dynamic> _normalizePermission(Map<String, dynamic> json) {
     final normalized = Map<String, dynamic>.from(json);
+    const stringKeys = [
+      'perm_id',
+      'perm_name',
+      'perm_slug',
+      'perm_desc',
+      'perm_page',
+    ];
+    for (final key in stringKeys) {
+      final value = normalized[key];
+      if (value != null && value is! String) {
+        normalized[key] = value.toString();
+      }
+    }
     final sts = normalized['perm_sts'];
     if (sts is String) {
       normalized['perm_sts'] = int.tryParse(sts);
@@ -155,16 +172,19 @@ class PermissionRemoteDatasourceImpl implements PermissionRemoteDatasource {
 
   Exception _handleDioError(DioException error) {
     final statusCode = error.response?.statusCode;
-    final message = error.response?.data?['message']?.toString();
+    final message = ResponseParser.extractMessage(
+      error.response?.data,
+      'Permission request failed: $statusCode',
+    );
     if (statusCode == 401) {
-      return Exception(message ?? 'Unauthorized');
+      return Exception(message);
     }
     if (statusCode == 403) {
-      return Exception(message ?? 'Forbidden');
+      return Exception(message);
     }
     if (statusCode == 404) {
-      return Exception(message ?? 'Permission data not found');
+      return Exception(message);
     }
-    return Exception(message ?? 'Permission request failed: $statusCode');
+    return Exception(message);
   }
 }
