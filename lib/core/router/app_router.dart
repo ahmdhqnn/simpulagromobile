@@ -33,8 +33,10 @@ import '../../features/forum/presentation/screens/post_detail_screen.dart';
 import '../../features/admin/presentation/screens/admin_menu_screen.dart';
 import '../../features/admin/presentation/screens/sensors/sensor_list_screen.dart';
 import '../../features/admin/presentation/screens/sensors/sensor_form_screen.dart';
+import '../../features/admin/presentation/screens/sensors/sensor_detail_screen.dart';
 import '../../features/admin/presentation/screens/devices/device_list_screen.dart';
 import '../../features/admin/presentation/screens/devices/device_form_screen.dart';
+import '../../features/admin/presentation/screens/devices/device_detail_screen.dart';
 import '../../features/admin/presentation/screens/plants/plant_list_screen.dart'
     as admin_plant;
 import '../../features/admin/presentation/screens/plants/plant_form_screen.dart'
@@ -46,10 +48,12 @@ import '../../features/admin/presentation/screens/users/user_form_screen.dart';
 import '../../features/admin/presentation/screens/users/user_detail_screen.dart';
 import '../../features/admin/presentation/screens/roles/role_list_screen.dart';
 import '../../features/admin/presentation/screens/roles/role_form_screen.dart';
+import '../../features/admin/presentation/screens/roles/role_detail_screen.dart';
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart'
     as admin_plant_detail;
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_form_screen.dart';
+import '../../features/admin/presentation/screens/device_sensors/device_sensor_detail_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 import '../../features/device/presentation/screens/device_list_screen.dart'
@@ -322,7 +326,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/sensors/:id',
         builder: (_, state) =>
-            SensorFormScreen(sensorId: state.pathParameters['id']),
+            AdminSensorDetailScreen(sensorId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/admin/devices',
@@ -340,7 +344,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/devices/:id',
         builder: (_, state) =>
-            DeviceFormScreen(deviceId: state.pathParameters['id']),
+            AdminDeviceDetailScreen(deviceId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/admin/plants',
@@ -395,7 +399,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/roles/:id',
         builder: (_, state) =>
-            RoleFormScreen(roleId: state.pathParameters['id']),
+            RoleDetailScreen(roleId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/admin/device-sensors',
@@ -413,7 +417,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/device-sensors/:id',
         builder: (_, state) =>
-            DeviceSensorFormScreen(dsId: state.pathParameters['id']),
+            DeviceSensorDetailScreen(dsId: state.pathParameters['id']!),
       ),
 
       GoRoute(path: '/utilitas', redirect: (_, __) => '/admin'),

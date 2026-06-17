@@ -331,7 +331,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide.none,
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: borderRadius,
@@ -339,7 +339,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: context.rw(0.041),

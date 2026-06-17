@@ -166,6 +166,7 @@ class AdminFormFields {
     required List<DropdownMenuItem<T>> items,
     required ValueChanged<T?> onChanged,
     String? Function(T?)? validator,
+    bool enabled = true,
   }) {
     return DropdownButtonFormField<T>(
       value: value,
@@ -174,9 +175,15 @@ class AdminFormFields {
         fontSize: context.sp(14),
         color: const Color(0xFF1D1D1D),
       ),
-      decoration: _decoration(context, label: label, hint: hint, icon: icon),
+      decoration: _decoration(
+        context,
+        label: label,
+        hint: hint,
+        icon: icon,
+        enabled: enabled,
+      ),
       items: items,
-      onChanged: onChanged,
+      onChanged: enabled ? onChanged : null,
       validator: validator,
     );
   }
@@ -206,7 +213,7 @@ class AdminFormFields {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderSide: BorderSide.none,
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

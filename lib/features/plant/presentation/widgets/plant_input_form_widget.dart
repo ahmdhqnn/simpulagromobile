@@ -390,7 +390,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide.none,
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: context.rw(0.041),

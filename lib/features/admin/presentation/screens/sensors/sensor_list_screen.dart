@@ -32,10 +32,25 @@ class SensorListScreen extends ConsumerWidget {
           skipError: true,
           data: (sensors) {
             if (sensors.isEmpty) {
-              return AdminEmptyState(
-                icon: Icons.sensors_off_outlined,
-                title: context.l10n.adminNoSensors,
-                message: context.l10n.adminNoSensorsMessage,
+              return RefreshIndicator(
+                color: const Color(0xFF1B5E20),
+                onRefresh: () async {
+                  ref.invalidate(adminSensorListProvider);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.rw(0.051),
+                    vertical: context.rh(0.01),
+                  ),
+                  children: [
+                    AdminEmptyState(
+                      icon: Icons.sensors_off_outlined,
+                      title: context.l10n.adminNoSensors,
+                      message: context.l10n.adminNoSensorsMessage,
+                    ),
+                  ],
+                ),
               );
             }
 
@@ -101,7 +116,13 @@ class _SensorCard extends ConsumerWidget {
       icon: Icons.sensors,
       iconColor: sensor.isActive ? const Color(0xFF42A5F5) : Colors.grey,
       isActive: sensor.isActive,
-      onTap: () => _showOptions(context, ref),
+      onTap: () => context.push('/admin/sensors/${sensor.sensId}'),
+      trailing: IconButton(
+        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+        onPressed: () => _showOptions(context, ref),
+        icon: const Icon(Icons.more_vert),
+        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      ),
       badges: [
         if (sensor.devId != null)
           AdminBadge(
@@ -163,16 +184,19 @@ class _SensorCard extends ConsumerWidget {
               ),
             ),
             const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(
-                context.l10n.commonEdit,
-                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            PermissionGuard(
+              permission: 'sensor:update',
+              child: ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: Text(
+                  context.l10n.commonEdit,
+                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/admin/sensors/${sensor.sensId}/edit');
+                },
               ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/admin/sensors/${sensor.sensId}/edit');
-              },
             ),
             // Delete option hidden as it is unsupported on the backend
             const SizedBox.shrink(),

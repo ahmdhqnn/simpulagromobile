@@ -156,17 +156,19 @@ class DeviceSensorRemoteDatasourceImpl implements DeviceSensorRemoteDatasource {
         normalized[key] = value.toString();
       }
     }
-    final sts = normalized['ds_sts'];
-    if (sts is String) normalized['ds_sts'] = int.tryParse(sts);
-    final seq = normalized['ds_seq'];
-    if (seq is String) normalized['ds_seq'] = int.tryParse(seq);
-    final sequence = normalized['ds_sequence'];
-    if (normalized['ds_seq'] == null && sequence != null) {
-      normalized['ds_seq'] = sequence is String
-          ? int.tryParse(sequence)
-          : sequence;
-    }
+    normalized['ds_sts'] = _toInt(normalized['ds_sts']);
+    normalized['ds_seq'] = _toInt(normalized['ds_seq']);
+    normalized['ds_seq'] ??= _toInt(normalized['ds_sequence']);
     return normalized;
+  }
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) return int.tryParse(value.trim());
+    return null;
   }
 
   Exception _handleDioError(DioException error) {

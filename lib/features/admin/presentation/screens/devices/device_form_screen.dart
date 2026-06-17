@@ -78,9 +78,10 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
       if (deviceAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 7),
+          body: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [FormCardSkeleton(fieldCount: 7)],
           ),
         );
       }
@@ -101,7 +102,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? context.l10n.adminEditDeviceTitle : context.l10n.adminAddDeviceTitle,
+        title: isEditMode
+            ? context.l10n.adminEditDeviceTitle
+            : context.l10n.adminAddDeviceTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
             ? context.l10n.adminSavingChanges
@@ -109,6 +112,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
@@ -116,7 +120,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? context.l10n.adminEditDeviceTitle : context.l10n.adminAddDeviceTitle,
+                isEditMode
+                    ? context.l10n.adminEditDeviceTitle
+                    : context.l10n.adminAddDeviceTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -197,7 +203,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                         validator: (v) {
                           if (v != null && v.isNotEmpty) {
                             final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                            if (!ipRegex.hasMatch(v)) return context.l10n.adminIpInvalid;
+                            if (!ipRegex.hasMatch(v)) {
+                              return context.l10n.adminIpInvalid;
+                            }
                           }
                           return null;
                         },

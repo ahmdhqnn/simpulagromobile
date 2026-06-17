@@ -158,9 +158,17 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
         normalized[key] = value.toString();
       }
     }
-    final sts = normalized['sens_sts'];
-    if (sts is String) normalized['sens_sts'] = int.tryParse(sts);
+    normalized['sens_sts'] = _toInt(normalized['sens_sts']);
     return normalized;
+  }
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) return int.tryParse(value.trim());
+    return null;
   }
 
   /// Handle Dio errors and convert to user-friendly messages

@@ -47,10 +47,28 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
         _normalizeRole(ResponseParser.extractDataMap(response.data)),
       );
     } on DioException catch (e) {
+      if (_shouldFallbackToList(e)) {
+        return _findRoleFromList(roleId);
+      }
       throw _handleDioError(e);
     } catch (e) {
       throw Exception('Failed to get role: $e');
     }
+  }
+
+  Future<RoleModel> _findRoleFromList(String roleId) async {
+    final roles = await getAllRoles();
+    final normalizedId = roleId.trim();
+    final matches = roles.where((role) => role.roleId == normalizedId);
+    if (matches.isEmpty) {
+      throw Exception('Role tidak ditemukan');
+    }
+    return matches.first;
+  }
+
+  bool _shouldFallbackToList(DioException e) {
+    final code = e.response?.statusCode;
+    return code == 404 || code == 405 || code == 501;
   }
 
   @override
@@ -99,8 +117,7 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
     }
 
     // Normalize role_sts
-    final sts = normalized['role_sts'];
-    if (sts is String) normalized['role_sts'] = int.tryParse(sts);
+    normalized['role_sts'] = _toInt(normalized['role_sts']);
 
     // Normalize list_permission rp_sts
     final perms = normalized['list_permission'];
@@ -115,8 +132,7 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
               pNorm[key] = value.toString();
             }
           }
-          final rpSts = pNorm['rp_sts'];
-          if (rpSts is String) pNorm['rp_sts'] = int.tryParse(rpSts) ?? 1;
+          pNorm['rp_sts'] = _toInt(pNorm['rp_sts']) ?? 1;
           pNorm['can_view'] = _toBool(pNorm['can_view']);
           pNorm['can_create'] = _toBool(pNorm['can_create']);
           pNorm['can_edit'] = _toBool(pNorm['can_edit']);
@@ -151,11 +167,17 @@ class RoleRemoteDatasourceImpl implements RoleRemoteDatasource {
         normalized[key] = value.toString();
       }
     }
-    final sts = normalized['perm_sts'];
-    if (sts is String) {
-      normalized['perm_sts'] = int.tryParse(sts);
-    }
+    normalized['perm_sts'] = _toInt(normalized['perm_sts']);
     return normalized;
+  }
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) return int.tryParse(value.trim());
+    return null;
   }
 
   @override

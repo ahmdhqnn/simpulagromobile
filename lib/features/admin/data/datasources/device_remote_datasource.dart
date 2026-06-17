@@ -62,10 +62,28 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
         _normalizeDevice(ResponseParser.extractDataMap(response.data)),
       );
     } on DioException catch (e) {
+      if (_shouldFallbackToList(e)) {
+        return _findDeviceFromList(siteId, deviceId);
+      }
       throw _handleDioError(e);
     } catch (e) {
       throw Exception('Failed to get device: $e');
     }
+  }
+
+  Future<DeviceModel> _findDeviceFromList(String siteId, String deviceId) async {
+    final devices = await getDevicesBySite(siteId);
+    final normalizedId = deviceId.trim();
+    final matches = devices.where((device) => device.devId == normalizedId);
+    if (matches.isEmpty) {
+      throw Exception('Device tidak ditemukan');
+    }
+    return matches.first;
+  }
+
+  bool _shouldFallbackToList(DioException e) {
+    final code = e.response?.statusCode;
+    return code == 404 || code == 405 || code == 501;
   }
 
   @override
@@ -153,11 +171,17 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
         normalized[key] = value.toString();
       }
     }
-    final sts = normalized['dev_sts'];
-    if (sts is String) {
-      normalized['dev_sts'] = int.tryParse(sts);
-    }
+    normalized['dev_sts'] = _toInt(normalized['dev_sts']);
     return normalized;
+  }
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) return int.tryParse(value.trim());
+    return null;
   }
 
   /// Handle Dio errors and convert to user-friendly messages
