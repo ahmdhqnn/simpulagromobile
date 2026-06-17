@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
 
@@ -77,33 +78,39 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(siteFormProvider);
+    final submitLabel = isEdit
+        ? context.l10n.commonSaveChanges
+        : context.l10n.siteAddTitle;
+    final title = isEdit
+        ? context.l10n.siteEditTitle
+        : context.l10n.siteAddTitle;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          isEdit ? context.l10n.siteEditTitle : context.l10n.siteAddTitle,
-          style: const TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1D1D1D),
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
-      ),
+    return AdminFormScaffold(
+      title: title,
+      isLoading: formState.isLoading,
+      loadingMessage: submitLabel,
       body: _isLoadingData
-          ? Padding(
-              padding: EdgeInsets.all(context.rw(0.051)),
-              child: const FormCardSkeleton(fieldCount: 6, hasLargeField: true),
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.rw(0.051),
+                vertical: context.rh(0.01),
+              ),
+              children: const [
+                FormCardSkeleton(fieldCount: 6, hasLargeField: true),
+              ],
             )
           : Form(
               key: _formKey,
               child: ListView(
-                padding: EdgeInsets.all(context.rw(0.051)),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.rw(0.051),
+                  vertical: context.rh(0.01),
+                ),
                 children: [
-                  // Error banner
+                  AdminSectionTitle(title),
+                  SizedBox(height: context.rh(0.014)),
                   if (formState.error != null)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -294,12 +301,13 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
 
                   const Gap(16),
 
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
+                  AdminSectionCard(
+                    padding: EdgeInsets.zero,
                     child: SwitchListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       title: Text(
                         context.l10n.siteStatusLabel,
                         style: const TextStyle(
@@ -323,38 +331,11 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     ),
                   ),
 
-                  const Gap(24),
-
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: formState.isLoading ? null : _handleSave,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                      ),
-                      child: formState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              isEdit
-                                  ? context.l10n.commonSaveChanges
-                                  : context.l10n.siteAddTitle,
-                              style: const TextStyle(
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
+                  SizedBox(height: context.rh(0.03)),
+                  AdminSubmitButton(
+                    label: submitLabel,
+                    isLoading: formState.isLoading,
+                    onPressed: _handleSave,
                   ),
                 ],
               ),
@@ -363,12 +344,8 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
   }
 
   Widget _buildCard(BuildContext context, {required List<Widget> children}) {
-    return Container(
+    return AdminSectionCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: children,
@@ -397,9 +374,37 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
         hintText: hint,
         prefixIcon: icon != null ? Icon(icon) : null,
         suffixText: suffix,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        labelStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-        hintStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        filled: true,
+        fillColor: AppColors.surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 14,
+          color: AppColors.textPrimary.withValues(alpha: 0.6),
+        ),
+        hintStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          color: AppColors.textSecondary.withValues(alpha: 0.7),
+        ),
       ),
     );
   }

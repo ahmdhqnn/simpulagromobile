@@ -87,7 +87,12 @@ class _SiteListBody extends ConsumerWidget {
       skipError: true,
       data: (sites) {
         if (sites.isEmpty) {
-          return const _EmptyState();
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(siteListProvider);
+            },
+            child: const _EmptyState(),
+          );
         }
         return RefreshIndicator(
           onRefresh: () async {
@@ -124,9 +129,14 @@ class _SiteListBody extends ConsumerWidget {
       loading: () => managementMode
           ? const SiteManagementListSkeleton()
           : buildListSkeleton(count: 6, type: 'site'),
-      error: (error, stack) => _ErrorState(
-        message: error.toString(),
-        onRetry: () => ref.invalidate(siteListProvider),
+      error: (error, stack) => RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(siteListProvider);
+        },
+        child: _ErrorState(
+          message: error.toString(),
+          onRetry: () => ref.invalidate(siteListProvider),
+        ),
       ),
     );
   }
@@ -256,27 +266,37 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.location_off, size: 80, color: Colors.grey[300]),
-          const Gap(16),
-          Text(
-            context.l10n.siteEmptyTitle,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_off, size: 80, color: Colors.grey[300]),
+                  const Gap(16),
+                  Text(
+                    context.l10n.siteEmptyTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                  const Gap(8),
+                  Text(
+                    context.l10n.siteEmptyMessage,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[500],
+                        ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const Gap(8),
-          Text(
-            context.l10n.siteEmptyMessage,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -289,37 +309,47 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
-          const Gap(16),
-          Text(
-            context.l10n.commonErrorTitle,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
-          ),
-          const Gap(8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+                  const Gap(16),
+                  Text(
+                    context.l10n.commonErrorTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                  const Gap(8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[500],
+                          ),
+                    ),
+                  ),
+                  const Gap(16),
+                  ElevatedButton.icon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh),
+                    label: Text(context.l10n.commonRetry),
+                  ),
+                ],
+              ),
             ),
           ),
-          const Gap(16),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: Text(context.l10n.commonRetry),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

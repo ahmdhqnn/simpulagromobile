@@ -46,6 +46,7 @@ class _SiteMemberInviteScreenState
       body: Form(
         key: _formKey,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(
             horizontal: context.rw(0.051),
             vertical: context.rh(0.01),
