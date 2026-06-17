@@ -36,10 +36,26 @@ class RoleListScreen extends ConsumerWidget {
           skipError: true,
           data: (roles) {
             if (roles.isEmpty) {
-              return AdminEmptyState(
-                icon: Icons.admin_panel_settings_outlined,
-                title: context.l10n.adminNoRoles,
-                message: context.l10n.adminNoRolesMessage,
+              return RefreshIndicator(
+                color: const Color(0xFF1B5E20),
+                onRefresh: () async {
+                  ref.invalidate(adminRoleListProvider);
+                  ref.invalidate(rolePermissionsProvider);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.rw(0.051),
+                    vertical: context.rh(0.01),
+                  ),
+                  children: [
+                    AdminEmptyState(
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: context.l10n.adminNoRoles,
+                      message: context.l10n.adminNoRolesMessage,
+                    ),
+                  ],
+                ),
               );
             }
 
@@ -123,7 +139,13 @@ class _RoleCard extends ConsumerWidget {
       icon: Icons.admin_panel_settings,
       iconColor: role.isActive ? const Color(0xFF66BB6A) : Colors.grey,
       isActive: role.isActive,
-      onTap: () => _showOptions(context, ref),
+      onTap: () => context.push('/admin/roles/${role.roleId}'),
+      trailing: IconButton(
+        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+        onPressed: () => _showOptions(context, ref),
+        icon: const Icon(Icons.more_vert),
+        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      ),
       badges: [
         AdminBadge(
           label: context.l10n.adminPermissionBadge(permissionCount),

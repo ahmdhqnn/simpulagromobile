@@ -64,9 +64,10 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
       if (roleAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 4),
+          body: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [FormCardSkeleton(fieldCount: 4)],
           ),
         );
       }
@@ -87,7 +88,9 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? context.l10n.adminEditRoleTitle : context.l10n.adminAddRoleTitle,
+        title: isEditMode
+            ? context.l10n.adminEditRoleTitle
+            : context.l10n.adminAddRoleTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
             ? context.l10n.adminSavingChanges
@@ -95,6 +98,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
@@ -102,7 +106,9 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? context.l10n.adminEditRoleTitle : context.l10n.adminAddRoleTitle,
+                isEditMode
+                    ? context.l10n.adminEditRoleTitle
+                    : context.l10n.adminAddRoleTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -188,7 +194,9 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
               SizedBox(height: context.rh(0.02)),
 
               AdminSubmitButton(
-                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddRoleTitle,
+                label: isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddRoleTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),

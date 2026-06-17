@@ -34,10 +34,25 @@ class DeviceListScreen extends ConsumerWidget {
           skipError: true,
           data: (devices) {
             if (devices.isEmpty) {
-              return AdminEmptyState(
-                icon: Icons.device_hub_outlined,
-                title: context.l10n.adminNoDevices,
-                message: context.l10n.adminNoDevicesMessage,
+              return RefreshIndicator(
+                color: const Color(0xFF1B5E20),
+                onRefresh: () async {
+                  ref.invalidate(adminDeviceListProvider);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.rw(0.051),
+                    vertical: context.rh(0.01),
+                  ),
+                  children: [
+                    AdminEmptyState(
+                      icon: Icons.device_hub_outlined,
+                      title: context.l10n.adminNoDevices,
+                      message: context.l10n.adminNoDevicesMessage,
+                    ),
+                  ],
+                ),
               );
             }
 
@@ -103,7 +118,13 @@ class _DeviceCard extends ConsumerWidget {
       icon: Icons.device_hub,
       iconColor: device.isActive ? const Color(0xFFFF7043) : Colors.grey,
       isActive: device.isActive,
-      onTap: () => _showOptions(context, ref),
+      onTap: () => context.push('/admin/devices/${device.devId}'),
+      trailing: IconButton(
+        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+        onPressed: () => _showOptions(context, ref),
+        icon: const Icon(Icons.more_vert),
+        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      ),
       badges: [
         if (device.connectionInfo != null)
           AdminBadge(

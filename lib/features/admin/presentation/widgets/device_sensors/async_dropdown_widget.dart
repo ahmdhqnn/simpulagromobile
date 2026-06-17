@@ -16,6 +16,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
   final ValueChanged<V?> onChanged;
   final String? Function(V?)? validator;
   final String? errorMessage;
+  final bool enabled;
 
   const AsyncDropdownWidget({
     super.key,
@@ -28,6 +29,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
     required this.onChanged,
     this.validator,
     this.errorMessage,
+    this.enabled = true,
   });
 
   @override
@@ -48,6 +50,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
         items: itemBuilder(items),
         onChanged: onChanged,
         validator: validator,
+        enabled: enabled,
       ),
       loading: () => _placeholder(
         const SkeletonContainer(

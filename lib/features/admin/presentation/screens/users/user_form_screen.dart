@@ -349,7 +349,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide.none,
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -439,7 +439,11 @@ class _ReadOnlyInfoRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF1D1D1D).withValues(alpha: 0.5)),
+          Icon(
+            icon,
+            size: 20,
+            color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
+          ),
           SizedBox(width: context.rw(0.03)),
           Expanded(
             child: Column(

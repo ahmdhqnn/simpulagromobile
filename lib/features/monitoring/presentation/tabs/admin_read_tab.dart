@@ -93,61 +93,50 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
                   tint: AppColors.info,
                 ),
                 const SizedBox(height: 16),
-                 TextField(
-                  controller: _readIdController,
-                  enabled: !isSavingCorrection,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.monitoringReadIdLabel,
-                    prefixIcon: const Icon(Icons.key_rounded),
+                _AdminFormField(
+                  label: context.l10n.monitoringReadIdLabel,
+                  example: 'Contoh: pakai read_id/log_rx_id dari tab Raw Reads',
+                  child: _buildTextField(
+                    context,
+                    controller: _readIdController,
+                    hintText: 'LOG_RX_001',
+                    enabled: !isSavingCorrection,
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _readValueController,
-                  enabled: !isSavingCorrection,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: context.l10n.monitoringReadValueLabel,
-                    prefixIcon: const Icon(Icons.speed_rounded),
+                _AdminFormField(
+                  label: context.l10n.monitoringReadValueLabel,
+                  example: 'Contoh: 27.5, gunakan titik untuk desimal',
+                  child: _buildTextField(
+                    context,
+                    controller: _readValueController,
+                    hintText: '27.5',
+                    enabled: !isSavingCorrection,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _readStsController,
-                  enabled: !isSavingCorrection,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.monitoringReadStsLabel,
-                    prefixIcon: const Icon(Icons.flag_rounded),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                FilledButton.icon(
-                  onPressed: isSavingCorrection
-                      ? null
-                      : () => _submitCorrection(siteId),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                  ),
-                  icon: isSavingCorrection
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.save_rounded),
-                  label: Text(
-                    isSavingCorrection
-                        ? context.l10n.monitoringSaving
-                        : context.l10n.monitoringSaveCorrection,
+                _AdminFormField(
+                  label: context.l10n.monitoringReadStsLabel,
+                  example: 'Contoh: 1 atau 0, isi hanya jika status berubah',
+                  child: _buildTextField(
+                    context,
+                    controller: _readStsController,
+                    hintText: '1',
+                    enabled: !isSavingCorrection,
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            context,
+            isLoading: isSavingCorrection,
+            label: context.l10n.monitoringSaveCorrection,
+            onPressed: () => _submitCorrection(siteId),
           ),
           const SizedBox(height: 32),
           AppCardWidget.elevated(
@@ -165,49 +154,185 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
                   tint: AppColors.primary,
                 ),
                 const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: isTriggeringRekap
-                      ? null
-                      : () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: _rekapDay,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now(),
-                          );
-                          if (picked != null) {
-                            setState(() => _rekapDay = picked);
-                          }
-                        },
-                  icon: const Icon(Icons.calendar_today_rounded),
-                  label: Text(DateFormat('yyyy-MM-dd').format(_rekapDay)),
-                ),
-                const SizedBox(height: 12),
-                FilledButton.icon(
-                  onPressed: isTriggeringRekap
-                      ? null
-                      : () => _triggerRekap(siteId),
-                  icon: isTriggeringRekap
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.play_arrow_rounded),
-                  label: Text(
-                    isTriggeringRekap
-                        ? context.l10n.monitoringProcessing
-                        : context.l10n.monitoringGenerateRecap,
+                _AdminFormField(
+                  label: context.l10n.commonDateLabel,
+                  example:
+                      'Contoh: pilih tanggal data sensor yang diproses ulang',
+                  child: _buildDatePickerField(
+                    context,
+                    enabled: !isTriggeringRekap,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            context,
+            isLoading: isTriggeringRekap,
+            label: context.l10n.monitoringGenerateRecap,
+            onPressed: () => _triggerRekap(siteId),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    BuildContext context, {
+    required TextEditingController controller,
+    bool enabled = true,
+    String? hintText,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      style: TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: context.sp(14),
+        color: AppColors.textPrimary,
+      ),
+      decoration: _fieldDecoration(
+        context,
+        enabled: enabled,
+        hintText: hintText,
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(BuildContext context, {required bool enabled}) {
+    final radius = BorderRadius.circular(AppRadius.pill);
+    final iconColor = AppColors.textPrimary.withValues(
+      alpha: enabled ? 0.56 : 0.32,
+    );
+
+    return Material(
+      color: enabled
+          ? AppColors.surfaceVariant
+          : AppColors.textPrimary.withValues(alpha: 0.05),
+      borderRadius: radius,
+      child: InkWell(
+        borderRadius: radius,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        onTap: enabled
+            ? () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _rekapDay,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  setState(() => _rekapDay = picked);
+                }
+              }
+            : null,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rw(0.041),
+            vertical: context.rh(0.012),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  DateFormat('yyyy-MM-dd').format(_rekapDay),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.label(
+                    context,
+                    size: context.sp(14),
+                    weight: FontWeight.w400,
+                  ).copyWith(height: 1),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.expand_more_rounded, size: 20, color: iconColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context, {
+    required bool isLoading,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        height: 60,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 2.5,
+                  ),
+                )
+              : Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: context.sp(18),
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black,
+                    height: 1.22,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required bool enabled,
+    String? hintText,
+  }) {
+    final borderRadius = BorderRadius.circular(AppRadius.pill);
+
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
+      filled: true,
+      fillColor: enabled
+          ? AppColors.surfaceVariant
+          : AppColors.textPrimary.withValues(alpha: 0.05),
+      hoverColor: Colors.transparent,
+      border: _cleanInputBorder(borderRadius),
+      enabledBorder: _cleanInputBorder(borderRadius),
+      focusedBorder: _cleanInputBorder(borderRadius),
+      disabledBorder: _cleanInputBorder(borderRadius),
+      errorBorder: _cleanInputBorder(borderRadius),
+      focusedErrorBorder: _cleanInputBorder(borderRadius),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.041),
+        vertical: context.rh(0.012),
+      ),
+    );
+  }
+
+  OutlineInputBorder _cleanInputBorder(BorderRadius borderRadius) {
+    return OutlineInputBorder(
+      borderRadius: borderRadius,
+      borderSide: BorderSide.none,
     );
   }
 
@@ -280,5 +405,47 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _AdminFormField extends StatelessWidget {
+  final String label;
+  final String? example;
+  final Widget child;
+
+  const _AdminFormField({
+    required this.label,
+    this.example,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.label(
+            context,
+            size: context.sp(14),
+            weight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: context.rh(0.01)),
+        child,
+        if (example != null) ...[
+          SizedBox(height: context.rh(0.006)),
+          Text(
+            example!,
+            style: AppTextStyles.caption(
+              context,
+              size: context.sp(11),
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }

@@ -84,9 +84,10 @@ class _DeviceSensorFormScreenState
       if (dsAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 8),
+          body: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [FormCardSkeleton(fieldCount: 8)],
           ),
         );
       }
@@ -118,6 +119,7 @@ class _DeviceSensorFormScreenState
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
@@ -135,7 +137,9 @@ class _DeviceSensorFormScreenState
                 selectedDeviceId: _selectedDeviceId,
                 selectedSensorId: _selectedSensorId,
                 selectedUnitId: _selectedUnitId,
-                onDeviceChanged: (v) => setState(() => _selectedDeviceId = v),
+                onDeviceChanged: _isEditMode
+                    ? null
+                    : (v) => setState(() => _selectedDeviceId = v),
                 onSensorChanged: (v) => setState(() => _selectedSensorId = v),
                 onUnitChanged: (v) => setState(() => _selectedUnitId = v),
               ),
@@ -361,7 +365,7 @@ class _MappingInfoSection extends ConsumerWidget {
   final String? selectedDeviceId;
   final String? selectedSensorId;
   final String? selectedUnitId;
-  final ValueChanged<String?> onDeviceChanged;
+  final ValueChanged<String?>? onDeviceChanged;
   final ValueChanged<String?> onSensorChanged;
   final ValueChanged<String?> onUnitChanged;
 
@@ -425,7 +429,8 @@ class _MappingInfoSection extends ConsumerWidget {
                   ),
                 )
                 .toList(),
-            onChanged: onDeviceChanged,
+            onChanged: onDeviceChanged ?? (_) {},
+            enabled: onDeviceChanged != null,
             validator: (v) =>
                 v == null ? context.l10n.adminDeviceRequired : null,
           ),

@@ -78,9 +78,10 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       if (sensorAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 7),
+          body: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [FormCardSkeleton(fieldCount: 7)],
           ),
         );
       }
@@ -111,6 +112,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
@@ -346,7 +348,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide.none,
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -400,7 +402,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            borderSide: BorderSide.none,
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,

@@ -64,10 +64,11 @@ class _SiteMemberInviteScreenState
                     skipLoadingOnReload: true,
                     skipLoadingOnRefresh: true,
                     data: (users) {
-                      final availableUsers = users
-                          .where((user) => user.userId.trim().isNotEmpty)
-                          .toList()
-                        ..sort((a, b) => a.userName.compareTo(b.userName));
+                      final availableUsers =
+                          users
+                              .where((user) => user.userId.trim().isNotEmpty)
+                              .toList()
+                            ..sort((a, b) => a.userName.compareTo(b.userName));
 
                       if (availableUsers.isEmpty) {
                         return _ManualUserIdField(
@@ -83,9 +84,8 @@ class _SiteMemberInviteScreenState
                       );
                     },
                     loading: () => const FormCardSkeleton(fieldCount: 1),
-                    error: (_, __) => _ManualUserIdField(
-                      controller: _manualUserIdController,
-                    ),
+                    error: (_, __) =>
+                        _ManualUserIdField(controller: _manualUserIdController),
                   ),
                 ],
               ),
@@ -266,7 +266,7 @@ InputDecoration _inputDecoration(
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      borderSide: BorderSide.none,
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
