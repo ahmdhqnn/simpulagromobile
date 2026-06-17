@@ -823,17 +823,17 @@ class SiteNotesSectionSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       children: const [
         Align(
-          alignment: Alignment.centerRight,
+          alignment: Alignment.centerLeft,
           child: SkeletonContainer(
             child: SkeletonBox(width: 132, height: 40, borderRadius: 20),
           ),
         ),
         SizedBox(height: 12),
-        Expanded(child: LatestNotesCardSkeleton(rowCount: 4)),
+        LatestNotesCardSkeleton(rowCount: 4),
       ],
     );
   }

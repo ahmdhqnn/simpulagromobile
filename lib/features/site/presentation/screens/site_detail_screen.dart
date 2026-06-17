@@ -51,12 +51,12 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
         children: [
           CircularIconActionWidget(
             onPressed: () => context.push('/site/${widget.siteId}/invite'),
-            icon: Icons.person_add_outlined,
+            svgIconPath: 'assets/icons/user-outline-icon.svg',
           ),
           const Gap(8),
           CircularIconActionWidget(
             onPressed: () => context.push('/site/${widget.siteId}/edit'),
-            icon: Icons.edit_outlined,
+            svgIconPath: 'assets/icons/edit-outline-icon.svg',
           ),
         ],
       ),
@@ -145,32 +145,70 @@ class _TabSwitcher extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(100),
       ),
-      child: TabBar(
-        controller: controller,
-        indicator: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(12),
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) {
+          return Row(
+            children: [
+              _TabPill(
+                label: context.l10n.siteOverviewTab,
+                isSelected: controller.index == 0,
+                onTap: () => controller.animateTo(0),
+              ),
+              const Gap(4),
+              _TabPill(
+                label: context.l10n.siteNotesTab,
+                isSelected: controller.index == 1,
+                onTap: () => controller.animateTo(1),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TabPill extends StatelessWidget {
+  const _TabPill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFEFEFEF) : Colors.transparent,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: context.sp(13),
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+              color: AppColors.textPrimary,
+            ),
+          ),
         ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Colors.transparent,
-        labelColor: Colors.white,
-        unselectedLabelColor: AppColors.textPrimary.withValues(alpha: 0.62),
-        labelStyle: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: context.sp(13),
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: context.sp(13),
-          fontWeight: FontWeight.w400,
-        ),
-        tabs: [
-          Tab(text: context.l10n.siteOverviewTab),
-          Tab(text: context.l10n.siteNotesTab),
-        ],
       ),
     );
   }
