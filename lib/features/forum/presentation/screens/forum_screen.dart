@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -9,6 +8,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/forum_provider.dart';
@@ -143,12 +143,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     return Row(
       children: [
         const Spacer(),
-        PopupMenuButton<String>(
-          padding: EdgeInsets.zero,
-          color: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
+        MorePopupMenuButton<String>(
           onSelected: (value) {
             switch (value) {
               case 'my-posts':
@@ -162,38 +157,23 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
                 break;
             }
           },
-          itemBuilder: (_) => [
-            _buildPopupItem(
+          items: [
+            ActionPopupMenuItem(
+              value: 'my-posts',
               icon: Icons.article_outlined,
               label: context.l10n.forumMyPosts,
-              value: 'my-posts',
             ),
-            _buildPopupItem(
+            ActionPopupMenuItem(
+              value: 'liked-posts',
               icon: Icons.favorite_border,
               label: context.l10n.forumLiked,
-              value: 'liked-posts',
             ),
-            _buildPopupItem(
+            ActionPopupMenuItem(
+              value: 'my-comments',
               icon: Icons.chat_bubble_outline,
               label: context.l10n.forumMyComments,
-              value: 'my-comments',
             ),
           ],
-          child: Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(29),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 28,
-                height: 28,
-              ),
-            ),
-          ),
         ),
       ],
     );
@@ -258,8 +238,8 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               onTap: () {
                 context.push('/forum/post/${post.postId}');
               },
-              onMorePressed: isOwnPost
-                  ? () => _showPostOptions(context, post.postId)
+              trailing: isOwnPost
+                  ? _buildPostMoreMenu(context, post.postId)
                   : null,
             );
           },
@@ -288,29 +268,6 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
         ),
-      ),
-    );
-  }
-
-  PopupMenuItem<String> _buildPopupItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.textSecondary),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: 13,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -361,68 +318,35 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     );
   }
 
-  void _showPostOptions(BuildContext context, String postId) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (sheetCtx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.edit_outlined,
-                  color: AppColors.textPrimary,
-                ),
-                title: Text(
-                  context.l10n.forumEditPost,
-                  style: AppTextStyles.label(
-                    context,
-                    size: 14,
-                    weight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetCtx);
-                  context.push('/forum/edit/$postId');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline,
-                  color: AppColors.error,
-                ),
-                title: Text(
-                  context.l10n.forumDeletePost,
-                  style: AppTextStyles.label(
-                    context,
-                    size: 14,
-                    weight: FontWeight.w500,
-                    color: AppColors.error,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetCtx);
-                  _confirmDelete(context, postId);
-                },
-              ),
-            ],
-          ),
+  Widget _buildPostMoreMenu(BuildContext context, String postId) {
+    return MorePopupMenuButton<String>(
+      size: 32,
+      iconSize: 20,
+      backgroundColor: null,
+      iconColor: AppColors.textSecondary,
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      items: [
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.forumEditPost,
+          iconColor: AppColors.textPrimary,
         ),
-      ),
+        ActionPopupMenuItem(
+          value: 'delete',
+          icon: Icons.delete_outline,
+          label: context.l10n.forumDeletePost,
+          iconColor: AppColors.error,
+          labelColor: AppColors.error,
+        ),
+      ],
+      onSelected: (value) {
+        if (value == 'edit') {
+          context.push('/forum/edit/$postId');
+        } else if (value == 'delete') {
+          _confirmDelete(context, postId);
+        }
+      },
     );
   }
 

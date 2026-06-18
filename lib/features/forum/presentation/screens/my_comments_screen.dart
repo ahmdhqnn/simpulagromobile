@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
+import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../domain/entities/user_comment.dart';
@@ -200,13 +201,35 @@ class _CommentCard extends ConsumerWidget {
             ],
           ),
         ),
-        IconButton(
+        MorePopupMenuButton<String>(
           tooltip: context.l10n.forumCommentActions,
-          onPressed: () => _showActions(context, ref),
-          icon: const Icon(Icons.more_vert, size: 20),
-          color: AppColors.textSecondary,
-          visualDensity: VisualDensity.compact,
-          constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+          useSvgIcon: false,
+          size: 36,
+          iconSize: 20,
+          backgroundColor: null,
+          iconColor: AppColors.textSecondary,
+          items: [
+            ActionPopupMenuItem(
+              value: 'edit',
+              icon: Icons.edit_outlined,
+              label: context.l10n.forumEditComment,
+              iconColor: AppColors.textPrimary,
+            ),
+            ActionPopupMenuItem(
+              value: 'delete',
+              icon: Icons.delete_outline,
+              label: context.l10n.forumDeleteComment,
+              iconColor: AppColors.error,
+              labelColor: AppColors.error,
+            ),
+          ],
+          onSelected: (value) {
+            if (value == 'edit') {
+              _editComment(context, ref);
+            } else if (value == 'delete') {
+              _deleteComment(context, ref);
+            }
+          },
         ),
       ],
     );
@@ -261,6 +284,7 @@ class _CommentCard extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
+      elevation: 0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
