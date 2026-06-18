@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/post.dart';
@@ -83,7 +84,7 @@ class MyPostsScreen extends ConsumerWidget {
             onComment: () => context.push('/forum/post/${post.postId}'),
             onShare: () => _sharePost(context, ref, post.postId),
             onTap: () => context.push('/forum/post/${post.postId}'),
-            onMorePressed: () => _showPostOptions(context, ref, post.postId),
+            trailing: _buildPostMoreMenu(context, ref, post.postId),
           );
         },
       ),
@@ -117,40 +118,40 @@ class MyPostsScreen extends ConsumerWidget {
     ref.invalidate(myPostsProvider);
   }
 
-  void _showPostOptions(BuildContext context, WidgetRef ref, String postId) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (sheetCtx) => ForumActionBottomSheet(
-        title: context.l10n.forumManagePosts,
-        children: [
-          ForumActionSheetItem(
-            icon: Icons.edit_outlined,
-            iconColor: AppColors.primary,
-            backgroundColor: AppColors.softGreen,
-            label: context.l10n.forumEditPost,
-            onTap: () async {
-              Navigator.pop(sheetCtx);
-              await context.push('/forum/edit/$postId');
-              ref.invalidate(myPostsProvider);
-            },
-          ),
-          ForumActionSheetItem(
-            icon: Icons.delete_outline,
-            iconColor: AppColors.error,
-            backgroundColor: AppColors.softOrange,
-            label: context.l10n.forumDeletePost,
-            labelColor: AppColors.error,
-            onTap: () {
-              Navigator.pop(sheetCtx);
-              _confirmDelete(context, ref, postId);
-            },
-          ),
-        ],
-      ),
+  Widget _buildPostMoreMenu(
+    BuildContext context,
+    WidgetRef ref,
+    String postId,
+  ) {
+    return MorePopupMenuButton<String>(
+      size: 32,
+      iconSize: 20,
+      backgroundColor: null,
+      iconColor: AppColors.textSecondary,
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      items: [
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.forumEditPost,
+          iconColor: AppColors.textPrimary,
+        ),
+        ActionPopupMenuItem(
+          value: 'delete',
+          icon: Icons.delete_outline,
+          label: context.l10n.forumDeletePost,
+          iconColor: AppColors.error,
+          labelColor: AppColors.error,
+        ),
+      ],
+      onSelected: (value) async {
+        if (value == 'edit') {
+          await context.push('/forum/edit/$postId');
+          ref.invalidate(myPostsProvider);
+        } else if (value == 'delete') {
+          _confirmDelete(context, ref, postId);
+        }
+      },
     );
   }
 

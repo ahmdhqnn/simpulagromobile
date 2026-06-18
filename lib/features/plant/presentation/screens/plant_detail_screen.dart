@@ -101,6 +101,8 @@ class PlantDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref, Plant plant) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: context.rw(0.051),
@@ -110,9 +112,24 @@ class PlantDetailScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircularBackButtonWidget(onPressed: () => context.pop()),
-          CircularBackButtonWidget(
-            onPressed: () => _showMoreActions(context, ref, plant),
-            svgIconPath: 'assets/icons/more-icon.svg',
+          PlantActionsMenuButton(
+            tooltip: l10n.adminPlantActionsTooltip,
+            onEdit: () => context.push('/plant/${plant.plantId}/edit'),
+            onHarvest: plant.isCurrentPlanting
+                ? () => PlantMutationActions.confirmAndHarvest(
+                    context,
+                    ref,
+                    plant: plant,
+                  )
+                : null,
+            onDelete: ref.read(authProvider).isAdmin
+                ? () => PlantMutationActions.confirmAndDelete(
+                    context,
+                    ref,
+                    plant: plant,
+                    popOnSuccess: true,
+                  )
+                : null,
           ),
         ],
       ),
@@ -192,46 +209,6 @@ class PlantDetailScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  void _showMoreActions(BuildContext context, WidgetRef ref, Plant plant) {
-    final isAdmin = ref.read(authProvider).isAdmin;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => PlantActionsSheet(
-        plant: plant,
-        onEdit: () {
-          Navigator.pop(sheetCtx);
-          context.push('/plant/${plant.plantId}/edit');
-        },
-        onHarvest: plant.isCurrentPlanting
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndHarvest(
-                  context,
-                  ref,
-                  plant: plant,
-                );
-              }
-            : null,
-        onDelete: isAdmin
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndDelete(
-                  context,
-                  ref,
-                  plant: plant,
-                  popOnSuccess: true,
-                );
-              }
-            : null,
-      ),
     );
   }
 }

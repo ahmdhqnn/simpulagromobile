@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/device_sensor_provider.dart';
+import 'package:simpulagromobile/features/admin/presentation/providers/permission_guard_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/device_sensor_threshold_tab.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/device_sensor.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
+import 'package:simpulagromobile/shared/widgets/action_popup_menu_button.dart';
 
 class DeviceSensorListScreen extends ConsumerStatefulWidget {
   const DeviceSensorListScreen({super.key});
@@ -218,19 +220,19 @@ class _DeviceSensorCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final canUpdate = ref.watch(hasPermissionProvider('ds:update'));
+
     return AdminListItem(
       title: deviceSensor.displayName,
-      subtitle: context.l10n.adminDsDevSubtitle(deviceSensor.dsId, deviceSensor.devId),
+      subtitle: context.l10n.adminDsDevSubtitle(
+        deviceSensor.dsId,
+        deviceSensor.devId,
+      ),
       icon: Icons.cable,
       iconColor: deviceSensor.isActive ? const Color(0xFF26C6DA) : Colors.grey,
       isActive: deviceSensor.isActive,
       onTap: () => context.push('/admin/device-sensors/${deviceSensor.dsId}'),
-      trailing: IconButton(
-        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-        onPressed: () => _showOptions(context, ref),
-        icon: const Icon(Icons.more_vert),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-      ),
+      trailing: canUpdate ? _buildActionsMenu(context) : null,
       badges: [
         if (deviceSensor.sensId != null)
           AdminBadge(
@@ -248,46 +250,24 @@ class _DeviceSensorCard extends ConsumerWidget {
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                deviceSensor.displayName,
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            PermissionGuard(
-              permission: 'ds:update',
-              child: ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: Text(context.l10n.adminEditMapping),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push(
-                    '/admin/device-sensors/${deviceSensor.dsId}/edit',
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
+  Widget _buildActionsMenu(BuildContext context) {
+    return MorePopupMenuButton<String>(
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      useSvgIcon: false,
+      size: 40,
+      iconSize: 22,
+      backgroundColor: null,
+      iconColor: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      items: [
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.adminEditMapping,
+          iconColor: const Color(0xFF1D1D1D),
         ),
-      ),
+      ],
+      onSelected: (_) =>
+          context.push('/admin/device-sensors/${deviceSensor.dsId}/edit'),
     );
   }
 }

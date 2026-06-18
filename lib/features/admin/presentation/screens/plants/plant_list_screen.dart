@@ -10,6 +10,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaff
 import 'package:simpulagromobile/features/admin/domain/entities/plant.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/l10n/localized_labels.dart';
+import 'package:simpulagromobile/shared/widgets/action_popup_menu_button.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -121,13 +122,8 @@ class _PlantCard extends ConsumerWidget {
       icon: Icons.grass,
       iconColor: iconColor,
       isActive: plant.isActive,
-      onTap: () => _showOptions(context, ref),
-      trailing: IconButton(
-        tooltip: context.l10n.adminPlantActionsTooltip,
-        onPressed: () => _showOptions(context, ref),
-        icon: const Icon(Icons.more_vert),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-      ),
+      onTap: () => context.push('/admin/plants/${plant.plantId}'),
+      trailing: _buildActionsMenu(context, ref),
       badges: [
         AdminBadge(
           label: plant.plantType?.localizedLabel(context.l10n) ?? '-',
@@ -150,100 +146,56 @@ class _PlantCard extends ConsumerWidget {
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
+  Widget _buildActionsMenu(BuildContext context, WidgetRef ref) {
+    final canUpdate = ref.watch(hasPermissionProvider('plant:update'));
     final isAdmin = ref.read(isAdminProvider);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                plant.displayName,
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            PermissionGuard(
-              permission: 'plant:update',
-              child: ListTile(
-                leading: const Icon(
-                  Icons.edit_outlined,
-                  color: Color(0xFF1B5E20),
-                ),
-                title: Text(
-                  context.l10n.plantActionEdit,
-                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/admin/plants/${plant.plantId}/edit');
-                },
-              ),
-            ),
-            if (plant.isCurrentPlanting) ...[
-              PermissionGuard(
-                permission: 'plant:update',
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.agriculture,
-                    color: Color(0xFFFFA726),
-                  ),
-                  title: Text(
-                    context.l10n.plantActionHarvest,
-                    style: const TextStyle(
-                      color: Color(0xFFFFA726),
-                      fontFamily: 'Plus Jakarta Sans',
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _confirmHarvest(context, ref);
-                  },
-                ),
-              ),
-            ],
-            // Delete: hanya Admin
-            if (isAdmin)
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(
-                  context.l10n.plantActionDelete,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            const SizedBox(height: 8),
-          ],
+    final items = <ActionPopupMenuItem<String>>[
+      if (canUpdate)
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.plantActionEdit,
+          iconColor: const Color(0xFF1B5E20),
         ),
-      ),
+      if (canUpdate && plant.isCurrentPlanting)
+        ActionPopupMenuItem(
+          value: 'harvest',
+          icon: Icons.agriculture,
+          label: context.l10n.plantActionHarvest,
+          iconColor: const Color(0xFFFFA726),
+          labelColor: const Color(0xFFFFA726),
+        ),
+      if (isAdmin)
+        ActionPopupMenuItem(
+          value: 'delete',
+          icon: Icons.delete_outline,
+          label: context.l10n.plantActionDelete,
+          iconColor: Colors.red,
+          labelColor: Colors.red,
+        ),
+    ];
+
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return MorePopupMenuButton<String>(
+      tooltip: context.l10n.adminPlantActionsTooltip,
+      useSvgIcon: false,
+      size: 40,
+      iconSize: 22,
+      backgroundColor: null,
+      iconColor: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      items: items,
+      onSelected: (value) {
+        if (value == 'edit') {
+          context.push('/admin/plants/${plant.plantId}/edit');
+        } else if (value == 'harvest') {
+          _confirmHarvest(context, ref);
+        } else if (value == 'delete') {
+          _confirmDelete(context, ref);
+        }
+      },
     );
   }
 

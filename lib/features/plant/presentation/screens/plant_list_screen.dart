@@ -147,6 +147,7 @@ class _PlantCard extends ConsumerWidget {
       phaseAsync,
       AppLocalizations.of(context)!,
     );
+    final isAdmin = ref.read(authProvider).isAdmin;
 
     return Container(
       decoration: BoxDecoration(
@@ -164,7 +165,31 @@ class _PlantCard extends ConsumerWidget {
               _CardTopRow(
                 plant: plant,
                 statusColor: statusColor,
-                onMoreTap: () => _showActions(context, ref),
+                actions: PlantActionsMenuButton(
+                  tooltip: AppLocalizations.of(
+                    context,
+                  )!.adminPlantActionsTooltip,
+                  useSvgIcon: false,
+                  size: 40,
+                  iconSize: 22,
+                  backgroundColor: null,
+                  iconColor: AppColors.textPrimary.withValues(alpha: 0.7),
+                  onEdit: () => context.push('/plant/${plant.plantId}/edit'),
+                  onHarvest: plant.isCurrentPlanting
+                      ? () => PlantMutationActions.confirmAndHarvest(
+                          context,
+                          ref,
+                          plant: plant,
+                        )
+                      : null,
+                  onDelete: isAdmin
+                      ? () => PlantMutationActions.confirmAndDelete(
+                          context,
+                          ref,
+                          plant: plant,
+                        )
+                      : null,
+                ),
               ),
               const SizedBox(height: 16),
               _CardChipRow(plant: plant, phaseLabel: phaseLabel),
@@ -180,56 +205,17 @@ class _PlantCard extends ConsumerWidget {
     if (p.isCurrentPlanting) return AppColors.success;
     return AppColors.textTertiary;
   }
-
-  void _showActions(BuildContext context, WidgetRef ref) {
-    final isAdmin = ref.read(authProvider).isAdmin;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => PlantActionsSheet(
-        plant: plant,
-        onEdit: () {
-          Navigator.pop(sheetCtx);
-          context.push('/plant/${plant.plantId}/edit');
-        },
-        onHarvest: plant.isCurrentPlanting
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndHarvest(
-                  context,
-                  ref,
-                  plant: plant,
-                );
-              }
-            : null,
-        onDelete: isAdmin
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndDelete(
-                  context,
-                  ref,
-                  plant: plant,
-                );
-              }
-            : null,
-      ),
-    );
-  }
 }
 
 class _CardTopRow extends StatelessWidget {
   final Plant plant;
   final Color statusColor;
-  final VoidCallback onMoreTap;
+  final Widget actions;
 
   const _CardTopRow({
     required this.plant,
     required this.statusColor,
-    required this.onMoreTap,
+    required this.actions,
   });
 
   @override
@@ -276,12 +262,7 @@ class _CardTopRow extends StatelessWidget {
           ),
         ),
 
-        IconButton(
-          tooltip: l10n.adminPlantActionsTooltip,
-          onPressed: onMoreTap,
-          icon: const Icon(Icons.more_vert),
-          color: AppColors.textPrimary.withValues(alpha: 0.7),
-        ),
+        actions,
 
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

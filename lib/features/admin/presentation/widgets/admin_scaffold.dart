@@ -59,7 +59,7 @@ class AdminScaffold extends StatelessWidget {
           else if (onRefresh != null)
             CircularBackButtonWidget(
               onPressed: onRefresh!,
-              svgIconPath: 'assets/icons/more-icon.svg',
+              svgIconPath: 'assets/icons/arrow-rotate-left.svg',
             )
           else
             const SizedBox(width: 58),

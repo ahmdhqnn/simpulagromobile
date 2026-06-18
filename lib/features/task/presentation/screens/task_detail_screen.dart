@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
+import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -101,29 +101,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         CircularBackButtonWidget(onPressed: () => context.pop()),
         const Spacer(),
         if (siteId != null && task != null)
-          PopupMenuButton<String>(
-            padding: EdgeInsets.zero,
-            color: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
+          MorePopupMenuButton<String>(
             onSelected: (value) => _onMenuAction(context, siteId, task, value),
-            itemBuilder: (_) => _buildMenuItems(context, task),
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(29),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/icons/more-icon.svg',
-                  width: 28,
-                  height: 28,
-                ),
-              ),
-            ),
+            items: _buildMenuItems(context, task),
           )
         else
           const SizedBox(width: 58, height: 58),
@@ -131,56 +111,38 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
-  List<PopupMenuEntry<String>> _buildMenuItems(
+  List<ActionPopupMenuItem<String>> _buildMenuItems(
     BuildContext context,
     Task task,
   ) {
     final l10n = context.l10n;
     return [
       if (task.taskStatus != TaskStatus.complite)
-        PopupMenuItem(
+        ActionPopupMenuItem(
           value: 'complete',
-          child: Row(
-            children: [
-              const Icon(Icons.check_circle, size: 20),
-              const SizedBox(width: 12),
-              Text(l10n.taskMarkComplete),
-            ],
-          ),
+          icon: Icons.check_circle,
+          label: l10n.taskMarkComplete,
+          iconColor: AppColors.textPrimary,
         ),
       if (task.taskStatus == TaskStatus.pending)
-        PopupMenuItem(
+        ActionPopupMenuItem(
           value: 'start',
-          child: Row(
-            children: [
-              const Icon(Icons.play_circle, size: 20),
-              const SizedBox(width: 12),
-              Text(l10n.taskStartWork),
-            ],
-          ),
+          icon: Icons.play_circle,
+          label: l10n.taskStartWork,
+          iconColor: AppColors.textPrimary,
         ),
-      PopupMenuItem(
+      ActionPopupMenuItem(
         value: 'edit',
-        child: Row(
-          children: [
-            const Icon(Icons.edit, size: 20),
-            const SizedBox(width: 12),
-            Text(l10n.commonEdit),
-          ],
-        ),
+        icon: Icons.edit,
+        label: l10n.commonEdit,
+        iconColor: AppColors.textPrimary,
       ),
-      PopupMenuItem(
+      ActionPopupMenuItem(
         value: 'delete',
-        child: Row(
-          children: [
-            const Icon(Icons.delete, size: 20, color: AppColors.error),
-            const SizedBox(width: 12),
-            Text(
-              l10n.commonDelete,
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ],
-        ),
+        icon: Icons.delete,
+        label: l10n.commonDelete,
+        iconColor: AppColors.error,
+        labelColor: AppColors.error,
       ),
     ];
   }

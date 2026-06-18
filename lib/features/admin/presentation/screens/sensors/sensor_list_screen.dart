@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
+import 'package:simpulagromobile/features/admin/presentation/providers/permission_guard_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/sensor_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_item.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/sensor.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
+import 'package:simpulagromobile/shared/widgets/action_popup_menu_button.dart';
 
 class SensorListScreen extends ConsumerWidget {
   const SensorListScreen({super.key});
@@ -110,6 +112,8 @@ class _SensorCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final canUpdate = ref.watch(hasPermissionProvider('sensor:update'));
+
     return AdminListItem(
       title: sensor.displayName,
       subtitle: context.l10n.adminIdPrefix(sensor.sensId),
@@ -117,12 +121,7 @@ class _SensorCard extends ConsumerWidget {
       iconColor: sensor.isActive ? const Color(0xFF42A5F5) : Colors.grey,
       isActive: sensor.isActive,
       onTap: () => context.push('/admin/sensors/${sensor.sensId}'),
-      trailing: IconButton(
-        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-        onPressed: () => _showOptions(context, ref),
-        icon: const Icon(Icons.more_vert),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-      ),
+      trailing: canUpdate ? _buildActionsMenu(context) : null,
       badges: [
         if (sensor.devId != null)
           AdminBadge(
@@ -147,63 +146,23 @@ class _SensorCard extends ConsumerWidget {
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    sensor.displayName,
-                    style: const TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            PermissionGuard(
-              permission: 'sensor:update',
-              child: ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: Text(
-                  context.l10n.commonEdit,
-                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/admin/sensors/${sensor.sensId}/edit');
-                },
-              ),
-            ),
-            // Delete option hidden as it is unsupported on the backend
-            const SizedBox.shrink(),
-            const SizedBox(height: 8),
-          ],
+  Widget _buildActionsMenu(BuildContext context) {
+    return MorePopupMenuButton<String>(
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      useSvgIcon: false,
+      size: 40,
+      iconSize: 22,
+      backgroundColor: null,
+      iconColor: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      items: [
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.commonEdit,
+          iconColor: const Color(0xFF1D1D1D),
         ),
-      ),
+      ],
+      onSelected: (_) => context.push('/admin/sensors/${sensor.sensId}/edit'),
     );
   }
 }

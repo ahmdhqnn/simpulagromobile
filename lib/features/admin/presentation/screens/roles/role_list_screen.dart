@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
+import 'package:simpulagromobile/features/admin/presentation/providers/permission_guard_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/role_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
@@ -9,6 +10,7 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/role.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
+import 'package:simpulagromobile/shared/widgets/action_popup_menu_button.dart';
 import 'package:simpulagromobile/shared/widgets/confirmation_dialog.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 
@@ -133,6 +135,26 @@ class _RoleCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final canUpdate = ref.watch(hasPermissionProvider('role:update'));
+    final canDelete = ref.watch(hasPermissionProvider('role:delete'));
+    final items = <ActionPopupMenuItem<String>>[
+      if (canUpdate)
+        ActionPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_outlined,
+          label: context.l10n.commonEdit,
+          iconColor: const Color(0xFF1D1D1D),
+        ),
+      if (canDelete)
+        ActionPopupMenuItem(
+          value: 'delete',
+          icon: Icons.delete_outline,
+          label: context.l10n.commonDelete,
+          iconColor: Colors.red,
+          labelColor: Colors.red,
+        ),
+    ];
+
     return AdminListItem(
       title: role.displayName,
       subtitle: context.l10n.adminIdPrefix(role.roleId),
@@ -140,12 +162,7 @@ class _RoleCard extends ConsumerWidget {
       iconColor: role.isActive ? const Color(0xFF66BB6A) : Colors.grey,
       isActive: role.isActive,
       onTap: () => context.push('/admin/roles/${role.roleId}'),
-      trailing: IconButton(
-        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-        onPressed: () => _showOptions(context, ref),
-        icon: const Icon(Icons.more_vert),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-      ),
+      trailing: items.isEmpty ? null : _buildActionsMenu(context, ref, items),
       badges: [
         AdminBadge(
           label: context.l10n.adminPermissionBadge(permissionCount),
@@ -162,74 +179,26 @@ class _RoleCard extends ConsumerWidget {
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                role.displayName,
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            PermissionGuard(
-              permission: 'role:update',
-              child: ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: Text(
-                  context.l10n.commonEdit,
-                  style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/admin/roles/${role.roleId}/edit');
-                },
-              ),
-            ),
-            PermissionGuard(
-              permission: 'role:delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontFamily: 'Plus Jakarta Sans',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(context, ref);
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+  Widget _buildActionsMenu(
+    BuildContext context,
+    WidgetRef ref,
+    List<ActionPopupMenuItem<String>> items,
+  ) {
+    return MorePopupMenuButton<String>(
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      useSvgIcon: false,
+      size: 40,
+      iconSize: 22,
+      backgroundColor: null,
+      iconColor: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+      items: items,
+      onSelected: (value) {
+        if (value == 'edit') {
+          context.push('/admin/roles/${role.roleId}/edit');
+        } else if (value == 'delete') {
+          _confirmDelete(context, ref);
+        }
+      },
     );
   }
 

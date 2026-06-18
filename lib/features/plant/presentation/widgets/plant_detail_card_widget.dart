@@ -8,7 +8,6 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
@@ -50,7 +49,7 @@ class PlantDetailCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: context.rh(0.015)),
-            _PlantCardHeader(onMoreTap: () => _showMoreActions(context, ref)),
+            _PlantCardHeader(actions: _buildActionsMenu(context, ref)),
             SizedBox(height: gapLg),
             Text(
               AppLocalizations.of(context)!.plantOverviewTitle,
@@ -69,62 +68,38 @@ class PlantDetailCard extends ConsumerWidget {
     );
   }
 
-  void _showMoreActions(BuildContext context, WidgetRef ref) {
+  Widget _buildActionsMenu(BuildContext context, WidgetRef ref) {
     final isAdmin = ref.read(authProvider).isAdmin;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => PlantActionsSheet(
-        plant: plant,
-        onEdit: () {
-          Navigator.pop(sheetCtx);
-          context.push('/plant/${plant.plantId}/edit');
-        },
-        onHarvest: plant.isCurrentPlanting
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndHarvest(
-                  context,
-                  ref,
-                  plant: plant,
-                );
-              }
-            : null,
-        onDelete: isAdmin
-            ? () {
-                Navigator.pop(sheetCtx);
-                PlantMutationActions.confirmAndDelete(
-                  context,
-                  ref,
-                  plant: plant,
-                );
-              }
-            : null,
-      ),
+    return PlantActionsMenuButton(
+      tooltip: AppLocalizations.of(context)!.adminPlantActionsTooltip,
+      onEdit: () => context.push('/plant/${plant.plantId}/edit'),
+      onHarvest: plant.isCurrentPlanting
+          ? () => PlantMutationActions.confirmAndHarvest(
+              context,
+              ref,
+              plant: plant,
+            )
+          : null,
+      onDelete: isAdmin
+          ? () => PlantMutationActions.confirmAndDelete(
+              context,
+              ref,
+              plant: plant,
+            )
+          : null,
     );
   }
 }
 
 class _PlantCardHeader extends StatelessWidget {
-  final VoidCallback onMoreTap;
+  final Widget actions;
 
-  const _PlantCardHeader({required this.onMoreTap});
+  const _PlantCardHeader({required this.actions});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        CircularBackButtonWidget(
-          onPressed: onMoreTap,
-          svgIconPath: 'assets/icons/more-icon.svg',
-        ),
-      ],
-    );
+    return Row(mainAxisAlignment: MainAxisAlignment.end, children: [actions]);
   }
 }
 

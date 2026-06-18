@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -320,19 +320,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildTopBar(BuildContext context, Post? post, String? currentUserId) {
-    final canManage = post != null && post.userId == currentUserId;
-
     return Row(
       children: [
         CircularBackButtonWidget(onPressed: () => context.pop()),
         const Spacer(),
-        if (canManage)
-          PopupMenuButton<String>(
-            padding: EdgeInsets.zero,
-            color: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
+        if (post != null && post.userId == currentUserId)
+          MorePopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'edit') {
                 context.push('/forum/edit/${post.postId}');
@@ -340,50 +333,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 _confirmDelete(context, post.postId);
               }
             },
-            itemBuilder: (_) => [
-              PopupMenuItem(
+            items: [
+              ActionPopupMenuItem(
                 value: 'edit',
-                child: Row(
-                  children: [
-                    const Icon(Icons.edit_outlined, size: 18),
-                    const SizedBox(width: 8),
-                    Text(context.l10n.commonEdit),
-                  ],
-                ),
+                icon: Icons.edit_outlined,
+                label: context.l10n.commonEdit,
+                iconColor: AppColors.textPrimary,
               ),
-              PopupMenuItem(
+              ActionPopupMenuItem(
                 value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: AppColors.error,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      context.l10n.commonDelete,
-                      style: const TextStyle(color: AppColors.error),
-                    ),
-                  ],
-                ),
+                icon: Icons.delete_outline,
+                label: context.l10n.commonDelete,
+                iconColor: AppColors.error,
+                labelColor: AppColors.error,
               ),
             ],
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(29),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/icons/more-icon.svg',
-                  width: 28,
-                  height: 28,
-                ),
-              ),
-            ),
           )
         else
           const SizedBox(width: 58, height: 58),
@@ -789,12 +753,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
                     ),
                     if (canManage)
-                      PopupMenuButton<String>(
-                        padding: EdgeInsets.zero,
-                        color: AppColors.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                        ),
+                      MorePopupMenuButton<String>(
+                        size: 32,
+                        iconSize: 18,
+                        backgroundColor: AppColors.surfaceVariant,
+                        iconColor: AppColors.textSecondary,
                         onSelected: (value) {
                           if (value == 'edit') {
                             _editComment(context, comment);
@@ -802,56 +765,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             _confirmDeleteComment(context, comment.commentId);
                           }
                         },
-                        itemBuilder: (_) => [
-                          PopupMenuItem(
+                        items: [
+                          ActionPopupMenuItem(
                             value: 'edit',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.edit_outlined, size: 18),
-                                const SizedBox(width: 8),
-                                Text(context.l10n.commonEdit),
-                              ],
-                            ),
+                            icon: Icons.edit_outlined,
+                            label: context.l10n.commonEdit,
+                            iconColor: AppColors.textPrimary,
                           ),
-                          PopupMenuItem(
+                          ActionPopupMenuItem(
                             value: 'delete',
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                  color: AppColors.error,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  context.l10n.commonDelete,
-                                  style: const TextStyle(
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            icon: Icons.delete_outline,
+                            label: context.l10n.commonDelete,
+                            iconColor: AppColors.error,
+                            labelColor: AppColors.error,
                           ),
                         ],
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(
-                            child: SvgPicture.asset(
-                              'assets/icons/more-icon.svg',
-                              width: 18,
-                              height: 18,
-                              colorFilter: const ColorFilter.mode(
-                                AppColors.textSecondary,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ),
                       ),
                   ],
                 ),

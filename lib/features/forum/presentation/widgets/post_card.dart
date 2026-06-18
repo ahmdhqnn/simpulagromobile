@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
@@ -12,7 +11,7 @@ class PostCard extends StatelessWidget {
   final VoidCallback? onComment;
   final VoidCallback? onShare;
   final VoidCallback? onTap;
-  final VoidCallback? onMorePressed;
+  final Widget? trailing;
 
   const PostCard({
     super.key,
@@ -21,7 +20,7 @@ class PostCard extends StatelessWidget {
     this.onComment,
     this.onShare,
     this.onTap,
-    this.onMorePressed,
+    this.trailing,
   });
 
   @override
@@ -104,23 +103,7 @@ class PostCard extends StatelessWidget {
             ],
           ),
         ),
-        if (onMorePressed != null)
-          InkWell(
-            onTap: onMorePressed,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: SvgPicture.asset(
-                'assets/icons/more-icon.svg',
-                width: 20,
-                height: 20,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textSecondary,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
+        if (trailing != null) trailing!,
       ],
     );
   }
