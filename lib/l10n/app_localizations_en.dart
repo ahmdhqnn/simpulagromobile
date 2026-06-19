@@ -1388,7 +1388,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAutoRefresh => 'Auto Refresh';
 
   @override
-  String get settingsAutoRefreshSubtitle => 'Refresh data automatically';
+  String get settingsAutoRefreshSubtitle =>
+      'Refresh active-screen data on the selected interval';
 
   @override
   String get settingsRefreshInterval => 'Refresh Interval';
@@ -1406,6 +1407,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeUnavailableSubtitle =>
+      'Not available in this version';
+
+  @override
+  String get settingsThemeUnavailableMessage =>
+      'Theme settings are not available in this app version.';
 
   @override
   String get settingsTemperatureUnit => 'Temperature Unit';

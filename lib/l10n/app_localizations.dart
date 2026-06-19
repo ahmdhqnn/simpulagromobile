@@ -2687,7 +2687,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAutoRefreshSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Perbarui data secara otomatis'**
+  /// **'Perbarui data layar aktif sesuai interval'**
   String get settingsAutoRefreshSubtitle;
 
   /// No description provided for @settingsRefreshInterval.
@@ -2719,6 +2719,18 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Tema'**
   String get settingsTheme;
+
+  /// No description provided for @settingsThemeUnavailableSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum tersedia di versi ini'**
+  String get settingsThemeUnavailableSubtitle;
+
+  /// No description provided for @settingsThemeUnavailableMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengaturan tema belum tersedia di versi aplikasi ini.'**
+  String get settingsThemeUnavailableMessage;
 
   /// No description provided for @settingsTemperatureUnit.
   ///

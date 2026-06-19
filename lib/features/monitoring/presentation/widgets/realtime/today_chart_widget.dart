@@ -67,12 +67,27 @@ class _TodayChartWidgetState extends State<TodayChartWidget> {
         .asMap()
         .entries
         .where((e) => e.value.hasNumericValue)
-        .map((e) => FlSpot(e.key.toDouble(), e.value.numericValue))
+        .map(
+          (e) => FlSpot(
+            e.key.toDouble(),
+            widget.metadataAdapter.displayValueFor(
+              _selected,
+              e.value.numericValue,
+            ),
+          ),
+        )
         .toList();
 
     final color = widget.metadataAdapter.colorFor(_selected);
     final unit = widget.metadataAdapter.unitFor(_selected);
-    final values = filtered.map((r) => r.parsedValue).whereType<double>();
+    final values = filtered
+        .map(
+          (r) => widget.metadataAdapter.displayNullableValueFor(
+            _selected,
+            r.parsedValue,
+          ),
+        )
+        .whereType<double>();
     final valuesList = values.toList();
     final minVal = valuesList.isNotEmpty
         ? valuesList.reduce((a, b) => a < b ? a : b)

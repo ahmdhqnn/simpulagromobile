@@ -567,7 +567,7 @@ class SensorMeta {
     switch (dsId) {
       case 'env_temp':
       case 'soil_temp':
-        return '°C';
+        return '\u00B0C';
       case 'env_hum':
       case 'soil_hum':
         return '%';

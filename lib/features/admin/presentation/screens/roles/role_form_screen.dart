@@ -64,10 +64,9 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
       if (roleAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            children: [FormCardSkeleton(fieldCount: 4)],
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 150,
+            sectionFieldCounts: [3, 1, 4],
           ),
         );
       }

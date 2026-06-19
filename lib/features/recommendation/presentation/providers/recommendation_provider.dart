@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../data/datasources/recommendation_remote_datasource.dart';
@@ -21,6 +22,17 @@ final recommendationRepositoryProvider = Provider<RecommendationRepository>((
   return RecommendationRepositoryImpl(
     ref.watch(recommendationDatasourceProvider),
   );
+});
+
+final recommendationRefreshTickProvider = StreamProvider.autoDispose<int>((
+  ref,
+) {
+  final enabled = ref.watch(appAutoRefreshEnabledProvider);
+  if (!enabled) return const Stream<int>.empty();
+
+  final baseInterval = ref.watch(appRealtimeRefreshIntervalProvider);
+  final interval = Duration(microseconds: baseInterval.inMicroseconds * 4);
+  return Stream<int>.periodic(interval, (tick) => tick + 1);
 });
 
 final getRecommendationsBySiteUseCaseProvider =
@@ -51,6 +63,7 @@ final recommendationsBySiteProvider = FutureProvider.autoDispose
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = rawSiteId.trim();
       if (siteId.isEmpty) return const [];
+      ref.watch(recommendationRefreshTickProvider);
 
       final useCase = ref.watch(getRecommendationsBySiteUseCaseProvider);
       return ref.retryOnError(() async {
@@ -67,6 +80,7 @@ final plantRecommendationsBySiteProvider = FutureProvider.autoDispose
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = rawSiteId.trim();
       if (siteId.isEmpty) return const [];
+      ref.watch(recommendationRefreshTickProvider);
 
       final useCase = ref.watch(getLatestRecommendationsForSiteUseCaseProvider);
       return ref.retryOnError(() async {
@@ -84,6 +98,7 @@ final recommendationsBySitePhaseProvider = FutureProvider.autoDispose
       final siteId = key.siteId.trim();
       final phaseId = key.phaseId.trim();
       if (siteId.isEmpty || phaseId.isEmpty) return const [];
+      ref.watch(recommendationRefreshTickProvider);
 
       final useCase = ref.watch(getRecommendationsByPhaseUseCaseProvider);
       return ref.retryOnError(() async {

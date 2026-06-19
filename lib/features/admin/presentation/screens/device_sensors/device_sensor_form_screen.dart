@@ -84,10 +84,9 @@ class _DeviceSensorFormScreenState
       if (dsAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            children: [FormCardSkeleton(fieldCount: 8)],
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 220,
+            sectionFieldCounts: [5, 7],
           ),
         );
       }

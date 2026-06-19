@@ -6,7 +6,10 @@ import '../../data/models/monitoring_models.dart';
 enum SensorReadingStatus { optimal, warning, critical, offline, unknown }
 
 class SensorMetadataAdapter {
-  SensorMetadataAdapter(Iterable<DeviceSensorThresholdModel> rows) {
+  SensorMetadataAdapter(
+    Iterable<DeviceSensorThresholdModel> rows, {
+    String temperatureUnit = 'celsius',
+  }) : _temperatureUnit = temperatureUnit {
     for (final row in rows) {
       if (row.dsId.isEmpty) continue;
       _byDsId.putIfAbsent(row.dsId, () => row);
@@ -18,6 +21,9 @@ class SensorMetadataAdapter {
 
   final Map<String, DeviceSensorThresholdModel> _byComposite = {};
   final Map<String, DeviceSensorThresholdModel> _byDsId = {};
+  final String _temperatureUnit;
+
+  bool get _usesFahrenheit => _temperatureUnit == 'fahrenheit';
 
   DeviceSensorThresholdModel? thresholdFor({
     required String dsId,
@@ -55,12 +61,103 @@ class SensorMetadataAdapter {
   }
 
   String unitFor(String dsId, {String? devId}) {
+    if (isTemperatureSensor(dsId, devId: devId)) {
+      return _usesFahrenheit ? '\u00B0F' : '\u00B0C';
+    }
+
     final threshold = thresholdFor(dsId: dsId, devId: devId);
     final backend = _firstFilled(threshold?.unitSymbol, threshold?.unitName);
     if (backend != null) {
       return backend;
     }
     return SensorMeta.unit(dsId);
+  }
+
+  bool isTemperatureSensor(String dsId, {String? devId}) {
+    final normalizedId = _normalize(dsId);
+    if (normalizedId.contains('temp') ||
+        normalizedId.contains('temperature') ||
+        normalizedId.contains('suhu')) {
+      return true;
+    }
+
+    final threshold = thresholdFor(dsId: dsId, devId: devId);
+    final label = _normalize(
+      _firstFilled(threshold?.dsName, threshold?.sensName) ?? '',
+    );
+    if (label.contains('temp') ||
+        label.contains('temperature') ||
+        label.contains('suhu')) {
+      return true;
+    }
+
+    final unit = _normalize(
+      _firstFilled(threshold?.unitSymbol, threshold?.unitName) ?? '',
+    );
+    return unit == 'c' ||
+        unit == '\u00B0c' ||
+        unit.contains('celsius') ||
+        unit.contains('celcius');
+  }
+
+  double displayValueFor(String dsId, double value, {String? devId}) {
+    if (_usesFahrenheit && isTemperatureSensor(dsId, devId: devId)) {
+      return (value * 9 / 5) + 32;
+    }
+    return value;
+  }
+
+  double? displayNullableValueFor(String dsId, double? value, {String? devId}) {
+    if (value == null) return null;
+    return displayValueFor(dsId, value, devId: devId);
+  }
+
+  String displayValueText(
+    String dsId,
+    String? value, {
+    String? devId,
+    int fractionDigits = 1,
+  }) {
+    final raw = value?.trim();
+    if (raw == null || raw.isEmpty) return '-';
+
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return raw;
+    return displayValueFor(
+      dsId,
+      parsed,
+      devId: devId,
+    ).toStringAsFixed(fractionDigits);
+  }
+
+  String displayValueWithUnit(
+    String dsId,
+    String? value, {
+    String? devId,
+    int fractionDigits = 1,
+  }) {
+    final text = displayValueText(
+      dsId,
+      value,
+      devId: devId,
+      fractionDigits: fractionDigits,
+    );
+    if (text == '-') return text;
+    return _joinValueUnit(text, unitFor(dsId, devId: devId));
+  }
+
+  String formatNumberWithUnit(
+    String dsId,
+    double? value, {
+    String? devId,
+    int fractionDigits = 1,
+  }) {
+    if (value == null) return '-';
+    final displayValue = displayValueFor(dsId, value, devId: devId);
+    return _joinValueUnit(
+      displayValue.toStringAsFixed(fractionDigits),
+      unitFor(dsId, devId: devId),
+    );
   }
 
   Color colorFor(String dsId) => Color(SensorMeta.colorValue(dsId));
@@ -128,5 +225,13 @@ class SensorMetadataAdapter {
       if (normalized.isNotEmpty) return normalized;
     }
     return null;
+  }
+
+  String _normalize(String value) => value.trim().toLowerCase();
+
+  String _joinValueUnit(String value, String unit) {
+    if (unit.isEmpty) return value;
+    if (unit == '%' || unit.startsWith('\u00B0')) return '$value$unit';
+    return '$value $unit';
   }
 }

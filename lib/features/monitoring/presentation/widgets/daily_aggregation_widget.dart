@@ -146,17 +146,20 @@ class _SensorAggregationItem extends StatelessWidget {
     // Calculate aggregations
     final values = data.map((d) => d.avgVal).whereType<double>().toList();
     final avg = values.isEmpty
-        ? 0
+        ? 0.0
         : values.reduce((a, b) => a + b) / values.length;
     final minValues = data.map((d) => d.minVal).whereType<double>().toList();
     final maxValues = data.map((d) => d.maxVal).whereType<double>().toList();
     final min = minValues.isEmpty
-        ? 0
+        ? 0.0
         : minValues.reduce((a, b) => a < b ? a : b);
     final max = maxValues.isEmpty
-        ? 0
+        ? 0.0
         : maxValues.reduce((a, b) => a > b ? a : b);
     final unit = metadataAdapter.unitFor(sensorId);
+    final avgDisplay = metadataAdapter.displayValueFor(sensorId, avg);
+    final minDisplay = metadataAdapter.displayValueFor(sensorId, min);
+    final maxDisplay = metadataAdapter.displayValueFor(sensorId, max);
     final label = metadataAdapter.labelFor(sensorId);
 
     return Padding(
@@ -179,7 +182,7 @@ class _SensorAggregationItem extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: context.l10n.commonAverage,
-                  value: avg.toStringAsFixed(1),
+                  value: avgDisplay.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.primary,
                   icon: Icons.show_chart,
@@ -189,7 +192,7 @@ class _SensorAggregationItem extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: context.l10n.commonMin,
-                  value: min.toStringAsFixed(1),
+                  value: minDisplay.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.info,
                   icon: Icons.arrow_downward,
@@ -199,7 +202,7 @@ class _SensorAggregationItem extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: context.l10n.commonMax,
-                  value: max.toStringAsFixed(1),
+                  value: maxDisplay.toStringAsFixed(1),
                   unit: unit,
                   color: AppColors.warning,
                   icon: Icons.arrow_upward,

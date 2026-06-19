@@ -11,6 +11,8 @@ import '../config/app_environment.dart';
 part 'app_providers.g.dart';
 
 const Duration defaultRealtimeRefreshInterval = Duration(seconds: 30);
+const int minRealtimeRefreshIntervalSeconds = 30;
+const int maxRealtimeRefreshIntervalSeconds = 300;
 
 const List<Locale> supportedAppLocales = [Locale('id'), Locale('en')];
 
@@ -102,11 +104,16 @@ class AppSettings extends _$AppSettings {
     switch (key) {
       case 'refreshInterval':
         final seconds = value is int ? value : fallback as int;
-        return seconds.clamp(15, 300).toInt();
+        return seconds
+            .clamp(
+              minRealtimeRefreshIntervalSeconds,
+              maxRealtimeRefreshIntervalSeconds,
+            )
+            .toInt();
       case 'language':
         return value == 'en' ? 'en' : 'id';
       case 'theme':
-        return value == 'dark' || value == 'system' ? value : 'light';
+        return 'light';
       default:
         if (fallback is bool) return value is bool ? value : fallback;
         if (fallback is int) return value is int ? value : fallback;
@@ -130,20 +137,18 @@ Locale appLocale(Ref ref) {
 
 @Riverpod(keepAlive: true)
 ThemeMode appThemeMode(Ref ref) {
-  final theme = ref.watch(
-    appSettingsProvider.select((settings) => settings['theme'] as String?),
-  );
-
-  switch (theme) {
-    case 'dark':
-      return ThemeMode.dark;
-    case 'system':
-      return ThemeMode.system;
-    case 'light':
-    default:
-      return ThemeMode.light;
-  }
+  ref.watch(appSettingsProvider.select((settings) => settings['theme']));
+  return ThemeMode.light;
 }
+
+final appTemperatureUnitProvider = Provider<String>((ref) {
+  return ref.watch(
+        appSettingsProvider.select(
+          (settings) => settings['temperatureUnit'] as String?,
+        ),
+      ) ??
+      'celsius';
+});
 
 @Riverpod(keepAlive: true)
 bool appAutoRefreshEnabled(Ref ref) {
@@ -165,7 +170,14 @@ Duration appRealtimeRefreshInterval(Ref ref) {
       ) ??
       defaultRealtimeRefreshInterval.inSeconds;
 
-  return Duration(seconds: seconds.clamp(15, 300).toInt());
+  return Duration(
+    seconds: seconds
+        .clamp(
+          minRealtimeRefreshIntervalSeconds,
+          maxRealtimeRefreshIntervalSeconds,
+        )
+        .toInt(),
+  );
 }
 
 @Riverpod(keepAlive: true)

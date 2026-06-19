@@ -42,7 +42,12 @@ class HistoryChartWidget extends StatelessWidget {
         .asMap()
         .entries
         .where((entry) => entry.value.hasNumericValue)
-        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.numericValue))
+        .map(
+          (entry) => FlSpot(
+            entry.key.toDouble(),
+            metadataAdapter.displayValueFor(param, entry.value.numericValue),
+          ),
+        )
         .toList();
 
     if (spots.isEmpty) {
@@ -53,7 +58,12 @@ class HistoryChartWidget extends StatelessWidget {
       );
     }
 
-    final values = reads.map((read) => read.parsedValue).whereType<double>();
+    final values = reads
+        .map(
+          (read) =>
+              metadataAdapter.displayNullableValueFor(param, read.parsedValue),
+        )
+        .whereType<double>();
     final valuesList = values.toList();
     final minVal = valuesList.reduce((a, b) => a < b ? a : b);
     final maxVal = valuesList.reduce((a, b) => a > b ? a : b);

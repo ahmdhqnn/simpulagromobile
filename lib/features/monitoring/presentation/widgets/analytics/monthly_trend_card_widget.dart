@@ -84,7 +84,14 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
     final unit = widget.metadataAdapter.unitFor(_selected);
 
     final barGroups = chartRows.asMap().entries.map((entry) {
-      final avg = entry.value.avgVal ?? 0;
+      final avg = widget.metadataAdapter.displayValueFor(
+        _selected,
+        entry.value.avgVal ?? 0,
+      );
+      final max = widget.metadataAdapter.displayValueFor(
+        _selected,
+        entry.value.maxVal ?? entry.value.avgVal ?? 0,
+      );
       return BarChartGroupData(
         x: entry.key,
         barRods: [
@@ -95,7 +102,7 @@ class _MonthlyTrendCardWidgetState extends State<MonthlyTrendCardWidget> {
             borderRadius: BorderRadius.circular(4),
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
-              toY: (entry.value.maxVal ?? avg) * 1.2,
+              toY: max * 1.2,
               color: color.withValues(alpha: 0.08),
             ),
           ),

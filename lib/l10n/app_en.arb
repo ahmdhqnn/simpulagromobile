@@ -621,7 +621,7 @@
   "settingsNotificationsSubtitle": "Receive notifications for alerts and updates",
   "settingsDataSyncSection": "Data & Sync",
   "settingsAutoRefresh": "Auto Refresh",
-  "settingsAutoRefreshSubtitle": "Refresh data automatically",
+  "settingsAutoRefreshSubtitle": "Refresh active-screen data on the selected interval",
   "settingsRefreshInterval": "Refresh Interval",
   "settingsRefreshIntervalSeconds": "{seconds} seconds",
   "@settingsRefreshIntervalSeconds": {
@@ -634,6 +634,8 @@
   "settingsAppearanceSection": "Appearance",
   "settingsLanguage": "Language",
   "settingsTheme": "Theme",
+  "settingsThemeUnavailableSubtitle": "Not available in this version",
+  "settingsThemeUnavailableMessage": "Theme settings are not available in this app version.",
   "settingsTemperatureUnit": "Temperature Unit",
   "settingsAppVersion": "App Version",
   "settingsHelpSupport": "Help & Support",

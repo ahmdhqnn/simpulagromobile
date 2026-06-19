@@ -70,9 +70,9 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
       if (userAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 6),
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 158,
+            sectionFieldCounts: [4, 2, 2],
           ),
         );
       }

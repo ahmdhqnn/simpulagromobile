@@ -78,10 +78,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
       if (deviceAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            children: [FormCardSkeleton(fieldCount: 7)],
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 168,
+            sectionFieldCounts: [4, 2, 3, 1],
           ),
         );
       }
@@ -274,7 +273,9 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddDeviceTitle,
+                label: isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddDeviceTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),

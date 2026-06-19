@@ -207,7 +207,6 @@ class _DailyRecapRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final color = metadataAdapter.colorFor(item.dsId);
-    final unit = metadataAdapter.unitFor(item.dsId, devId: item.devId);
     final date = item.day != null
         ? context.dateFormat('dd MMM yyyy').format(item.day!)
         : '-';
@@ -261,7 +260,7 @@ class _DailyRecapRow extends StatelessWidget {
             Expanded(
               child: _RecapMetric(
                 label: l10n.commonMin,
-                value: _formatValue(item.minVal, unit),
+                value: _formatValue(item.minVal),
                 color: AppColors.info,
               ),
             ),
@@ -269,7 +268,7 @@ class _DailyRecapRow extends StatelessWidget {
             Expanded(
               child: _RecapMetric(
                 label: l10n.commonAverage,
-                value: _formatValue(item.avgVal, unit),
+                value: _formatValue(item.avgVal),
                 color: color,
               ),
             ),
@@ -277,7 +276,7 @@ class _DailyRecapRow extends StatelessWidget {
             Expanded(
               child: _RecapMetric(
                 label: l10n.commonMax,
-                value: _formatValue(item.maxVal, unit),
+                value: _formatValue(item.maxVal),
                 color: AppColors.warning,
               ),
             ),
@@ -287,10 +286,12 @@ class _DailyRecapRow extends StatelessWidget {
     );
   }
 
-  String _formatValue(double? value, String unit) {
-    if (value == null) return '-';
-    return '${value.toStringAsFixed(2)}$unit';
-  }
+  String _formatValue(double? value) => metadataAdapter.formatNumberWithUnit(
+    item.dsId,
+    value,
+    devId: item.devId,
+    fractionDigits: 2,
+  );
 }
 
 class _RecapMetric extends StatelessWidget {

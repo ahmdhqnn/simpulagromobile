@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/plant_provider.dart';
@@ -24,10 +25,23 @@ class PlantFormScreen extends ConsumerWidget {
       return Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Center(
-            child: Text(
-              AppLocalizations.of(context)!.emptySite,
-              style: AppTextStyles.caption(context),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: context.rh(0.015)),
+                CircularBackButtonWidget(onPressed: () => context.pop()),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.emptySite,
+                      style: AppTextStyles.caption(context),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -53,14 +67,28 @@ class PlantFormScreen extends ConsumerWidget {
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
       skipError: true,
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Center(
-            child: DetailScreenSkeleton(
-              infoRowCount: 3,
-              hasDescription: false,
-              headerHeight: 120,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: context.rh(0.015)),
+                  CircularBackButtonWidget(onPressed: () => context.pop()),
+                  SizedBox(height: context.rh(0.03)),
+                  Text(
+                    AppLocalizations.of(context)!.plantEditTitle,
+                    style: AppTextStyles.sectionTitle(context),
+                  ),
+                  SizedBox(height: context.rh(0.03)),
+                  const PlantFormCardSkeleton(),
+                  SizedBox(height: context.rh(0.02)),
+                ],
+              ),
             ),
           ),
         ),
@@ -68,9 +96,22 @@ class PlantFormScreen extends ConsumerWidget {
       error: (error, _) => Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: _EditLoadError(
-            error: error.toString(),
-            onRetry: () => ref.invalidate(plantDetailProvider(plantId!)),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: context.rh(0.015)),
+                CircularBackButtonWidget(onPressed: () => context.pop()),
+                Expanded(
+                  child: _EditLoadError(
+                    error: error.toString(),
+                    onRetry: () =>
+                        ref.invalidate(plantDetailProvider(plantId!)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

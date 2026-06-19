@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
@@ -21,7 +23,7 @@ class NpkNutrientDetail {
   });
 }
 
-class RecommendationParametersCardWidget extends StatelessWidget {
+class RecommendationParametersCardWidget extends ConsumerWidget {
   final RecommendationBundle parameters;
 
   const RecommendationParametersCardWidget({
@@ -29,7 +31,10 @@ class RecommendationParametersCardWidget extends StatelessWidget {
     required this.parameters,
   });
 
-  List<NpkNutrientDetail> _parseNpkDetails(String pesan, RecommendationSensorData? sensorData) {
+  List<NpkNutrientDetail> _parseNpkDetails(
+    String pesan,
+    RecommendationSensorData? sensorData,
+  ) {
     final details = <NpkNutrientDetail>[];
     final parts = pesan.split('|');
 
@@ -70,13 +75,15 @@ class RecommendationParametersCardWidget extends StatelessWidget {
       if (label == 'P') value = sensorData?.phosphorus?.toDouble();
       if (label == 'K') value = sensorData?.potassium?.toDouble();
 
-      details.add(NpkNutrientDetail(
-        label: label,
-        name: nutrientNames[label]!,
-        status: statusFromActionText(action),
-        value: value,
-        action: action,
-      ));
+      details.add(
+        NpkNutrientDetail(
+          label: label,
+          name: nutrientNames[label]!,
+          status: statusFromActionText(action),
+          value: value,
+          action: action,
+        ),
+      );
     }
     return details;
   }
@@ -208,15 +215,18 @@ class RecommendationParametersCardWidget extends StatelessWidget {
 
     String phCategory = 'Netral';
     Color phColor = Colors.green;
-    String phDescription = 'Kondisi pH tanah ideal untuk sebagian besar tanaman.';
+    String phDescription =
+        'Kondisi pH tanah ideal untuk sebagian besar tanaman.';
     if (clampedPh < 6.0) {
       phCategory = 'Asam (Tinggi)';
       phColor = Colors.orange;
-      phDescription = 'Tanah cenderung asam. Penambahan kapur pertanian (Dolomit) mungkin diperlukan.';
+      phDescription =
+          'Tanah cenderung asam. Penambahan kapur pertanian (Dolomit) mungkin diperlukan.';
     } else if (clampedPh > 7.5) {
       phCategory = 'Basa (Alkali)';
       phColor = Colors.blue;
-      phDescription = 'Tanah cenderung basa. Penambahan belerang atau bahan organik mungkin diperlukan.';
+      phDescription =
+          'Tanah cenderung basa. Penambahan belerang atau bahan organik mungkin diperlukan.';
     }
 
     return Container(
@@ -256,7 +266,10 @@ class RecommendationParametersCardWidget extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: phColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -336,9 +349,18 @@ class RecommendationParametersCardWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('0 (Asam)', style: AppTextStyles.hint(context).copyWith(fontSize: 10)),
-              Text('7 (Netral)', style: AppTextStyles.hint(context).copyWith(fontSize: 10)),
-              Text('14 (Basa)', style: AppTextStyles.hint(context).copyWith(fontSize: 10)),
+              Text(
+                '0 (Asam)',
+                style: AppTextStyles.hint(context).copyWith(fontSize: 10),
+              ),
+              Text(
+                '7 (Netral)',
+                style: AppTextStyles.hint(context).copyWith(fontSize: 10),
+              ),
+              Text(
+                '14 (Basa)',
+                style: AppTextStyles.hint(context).copyWith(fontSize: 10),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -357,7 +379,8 @@ class RecommendationParametersCardWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final temperatureUnit = ref.watch(appTemperatureUnitProvider);
     final npkDetails = parameters.npk != null
         ? _parseNpkDetails(parameters.npk!.pesan, parameters.sensorData)
         : <NpkNutrientDetail>[];
@@ -367,7 +390,8 @@ class RecommendationParametersCardWidget extends StatelessWidget {
     final showVisualNpk = npkDetails.isNotEmpty;
     final showVisualPh = phValue != null;
 
-    final hasEnvironmentalData = parameters.sensorData != null &&
+    final hasEnvironmentalData =
+        parameters.sensorData != null &&
         (parameters.sensorData!.envTemp != null ||
             parameters.sensorData!.envHum != null ||
             parameters.sensorData!.soilTemp != null ||
@@ -432,7 +456,9 @@ class RecommendationParametersCardWidget extends StatelessWidget {
             ),
           ],
 
-          if (parameters.sensorData != null && !showVisualNpk && !showVisualPh) ...[
+          if (parameters.sensorData != null &&
+              !showVisualNpk &&
+              !showVisualPh) ...[
             const Divider(height: 20, color: AppColors.divider),
             if (parameters.sensorData!.nitrogen != null)
               _buildRow(
@@ -478,7 +504,10 @@ class RecommendationParametersCardWidget extends StatelessWidget {
               _buildRow(
                 context,
                 'Suhu Udara',
-                '${_formatNumber(parameters.sensorData!.envTemp!)} °C',
+                _formatTemperature(
+                  parameters.sensorData!.envTemp!,
+                  temperatureUnit,
+                ),
               ),
             if (parameters.sensorData!.envHum != null)
               _buildRow(
@@ -490,7 +519,10 @@ class RecommendationParametersCardWidget extends StatelessWidget {
               _buildRow(
                 context,
                 'Suhu Tanah',
-                '${_formatNumber(parameters.sensorData!.soilTemp!)} °C',
+                _formatTemperature(
+                  parameters.sensorData!.soilTemp!,
+                  temperatureUnit,
+                ),
               ),
             if (parameters.sensorData!.soilHum != null)
               _buildRow(
@@ -551,5 +583,13 @@ class RecommendationParametersCardWidget extends StatelessWidget {
   String _formatNumber(num value) {
     if (value % 1 == 0) return value.toInt().toString();
     return value.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
+  }
+
+  String _formatTemperature(num value, String temperatureUnit) {
+    final converted = temperatureUnit == 'fahrenheit'
+        ? (value * 9 / 5) + 32
+        : value;
+    final unit = temperatureUnit == 'fahrenheit' ? '\u00B0F' : '\u00B0C';
+    return '${_formatNumber(converted)} $unit';
   }
 }

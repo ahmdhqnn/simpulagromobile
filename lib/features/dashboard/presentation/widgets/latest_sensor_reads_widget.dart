@@ -3,12 +3,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../monitoring/presentation/utils/sensor_metadata_adapter.dart';
 import '../../domain/entities/dashboard_entity.dart';
 
 class LatestSensorReadsWidget extends StatelessWidget {
   final List<SensorReadEntity> reads;
+  final SensorMetadataAdapter? metadataAdapter;
 
-  const LatestSensorReadsWidget({super.key, required this.reads});
+  const LatestSensorReadsWidget({
+    super.key,
+    required this.reads,
+    this.metadataAdapter,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +39,13 @@ class LatestSensorReadsWidget extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           final read = reads[index];
-          final value = read.value;
+          final value =
+              metadataAdapter?.displayValueWithUnit(
+                read.dsId,
+                read.value,
+                devId: read.devId,
+              ) ??
+              '${read.value} ${read.unit}'.trim();
           final devId = read.devId;
 
           return Padding(
@@ -82,7 +94,7 @@ class LatestSensorReadsWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$value ${read.unit}'.trim(),
+                      value,
                       style: AppTextStyles.label(
                         context,
                         size: 14,

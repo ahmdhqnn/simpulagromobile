@@ -145,7 +145,11 @@ final deviceSensorThresholdByDsIdProvider =
 final sensorMetadataAdapterProvider =
     Provider.autoDispose<SensorMetadataAdapter>((ref) {
       final rows = ref.watch(deviceSensorThresholdValuesProvider).valueOrNull;
-      return SensorMetadataAdapter(rows ?? const []);
+      final temperatureUnit = ref.watch(appTemperatureUnitProvider);
+      return SensorMetadataAdapter(
+        rows ?? const [],
+        temperatureUnit: temperatureUnit,
+      );
     });
 
 /// Bacaan sensor hari ini (untuk grafik realtime).
@@ -310,6 +314,7 @@ final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
   ref.cacheFor(const Duration(minutes: 1));
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return EnvironmentalHealth.empty();
+  ref.watch(monitoringRefreshTickProvider(4));
 
   final raw = await ref.retryOnError(() async {
     final result = await ref

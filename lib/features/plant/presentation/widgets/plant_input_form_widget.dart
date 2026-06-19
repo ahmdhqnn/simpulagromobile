@@ -7,6 +7,8 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
+import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
@@ -89,7 +91,11 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: context.rh(0.015)),
+
+            CircularBackButtonWidget(onPressed: widget.onCancel),
+
+            SizedBox(height: context.rh(0.03)),
 
             Text(
               _isEditMode ? l10n.plantEditTitle : l10n.plantAddTitle,
@@ -325,11 +331,13 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
           color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
-        child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+        child: const SkeletonContainer(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SkeletonLine(width: 150, height: 13),
+            ),
           ),
         ),
       ),

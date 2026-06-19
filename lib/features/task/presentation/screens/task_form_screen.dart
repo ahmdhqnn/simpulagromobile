@@ -148,8 +148,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     );
   }
 
-  Widget _buildLoadingCard() =>
-      const FormCardSkeleton(fieldCount: 5, hasLargeField: true);
+  Widget _buildLoadingCard() => TaskFormCardSkeleton(isEditMode: isEditMode);
 
   Widget _buildMessageCard({
     required IconData icon,
