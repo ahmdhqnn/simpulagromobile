@@ -106,6 +106,8 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                             data: filtered,
                             title: widget.sensorName,
                             chartType: _selectedChartType,
+                            sensorId: widget.sensorId,
+                            metadataAdapter: metadataAdapter,
                           );
                         },
                       ),

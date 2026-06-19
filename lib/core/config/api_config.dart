@@ -29,9 +29,9 @@ class ApiConfig {
   static const Duration tokenRefreshBuffer = Duration(minutes: 2);
 
   // Retry config
-  static const int maxRetries = 2;
-  static const Duration retryDelay = Duration(seconds: 2);
+  static const int maxRetries = 1;
+  static const Duration retryDelay = Duration(seconds: 3);
 
   // Single-core backend protection: keep mobile request bursts bounded.
-  static const int maxConcurrentRequests = 3;
+  static const int maxConcurrentRequests = 2;
 }

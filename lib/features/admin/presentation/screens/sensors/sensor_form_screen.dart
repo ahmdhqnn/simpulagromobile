@@ -78,10 +78,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
       if (sensorAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            children: [FormCardSkeleton(fieldCount: 7)],
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 164,
+            sectionFieldCounts: [4, 1, 3, 1],
           ),
         );
       }

@@ -7,6 +7,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../data/models/monitoring_models.dart';
 import '../utils/monitoring_display_utils.dart';
+import '../utils/sensor_metadata_adapter.dart';
 import 'monitoring_card_header_widget.dart';
 
 /// Reusable sensor chart widget with multiple chart types
@@ -17,6 +18,8 @@ class SensorChartWidget extends StatefulWidget {
   final Color? color;
   final bool showLegend;
   final bool showGrid;
+  final String? sensorId;
+  final SensorMetadataAdapter? metadataAdapter;
 
   const SensorChartWidget({
     super.key,
@@ -26,6 +29,8 @@ class SensorChartWidget extends StatefulWidget {
     this.color,
     this.showLegend = true,
     this.showGrid = true,
+    this.sensorId,
+    this.metadataAdapter,
   });
 
   @override
@@ -40,6 +45,26 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
             (a.readDate ?? DateTime(0)).compareTo(b.readDate ?? DateTime(0)),
       );
     return rows;
+  }
+
+  String _sensorIdFor(SensorReadModel item) =>
+      widget.sensorId ?? item.dsId ?? '';
+
+  double _displayValue(SensorReadModel item) {
+    return widget.metadataAdapter?.displayValueFor(
+          _sensorIdFor(item),
+          item.numericValue,
+          devId: item.devId,
+        ) ??
+        item.numericValue;
+  }
+
+  String _displayUnit(SensorReadModel item) {
+    return widget.metadataAdapter?.unitFor(
+          _sensorIdFor(item),
+          devId: item.devId,
+        ) ??
+        '';
   }
 
   @override
@@ -131,7 +156,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
 
   Widget _buildLineChart(List<SensorReadModel> data) {
     final spots = data.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.numericValue);
+      return FlSpot(e.key.toDouble(), _displayValue(e.value));
     }).toList();
 
     final color = widget.color ?? AppColors.primary;
@@ -221,7 +246,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
                 final idx = spot.x.toInt();
                 final item = data[idx];
                 return LineTooltipItem(
-                  '${item.numericValue.toStringAsFixed(1)}\n',
+                  '${_displayValue(item).toStringAsFixed(1)}${_displayUnit(item)}\n',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -312,7 +337,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
             x: e.key,
             barRods: [
               BarChartRodData(
-                toY: e.value.numericValue,
+                toY: _displayValue(e.value),
                 color: color,
                 width: data.length > 40 ? 8 : 12,
                 borderRadius: const BorderRadius.vertical(
@@ -328,7 +353,7 @@ class _SensorChartWidgetState extends State<SensorChartWidget> {
 
   Widget _buildAreaChart(List<SensorReadModel> data) {
     final spots = data.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.numericValue);
+      return FlSpot(e.key.toDouble(), _displayValue(e.value));
     }).toList();
 
     final color = widget.color ?? AppColors.primary;

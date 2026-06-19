@@ -665,11 +665,7 @@ class CompactStatsCardSkeleton extends StatelessWidget {
   final int itemCount;
   final double? height;
 
-  const CompactStatsCardSkeleton({
-    super.key,
-    this.itemCount = 3,
-    this.height,
-  });
+  const CompactStatsCardSkeleton({super.key, this.itemCount = 3, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -793,17 +789,11 @@ class LatestNotesCardSkeleton extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SkeletonLine(
-                        width: index.isEven ? 156 : 126,
-                        height: 14,
-                      ),
+                      SkeletonLine(width: index.isEven ? 156 : 126, height: 14),
                       const SizedBox(height: 6),
                       const SkeletonLine(width: double.infinity, height: 11),
                       const SizedBox(height: 5),
-                      SkeletonLine(
-                        width: index.isEven ? 210 : 172,
-                        height: 11,
-                      ),
+                      SkeletonLine(width: index.isEven ? 210 : 172, height: 11),
                       const SizedBox(height: 7),
                       const SkeletonLine(width: 92, height: 10),
                     ],
@@ -1877,11 +1867,17 @@ class DropdownFieldSkeleton extends StatelessWidget {
 class FormCardSkeleton extends StatelessWidget {
   final int fieldCount;
   final bool hasLargeField;
+  final bool showHeader;
+  final bool showSubmitButton;
+  final bool useCircularActions;
 
   const FormCardSkeleton({
     super.key,
     this.fieldCount = 4,
     this.hasLargeField = true,
+    this.showHeader = true,
+    this.showSubmitButton = true,
+    this.useCircularActions = false,
   });
 
   @override
@@ -1892,24 +1888,286 @@ class FormCardSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CardHeaderSkeleton(titleWidth: 154, descriptionWidth: 118),
-          const SizedBox(height: 20),
+          if (showHeader) ...[
+            const CardHeaderSkeleton(titleWidth: 154, descriptionWidth: 118),
+            const SizedBox(height: 20),
+          ],
           for (var i = 0; i < fieldCount; i++) ...[
-            SkeletonBox(
-              width: double.infinity,
-              height: hasLargeField && i == 1 ? 112 : 56,
-              borderRadius: AppRadius.sm,
+            _FormFieldBlockSkeleton(
+              labelWidth: i.isEven ? 112 : 86,
+              height: hasLargeField && i == 1 ? 108 : 48,
+              borderRadius: hasLargeField && i == 1
+                  ? AppRadius.xl
+                  : AppRadius.pill,
             ),
             if (i != fieldCount - 1) const SizedBox(height: 12),
           ],
-          const SizedBox(height: 18),
-          const SkeletonBox(
-            width: double.infinity,
-            height: 48,
-            borderRadius: AppRadius.pill,
-          ),
+          if (showSubmitButton) ...[
+            const SizedBox(height: 18),
+            if (useCircularActions)
+              const _CircularFormActionsSkeleton()
+            else
+              const SkeletonBox(
+                width: double.infinity,
+                height: 48,
+                borderRadius: AppRadius.pill,
+              ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class PlantFormCardSkeleton extends StatelessWidget {
+  final bool showConflictBanner;
+
+  const PlantFormCardSkeleton({super.key, this.showConflictBanner = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showConflictBanner) ...[
+          const _SkeletonPanel(
+            radius: AppRadius.md,
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                SkeletonCircle(size: 24),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLine(width: 176, height: 12),
+                      SizedBox(height: 6),
+                      SkeletonLine(width: 128, height: 11),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        const _SkeletonCard(
+          radius: AppRadius.xl,
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _FormFieldBlockSkeleton(labelWidth: 104),
+              SizedBox(height: 20),
+              _FormFieldBlockSkeleton(labelWidth: 136, trailingIcon: true),
+              SizedBox(height: 20),
+              _FormFieldBlockSkeleton(labelWidth: 92, trailingIcon: true),
+              SizedBox(height: 20),
+              _FormFieldBlockSkeleton(labelWidth: 112, trailingIcon: true),
+              SizedBox(height: 28),
+              _CircularFormActionsSkeleton(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class TaskFormCardSkeleton extends StatelessWidget {
+  final bool isEditMode;
+
+  const TaskFormCardSkeleton({super.key, this.isEditMode = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonCard(
+      radius: AppRadius.xl,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isEditMode) ...[
+            const _FormFieldBlockSkeleton(labelWidth: 54, trailingIcon: true),
+            const SizedBox(height: 20),
+          ],
+          const _FormFieldBlockSkeleton(labelWidth: 96),
+          const SizedBox(height: 20),
+          const _FormFieldBlockSkeleton(
+            labelWidth: 86,
+            height: 108,
+            borderRadius: AppRadius.xl,
+          ),
+          const SizedBox(height: 20),
+          const _ChoiceGroupSkeleton(labelWidth: 80, pillWidths: [92, 84, 78]),
+          const SizedBox(height: 20),
+          const _ChoiceGroupSkeleton(labelWidth: 70, pillWidths: [74, 92, 78]),
+          if (isEditMode) ...[
+            const SizedBox(height: 20),
+            const _ChoiceGroupSkeleton(
+              labelWidth: 64,
+              pillWidths: [76, 88, 78, 70],
+            ),
+          ],
+          const SizedBox(height: 28),
+          const _CircularFormActionsSkeleton(),
+        ],
+      ),
+    );
+  }
+}
+
+class AdminFormScreenSkeleton extends StatelessWidget {
+  final double titleWidth;
+  final List<int> sectionFieldCounts;
+  final bool showSubmitButton;
+
+  const AdminFormScreenSkeleton({
+    super.key,
+    this.titleWidth = 180,
+    this.sectionFieldCounts = const [4],
+    this.showSubmitButton = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      children: [
+        const SizedBox(height: 8),
+        SkeletonContainer(child: SkeletonLine(width: titleWidth, height: 22)),
+        const SizedBox(height: 14),
+        for (var i = 0; i < sectionFieldCounts.length; i++) ...[
+          _AdminFormSectionSkeleton(
+            fieldCount: sectionFieldCounts[i],
+            titleWidth: i.isEven ? 154 : 126,
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (showSubmitButton) ...[
+          const SkeletonContainer(
+            child: SkeletonBox(
+              width: double.infinity,
+              height: 60,
+              borderRadius: AppRadius.pill,
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ],
+    );
+  }
+}
+
+class _AdminFormSectionSkeleton extends StatelessWidget {
+  final int fieldCount;
+  final double titleWidth;
+
+  const _AdminFormSectionSkeleton({
+    required this.fieldCount,
+    required this.titleWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonCard(
+      radius: 20,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonLine(width: titleWidth, height: 16),
+          const SizedBox(height: 14),
+          for (var i = 0; i < fieldCount; i++) ...[
+            SkeletonBox(
+              width: double.infinity,
+              height: i == 2 && fieldCount > 4 ? 72 : 54,
+              borderRadius: 12,
+            ),
+            if (i != fieldCount - 1) const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FormFieldBlockSkeleton extends StatelessWidget {
+  final double labelWidth;
+  final double height;
+  final double borderRadius;
+  final bool trailingIcon;
+
+  const _FormFieldBlockSkeleton({
+    required this.labelWidth,
+    this.height = 48,
+    this.borderRadius = AppRadius.pill,
+    this.trailingIcon = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SkeletonLine(width: labelWidth, height: 13),
+        const SizedBox(height: 10),
+        SkeletonBox(
+          width: double.infinity,
+          height: height,
+          borderRadius: borderRadius,
+        ),
+        if (trailingIcon) ...[
+          const SizedBox(height: 8),
+          const Align(
+            alignment: Alignment.centerRight,
+            child: SkeletonLine(width: 126, height: 11),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ChoiceGroupSkeleton extends StatelessWidget {
+  final double labelWidth;
+  final List<double> pillWidths;
+
+  const _ChoiceGroupSkeleton({
+    required this.labelWidth,
+    required this.pillWidths,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SkeletonLine(width: labelWidth, height: 13),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final width in pillWidths)
+              SkeletonBox(width: width, height: 32, borderRadius: 16),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _CircularFormActionsSkeleton extends StatelessWidget {
+  const _CircularFormActionsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [SkeletonCircle(size: 52), SkeletonCircle(size: 52)],
     );
   }
 }

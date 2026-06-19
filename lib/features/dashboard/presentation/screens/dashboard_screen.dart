@@ -184,8 +184,10 @@ class DashboardScreen extends ConsumerWidget {
                           skipLoadingOnReload: true,
                           skipLoadingOnRefresh: true,
                           skipError: true,
-                          data: (reads) =>
-                              LatestSensorReadsWidget(reads: reads),
+                          data: (reads) => LatestSensorReadsWidget(
+                            reads: reads,
+                            metadataAdapter: metadataAdapter,
+                          ),
                           loading: () => const SimpleRowsCardSkeleton(
                             rowCount: 5,
                             rowHeight: 40,

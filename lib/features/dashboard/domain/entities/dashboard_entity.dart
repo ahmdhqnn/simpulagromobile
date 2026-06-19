@@ -63,7 +63,7 @@ class SensorHealthEntity {
       case 'env_temp':
       case 'soil_temp':
       case 'water_temp':
-        return 'C';
+        return '\u00B0C';
       case 'env_hum':
       case 'soil_hum':
         return '%';
@@ -202,7 +202,7 @@ class SensorReadEntity {
       case 'env_temp':
       case 'soil_temp':
       case 'water_temp':
-        return '°C';
+        return '\u00B0C';
       case 'env_hum':
       case 'soil_hum':
         return '%';
@@ -219,7 +219,7 @@ class SensorReadEntity {
       case 'wind_spd':
         return 'm/s';
       case 'wind_dir':
-        return '°';
+        return '\u00B0';
       case 'soil_ph':
         return '';
       default:

@@ -235,7 +235,7 @@ class _RetryInterceptor extends Interceptor {
         ? null
         : int.tryParse(retryAfter.trim());
     if (retryAfterSeconds != null && retryAfterSeconds > 0) {
-      return Duration(seconds: retryAfterSeconds.clamp(1, 10));
+      return Duration(seconds: retryAfterSeconds.clamp(1, 60));
     }
 
     final baseMs = ApiConfig.retryDelay.inMilliseconds * attempt;

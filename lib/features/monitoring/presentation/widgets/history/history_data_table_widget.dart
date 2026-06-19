@@ -73,7 +73,11 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
                       ),
                     ),
                     Text(
-                      '${r.readValue ?? '-'}${widget.metadataAdapter.unitFor(r.dsId ?? '')}',
+                      widget.metadataAdapter.displayValueWithUnit(
+                        r.dsId ?? '',
+                        r.readValue,
+                        devId: r.devId,
+                      ),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(12),

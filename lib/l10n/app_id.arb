@@ -638,7 +638,7 @@
   "settingsNotificationsSubtitle": "Terima notifikasi untuk alert dan update",
   "settingsDataSyncSection": "Data & Sinkronisasi",
   "settingsAutoRefresh": "Auto Refresh",
-  "settingsAutoRefreshSubtitle": "Perbarui data secara otomatis",
+  "settingsAutoRefreshSubtitle": "Perbarui data layar aktif sesuai interval",
   "settingsRefreshInterval": "Interval Refresh",
   "settingsRefreshIntervalSeconds": "{seconds} detik",
   "@settingsRefreshIntervalSeconds": {
@@ -651,6 +651,8 @@
   "settingsAppearanceSection": "Tampilan",
   "settingsLanguage": "Bahasa",
   "settingsTheme": "Tema",
+  "settingsThemeUnavailableSubtitle": "Belum tersedia di versi ini",
+  "settingsThemeUnavailableMessage": "Pengaturan tema belum tersedia di versi aplikasi ini.",
   "settingsTemperatureUnit": "Satuan Suhu",
   "settingsAppVersion": "Versi Aplikasi",
   "settingsHelpSupport": "Bantuan & Dukungan",

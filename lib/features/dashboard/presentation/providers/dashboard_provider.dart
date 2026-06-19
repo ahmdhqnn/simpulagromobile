@@ -86,6 +86,7 @@ final dashboardSummaryProvider =
       ref.cacheFor(const Duration(minutes: 5));
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const DashboardSummarySnapshot();
+      ref.watch(monitoringRefreshTickProvider(4));
 
       final deviceUseCase = ref.watch(getDeviceSummaryUseCaseProvider);
       final sensorUseCase = ref.watch(getSensorSummaryUseCaseProvider);

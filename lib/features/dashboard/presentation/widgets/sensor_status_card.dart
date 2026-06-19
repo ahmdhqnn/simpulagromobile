@@ -17,27 +17,46 @@ _StatusInfo _statusInfoFor(AppLocalizations l10n, double persentase) {
   if (persentase >= 80) {
     return _StatusInfo(
       label: l10n.commonOptimal,
-      gradientColors: const [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
+      gradientColors: const [
+        Color(0xFF72E85A),
+        Color(0xFF4DC934),
+        Color(0xFF2FA010),
+      ],
     );
   } else if (persentase >= 60) {
     return _StatusInfo(
       label: l10n.commonFair,
-      gradientColors: const [Color(0xFF72E85A), Color(0xFF4DC934), Color(0xFF2FA010)],
+      gradientColors: const [
+        Color(0xFF72E85A),
+        Color(0xFF4DC934),
+        Color(0xFF2FA010),
+      ],
     );
   } else if (persentase >= 40) {
     return _StatusInfo(
       label: l10n.commonPoor,
-      gradientColors: const [Color(0xFFFFCC55), Color(0xFFFFAA22), Color(0xFFE07800)],
+      gradientColors: const [
+        Color(0xFFFFCC55),
+        Color(0xFFFFAA22),
+        Color(0xFFE07800),
+      ],
     );
   } else {
     return _StatusInfo(
       label: l10n.commonCritical,
-      gradientColors: const [Color(0xFFFF7A7A), Color(0xFFFF4444), Color(0xFFCC1111)],
+      gradientColors: const [
+        Color(0xFFFF7A7A),
+        Color(0xFFFF4444),
+        Color(0xFFCC1111),
+      ],
     );
   }
 }
 
-_StatusInfo _statusInfoForReadingStatus(AppLocalizations l10n, SensorReadingStatus status) {
+_StatusInfo _statusInfoForReadingStatus(
+  AppLocalizations l10n,
+  SensorReadingStatus status,
+) {
   switch (status) {
     case SensorReadingStatus.optimal:
       return _StatusInfo(
@@ -275,7 +294,11 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
             );
             return SensorStatusCard(
               label: adapter.labelFor(sensor.dsId, devId: sensor.devId),
-              value: sensor.readUpdateValue,
+              value: adapter.displayValueText(
+                sensor.dsId,
+                sensor.readUpdateValue,
+                devId: sensor.devId,
+              ),
               unit: adapter.unitFor(sensor.dsId, devId: sensor.devId),
               persentase: sensor.persentase,
               readingStatus: readingStatus,
@@ -298,7 +321,9 @@ class _SensorStatusGridState extends State<SensorStatusGrid> {
                   Text(
                     _expanded
                         ? context.l10n.commonHide
-                        : context.l10n.dashboardShowOtherSensors(total - widget.defaultCount),
+                        : context.l10n.dashboardShowOtherSensors(
+                            total - widget.defaultCount,
+                          ),
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(13),

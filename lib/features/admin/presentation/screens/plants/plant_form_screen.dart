@@ -71,9 +71,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
       if (plantAsync.isLoading) {
         return AdminFormScaffold(
           title: context.l10n.adminLoadingTitle,
-          body: const Padding(
-            padding: EdgeInsets.all(16),
-            child: FormCardSkeleton(fieldCount: 5),
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 168,
+            sectionFieldCounts: [4, 1],
           ),
         );
       }
@@ -94,7 +94,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
     return PermissionGuardScreen(
       permission: permission,
       child: AdminFormScaffold(
-        title: isEditMode ? context.l10n.adminEditPlantTitle : context.l10n.adminAddPlantTitle,
+        title: isEditMode
+            ? context.l10n.adminEditPlantTitle
+            : context.l10n.adminAddPlantTitle,
         isLoading: formState.isLoading,
         loadingMessage: isEditMode
             ? context.l10n.adminSavingChanges
@@ -109,7 +111,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
             children: [
               SizedBox(height: context.rh(0.01)),
               Text(
-                isEditMode ? context.l10n.adminEditPlantTitle : context.l10n.adminAddPlantTitle,
+                isEditMode
+                    ? context.l10n.adminEditPlantTitle
+                    : context.l10n.adminAddPlantTitle,
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: context.sp(22),
@@ -190,7 +194,9 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
               SizedBox(height: context.rh(0.03)),
 
               AdminSubmitButton(
-                label: isEditMode ? context.l10n.commonSaveChanges : context.l10n.adminAddPlantTitle,
+                label: isEditMode
+                    ? context.l10n.commonSaveChanges
+                    : context.l10n.adminAddPlantTitle,
                 onPressed: _handleSubmit,
               ),
               SizedBox(height: context.rh(0.04)),

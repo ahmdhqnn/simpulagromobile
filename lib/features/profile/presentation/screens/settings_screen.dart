@@ -102,12 +102,8 @@ class SettingsScreen extends ConsumerWidget {
                   iconBackground: const Color(0x1A1B5E20),
                   iconTint: AppColors.primary,
                   title: l10n.settingsTheme,
-                  subtitle: _themeLabel(context, settings['theme'] as String?),
-                  onTap: () => _showThemeDialog(
-                    context,
-                    ref,
-                    settings['theme'] as String? ?? 'light',
-                  ),
+                  subtitle: l10n.settingsThemeUnavailableSubtitle,
+                  onTap: () => _showThemeUnavailableDialog(context),
                 ),
                 const _SettingsDivider(),
                 _SettingsNavigationItem(
@@ -201,18 +197,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _themeLabel(BuildContext context, String? value) {
-    switch (value) {
-      case 'dark':
-        return context.l10n.settingsThemeDark;
-      case 'system':
-        return context.l10n.settingsThemeSystem;
-      case 'light':
-      default:
-        return context.l10n.settingsThemeLight;
-    }
-  }
-
   void _showRefreshIntervalDialog(
     BuildContext context,
     WidgetRef ref,
@@ -224,10 +208,6 @@ class SettingsScreen extends ConsumerWidget {
       currentValue: currentValue,
       options: [
         _OptionItem(
-          value: 15,
-          label: context.l10n.settingsRefreshIntervalSeconds(15),
-        ),
-        _OptionItem(
           value: 30,
           label: context.l10n.settingsRefreshIntervalSeconds(30),
         ),
@@ -238,6 +218,10 @@ class SettingsScreen extends ConsumerWidget {
         _OptionItem(
           value: 120,
           label: context.l10n.settingsRefreshIntervalSeconds(120),
+        ),
+        _OptionItem(
+          value: 300,
+          label: context.l10n.settingsRefreshIntervalSeconds(300),
         ),
       ],
       onSelected: (value) => ref
@@ -267,22 +251,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showThemeDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String currentValue,
-  ) {
-    _showOptionDialog<String>(
-      context: context,
-      title: context.l10n.settingsSelectTheme,
-      currentValue: currentValue,
-      options: [
-        _OptionItem(value: 'light', label: context.l10n.settingsThemeLight),
-        _OptionItem(value: 'dark', label: context.l10n.settingsThemeDark),
-        _OptionItem(value: 'system', label: context.l10n.settingsThemeSystem),
-      ],
-      onSelected: (value) =>
-          ref.read(settingsProvider.notifier).updateSetting('theme', value),
+  void _showThemeUnavailableDialog(BuildContext context) {
+    _showInfoDialog(
+      context,
+      context.l10n.settingsTheme,
+      context.l10n.settingsThemeUnavailableMessage,
     );
   }
 

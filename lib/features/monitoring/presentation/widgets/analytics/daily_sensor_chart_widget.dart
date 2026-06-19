@@ -68,6 +68,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         )
         .toList();
     final chartRows = sampleForChart(validRows, maxPoints: 90);
+    final unit = widget.metadataAdapter.unitFor(_selected);
 
     final avgSpots = chartRows
         .asMap()
@@ -75,7 +76,13 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         .map(
           (entry) => FlSpot(
             entry.key.toDouble(),
-            entry.value.avgVal ?? entry.value.minVal ?? entry.value.maxVal ?? 0,
+            widget.metadataAdapter.displayValueFor(
+              _selected,
+              entry.value.avgVal ??
+                  entry.value.minVal ??
+                  entry.value.maxVal ??
+                  0,
+            ),
           ),
         )
         .toList();
@@ -85,7 +92,10 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         .map(
           (entry) => FlSpot(
             entry.key.toDouble(),
-            entry.value.minVal ?? entry.value.avgVal ?? 0,
+            widget.metadataAdapter.displayValueFor(
+              _selected,
+              entry.value.minVal ?? entry.value.avgVal ?? 0,
+            ),
           ),
         )
         .toList();
@@ -95,7 +105,10 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
         .map(
           (entry) => FlSpot(
             entry.key.toDouble(),
-            entry.value.maxVal ?? entry.value.avgVal ?? 0,
+            widget.metadataAdapter.displayValueFor(
+              _selected,
+              entry.value.maxVal ?? entry.value.avgVal ?? 0,
+            ),
           ),
         )
         .toList();
@@ -117,7 +130,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
               ),
             )
           else
-            _buildChart(context, chartRows, avgSpots, minSpots, maxSpots),
+            _buildChart(context, chartRows, avgSpots, minSpots, maxSpots, unit),
           SizedBox(height: context.rh(0.015)),
           _buildLegend(context),
         ],
@@ -222,6 +235,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
     List<FlSpot> avgSpots,
     List<FlSpot> minSpots,
     List<FlSpot> maxSpots,
+    String unit,
   ) {
     return Container(
       height: 250,
@@ -307,7 +321,7 @@ class _DailySensorChartWidgetState extends State<DailySensorChartWidget> {
               getTooltipItems: (touchedSpots) => touchedSpots
                   .map(
                     (spot) => LineTooltipItem(
-                      spot.y.toStringAsFixed(1),
+                      '${spot.y.toStringAsFixed(1)}$unit',
                       const TextStyle(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,

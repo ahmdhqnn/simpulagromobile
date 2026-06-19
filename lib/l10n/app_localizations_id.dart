@@ -1390,7 +1390,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get settingsAutoRefresh => 'Auto Refresh';
 
   @override
-  String get settingsAutoRefreshSubtitle => 'Perbarui data secara otomatis';
+  String get settingsAutoRefreshSubtitle =>
+      'Perbarui data layar aktif sesuai interval';
 
   @override
   String get settingsRefreshInterval => 'Interval Refresh';
@@ -1408,6 +1409,13 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeUnavailableSubtitle => 'Belum tersedia di versi ini';
+
+  @override
+  String get settingsThemeUnavailableMessage =>
+      'Pengaturan tema belum tersedia di versi aplikasi ini.';
 
   @override
   String get settingsTemperatureUnit => 'Satuan Suhu';

@@ -26,8 +26,8 @@ extension AutoRetryRef on Ref {
 
   Duration? _retryDelayFor(Object error, Duration fallbackDelay) {
     if (error is NetworkFailure) {
-      return fallbackDelay < const Duration(seconds: 15)
-          ? const Duration(seconds: 15)
+      return fallbackDelay < const Duration(seconds: 30)
+          ? const Duration(seconds: 30)
           : fallbackDelay;
     }
 

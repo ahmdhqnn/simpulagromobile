@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -36,92 +39,88 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final l10n = AppLocalizations.of(context)!;
     final changePasswordState = ref.watch(changePasswordProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.changePasswordTitle), centerTitle: true),
+    return AdminFormScaffold(
+      title: l10n.changePasswordTitle,
+      isLoading: changePasswordState.isLoading,
+      loadingMessage: l10n.changePasswordSubmit,
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rw(0.051),
+            vertical: context.rh(0.01),
+          ),
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildPasswordField(
-                      controller: _oldPasswordController,
-                      label: l10n.changePasswordCurrentLabel,
-                      hint: l10n.changePasswordCurrentHint,
-                      obscureText: !_showOldPassword,
-                      onToggleVisibility: () {
-                        setState(() => _showOldPassword = !_showOldPassword);
-                      },
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.changePasswordCurrentRequired;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildPasswordField(
-                      controller: _newPasswordController,
-                      label: l10n.changePasswordNewLabel,
-                      hint: l10n.changePasswordNewHint,
-                      obscureText: !_showNewPassword,
-                      onToggleVisibility: () {
-                        setState(() => _showNewPassword = !_showNewPassword);
-                      },
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.changePasswordNewRequired;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildPasswordField(
-                      controller: _confirmPasswordController,
-                      label: l10n.changePasswordConfirmLabel,
-                      hint: l10n.changePasswordConfirmHint,
-                      obscureText: !_showConfirmPassword,
-                      onToggleVisibility: () {
-                        setState(
-                          () => _showConfirmPassword = !_showConfirmPassword,
-                        );
-                      },
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.changePasswordConfirmRequired;
-                        }
-                        if (value != _newPasswordController.text) {
-                          return l10n.changePasswordConfirmMismatch;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: changePasswordState.isLoading
-                            ? null
-                            : _submit,
-                        child: changePasswordState.isLoading
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(l10n.changePasswordSubmit),
-                      ),
-                    ),
-                  ],
-                ),
+            SizedBox(height: context.rh(0.01)),
+            AdminSectionTitle(l10n.changePasswordTitle),
+            SizedBox(height: context.rh(0.014)),
+            AdminSectionCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildPasswordField(
+                    context,
+                    controller: _oldPasswordController,
+                    label: l10n.changePasswordCurrentLabel,
+                    hint: l10n.changePasswordCurrentHint,
+                    obscureText: !_showOldPassword,
+                    onToggleVisibility: () {
+                      setState(() => _showOldPassword = !_showOldPassword);
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.changePasswordCurrentRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPasswordField(
+                    context,
+                    controller: _newPasswordController,
+                    label: l10n.changePasswordNewLabel,
+                    hint: l10n.changePasswordNewHint,
+                    obscureText: !_showNewPassword,
+                    onToggleVisibility: () {
+                      setState(() => _showNewPassword = !_showNewPassword);
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.changePasswordNewRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPasswordField(
+                    context,
+                    controller: _confirmPasswordController,
+                    label: l10n.changePasswordConfirmLabel,
+                    hint: l10n.changePasswordConfirmHint,
+                    obscureText: !_showConfirmPassword,
+                    onToggleVisibility: () {
+                      setState(
+                        () => _showConfirmPassword = !_showConfirmPassword,
+                      );
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.changePasswordConfirmRequired;
+                      }
+                      if (value != _newPasswordController.text) {
+                        return l10n.changePasswordConfirmMismatch;
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ),
+            ),
+            SizedBox(height: context.rh(0.03)),
+            AdminSubmitButton(
+              label: l10n.changePasswordSubmit,
+              isLoading: changePasswordState.isLoading,
+              onPressed: _submit,
             ),
           ],
         ),
@@ -129,7 +128,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     );
   }
 
-  Widget _buildPasswordField({
+  Widget _buildPasswordField(
+    BuildContext context, {
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -141,16 +141,61 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      style: TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: context.sp(14),
+        color: AppColors.textPrimary,
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        prefixIcon: const Icon(Icons.lock_outline, size: 20),
         suffixIcon: IconButton(
+          tooltip: obscureText ? 'Tampilkan password' : 'Sembunyikan password',
           onPressed: onToggleVisibility,
           icon: Icon(
             obscureText
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
+            size: 20,
+            color: AppColors.textPrimary.withValues(alpha: 0.4),
           ),
+        ),
+        filled: true,
+        fillColor: AppColors.surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(14),
+          color: AppColors.textPrimary.withValues(alpha: 0.6),
+        ),
+        hintStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: context.sp(13),
+          color: AppColors.textSecondary.withValues(alpha: 0.7),
         ),
       ),
     );

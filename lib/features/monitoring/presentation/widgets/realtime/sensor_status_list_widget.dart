@@ -145,7 +145,11 @@ class _SensorRow extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${read.readUpdateValue ?? '-'}${metadataAdapter.unitFor(read.dsId, devId: read.devId)}',
+                    metadataAdapter.displayValueWithUnit(
+                      read.dsId,
+                      read.readUpdateValue,
+                      devId: read.devId,
+                    ),
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: context.sp(13),

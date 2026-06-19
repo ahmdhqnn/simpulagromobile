@@ -14,6 +14,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dailyAsync = ref.watch(dailyTodayProvider);
+    final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
 
     return dailyAsync.when(
       skipLoadingOnReload: true,
@@ -41,7 +42,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'ds: ${r.dsId}',
+                      metadataAdapter.labelFor(r.dsId, devId: r.devId),
                       style: AppTextStyles.label(
                         context,
                         size: 12,
@@ -51,7 +52,7 @@ class DashboardDailyRecapCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '${context.l10n.dashboardAverageLabel} ${r.avgVal?.toStringAsFixed(1) ?? '-'}',
+                    '${context.l10n.dashboardAverageLabel} ${metadataAdapter.formatNumberWithUnit(r.dsId, r.avgVal, devId: r.devId)}',
                     style: AppTextStyles.label(
                       context,
                       size: 11,
