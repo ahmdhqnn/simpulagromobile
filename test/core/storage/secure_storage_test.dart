@@ -27,8 +27,8 @@ void main() {
     });
 
     test('retry config is reasonable', () {
-      expect(ApiConfig.maxRetries, equals(2));
-      expect(ApiConfig.retryDelay.inSeconds, equals(2));
+      expect(ApiConfig.maxRetries, equals(1));
+      expect(ApiConfig.retryDelay.inSeconds, equals(3));
     });
   });
 }

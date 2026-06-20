@@ -55,10 +55,7 @@ void main() {
     when(
       () => dio.post(
         ApiEndpoints.siteNotes('SITE001'),
-        data: {
-          'note_title': 'Irigasi',
-          'note_desc': 'Catatan baru',
-        },
+        data: {'note_title': 'Irigasi', 'note_desc': 'Catatan baru'},
       ),
     ).thenAnswer(
       (_) async => _response(ApiEndpoints.siteNotes('SITE001'), {

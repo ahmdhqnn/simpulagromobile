@@ -138,14 +138,20 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  String _resolveRoleLabel(BuildContext context, UserProfile profile, AuthState authState) {
+  String _resolveRoleLabel(
+    BuildContext context,
+    UserProfile profile,
+    AuthState authState,
+  ) {
     final roleId = (profile.roleId ?? authState.user?.roleId ?? '')
         .trim()
         .toUpperCase();
     if (roleId == 'ROLE001' || authState.isAdmin) return context.l10n.roleAdmin;
 
     final rawRole = (profile.roleName ?? '').trim().toLowerCase();
-    if (rawRole == 'admin' || rawRole == 'administrator') return context.l10n.roleAdmin;
+    if (rawRole == 'admin' || rawRole == 'administrator') {
+      return context.l10n.roleAdmin;
+    }
 
     return context.l10n.roleUser;
   }

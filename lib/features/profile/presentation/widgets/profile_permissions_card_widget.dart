@@ -222,7 +222,10 @@ class _ProfilePermissionsCardWidgetState
     );
   }
 
-  Map<String, List<String>> _groupPermissions(List<String> permissions, AppLocalizations l10n) {
+  Map<String, List<String>> _groupPermissions(
+    List<String> permissions,
+    AppLocalizations l10n,
+  ) {
     final Map<String, List<String>> grouped = {};
     for (final permission in permissions) {
       final normalized = permission.trim();

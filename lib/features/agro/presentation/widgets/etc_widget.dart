@@ -210,11 +210,7 @@ class EtcWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: textColor ?? AppColors.textSecondary,
-          ),
+          Icon(icon, size: 14, color: textColor ?? AppColors.textSecondary),
           const SizedBox(width: 6),
           Text(
             label,
@@ -500,8 +496,8 @@ class EtcWidget extends StatelessWidget {
       recommendation = data.recommendation!;
       if (data.waterNeededLiter != null) {
         final literStr = data.waterNeededLiter.toString();
-        final formatted = literStr.length > 3 
-            ? '${literStr.substring(0, literStr.length - 3)}.${literStr.substring(literStr.length - 3)}' 
+        final formatted = literStr.length > 3
+            ? '${literStr.substring(0, literStr.length - 3)}.${literStr.substring(literStr.length - 3)}'
             : literStr;
         recommendation += '\nTotal Kebutuhan: $formatted Liter';
       }

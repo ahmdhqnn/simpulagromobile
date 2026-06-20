@@ -4,7 +4,7 @@ import '../entities/dashboard_entity.dart';
 import '../repositories/dashboard_repository.dart';
 
 /// UseCase untuk mengagregasi ringkasan dashboard
-/// 
+///
 /// Menggabungkan data device, sensor, dan plant untuk menampilkan
 /// summary di dashboard. Dapat mengagregasi multiple repository calls
 /// jika diperlukan orchestration logic.
@@ -28,36 +28,35 @@ class GetDashboardSummaryUseCase {
       final plantSummaryResult = await repository.getPlantSummary(siteId);
 
       // Combine results using fold pattern
-      return deviceSummaryResult.fold(
-        (failure) => Left(failure),
-        (deviceSummary) {
-          return sensorSummaryResult.fold(
-            (failure) => Left(failure),
-            (sensorSummary) {
-              return plantSummaryResult.fold(
-                (failure) => Left(failure),
-                (plantSummary) {
-                  return Right(
-                    DashboardSummary(
-                      deviceSummary: deviceSummary,
-                      sensorSummary: sensorSummary,
-                      plantSummary: plantSummary,
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
-      );
+      return deviceSummaryResult.fold((failure) => Left(failure), (
+        deviceSummary,
+      ) {
+        return sensorSummaryResult.fold((failure) => Left(failure), (
+          sensorSummary,
+        ) {
+          return plantSummaryResult.fold((failure) => Left(failure), (
+            plantSummary,
+          ) {
+            return Right(
+              DashboardSummary(
+                deviceSummary: deviceSummary,
+                sensorSummary: sensorSummary,
+                plantSummary: plantSummary,
+              ),
+            );
+          });
+        });
+      });
     } catch (e) {
-      return Left(UnknownFailure('Failed to get dashboard summary: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get dashboard summary: ${e.toString()}'),
+      );
     }
   }
 }
 
 /// Entity that aggregates dashboard summary
-/// 
+///
 /// Combines summary from device, sensor, and plant
 /// to be displayed in dashboard screen.
 class DashboardSummary {

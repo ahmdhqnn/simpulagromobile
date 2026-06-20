@@ -24,22 +24,29 @@ void main() {
       roleId: 'ROLE002',
     );
 
-    test('createUser correctly maps user_password to user_pass and calls remote datasource', () async {
-      when(() => mockDatasource.createUser(any())).thenAnswer((_) async => dummyUser);
+    test(
+      'createUser correctly maps user_password to user_pass and calls remote datasource',
+      () async {
+        when(
+          () => mockDatasource.createUser(any()),
+        ).thenAnswer((_) async => dummyUser);
 
-      final result = await repository.createUser(dummyUser, 'secret123');
+        final result = await repository.createUser(dummyUser, 'secret123');
 
-      expect(result.userId, equals('USER_001'));
-      expect(result.userName, equals('John Doe'));
+        expect(result.userId, equals('USER_001'));
+        expect(result.userName, equals('John Doe'));
 
-      verify(() => mockDatasource.createUser({
+        verify(
+          () => mockDatasource.createUser({
             'user_id': 'USER_001',
             'user_name': 'John Doe',
             'user_email': 'john@example.com',
             'user_phone': '081234567890',
             'user_pass': 'secret123',
             'role_id': 'ROLE002',
-          })).called(1);
-    });
+          }),
+        ).called(1);
+      },
+    );
   });
 }

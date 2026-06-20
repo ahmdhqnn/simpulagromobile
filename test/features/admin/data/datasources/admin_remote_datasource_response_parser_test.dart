@@ -48,9 +48,7 @@ void main() {
         }),
       );
 
-      final result = await UserRemoteDatasourceImpl(dio).getUserById(
-        'USR_002',
-      );
+      final result = await UserRemoteDatasourceImpl(dio).getUserById('USR_002');
 
       expect(result.userId, 'USR_002');
       verify(() => dio.get(ApiEndpoints.users)).called(1);

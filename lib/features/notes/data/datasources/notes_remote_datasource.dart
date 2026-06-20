@@ -39,10 +39,7 @@ class NotesRemoteDataSource {
     try {
       final response = await _dio.post(
         ApiEndpoints.siteNotes(siteId),
-        data: {
-          'note_title': noteTitle.trim(),
-          'note_desc': noteDesc.trim(),
-        },
+        data: {'note_title': noteTitle.trim(), 'note_desc': noteDesc.trim()},
       );
       final data = _extractCreatedNote(response.data);
       return SiteNoteModel.fromJson(data);

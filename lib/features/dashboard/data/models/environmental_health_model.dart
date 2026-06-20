@@ -122,5 +122,4 @@ class EnvironmentalHealthModel {
 // ─── Backward-compatibility alias ────────────────────────
 // Monitoring feature masih menggunakan nama 'EnvironmentalHealth'.
 // Alias ini memastikan monitoring tetap compile tanpa perubahan.
-// TODO: Migrate monitoring feature ke EnvironmentalHealthEntity pada Prioritas 2.
 typedef EnvironmentalHealth = EnvironmentalHealthModel;

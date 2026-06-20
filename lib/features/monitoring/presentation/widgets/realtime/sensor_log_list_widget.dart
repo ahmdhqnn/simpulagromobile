@@ -49,7 +49,9 @@ class _SensorLogListWidgetState extends State<SensorLogListWidget> {
                 padding: const EdgeInsets.only(bottom: 12),
                 alignment: Alignment.center,
                 child: Text(
-                  _expanded ? context.l10n.monitoringCloseLog : context.l10n.monitoringShowAllLogsCount(logs.length),
+                  _expanded
+                      ? context.l10n.monitoringCloseLog
+                      : context.l10n.monitoringShowAllLogsCount(logs.length),
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
                     fontSize: context.sp(12),

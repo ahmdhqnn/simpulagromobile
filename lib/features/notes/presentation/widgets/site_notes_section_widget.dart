@@ -185,11 +185,9 @@ class SiteNotesSectionWidget extends ConsumerWidget {
     );
 
     if (ok != true || !context.mounted) return;
-    final success = await ref.read(createNoteProvider.notifier).create(
-          siteId: siteId,
-          title: title.trim(),
-          desc: desc.trim(),
-        );
+    final success = await ref
+        .read(createNoteProvider.notifier)
+        .create(siteId: siteId, title: title.trim(), desc: desc.trim());
     if (!context.mounted) return;
 
     if (success) {
