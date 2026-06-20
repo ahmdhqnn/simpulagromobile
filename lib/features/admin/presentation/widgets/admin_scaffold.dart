@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class AdminScaffold extends StatelessWidget {
@@ -12,6 +14,8 @@ class AdminScaffold extends StatelessWidget {
   final Widget? action;
   final bool showBack;
   final VoidCallback? onRefresh;
+  final bool showTitle;
+  final Widget? headerContent;
 
   const AdminScaffold({
     super.key,
@@ -20,6 +24,8 @@ class AdminScaffold extends StatelessWidget {
     this.action,
     this.showBack = true,
     this.onRefresh,
+    this.showTitle = true,
+    this.headerContent,
   });
 
   @override
@@ -27,12 +33,29 @@ class AdminScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            Expanded(child: body),
+        child: NestedScrollView(
+          headerSliverBuilder: (context, _) => [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  if (showTitle)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        context.rw(0.051),
+                        0,
+                        context.rw(0.051),
+                        context.rh(0.014),
+                      ),
+                      child: AdminSectionTitle(title),
+                    ),
+                  if (headerContent != null) headerContent!,
+                ],
+              ),
+            ),
           ],
+          body: body,
         ),
       ),
     );
@@ -55,7 +78,10 @@ class AdminScaffold extends StatelessWidget {
 
           // Kanan: action button (add/more) atau spacer
           if (action != null)
-            action!
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 58),
+              child: Align(alignment: Alignment.centerRight, child: action!),
+            )
           else if (onRefresh != null)
             CircularBackButtonWidget(
               onPressed: onRefresh!,
@@ -74,6 +100,7 @@ class AdminFormScaffold extends StatelessWidget {
   final Widget body;
   final bool isLoading;
   final String? loadingMessage;
+  final bool showTitle;
 
   const AdminFormScaffold({
     super.key,
@@ -81,6 +108,7 @@ class AdminFormScaffold extends StatelessWidget {
     required this.body,
     this.isLoading = false,
     this.loadingMessage,
+    this.showTitle = true,
   });
 
   @override
@@ -88,53 +116,68 @@ class AdminFormScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: Stack(
+        child: NestedScrollView(
+          headerSliverBuilder: (context, _) => [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  body,
-                  if (isLoading)
-                    Container(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 24,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const CircularProgressIndicator(
-                                color: AppColors.primary,
-                              ),
-                              if (loadingMessage != null) ...[
-                                const SizedBox(height: 16),
-                                Text(
-                                  loadingMessage!,
-                                  style: TextStyle(
-                                    fontFamily: 'Plus Jakarta Sans',
-                                    fontSize: context.sp(14),
-                                    fontWeight: FontWeight.w300,
-                                    color: const Color(0xFF1D1D1D),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
+                  _buildHeader(context),
+                  if (showTitle)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        context.rw(0.051),
+                        0,
+                        context.rw(0.051),
+                        context.rh(0.014),
                       ),
+                      child: AdminSectionTitle(title),
                     ),
                 ],
               ),
             ),
           ],
+          body: Stack(
+            children: [
+              body,
+              if (isLoading)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 24,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                          if (loadingMessage != null) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              loadingMessage!,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: context.sp(14),
+                                fontWeight: FontWeight.w300,
+                                color: const Color(0xFF1D1D1D),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -178,7 +221,16 @@ class AdminLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildListSkeleton(count: 6, type: 'admin');
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.01),
+      ),
+      itemCount: 6,
+      separatorBuilder: (_, __) => SizedBox(height: context.rh(0.014)),
+      itemBuilder: (_, __) => const AdminListItemSkeleton(),
+    );
   }
 }
 
@@ -194,64 +246,150 @@ class AdminErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.rw(0.061)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(context.rw(0.061)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: context.rw(0.164).clamp(48.0, 72.0),
+                      color: AppColors.error,
+                    ),
+                    SizedBox(height: context.rh(0.02)),
+                    Text(
+                      AppLocalizations.of(context)!.commonLoadFailed,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(18),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.01)),
+                    Text(
+                      error.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(14),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.03)),
+                    GestureDetector(
+                      onTap: onRetry,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.retry,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(16),
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AdminDetailScreenSkeleton extends StatelessWidget {
+  const AdminDetailScreenSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.01),
+      ),
+      children: const [
+        _AdminDetailHeaderSkeleton(),
+        SizedBox(height: 14),
+        KeyValueRowsCardSkeleton(rowCount: 5),
+        SizedBox(height: 14),
+        KeyValueRowsCardSkeleton(rowCount: 3),
+        SizedBox(height: 24),
+      ],
+    );
+  }
+}
+
+class _AdminDetailHeaderSkeleton extends StatelessWidget {
+  const _AdminDetailHeaderSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AdminSectionCard(
+      child: SkeletonContainer(
+        child: Row(
           children: [
-            Icon(
-              Icons.error_outline,
-              size: context.rw(0.164).clamp(48.0, 72.0),
-              color: AppColors.error,
-            ),
-            SizedBox(height: context.rh(0.02)),
-            Text(
-              AppLocalizations.of(context)!.commonLoadFailed,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(18),
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1D1D1D),
-              ),
-            ),
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(14),
-                fontWeight: FontWeight.w300,
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
-            SizedBox(height: context.rh(0.03)),
-            GestureDetector(
-              onTap: onRetry,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.retry,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(16),
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                  ),
-                ),
+            SkeletonBox(width: 56, height: 56, borderRadius: 16),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLine(width: 160, height: 18),
+                  SizedBox(height: 6),
+                  SkeletonLine(width: 96, height: 12),
+                  SizedBox(height: 10),
+                  SkeletonBox(width: 74, height: 24, borderRadius: 12),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class AdminPermissionLoadingState extends StatelessWidget {
+  const AdminPermissionLoadingState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.051),
+        vertical: context.rh(0.01),
+      ),
+      children: const [
+        CompactStatsCardSkeleton(itemCount: 2),
+        SizedBox(height: 14),
+        KeyValueRowsCardSkeleton(rowCount: 4),
+        SizedBox(height: 14),
+        KeyValueRowsCardSkeleton(rowCount: 4),
+        SizedBox(height: 24),
+      ],
     );
   }
 }
@@ -270,41 +408,51 @@ class AdminEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.rw(0.061)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: context.rw(0.164).clamp(48.0, 72.0),
-              color: const Color(0xFF1D1D1D).withValues(alpha: 0.2),
-            ),
-            SizedBox(height: context.rh(0.02)),
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(18),
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1D1D1D),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(context.rw(0.061)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      icon,
+                      size: context.rw(0.164).clamp(48.0, 72.0),
+                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.2),
+                    ),
+                    SizedBox(height: context.rh(0.02)),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(18),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1D1D1D),
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.01)),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(14),
+                        fontWeight: FontWeight.w300,
+                        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(14),
-                fontWeight: FontWeight.w300,
-                color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -345,13 +493,11 @@ class AdminSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCardWidget.elevated(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      padding: padding ?? AppSpacing.card,
+      radius: AppRadius.lg,
+      boxShadow: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

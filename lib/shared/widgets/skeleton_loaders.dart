@@ -2036,9 +2036,6 @@ class AdminFormScreenSkeleton extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       children: [
-        const SizedBox(height: 8),
-        SkeletonContainer(child: SkeletonLine(width: titleWidth, height: 22)),
-        const SizedBox(height: 14),
         for (var i = 0; i < sectionFieldCounts.length; i++) ...[
           _AdminFormSectionSkeleton(
             fieldCount: sectionFieldCounts[i],
@@ -3604,8 +3601,6 @@ class SiteDetailScreenSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonContainer(child: SkeletonLine(width: 142, height: 22)),
-          SizedBox(height: 14),
           SkeletonContainer(
             child: SkeletonBox(
               width: double.infinity,
@@ -3627,13 +3622,11 @@ class AdminUserDetailSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SingleChildScrollView(
-      physics: NeverScrollableScrollPhysics(),
+      physics: AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonContainer(child: SkeletonLine(width: 92, height: 22)),
-          SizedBox(height: 14),
           _SkeletonPanel(
             width: double.infinity,
             padding: EdgeInsets.all(12),
@@ -3685,18 +3678,10 @@ class AdminListScreenSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      itemCount: itemCount + 1,
-      itemBuilder: (_, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: SkeletonContainer(
-              child: SkeletonLine(width: titleWidth, height: 22),
-            ),
-          );
-        }
+      itemCount: itemCount,
+      itemBuilder: (_, __) {
         return const Padding(
           padding: EdgeInsets.only(bottom: 14),
           child: AdminListItemSkeleton(),
@@ -3712,18 +3697,10 @@ class SiteManagementListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
-      itemCount: 7,
-      itemBuilder: (_, index) {
-        if (index == 0) {
-          return const Padding(
-            padding: EdgeInsets.only(bottom: 12),
-            child: SkeletonContainer(
-              child: SkeletonLine(width: 72, height: 22),
-            ),
-          );
-        }
+      itemCount: 6,
+      itemBuilder: (_, __) {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: SiteCardSkeleton(),

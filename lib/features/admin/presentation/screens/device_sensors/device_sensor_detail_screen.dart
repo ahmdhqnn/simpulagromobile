@@ -28,7 +28,7 @@ class DeviceSensorDetailScreen extends ConsumerWidget {
           data: (deviceSensor) => PermissionGuard(
             permission: 'ds:update',
             child: AdminCircleActionButton(
-              icon: Icons.edit_outlined,
+              svgIconPath: 'assets/icons/edit-outline-icon.svg',
               onTap: () => context.push(
                 '/admin/device-sensors/${deviceSensor.dsId}/edit',
               ),
@@ -40,7 +40,7 @@ class DeviceSensorDetailScreen extends ConsumerWidget {
           skipLoadingOnReload: true,
           data: (deviceSensor) =>
               _DeviceSensorDetailBody(deviceSensor: deviceSensor),
-          loading: () => const AdminLoadingState(),
+          loading: () => const AdminDetailScreenSkeleton(),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () =>
@@ -72,8 +72,6 @@ class _DeviceSensorDetailBody extends ConsumerWidget {
           vertical: context.rh(0.01),
         ),
         children: [
-          AdminSectionTitle(context.l10n.adminDeviceSensorTitle),
-          SizedBox(height: context.rh(0.014)),
           AdminDetailHeaderCard(
             title: deviceSensor.displayName,
             subtitle: '${deviceSensor.dsId} - ${deviceSensor.devId}',

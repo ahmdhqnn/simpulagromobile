@@ -60,6 +60,18 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
           ),
         ],
       ),
+      headerContent: Padding(
+        padding: EdgeInsets.fromLTRB(
+          context.rw(0.051),
+          0,
+          context.rw(0.051),
+          context.rh(0.014),
+        ),
+        child: siteAsync.maybeWhen(
+          data: (_) => _TabSwitcher(controller: _tabController),
+          orElse: () => const SizedBox.shrink(),
+        ),
+      ),
       body: siteAsync.when(
         skipLoadingOnReload: true,
         skipLoadingOnRefresh: true,
@@ -97,37 +109,18 @@ class _SiteDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return TabBarView(
+      controller: tabController,
       children: [
+        _OverviewTab(site: site, siteId: siteId),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AdminSectionTitle(context.l10n.siteDetailTitle),
-              const Gap(14),
-              _TabSwitcher(controller: tabController),
-            ],
+          padding: EdgeInsets.fromLTRB(
+            context.rw(0.051),
+            0,
+            context.rw(0.051),
+            context.rh(0.02),
           ),
-        ),
-        const Gap(12),
-        Expanded(
-          child: TabBarView(
-            controller: tabController,
-            children: [
-              _OverviewTab(site: site, siteId: siteId),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  context.rw(0.051),
-                  0,
-                  context.rw(0.051),
-                  context.rh(0.02),
-                ),
-                child: SiteNotesSectionWidget(siteId: siteId),
-              ),
-            ],
-          ),
+          child: SiteNotesSectionWidget(siteId: siteId),
         ),
       ],
     );

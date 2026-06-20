@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../admin/presentation/widgets/admin_form_fields.dart';
 import '../../../admin/presentation/widgets/admin_scaffold.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
@@ -109,8 +110,6 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                   vertical: context.rh(0.01),
                 ),
                 children: [
-                  AdminSectionTitle(title),
-                  SizedBox(height: context.rh(0.014)),
                   if (formState.error != null)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -302,32 +301,11 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                   const Gap(16),
 
                   AdminSectionCard(
-                    padding: EdgeInsets.zero,
-                    child: SwitchListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      title: Text(
-                        context.l10n.siteStatusLabel,
-                        style: const TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _isActive
-                            ? context.l10n.commonActive
-                            : context.l10n.commonInactive,
-                        style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                      ),
+                    child: AdminFormFields.buildStatusToggle(
+                      context,
+                      label: context.l10n.siteStatusLabel,
                       value: _isActive,
-                      activeColor: AppColors.primary,
-                      onChanged: (v) => setState(() => _isActive = v),
-                      secondary: Icon(
-                        _isActive ? Icons.check_circle : Icons.cancel,
-                        color: _isActive ? AppColors.success : Colors.grey,
-                      ),
+                      onChanged: (value) => setState(() => _isActive = value),
                     ),
                   ),
 
@@ -363,49 +341,16 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
     String? suffix,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return AdminFormFields.buildField(
+      context,
       controller: controller,
+      label: label,
+      hint: hint ?? '',
+      icon: icon ?? Icons.text_fields,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      suffixText: suffix,
       validator: validator,
-      style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: icon != null ? Icon(icon) : null,
-        suffixText: suffix,
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        labelStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: 14,
-          color: AppColors.textPrimary.withValues(alpha: 0.6),
-        ),
-        hintStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          color: AppColors.textSecondary.withValues(alpha: 0.7),
-        ),
-      ),
     );
   }
 

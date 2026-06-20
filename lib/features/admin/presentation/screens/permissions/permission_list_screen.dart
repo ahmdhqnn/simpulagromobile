@@ -51,18 +51,6 @@ class PermissionListScreen extends ConsumerWidget {
                   vertical: context.rh(0.01),
                 ),
                 children: [
-                  SizedBox(height: context.rh(0.01)),
-                  Text(
-                    context.l10n.adminPermissionTitle,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(22),
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF1D1D1D),
-                      height: 1.0,
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.014)),
                   _SummaryCard(
                     totalPermissions: totalCount,
                     totalGroups: grouped.length,
@@ -81,7 +69,7 @@ class PermissionListScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const AdminLoadingState(),
+          loading: () => const AdminPermissionLoadingState(),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () => ref.invalidate(groupedPermissionsProvider),

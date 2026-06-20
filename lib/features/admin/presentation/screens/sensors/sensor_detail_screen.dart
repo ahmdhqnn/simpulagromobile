@@ -28,7 +28,7 @@ class AdminSensorDetailScreen extends ConsumerWidget {
           data: (sensor) => PermissionGuard(
             permission: 'sensor:update',
             child: AdminCircleActionButton(
-              icon: Icons.edit_outlined,
+              svgIconPath: 'assets/icons/edit-outline-icon.svg',
               onTap: () => context.push('/admin/sensors/${sensor.sensId}/edit'),
             ),
           ),
@@ -37,7 +37,7 @@ class AdminSensorDetailScreen extends ConsumerWidget {
         body: sensorAsync.when(
           skipLoadingOnReload: true,
           data: (sensor) => _SensorDetailBody(sensor: sensor),
-          loading: () => const AdminLoadingState(),
+          loading: () => const AdminDetailScreenSkeleton(),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () => ref.invalidate(adminSensorDetailProvider(sensorId)),
@@ -67,8 +67,6 @@ class _SensorDetailBody extends ConsumerWidget {
           vertical: context.rh(0.01),
         ),
         children: [
-          AdminSectionTitle(context.l10n.sensorTitle),
-          SizedBox(height: context.rh(0.014)),
           AdminDetailHeaderCard(
             title: sensor.displayName,
             subtitle: sensor.sensId,

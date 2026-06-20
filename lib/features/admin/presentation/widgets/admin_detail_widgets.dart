@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
@@ -150,12 +151,14 @@ class AdminDetailRow extends StatelessWidget {
 class AdminCircleActionButton extends StatelessWidget {
   const AdminCircleActionButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgIconPath,
     required this.onTap,
     this.color = AppColors.textPrimary,
-  });
+  }) : assert(icon != null || svgIconPath != null);
 
-  final IconData icon;
+  final IconData? icon;
+  final String? svgIconPath;
   final VoidCallback onTap;
   final Color color;
 
@@ -169,7 +172,14 @@ class AdminCircleActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(29),
       ),
       child: IconButton(
-        icon: Icon(icon, color: color, size: 23),
+        icon: svgIconPath != null
+            ? SvgPicture.asset(
+                svgIconPath!,
+                width: 23,
+                height: 23,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              )
+            : Icon(icon, color: color, size: 23),
         onPressed: onTap,
       ),
     );

@@ -70,7 +70,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
 
       if (plantAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditPlantTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 168,
             sectionFieldCounts: [4, 1],
@@ -104,25 +104,12 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(
-                isEditMode
-                    ? context.l10n.adminEditPlantTitle
-                    : context.l10n.adminAddPlantTitle,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(22),
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1D1D1D),
-                  height: 1.0,
-                ),
-              ),
-              SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
                 title: context.l10n.adminPlantInfoSection,
                 child: Column(

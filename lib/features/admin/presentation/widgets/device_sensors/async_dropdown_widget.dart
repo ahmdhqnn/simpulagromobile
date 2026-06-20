@@ -53,6 +53,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
         enabled: enabled,
       ),
       loading: () => _placeholder(
+        context,
         const SkeletonContainer(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -64,6 +65,7 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
         ),
       ),
       error: (_, __) => _placeholder(
+        context,
         Center(
           child: Text(
             displayErrorMessage,
@@ -78,14 +80,18 @@ class AsyncDropdownWidget<T, V> extends ConsumerWidget {
     );
   }
 
-  Widget _placeholder(Widget child) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+  Widget _placeholder(BuildContext context, Widget child) {
+    return AdminFormFields.buildFieldShell(
+      context,
+      label: label,
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 }

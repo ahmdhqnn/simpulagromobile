@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
 import '../providers/site_provider.dart';
 import '../../domain/entities/site.dart';
 
@@ -20,37 +18,10 @@ class SiteListScreen extends ConsumerWidget {
     final siteListAsync = ref.watch(siteListProvider);
 
     if (managementMode) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF0F0F0),
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.rw(0.051),
-                  vertical: context.rh(0.015),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CircularBackButtonWidget(onPressed: () => context.pop()),
-                    CircularBackButtonWidget(
-                      onPressed: () => context.push('/site/create'),
-                      svgIconPath: 'assets/icons/plus-outline-icon.svg',
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _SiteListBody(
-                  siteListAsync: siteListAsync,
-                  managementMode: true,
-                ),
-              ),
-            ],
-          ),
-        ),
+      return AdminScaffold(
+        title: context.l10n.siteTitle,
+        action: AdminAddButton(onTap: () => context.push('/site/create')),
+        body: _SiteListBody(siteListAsync: siteListAsync, managementMode: true),
       );
     }
 
@@ -100,16 +71,10 @@ class _SiteListBody extends ConsumerWidget {
           },
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: sites.length + (managementMode ? 1 : 0),
+            itemCount: sites.length,
             separatorBuilder: (_, __) => const Gap(12),
             itemBuilder: (context, index) {
-              if (managementMode && index == 0) {
-                return Text(
-                  context.l10n.siteTitle,
-                  style: AppTextStyles.sectionTitle(context),
-                );
-              }
-              final site = sites[index - (managementMode ? 1 : 0)];
+              final site = sites[index];
               return _SiteCard(
                 site: site,
                 managementMode: managementMode,

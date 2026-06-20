@@ -6,6 +6,7 @@ import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/permission_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/user_provider.dart';
+import 'package:simpulagromobile/features/admin/presentation/widgets/admin_detail_widgets.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
@@ -68,15 +69,15 @@ class _DetailActions extends ConsumerWidget {
       children: [
         PermissionGuard(
           permission: 'user:update',
-          child: _CircleActionButton(
-            icon: Icons.edit_outlined,
+          child: AdminCircleActionButton(
+            svgIconPath: 'assets/icons/edit-outline-icon.svg',
             onTap: () => context.push('/admin/users/${user.userId}/edit'),
           ),
         ),
         const SizedBox(width: 8),
         PermissionGuard(
           permission: 'user:delete',
-          child: _CircleActionButton(
+          child: AdminCircleActionButton(
             icon: Icons.delete_outline,
             color: AppColors.error,
             onTap: () => _confirmDelete(context, ref),
@@ -144,8 +145,6 @@ class _UserDetailBody extends ConsumerWidget {
           vertical: context.rh(0.01),
         ),
         children: [
-          AdminSectionTitle(context.l10n.adminUsersTitle),
-          SizedBox(height: context.rh(0.014)),
           AdminSectionCard(
             child: Column(
               children: [
@@ -335,34 +334,6 @@ class _DetailRow extends StatelessWidget {
             color: const Color(0xFF1D1D1D).withValues(alpha: 0.08),
           ),
       ],
-    );
-  }
-}
-
-class _CircleActionButton extends StatelessWidget {
-  const _CircleActionButton({
-    required this.icon,
-    required this.onTap,
-    this.color = const Color(0xFF1D1D1D),
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: color, size: 20),
-      ),
     );
   }
 }
