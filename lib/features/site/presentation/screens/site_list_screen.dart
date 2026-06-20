@@ -280,16 +280,16 @@ class _EmptyState extends StatelessWidget {
                   const Gap(16),
                   Text(
                     context.l10n.siteEmptyTitle,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const Gap(8),
                   Text(
                     context.l10n.siteEmptyMessage,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[500],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -323,9 +323,9 @@ class _ErrorState extends StatelessWidget {
                   const Gap(16),
                   Text(
                     context.l10n.commonErrorTitle,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const Gap(8),
                   Padding(
@@ -333,9 +333,9 @@ class _ErrorState extends StatelessWidget {
                     child: Text(
                       message,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[500],
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                     ),
                   ),
                   const Gap(16),

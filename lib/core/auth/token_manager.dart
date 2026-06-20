@@ -20,17 +20,19 @@ class TokenManager {
   VoidCallback? onSessionExpired;
 
   TokenManager(this._storage, {Dio? refreshDio}) {
-    _refreshDio = refreshDio ?? Dio(
-      BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        connectTimeout: ApiConfig.connectTimeout,
-        receiveTimeout: ApiConfig.receiveTimeout,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
+    _refreshDio =
+        refreshDio ??
+        Dio(
+          BaseOptions(
+            baseUrl: ApiConfig.baseUrl,
+            connectTimeout: ApiConfig.connectTimeout,
+            receiveTimeout: ApiConfig.receiveTimeout,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+        );
   }
 
   // ─── Token Access ──────────────────────────────────────────

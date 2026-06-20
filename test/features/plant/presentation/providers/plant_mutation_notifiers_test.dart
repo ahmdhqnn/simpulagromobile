@@ -41,8 +41,7 @@ class _FakePlantRepository implements PlantRepository {
   Future<Either<Failure, List<Plant>>> getPlants(
     String siteId, {
     bool? isOnGoingPlant,
-  }) =>
-      Future.value(const Right([]));
+  }) => Future.value(const Right([]));
 
   @override
   Future<Either<Failure, Plant>> getPlantById(String siteId, String plantId) =>
@@ -52,16 +51,14 @@ class _FakePlantRepository implements PlantRepository {
   Future<Either<Failure, Plant>> createPlant(
     String siteId,
     Map<String, dynamic> data,
-  ) =>
-      Future.value(Left(UnknownFailure('skip')));
+  ) => Future.value(Left(UnknownFailure('skip')));
 
   @override
   Future<Either<Failure, Plant>> updatePlant(
     String siteId,
     String plantId,
     Map<String, dynamic> data,
-  ) =>
-      Future.value(Left(UnknownFailure('skip')));
+  ) => Future.value(Left(UnknownFailure('skip')));
 }
 
 void main() {

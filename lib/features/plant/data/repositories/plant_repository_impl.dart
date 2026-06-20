@@ -129,5 +129,4 @@ class PlantRepositoryImpl implements PlantRepository {
       return Left(UnknownFailure('Unexpected error: ${e.toString()}'));
     }
   }
-
 }

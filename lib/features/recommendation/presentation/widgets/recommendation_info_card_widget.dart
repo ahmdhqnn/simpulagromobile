@@ -40,7 +40,11 @@ class RecommendationInfoCardWidget extends StatelessWidget {
           _InfoRow(
             icon: Icons.info_outline_rounded,
             label: 'Metode Analisis',
-            value: _sourceDescription(context, _primaryScope, recommendation.createdAt),
+            value: _sourceDescription(
+              context,
+              _primaryScope,
+              recommendation.createdAt,
+            ),
           ),
           if (recommendation.siteName != null)
             _InfoRow(
@@ -104,14 +108,16 @@ class RecommendationInfoCardWidget extends StatelessWidget {
   ) {
     final isToday = _isToday(createdAt);
     return switch (scope) {
-      RecommendationScope.site => isToday
-          ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
-          : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
+      RecommendationScope.site =>
+        isToday
+            ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
+            : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
       RecommendationScope.plant =>
         'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.',
       RecommendationScope.phase =>
         'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.',
-      RecommendationScope.all => 'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
+      RecommendationScope.all =>
+        'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
     };
   }
 

@@ -71,7 +71,10 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
     }
   }
 
-  Future<DeviceModel> _findDeviceFromList(String siteId, String deviceId) async {
+  Future<DeviceModel> _findDeviceFromList(
+    String siteId,
+    String deviceId,
+  ) async {
     final devices = await getDevicesBySite(siteId);
     final normalizedId = deviceId.trim();
     final matches = devices.where((device) => device.devId == normalizedId);

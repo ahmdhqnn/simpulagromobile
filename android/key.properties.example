@@ -1,0 +1,4 @@
+storePassword=replace_with_store_password
+keyPassword=replace_with_key_password
+keyAlias=simpul_agro_release
+storeFile=../release-keystore.jks

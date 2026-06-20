@@ -196,11 +196,7 @@ void main() {
         ),
       ).thenAnswer(
         (_) async => Response(
-          data: {
-            'success': true,
-            'message': 'Berhasil',
-            'data': plantJson,
-          },
+          data: {'success': true, 'message': 'Berhasil', 'data': plantJson},
           statusCode: 200,
           requestOptions: RequestOptions(
             path: ApiEndpoints.harvestPlant(siteId, plantId),

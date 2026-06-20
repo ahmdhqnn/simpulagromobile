@@ -354,14 +354,27 @@ class EtcDailyModel with _$EtcDailyModel {
       return _parseNullableDouble(json['waterNeeds']);
     }
 
-    final waterNeededMMVal = _readDouble(json, ['waterNeededMM', 'water_needed_mm']);
-    final waterNeededLiterVal = _parseNullableDouble(_readRaw(json, ['waterNeededLiter', 'water_needed_liter']))?.toInt();
-    final waterManagementVal = _readString(json, ['waterManagement', 'water_management']);
-    final daysToHarvestVal = _parseNullableDouble(_readRaw(json, ['daysToHarvest', 'days_to_harvest']))?.toInt();
-    final isCriticalPhaseVal = json['isCriticalPhase'] == true || json['is_critical_phase'] == true;
-    final harvestDateVal = json['harvestDate'] != null 
-        ? DateTime.tryParse(json['harvestDate'].toString()) 
-        : (json['harvest_date'] != null ? DateTime.tryParse(json['harvest_date'].toString()) : null);
+    final waterNeededMMVal = _readDouble(json, [
+      'waterNeededMM',
+      'water_needed_mm',
+    ]);
+    final waterNeededLiterVal = _parseNullableDouble(
+      _readRaw(json, ['waterNeededLiter', 'water_needed_liter']),
+    )?.toInt();
+    final waterManagementVal = _readString(json, [
+      'waterManagement',
+      'water_management',
+    ]);
+    final daysToHarvestVal = _parseNullableDouble(
+      _readRaw(json, ['daysToHarvest', 'days_to_harvest']),
+    )?.toInt();
+    final isCriticalPhaseVal =
+        json['isCriticalPhase'] == true || json['is_critical_phase'] == true;
+    final harvestDateVal = json['harvestDate'] != null
+        ? DateTime.tryParse(json['harvestDate'].toString())
+        : (json['harvest_date'] != null
+              ? DateTime.tryParse(json['harvest_date'].toString())
+              : null);
 
     return EtcDailyModel(
       hst: _parseNullableDouble(
@@ -378,11 +391,13 @@ class EtcDailyModel with _$EtcDailyModel {
       kc: readKc(),
       waterNeeds: readWaterNeeds() ?? waterNeededMMVal,
       waterStatus: _readString(json, ['waterStatus', 'water_status']),
-      recommendation: _readString(json, [
-        'recommendation',
-        'recommendationText',
-        'message',
-      ]) ?? waterManagementVal,
+      recommendation:
+          _readString(json, [
+            'recommendation',
+            'recommendationText',
+            'message',
+          ]) ??
+          waterManagementVal,
       riceType: _readString(json, ['riceType', 'rice_type']),
       waterNeededMM: waterNeededMMVal,
       waterNeededLiter: waterNeededLiterVal,

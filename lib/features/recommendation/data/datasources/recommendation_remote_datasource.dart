@@ -145,7 +145,6 @@ class RecommendationRemoteDatasourceImpl
   /// Response: { sensor_data: {...}, recommendations: { npk: {...}, ph: {...} }, cached: bool }
   ///
   /// ⚠️ Catatan: ID dihasilkan dengan timestamp karena backend tidak mengembalikan ID
-  /// TODO: Minta backend untuk menambahkan ID field di response
   List<RecommendationModel> _parseRecommendationResponse(
     Map<String, dynamic> data,
     String siteId, {
@@ -1091,50 +1090,6 @@ class RecommendationRemoteDatasourceImpl
         json.containsKey('recommendation_id');
   }
 
-  /// Parse item dari history endpoint
-  // ignore: unused_element
-  RecommendationModel _parseHistoryItem(
-    Map<String, dynamic> json,
-    String siteId,
-  ) {
-    Map<String, dynamic>? parseJsonString(String? jsonStr) {
-      if (jsonStr == null) return null;
-      try {
-        return jsonDecode(jsonStr) as Map<String, dynamic>;
-      } catch (e) {
-        _debugLog('⚠️ Failed to parse JSON string: $e');
-        return null;
-      }
-    }
-
-    final npkRec = parseJsonString(json['npk_recommendation'] as String?);
-    final phRec = parseJsonString(json['ph_recommendation'] as String?);
-
-    return RecommendationModel(
-      recommendationId: (json['rec_id'] as String?) ?? '',
-      type: 'npk',
-      title: 'Rekomendasi ${json['rec_date'] ?? ''}',
-      description: npkRec != null
-          ? _buildNpkDescription(npkRec)
-          : 'Data rekomendasi tersedia',
-      priority: npkRec != null
-          ? _mapNpkPriority(npkRec['priority'] as String?)
-          : 'medium',
-      siteId: siteId,
-      parameters: RecommendationBundleModel(
-        npk: npkRec != null
-            ? RecommendationActionResultModel.fromJson(npkRec)
-            : null,
-        ph: phRec != null
-            ? RecommendationActionResultModel.fromJson(phRec)
-            : null,
-      ),
-      createdAt: json['rec_created'] != null
-          ? DateTime.tryParse(json['rec_created'] as String)
-          : null,
-    );
-  }
-
   Map<String, dynamic>? _asStringMap(dynamic value) {
     if (value is Map<String, dynamic>) return value;
     if (value is Map) return Map<String, dynamic>.from(value);
@@ -1402,32 +1357,9 @@ class RecommendationRemoteDatasourceImpl
     }
   }
 
-  String _buildNpkDescription(Map<String, dynamic> npk) {
-    if (npk['pesan'] != null) {
-      return npk['pesan'] as String;
-    }
-    return 'Lihat detail rekomendasi.';
-  }
 
-  // ignore: unused_element
-  List<String> _buildNpkActionItems(Map<String, dynamic> npk) {
-    final items = <String>[];
-    if (npk['dosis_kg_ha'] != null && npk['dosis_kg_ha'] > 0) {
-      items.add('Dosis: ${npk['dosis_kg_ha']} kg/ha');
-    }
-    if (npk['pesan'] != null) items.add('Catatan: ${npk['pesan']}');
-    return items;
-  }
 
-  // ignore: unused_element
-  List<String> _buildPhActionItems(Map<String, dynamic> ph) {
-    final items = <String>[];
-    if (ph['dosis_kg_ha'] != null && ph['dosis_kg_ha'] > 0) {
-      items.add('Dosis: ${ph['dosis_kg_ha']} kg/ha');
-    }
-    if (ph['pesan'] != null) items.add('Catatan: ${ph['pesan']}');
-    return items;
-  }
+
 
   String _mapNpkPriority(String? priority) {
     switch (priority?.toLowerCase()) {

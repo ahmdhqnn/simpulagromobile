@@ -8,7 +8,7 @@ class PlantTypeValidator {
   static const validTypes = ['PADI', 'JAGUNG', 'KEDELAI'];
 
   /// Validates a plant type string and returns a CropType or ValidationFailure
-  /// 
+  ///
   /// Returns `Either<Failure, CropType>` where:
   /// - Left: ValidationFailure if the type is unknown
   /// - Right: CropType enum value if valid
@@ -35,16 +35,10 @@ class PlantTypeValidator {
 
     // Convert string to enum
     try {
-      final cropType = CropType.values.firstWhere(
-        (e) => e.name == upperType,
-      );
+      final cropType = CropType.values.firstWhere((e) => e.name == upperType);
       return Right(cropType);
     } catch (e) {
-      return Left(
-        ValidationFailure(
-          'Failed to parse plant type: "$typeStr"',
-        ),
-      );
+      return Left(ValidationFailure('Failed to parse plant type: "$typeStr"'));
     }
   }
 

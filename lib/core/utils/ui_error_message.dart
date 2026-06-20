@@ -7,7 +7,7 @@ String toUiErrorMessage(
   String? fallback,
 }) {
   final defaultFallback = fallback ?? l10n.errorLoadFailed;
-  
+
   final raw = error is Failure ? error.message : error.toString();
   final singleLine = raw.split('\n').first.trim();
   final cleaned = singleLine
@@ -44,4 +44,3 @@ String toUiErrorMessage(
   if (cleaned.length > 110) return defaultFallback;
   return cleaned;
 }
-

@@ -123,9 +123,10 @@ class _NoteTile extends StatelessWidget {
                 if (dateStr.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    [if (note.userId.isNotEmpty) note.userId, dateStr].join(
-                      ' - ',
-                    ),
+                    [
+                      if (note.userId.isNotEmpty) note.userId,
+                      dateStr,
+                    ].join(' - '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption2(context, size: 10),

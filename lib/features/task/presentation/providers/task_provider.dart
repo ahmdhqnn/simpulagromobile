@@ -124,14 +124,18 @@ final taskStatsProvider = Provider<TaskStats>((ref) {
   return tasksAsync.when(
     data: (tasks) {
       final total = tasks.length;
-      final pending =
-          tasks.where((t) => t.taskStatus == TaskStatus.pending).length;
-      final progress =
-          tasks.where((t) => t.taskStatus == TaskStatus.progress).length;
-      final complite =
-          tasks.where((t) => t.taskStatus == TaskStatus.complite).length;
-      final failed =
-          tasks.where((t) => t.taskStatus == TaskStatus.failed).length;
+      final pending = tasks
+          .where((t) => t.taskStatus == TaskStatus.pending)
+          .length;
+      final progress = tasks
+          .where((t) => t.taskStatus == TaskStatus.progress)
+          .length;
+      final complite = tasks
+          .where((t) => t.taskStatus == TaskStatus.complite)
+          .length;
+      final failed = tasks
+          .where((t) => t.taskStatus == TaskStatus.failed)
+          .length;
 
       return TaskStats(
         total: total,
@@ -208,11 +212,12 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   void reset() => state = const TaskFormState();
 }
 
-final taskFormProvider =
-    StateNotifierProvider<TaskFormNotifier, TaskFormState>((ref) {
-  final repository = ref.watch(taskRepositoryProvider);
-  return TaskFormNotifier(repository, ref);
-});
+final taskFormProvider = StateNotifierProvider<TaskFormNotifier, TaskFormState>(
+  (ref) {
+    final repository = ref.watch(taskRepositoryProvider);
+    return TaskFormNotifier(repository, ref);
+  },
+);
 
 // ─── Filter & Stats models ──────────────────────────────────────────────────
 enum TaskFilter {

@@ -295,9 +295,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                                   ? context.l10n.commonSaveChanges
                                   : context.l10n.sensorAddTitle,
                               style: const TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans',
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                     ),
                   ),

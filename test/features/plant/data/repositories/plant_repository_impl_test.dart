@@ -38,7 +38,10 @@ void main() {
   group('getPlants', () {
     test('returns Right(List<Plant>) on success', () async {
       when(
-        () => mockDataSource.getPlants(siteId, isOnGoingPlant: any(named: 'isOnGoingPlant')),
+        () => mockDataSource.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
       ).thenAnswer((_) async => [plantModel]);
 
       final result = await repository.getPlants(siteId);
@@ -75,7 +78,10 @@ void main() {
 
     test('returns Left(UnknownFailure) on unexpected error', () async {
       when(
-        () => mockDataSource.getPlants(siteId, isOnGoingPlant: any(named: 'isOnGoingPlant')),
+        () => mockDataSource.getPlants(
+          siteId,
+          isOnGoingPlant: any(named: 'isOnGoingPlant'),
+        ),
       ).thenThrow(Exception('Unexpected'));
 
       final result = await repository.getPlants(siteId);

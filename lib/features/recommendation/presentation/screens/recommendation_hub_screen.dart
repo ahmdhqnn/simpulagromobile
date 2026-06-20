@@ -80,7 +80,9 @@ class _RecommendationHubScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -103,7 +105,9 @@ class _RecommendationHubScreenState
                     _buildFilterChips(context, filter, horizontalPadding),
                     SizedBox(height: context.rh(0.016)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -127,10 +131,7 @@ class _RecommendationHubScreenState
                   horizontalPadding,
                 )
               else
-                _buildHistoryListSliver(
-                  context,
-                  horizontalPadding,
-                ),
+                _buildHistoryListSliver(context, horizontalPadding),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
@@ -158,7 +159,8 @@ class _RecommendationHubScreenState
           return InkWell(
             borderRadius: BorderRadius.circular(20),
             onTap: () {
-              ref.read(recommendationHubFilterProvider.notifier).state = filterVal;
+              ref.read(recommendationHubFilterProvider.notifier).state =
+                  filterVal;
               if (filterVal == RecommendationHubFilter.history) {
                 ref.read(recommendationHubTabProvider.notifier).state =
                     RecommendationHubTab.history;
@@ -172,7 +174,8 @@ class _RecommendationHubScreenState
                   RecommendationHubFilter.phase => RecommendationScope.phase,
                   _ => RecommendationScope.all,
                 };
-                ref.read(recommendationScopeFilterProvider.notifier).state = scope;
+                ref.read(recommendationScopeFilterProvider.notifier).state =
+                    scope;
               }
             },
             child: AnimatedContainer(
@@ -217,14 +220,20 @@ class _RecommendationHubScreenState
     }
   }
 
-  Widget _buildHistoryListSliver(BuildContext context, double horizontalPadding) {
+  Widget _buildHistoryListSliver(
+    BuildContext context,
+    double horizontalPadding,
+  ) {
     final siteId = ref.watch(selectedSiteIdProvider);
     if (siteId == null) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
     final historyAsync = ref.watch(recommendationHistoryProvider(siteId));
-    final query = ref.watch(recommendationSearchQueryProvider).trim().toLowerCase();
+    final query = ref
+        .watch(recommendationSearchQueryProvider)
+        .trim()
+        .toLowerCase();
 
     return historyAsync.when(
       skipLoadingOnReload: true,
@@ -271,24 +280,21 @@ class _RecommendationHubScreenState
         return SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final item = filteredItems[index];
-                final catalogItem = RecommendationCatalogItem(
-                  recommendation: item,
-                  scopes: const {RecommendationScope.site},
-                );
-                return Padding(
-                  padding: EdgeInsets.only(bottom: context.rh(0.012)),
-                  child: _buildRecommendationCard(
-                    context,
-                    catalogItem,
-                    isHistory: true,
-                  ),
-                );
-              },
-              childCount: filteredItems.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final item = filteredItems[index];
+              final catalogItem = RecommendationCatalogItem(
+                recommendation: item,
+                scopes: const {RecommendationScope.site},
+              );
+              return Padding(
+                padding: EdgeInsets.only(bottom: context.rh(0.012)),
+                child: _buildRecommendationCard(
+                  context,
+                  catalogItem,
+                  isHistory: true,
+                ),
+              );
+            }, childCount: filteredItems.length),
           ),
         );
       },
@@ -302,9 +308,8 @@ class _RecommendationHubScreenState
           ),
         ),
       ),
-      error: (error, _) => SliverToBoxAdapter(
-        child: _buildErrorState(context, error),
-      ),
+      error: (error, _) =>
+          SliverToBoxAdapter(child: _buildErrorState(context, error)),
     );
   }
 
@@ -339,8 +344,6 @@ class _RecommendationHubScreenState
       ),
     );
   }
-
-
 
   Widget _buildSearchField(BuildContext context) {
     return Container(
@@ -620,7 +623,11 @@ class _RecommendationHubScreenState
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      _sourceDescription(context, primaryScope, recommendation.createdAt),
+                      _sourceDescription(
+                        context,
+                        primaryScope,
+                        recommendation.createdAt,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -657,7 +664,9 @@ class _RecommendationHubScreenState
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      context.dateFormat('dd MMM yyyy').format(recommendation.createdAt!.toLocal()),
+                      context
+                          .dateFormat('dd MMM yyyy')
+                          .format(recommendation.createdAt!.toLocal()),
                       style: TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: context.sp(10),
@@ -785,7 +794,6 @@ class _RecommendationHubScreenState
     );
   }
 
-
   String _sourceTitle(BuildContext context, RecommendationScope scope) {
     return switch (scope) {
       RecommendationScope.site => 'Rekomendasi Aksi',
@@ -802,14 +810,16 @@ class _RecommendationHubScreenState
   ) {
     final isToday = _isToday(createdAt);
     return switch (scope) {
-      RecommendationScope.site => isToday
-          ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
-          : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
+      RecommendationScope.site =>
+        isToday
+            ? 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda hari ini.'
+            : 'Saran tindakan langsung berdasarkan kondisi terkini lahan Anda pada tanggal tersebut.',
       RecommendationScope.plant =>
         'Rekomendasi jenis tanaman yang paling cocok berdasarkan riwayat kondisi tanah seminggu terakhir.',
       RecommendationScope.phase =>
         'Panduan perawatan tanaman yang disesuaikan dengan usia dan fase pertumbuhan saat ini.',
-      RecommendationScope.all => 'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
+      RecommendationScope.all =>
+        'Semua saran dan panduan pertanian aktif untuk lahan Anda.',
     };
   }
 
@@ -821,8 +831,6 @@ class _RecommendationHubScreenState
         local.month == now.month &&
         local.day == now.day;
   }
-
-
 
   String _emptyMessage(BuildContext context, RecommendationScope scope) {
     return switch (scope) {

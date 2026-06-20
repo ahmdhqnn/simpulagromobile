@@ -46,5 +46,7 @@ class NotFoundException extends AppException {
 
 /// Exception for backend features not yet supported
 class UnsupportedBackendEndpointException extends AppException {
-  const UnsupportedBackendEndpointException([super.message = 'Fitur ini belum didukung oleh server']);
+  const UnsupportedBackendEndpointException([
+    super.message = 'Fitur ini belum didukung oleh server',
+  ]);
 }

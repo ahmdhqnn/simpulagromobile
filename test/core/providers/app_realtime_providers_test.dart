@@ -4,7 +4,7 @@ import 'package:simpulagromobile/core/providers/app_providers.dart';
 
 void main() {
   group('App realtime providers', () {
-    test('appRealtimeRefreshIntervalProvider clamps to minimum 15 seconds', () {
+    test('appRealtimeRefreshIntervalProvider clamps to minimum 30 seconds', () {
       final container = ProviderContainer(
         overrides: [
           appSettingsProvider.overrideWith(
@@ -18,7 +18,7 @@ void main() {
       addTearDown(container.dispose);
 
       final interval = container.read(appRealtimeRefreshIntervalProvider);
-      expect(interval, const Duration(seconds: 15));
+      expect(interval, const Duration(seconds: 30));
     });
 
     test(
