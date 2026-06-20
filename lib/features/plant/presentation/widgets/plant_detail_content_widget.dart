@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -304,11 +305,14 @@ class PlantInfoCardWidget extends StatelessWidget {
         label: l10n.plantVarietasIdLabel,
         value: plant.varietasId ?? '-',
       ),
-      _PlantInfoData(
-        icon: Icons.science_outlined,
-        label: l10n.plantSpeciesLabel,
-        value: plant.plantSpecies ?? '-',
-      ),
+      if (plant.plantSpecies != null &&
+          plant.plantSpecies!.trim().isNotEmpty &&
+          plant.plantSpecies != '-')
+        _PlantInfoData(
+          icon: Icons.science_outlined,
+          label: l10n.plantSpeciesLabel,
+          value: plant.plantSpecies!,
+        ),
       _PlantInfoData(
         icon: Icons.event_outlined,
         label: l10n.plantPlantDateLabel,
@@ -430,79 +434,61 @@ class PlantActionButtonsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    if (!plant.isCurrentPlanting) {
+      return const SizedBox.shrink();
+    }
+
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: 0,
+      minimumSize: const Size.fromHeight(60),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      textStyle: TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: context.sp(18),
+        fontWeight: FontWeight.w400,
+        height: 1.22,
+      ),
+    );
+
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
+          child: ElevatedButton.icon(
             onPressed: () => context.push(
               '/phases/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
-            icon: const Icon(Icons.timeline_outlined, size: 18),
+            icon: const Icon(Icons.timeline_outlined, size: 20),
             label: Text(l10n.plantViewPhases),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.surface,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              textStyle: AppTextStyles.label(
-                context,
-                size: context.sp(14),
-                weight: FontWeight.w700,
-              ),
-            ),
+            style: buttonStyle,
           ),
         ),
-        SizedBox(height: context.rh(0.012)),
+        const Gap(12),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton.icon(
+          child: ElevatedButton.icon(
             onPressed: () => context.push(
               '/gdd-tracking/${plant.siteId ?? plant.plantId}/${Uri.encodeComponent(plant.displayName)}',
             ),
-            icon: const Icon(Icons.thermostat_outlined, size: 18),
+            icon: const Icon(Icons.thermostat_outlined, size: 20),
             label: Text(l10n.plantGddTracking),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              textStyle: AppTextStyles.label(
-                context,
-                size: context.sp(14),
-                weight: FontWeight.w700,
-              ),
-            ),
+            style: buttonStyle,
           ),
         ),
-        if (plant.isCurrentPlanting) ...[
-          SizedBox(height: context.rh(0.012)),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: onHarvest,
-              icon: const Icon(Icons.agriculture_outlined, size: 18),
-              label: Text(l10n.plantMarkHarvested),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.warning,
-                foregroundColor: AppColors.surface,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                textStyle: AppTextStyles.label(
-                  context,
-                  size: context.sp(14),
-                  weight: FontWeight.w700,
-                ),
-              ),
-            ),
+        const Gap(12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: onHarvest,
+            icon: const Icon(Icons.agriculture_outlined, size: 20),
+            label: Text(l10n.plantMarkHarvested),
+            style: buttonStyle,
           ),
-        ],
+        ),
       ],
     );
   }
