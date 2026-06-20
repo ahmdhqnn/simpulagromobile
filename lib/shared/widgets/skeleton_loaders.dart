@@ -2379,15 +2379,11 @@ class PlantOverviewSkeleton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 12),
-            const SkeletonContainer(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [SkeletonCircle(size: 58)],
-              ),
-            ),
+            const SizedBox(height: 58),
             const SizedBox(height: 18),
-            const SkeletonContainer(
-              child: SkeletonLine(width: 176, height: 22),
+            Text(
+              context.l10n.plantOverviewTitle,
+              style: AppTextStyles.sectionTitle(context),
             ),
             const SizedBox(height: 16),
             SkeletonContainer(
@@ -3954,6 +3950,176 @@ class AdminListItemSkeleton extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class PlantHeaderCardSkeleton extends StatelessWidget {
+  const PlantHeaderCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      height: 78,
+      radius: AppRadius.lg,
+      padding: EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonBox(width: 50, height: 50, borderRadius: AppRadius.sm),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SkeletonLine(width: 150, height: 18),
+                SizedBox(height: 6),
+                SkeletonLine(width: 100, height: 12),
+              ],
+            ),
+          ),
+          SizedBox(width: 10),
+          SkeletonBox(width: 60, height: 24, borderRadius: AppRadius.xs),
+        ],
+      ),
+    );
+  }
+}
+
+class PlantGrowthCardSkeleton extends StatelessWidget {
+  const PlantGrowthCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      height: 130,
+      radius: AppRadius.lg,
+      padding: EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SkeletonBox(width: 38, height: 38, borderRadius: AppRadius.sm),
+              SizedBox(width: 10),
+              SkeletonLine(width: 120, height: 16),
+            ],
+          ),
+          SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(width: 18, height: 18, borderRadius: 4),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SkeletonLine(width: 30, height: 10),
+                          SizedBox(height: 4),
+                          SkeletonLine(width: 40, height: 16),
+                          SizedBox(height: 4),
+                          SkeletonLine(width: 60, height: 10),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(width: 18, height: 18, borderRadius: 4),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SkeletonLine(width: 30, height: 10),
+                          SizedBox(height: 4),
+                          SkeletonLine(width: 80, height: 16),
+                          SizedBox(height: 4),
+                          SkeletonLine(width: 50, height: 10),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PlantInfoCardSkeleton extends StatelessWidget {
+  const PlantInfoCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      height: 320,
+      radius: AppRadius.lg,
+      padding: EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SkeletonBox(width: 38, height: 38, borderRadius: AppRadius.sm),
+              SizedBox(width: 10),
+              SkeletonLine(width: 120, height: 16),
+            ],
+          ),
+          SizedBox(height: 14),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _PlantInfoItemSkeleton(),
+                _PlantInfoItemSkeleton(),
+                _PlantInfoItemSkeleton(),
+                _PlantInfoItemSkeleton(),
+                _PlantInfoItemSkeleton(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlantInfoItemSkeleton extends StatelessWidget {
+  const _PlantInfoItemSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SkeletonBox(width: 20, height: 20, borderRadius: 4),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonLine(width: 80, height: 10),
+              SizedBox(height: 4),
+              SkeletonLine(width: 140, height: 12),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
