@@ -63,7 +63,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
 
       if (unitAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditUnitTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 150,
             sectionFieldCounts: [4, 1],
@@ -97,25 +97,12 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(
-                isEditMode
-                    ? context.l10n.adminEditUnitTitle
-                    : context.l10n.adminAddUnitTitle,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(22),
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1D1D1D),
-                  height: 1.0,
-                ),
-              ),
-              SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
                 title: context.l10n.adminUnitInfoSection,
                 child: Column(

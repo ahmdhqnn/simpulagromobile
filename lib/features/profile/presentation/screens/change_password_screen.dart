@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../admin/presentation/widgets/admin_form_fields.dart';
 import '../../../admin/presentation/widgets/admin_scaffold.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -46,14 +47,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(
             horizontal: context.rw(0.051),
             vertical: context.rh(0.01),
           ),
           children: [
-            SizedBox(height: context.rh(0.01)),
-            AdminSectionTitle(l10n.changePasswordTitle),
-            SizedBox(height: context.rh(0.014)),
             AdminSectionCard(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -137,65 +136,23 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     required VoidCallback onToggleVisibility,
     required String? Function(String?) validator,
   }) {
-    return TextFormField(
+    return AdminFormFields.buildField(
+      context,
       controller: controller,
+      label: label,
+      hint: hint,
+      icon: Icons.lock_outline,
       obscureText: obscureText,
       validator: validator,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: AppColors.textPrimary,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: const Icon(Icons.lock_outline, size: 20),
-        suffixIcon: IconButton(
-          tooltip: obscureText ? 'Tampilkan password' : 'Sembunyikan password',
-          onPressed: onToggleVisibility,
-          icon: Icon(
-            obscureText
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            size: 20,
-            color: AppColors.textPrimary.withValues(alpha: 0.4),
-          ),
-        ),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        labelStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(14),
-          color: AppColors.textPrimary.withValues(alpha: 0.6),
-        ),
-        hintStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(13),
-          color: AppColors.textSecondary.withValues(alpha: 0.7),
+      suffixIcon: IconButton(
+        tooltip: obscureText ? 'Tampilkan password' : 'Sembunyikan password',
+        onPressed: onToggleVisibility,
+        icon: Icon(
+          obscureText
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          size: 20,
+          color: AppColors.textPrimary.withValues(alpha: 0.4),
         ),
       ),
     );

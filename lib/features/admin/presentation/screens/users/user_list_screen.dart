@@ -8,7 +8,6 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/admin_list_
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
-import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class UserListScreen extends ConsumerWidget {
   const UserListScreen({super.key});
@@ -52,24 +51,9 @@ class UserListScreen extends ConsumerWidget {
                   horizontal: context.rw(0.051),
                   vertical: context.rh(0.01),
                 ),
-                itemCount: users.length + 1,
+                itemCount: users.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        context.l10n.adminUsersTitle,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final user = users[index - 1];
+                  final user = users[index];
                   return Padding(
                     padding: EdgeInsets.only(bottom: context.rh(0.014)),
                     child: _UserCard(user: user),
@@ -78,7 +62,7 @@ class UserListScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const AdminListScreenSkeleton(titleWidth: 92),
+          loading: () => const AdminLoadingState(),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () => ref.invalidate(adminUserListProvider),

@@ -51,24 +51,9 @@ class UnitListScreen extends ConsumerWidget {
                   horizontal: context.rw(0.051),
                   vertical: context.rh(0.01),
                 ),
-                itemCount: units.length + 1,
+                itemCount: units.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        context.l10n.adminUnitTitle,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final unit = units[index - 1];
+                  final unit = units[index];
                   return Padding(
                     padding: EdgeInsets.only(bottom: context.rh(0.014)),
                     child: _UnitCard(unit: unit),

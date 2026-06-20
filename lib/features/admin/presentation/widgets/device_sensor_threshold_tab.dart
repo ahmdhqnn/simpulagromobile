@@ -48,7 +48,16 @@ class DeviceSensorThresholdTab extends ConsumerWidget {
           ),
         );
       },
-      loading: () => buildListSkeleton(count: 6),
+      loading: () => ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.rw(0.051),
+          vertical: context.rh(0.01),
+        ),
+        itemCount: 4,
+        separatorBuilder: (_, __) => SizedBox(height: context.rh(0.014)),
+        itemBuilder: (_, __) => const KeyValueRowsCardSkeleton(rowCount: 4),
+      ),
       error: (error, _) => AdminErrorState(
         error: error,
         onRetry: () => ref.invalidate(deviceSensorThresholdValuesProvider),

@@ -8,6 +8,7 @@ import 'package:simpulagromobile/l10n/l10n.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/sensor_provider.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/permission_guard.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
+import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/admin/domain/entities/sensor.dart';
 import 'package:simpulagromobile/features/monitoring/presentation/providers/monitoring_provider.dart';
 import 'package:simpulagromobile/shared/widgets/skeleton_elements.dart';
@@ -77,7 +78,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
 
       if (sensorAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditSensorTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 164,
             sectionFieldCounts: [4, 1, 3, 1],
@@ -117,20 +118,6 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(
-                isEditMode
-                    ? context.l10n.adminEditSensorTitle
-                    : context.l10n.adminAddSensorTitle,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(22),
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1D1D1D),
-                  height: 1.0,
-                ),
-              ),
-              SizedBox(height: context.rh(0.014)),
               // ── Informasi Dasar ──────────────────────────
               AdminSectionCard(
                 title: context.l10n.adminBasicInfoSection,
@@ -319,55 +306,16 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return AdminFormFields.buildField(
+      context,
       controller: controller,
       enabled: enabled,
+      label: label,
+      hint: hint,
+      icon: icon,
+      required: required,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: const Color(0xFF1D1D1D),
-      ),
-      decoration: InputDecoration(
-        labelText: required ? '$label *' : label,
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 20),
-        filled: true,
-        fillColor: enabled
-            ? AppColors.surfaceVariant
-            : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        labelStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(14),
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-        ),
-        hintStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(13),
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-        ),
-      ),
       validator: validator,
     );
   }
@@ -376,43 +324,13 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     final devicesAsync = ref.watch(devicesProvider);
 
     return devicesAsync.when(
-      data: (devices) => DropdownButtonFormField<String>(
+      data: (devices) => AdminFormFields.buildDropdown<String>(
+        context,
         value: _selectedDeviceId,
-        style: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(14),
-          color: const Color(0xFF1D1D1D),
-        ),
-        decoration: InputDecoration(
-          labelText: isEditMode
-              ? context.l10n.adminDeviceLabel
-              : '${context.l10n.adminDeviceLabel} *',
-          hintText: context.l10n.adminSelectDeviceHint,
-          prefixIcon: const Icon(Icons.device_hub, size: 20),
-          filled: true,
-          fillColor: AppColors.surfaceVariant,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          labelStyle: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: context.sp(14),
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-          ),
-        ),
+        label: context.l10n.adminDeviceLabel,
+        hint: context.l10n.adminSelectDeviceHint,
+        icon: Icons.device_hub,
+        required: !isEditMode,
         items: [
           DropdownMenuItem(
             value: null,
@@ -429,35 +347,47 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
         validator: (v) =>
             !isEditMode && v == null ? context.l10n.adminDeviceRequired : null,
       ),
-      loading: () => Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const SkeletonContainer(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SkeletonLine(width: 160, height: 14),
+      loading: () => AdminFormFields.buildFieldShell(
+        context,
+        label: isEditMode
+            ? context.l10n.adminDeviceLabel
+            : '${context.l10n.adminDeviceLabel} *',
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+          child: const SkeletonContainer(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SkeletonLine(width: 160, height: 14),
+              ),
             ),
           ),
         ),
       ),
-      error: (_, __) => Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            context.l10n.adminLoadDeviceFailed,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: context.sp(13),
-              color: AppColors.error,
+      error: (_, __) => AdminFormFields.buildFieldShell(
+        context,
+        label: isEditMode
+            ? context.l10n.adminDeviceLabel
+            : '${context.l10n.adminDeviceLabel} *',
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+          child: Center(
+            child: Text(
+              context.l10n.adminLoadDeviceFailed,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
+                color: AppColors.error,
+              ),
             ),
           ),
         ),
@@ -470,55 +400,11 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: (value ? AppColors.success : Colors.grey).withValues(
-              alpha: 0.1,
-            ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            value ? Icons.check_circle_outline : Icons.cancel_outlined,
-            color: value ? AppColors.success : Colors.grey,
-            size: 22,
-          ),
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1D1D1D),
-                ),
-              ),
-              Text(
-                value ? context.l10n.commonActive : context.l10n.commonInactive,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(12),
-                  fontWeight: FontWeight.w300,
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppColors.primary,
-        ),
-      ],
+    return AdminFormFields.buildStatusToggle(
+      context,
+      label: label,
+      value: value,
+      onChanged: onChanged,
     );
   }
 

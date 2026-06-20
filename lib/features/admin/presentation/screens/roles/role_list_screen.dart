@@ -74,24 +74,9 @@ class RoleListScreen extends ConsumerWidget {
                   horizontal: context.rw(0.051),
                   vertical: context.rh(0.01),
                 ),
-                itemCount: roles.length + 1,
+                itemCount: roles.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        context.l10n.adminRoleTitle,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final role = roles[index - 1];
+                  final role = roles[index];
                   final permissionCount =
                       rolePermissionCounts.asData?.value[role.roleId] ??
                       role.permissionCount;

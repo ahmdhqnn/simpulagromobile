@@ -68,24 +68,9 @@ class SensorListScreen extends ConsumerWidget {
                   horizontal: context.rw(0.051),
                   vertical: context.rh(0.01),
                 ),
-                itemCount: sensors.length + 1,
+                itemCount: sensors.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        context.l10n.sensorTitle,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final sensor = sensors[index - 1];
+                  final sensor = sensors[index];
                   return Padding(
                     padding: EdgeInsets.only(bottom: context.rh(0.014)),
                     child: _SensorCard(sensor: sensor),

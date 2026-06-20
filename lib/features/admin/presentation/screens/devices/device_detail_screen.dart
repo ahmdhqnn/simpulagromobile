@@ -36,7 +36,7 @@ class AdminDeviceDetailScreen extends ConsumerWidget {
             deviceAsync.when(
               skipLoadingOnReload: true,
               data: (device) => _DeviceDetailBody(device: device),
-              loading: () => const AdminLoadingState(),
+              loading: () => const AdminDetailScreenSkeleton(),
               error: (error, _) => AdminErrorState(
                 error: error,
                 onRetry: () =>
@@ -70,7 +70,7 @@ class _DeviceActions extends ConsumerWidget {
         PermissionGuard(
           permission: 'device:update',
           child: AdminCircleActionButton(
-            icon: Icons.edit_outlined,
+            svgIconPath: 'assets/icons/edit-outline-icon.svg',
             onTap: () => context.push('/admin/devices/${device.devId}/edit'),
           ),
         ),
@@ -135,8 +135,6 @@ class _DeviceDetailBody extends ConsumerWidget {
           vertical: context.rh(0.01),
         ),
         children: [
-          AdminSectionTitle(context.l10n.deviceTitle),
-          SizedBox(height: context.rh(0.014)),
           AdminDetailHeaderCard(
             title: device.displayName,
             subtitle: device.devId,

@@ -83,7 +83,7 @@ class _DeviceSensorFormScreenState
 
       if (dsAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditDeviceSensorTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 220,
             sectionFieldCounts: [5, 7],
@@ -124,9 +124,6 @@ class _DeviceSensorFormScreenState
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(title, style: AppTextStyles.sectionTitle(context)),
-              SizedBox(height: context.rh(0.014)),
               _MappingInfoSection(
                 idController: _idController,
                 nameController: _nameController,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
+import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 
 class ThresholdRowWidget extends StatelessWidget {
   final TextEditingController leftController;
@@ -66,43 +66,16 @@ class _ThresholdField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    assert(color != Colors.transparent || color == Colors.transparent);
+    return AdminFormFields.buildField(
+      context,
       controller: controller,
+      label: label,
+      hint: '',
+      icon: icon,
       keyboardType: const TextInputType.numberWithOptions(
         decimal: true,
         signed: true,
-      ),
-      style: TextStyle(
-        fontFamily: AppTextStyles.fontFamily,
-        fontSize: context.sp(14),
-        color: AppColors.textPrimary,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 18, color: color),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 14,
-        ),
-        labelStyle: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: context.sp(12),
-          color: AppColors.textPrimary.withValues(alpha: 0.6),
-        ),
       ),
     );
   }

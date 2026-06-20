@@ -37,7 +37,7 @@ class RoleDetailScreen extends ConsumerWidget {
             roleAsync.when(
               skipLoadingOnReload: true,
               data: (role) => _RoleDetailBody(role: role),
-              loading: () => const AdminLoadingState(),
+              loading: () => const AdminDetailScreenSkeleton(),
               error: (error, _) => AdminErrorState(
                 error: error,
                 onRetry: () => ref.invalidate(adminRoleDetailProvider(roleId)),
@@ -70,7 +70,7 @@ class _RoleActions extends ConsumerWidget {
         PermissionGuard(
           permission: 'role:update',
           child: AdminCircleActionButton(
-            icon: Icons.edit_outlined,
+            svgIconPath: 'assets/icons/edit-outline-icon.svg',
             onTap: () => context.push('/admin/roles/${role.roleId}/edit'),
           ),
         ),
@@ -140,8 +140,6 @@ class _RoleDetailBody extends ConsumerWidget {
           vertical: context.rh(0.01),
         ),
         children: [
-          AdminSectionTitle(context.l10n.adminRoleTitle),
-          SizedBox(height: context.rh(0.014)),
           AdminDetailHeaderCard(
             title: role.displayName,
             subtitle: role.roleId,

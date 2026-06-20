@@ -77,7 +77,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
 
       if (deviceAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditDeviceTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 168,
             sectionFieldCounts: [4, 2, 3, 1],
@@ -117,20 +117,6 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(
-                isEditMode
-                    ? context.l10n.adminEditDeviceTitle
-                    : context.l10n.adminAddDeviceTitle,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(22),
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1D1D1D),
-                  height: 1.0,
-                ),
-              ),
-              SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
                 title: context.l10n.adminBasicInfoSection,
                 child: Column(

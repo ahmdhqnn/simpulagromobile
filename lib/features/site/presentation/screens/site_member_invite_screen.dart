@@ -5,6 +5,7 @@ import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/features/admin/presentation/providers/user_provider.dart';
+import 'package:simpulagromobile/features/admin/presentation/widgets/admin_form_fields.dart';
 import 'package:simpulagromobile/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/features/site/presentation/providers/site_provider.dart';
@@ -52,8 +53,6 @@ class _SiteMemberInviteScreenState
             vertical: context.rh(0.01),
           ),
           children: [
-            AdminSectionTitle(context.l10n.siteInviteTitle),
-            SizedBox(height: context.rh(0.014)),
             AdminSectionCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +150,7 @@ class _SiteInfo extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
         children: [
@@ -187,15 +186,13 @@ class _UserDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
+    return AdminFormFields.buildDropdown<String>(
+      context,
       value: selectedUserId,
-      isExpanded: true,
-      decoration: _inputDecoration(
-        context,
-        label: context.l10n.siteInviteUserIdLabel,
-        hint: context.l10n.siteInviteUserIdHint,
-        icon: Icons.person_add_alt_1_outlined,
-      ),
+      label: context.l10n.siteInviteUserIdLabel,
+      hint: context.l10n.siteInviteUserIdHint,
+      icon: Icons.person_add_alt_1_outlined,
+      required: true,
       items: users
           .map(
             (user) => DropdownMenuItem<String>(
@@ -225,15 +222,14 @@ class _ManualUserIdField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return AdminFormFields.buildField(
+      context,
       controller: controller,
+      label: context.l10n.siteInviteUserIdLabel,
+      hint: context.l10n.siteInviteUserIdHint,
+      icon: Icons.person_add_alt_1_outlined,
+      required: true,
       textInputAction: TextInputAction.done,
-      decoration: _inputDecoration(
-        context,
-        label: context.l10n.siteInviteUserIdLabel,
-        hint: context.l10n.siteInviteUserIdHint,
-        icon: Icons.person_add_alt_1_outlined,
-      ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return context.l10n.siteInviteUserIdRequired;
@@ -242,41 +238,4 @@ class _ManualUserIdField extends StatelessWidget {
       },
     );
   }
-}
-
-InputDecoration _inputDecoration(
-  BuildContext context, {
-  required String label,
-  required String hint,
-  required IconData icon,
-}) {
-  return InputDecoration(
-    labelText: '$label *',
-    hintText: hint,
-    prefixIcon: Icon(icon, size: 20),
-    filled: true,
-    fillColor: AppColors.surfaceVariant,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: AppColors.error, width: 1),
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    labelStyle: TextStyle(
-      fontFamily: 'Plus Jakarta Sans',
-      fontSize: context.sp(14),
-      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-    ),
-  );
 }

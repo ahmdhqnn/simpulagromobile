@@ -70,24 +70,9 @@ class DeviceListScreen extends ConsumerWidget {
                   horizontal: context.rw(0.051),
                   vertical: context.rh(0.01),
                 ),
-                itemCount: devices.length + 1,
+                itemCount: devices.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: context.rh(0.014)),
-                      child: Text(
-                        context.l10n.deviceTitle,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF1D1D1D),
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  }
-                  final device = devices[index - 1];
+                  final device = devices[index];
                   return Padding(
                     padding: EdgeInsets.only(bottom: context.rh(0.014)),
                     child: _DeviceCard(device: device),

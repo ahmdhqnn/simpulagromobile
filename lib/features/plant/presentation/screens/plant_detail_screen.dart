@@ -31,80 +31,113 @@ class PlantDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            plantAsync.maybeWhen(
-              data: (plant) => _buildHeader(context, ref, plant),
-              orElse: () => _buildHeaderLoading(context, ref),
+        child: plantAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
+          loading: () => _buildScrollablePage(
+            context,
+            header: _buildHeaderLoading(context, ref),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Gap(10),
+                AdminSectionTitle(l10n.plantDetailTitle),
+                const Gap(14),
+                const PlantDetailSkeleton(),
+                const Gap(20),
+              ],
             ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.rw(0.051),
+          ),
+          error: (error, _) => _buildScrollablePage(
+            context,
+            header: _buildHeaderLoading(context, ref),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Gap(10),
+                AdminSectionTitle(l10n.plantDetailTitle),
+                const Gap(14),
+                ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: context.sh * 0.62),
+                  child: _buildErrorState(context, ref, error),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Gap(10),
-                    AdminSectionTitle(l10n.plantDetailTitle),
+              ],
+            ),
+          ),
+          data: (plant) => RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              final siteId = phaseSiteIdForPlant(
+                plant,
+                fallbackSiteId: ref.read(selectedSiteIdProvider),
+              );
+              if (plant.isCurrentPlanting) {
+                ref.invalidate(currentPhaseProvider(siteId));
+              }
+              await refreshPlantCache(ref, plantId: plantId);
+            },
+            child: _buildScrollablePage(
+              context,
+              header: _buildHeader(context, ref, plant),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Gap(10),
+                  AdminSectionTitle(l10n.plantDetailTitle),
+                  const Gap(14),
+                  PlantHeaderCardWidget(plant: plant),
+                  const Gap(14),
+                  if (plant.isCurrentPlanting) ...[
+                    PlantGrowthCardWidget(plant: plant),
                     const Gap(14),
-                    Expanded(
-                      child: plantAsync.when(
-                        skipLoadingOnReload: true,
-                        skipLoadingOnRefresh: true,
-                        skipError: true,
-                        loading: () => const PlantDetailSkeleton(),
-                        error: (error, _) => _buildErrorState(context, ref, error),
-                        data: (plant) => RefreshIndicator(
-                          color: AppColors.primary,
-                          onRefresh: () async {
-                            final siteId = phaseSiteIdForPlant(
-                              plant,
-                              fallbackSiteId: ref.read(selectedSiteIdProvider),
-                            );
-                            if (plant.isCurrentPlanting) {
-                              ref.invalidate(currentPhaseProvider(siteId));
-                            }
-                            await refreshPlantCache(ref, plantId: plantId);
-                          },
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                PlantHeaderCardWidget(plant: plant),
-                                const Gap(14),
-                                if (plant.isCurrentPlanting) ...[
-                                  PlantGrowthCardWidget(plant: plant),
-                                  const Gap(14),
-                                ],
-                                PlantInfoCardWidget(plant: plant),
-                                if (plant.isCurrentPlanting) ...[
-                                  const Gap(16),
-                                  PlantActionButtonsWidget(
-                                    plant: plant,
-                                    onHarvest: () =>
-                                        PlantMutationActions.confirmAndHarvest(
-                                      context,
-                                      ref,
-                                      plant: plant,
-                                    ),
-                                  ),
-                                ],
-                                const Gap(20),
-                              ],
-                            ),
-                          ),
-                        ),
+                  ],
+                  PlantInfoCardWidget(plant: plant),
+                  if (plant.isCurrentPlanting) ...[
+                    const Gap(16),
+                    PlantActionButtonsWidget(
+                      plant: plant,
+                      onHarvest: () => PlantMutationActions.confirmAndHarvest(
+                        context,
+                        ref,
+                        plant: plant,
                       ),
                     ),
                   ],
-                ),
+                  const Gap(20),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildScrollablePage(
+    BuildContext context, {
+    required Widget header,
+    required Widget content,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+                  child: content,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -122,7 +155,13 @@ class PlantDetailScreen extends ConsumerWidget {
           CircularBackButtonWidget(onPressed: () => context.pop()),
           PlantActionsMenuButton(
             tooltip: l10n.adminPlantActionsTooltip,
-            onEdit: () => context.push('/plant/${plant.plantId}/edit'),
+            onEdit: () {
+              final path = GoRouterState.of(context).uri.path;
+              final editPath = path.startsWith('/admin/')
+                  ? '/admin/plants/${plant.plantId}/edit'
+                  : '/plant/${plant.plantId}/edit';
+              context.push(editPath);
+            },
             onHarvest: plant.isCurrentPlanting
                 ? () => PlantMutationActions.confirmAndHarvest(
                     context,
@@ -201,9 +240,7 @@ class PlantDetailScreen extends ConsumerWidget {
               ),
               child: Text(
                 l10n.retry,
-                style: const TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                ),
+                style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
               ),
             ),
           ],
@@ -218,18 +255,15 @@ class PlantDetailSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      physics: NeverScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PlantHeaderCardSkeleton(),
-          Gap(14),
-          PlantGrowthCardSkeleton(),
-          Gap(14),
-          PlantInfoCardSkeleton(),
-        ],
-      ),
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PlantHeaderCardSkeleton(),
+        Gap(14),
+        PlantGrowthCardSkeleton(),
+        Gap(14),
+        PlantInfoCardSkeleton(),
+      ],
     );
   }
 }

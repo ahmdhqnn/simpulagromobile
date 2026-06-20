@@ -49,20 +49,18 @@ class _DeviceSensorListScreenState extends ConsumerState<DeviceSensorListScreen>
             onTap: () => context.push('/admin/device-sensors/create'),
           ),
         ),
-        body: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
-              child: _DeviceSensorTabSwitcher(controller: _tabController),
-            ),
-            SizedBox(height: context.rh(0.014)),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [_MappingTab(), const DeviceSensorThresholdTab()],
-              ),
-            ),
-          ],
+        headerContent: Padding(
+          padding: EdgeInsets.fromLTRB(
+            context.rw(0.051),
+            0,
+            context.rw(0.051),
+            context.rh(0.014),
+          ),
+          child: _DeviceSensorTabSwitcher(controller: _tabController),
+        ),
+        body: TabBarView(
+          controller: _tabController,
+          children: [_MappingTab(), const DeviceSensorThresholdTab()],
         ),
       ),
     );

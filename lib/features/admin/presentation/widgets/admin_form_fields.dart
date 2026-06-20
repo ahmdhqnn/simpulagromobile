@@ -3,10 +3,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 
-/// Reusable form field builder untuk semua form screens admin
-/// Konsisten dengan design system project
+/// Reusable form field builder untuk semua form screens admin.
 class AdminFormFields {
-  /// Standard text field
   static Widget buildField(
     BuildContext context, {
     required TextEditingController controller,
@@ -17,89 +15,203 @@ class AdminFormFields {
     bool required = false,
     int maxLines = 1,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    bool obscureText = false,
+    String? suffixText,
+    Widget? suffixIcon,
+    String? helperText,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: const Color(0xFF1D1D1D),
-      ),
-      decoration: _decoration(
-        context,
-        label: required ? '$label *' : label,
-        hint: hint,
-        icon: icon,
+    assert(icon.codePoint >= 0);
+    return buildFieldShell(
+      context,
+      label: label,
+      required: required,
+      helperText: helperText,
+      child: TextFormField(
+        controller: controller,
         enabled: enabled,
+        maxLines: obscureText ? 1 : maxLines,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        obscureText: obscureText,
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: context.sp(14),
+          color: AppColors.textPrimary,
+        ),
+        decoration: inputDecoration(
+          context,
+          hintText: hint,
+          enabled: enabled,
+          suffixText: suffixText,
+          suffixIcon: suffixIcon,
+        ),
+        validator: validator,
       ),
-      validator: validator,
     );
   }
 
-  /// Status toggle row
+  static Widget buildFieldShell(
+    BuildContext context, {
+    required String label,
+    required Widget child,
+    bool required = false,
+    String? helperText,
+  }) {
+    final displayLabel = required && !label.trim().endsWith('*')
+        ? '$label *'
+        : label;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          displayLabel,
+          style: AppTextStyles.label(
+            context,
+            size: context.sp(14),
+            weight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: context.rh(0.01)),
+        child,
+        if (helperText != null && helperText.trim().isNotEmpty) ...[
+          SizedBox(height: context.rh(0.006)),
+          Text(
+            helperText,
+            style: AppTextStyles.caption(
+              context,
+              size: context.sp(11),
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  static InputDecoration inputDecoration(
+    BuildContext context, {
+    String? hintText,
+    bool enabled = true,
+    String? suffixText,
+    Widget? suffixIcon,
+  }) {
+    final borderRadius = BorderRadius.circular(AppRadius.pill);
+
+    return InputDecoration(
+      hintText: hintText == null || hintText.isEmpty ? null : hintText,
+      hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
+      filled: true,
+      fillColor: enabled
+          ? AppColors.surfaceVariant
+          : AppColors.textPrimary.withValues(alpha: 0.05),
+      hoverColor: Colors.transparent,
+      border: _cleanInputBorder(borderRadius),
+      enabledBorder: _cleanInputBorder(borderRadius),
+      focusedBorder: _cleanInputBorder(borderRadius),
+      disabledBorder: _cleanInputBorder(borderRadius),
+      errorBorder: _cleanInputBorder(borderRadius),
+      focusedErrorBorder: _cleanInputBorder(borderRadius),
+      suffixText: suffixText,
+      suffixIcon: suffixIcon,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.041),
+        vertical: context.rh(0.012),
+      ),
+    );
+  }
+
+  static Widget buildDropdown<T>(
+    BuildContext context, {
+    required T? value,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+    String? Function(T?)? validator,
+    bool enabled = true,
+    bool required = false,
+    String? helperText,
+  }) {
+    assert(icon.codePoint >= 0);
+    return buildFieldShell(
+      context,
+      label: label,
+      required: required,
+      helperText: helperText,
+      child: DropdownButtonFormField<T>(
+        value: value,
+        isExpanded: true,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: context.sp(14),
+          color: AppColors.textPrimary,
+        ),
+        decoration: inputDecoration(context, hintText: hint, enabled: enabled),
+        items: items,
+        onChanged: enabled ? onChanged : null,
+        validator: validator,
+      ),
+    );
+  }
+
   static Widget buildStatusToggle(
     BuildContext context, {
     required String label,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: (value ? AppColors.success : Colors.grey).withValues(
-              alpha: 0.1,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rw(0.041),
+        vertical: context.rh(0.008),
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.label(
+                    context,
+                    size: context.sp(14),
+                    weight: FontWeight.w400,
+                  ),
+                ),
+                Text(
+                  value
+                      ? context.l10n.commonActive
+                      : context.l10n.commonInactive,
+                  style: AppTextStyles.caption(
+                    context,
+                    size: context.sp(12),
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
-            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            value ? Icons.check_circle_outline : Icons.cancel_outlined,
-            color: value ? AppColors.success : Colors.grey,
-            size: 22,
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: AppColors.primary,
           ),
-        ),
-        SizedBox(width: context.rw(0.03)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(14),
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1D1D1D),
-                ),
-              ),
-              Text(
-                value ? context.l10n.commonActive : context.l10n.commonInactive,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(12),
-                  fontWeight: FontWeight.w300,
-                  color: const Color(0xFF1D1D1D).withValues(alpha: 0.5),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppColors.primary,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  /// Coordinate row (lat + lon)
   static Widget buildCoordinateRow(
     BuildContext context, {
     required TextEditingController latController,
@@ -118,9 +230,9 @@ class AdminFormFields {
               decimal: true,
               signed: true,
             ),
-            validator: (v) {
-              if (v != null && v.isNotEmpty) {
-                final lat = double.tryParse(v);
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                final lat = double.tryParse(value);
                 if (lat == null || lat < -90 || lat > 90) {
                   return context.l10n.commonInvalid;
                 }
@@ -141,9 +253,9 @@ class AdminFormFields {
               decimal: true,
               signed: true,
             ),
-            validator: (v) {
-              if (v != null && v.isNotEmpty) {
-                final lon = double.tryParse(v);
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                final lon = double.tryParse(value);
                 if (lon == null || lon < -180 || lon > 180) {
                   return context.l10n.commonInvalid;
                 }
@@ -156,84 +268,10 @@ class AdminFormFields {
     );
   }
 
-  /// Dropdown field
-  static Widget buildDropdown<T>(
-    BuildContext context, {
-    required T? value,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-    String? Function(T?)? validator,
-    bool enabled = true,
-  }) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: const Color(0xFF1D1D1D),
-      ),
-      decoration: _decoration(
-        context,
-        label: label,
-        hint: hint,
-        icon: icon,
-        enabled: enabled,
-      ),
-      items: items,
-      onChanged: enabled ? onChanged : null,
-      validator: validator,
-    );
-  }
-
-  static InputDecoration _decoration(
-    BuildContext context, {
-    required String label,
-    required String hint,
-    required IconData icon,
-    bool enabled = true,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(icon, size: 20),
-      filled: true,
-      fillColor: enabled
-          ? AppColors.surfaceVariant
-          : const Color(0xFF1D1D1D).withValues(alpha: 0.05),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error, width: 1),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      labelStyle: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-      ),
-      hintStyle: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(13),
-        color: const Color(0xFF1D1D1D).withValues(alpha: 0.3),
-      ),
+  static OutlineInputBorder _cleanInputBorder(BorderRadius borderRadius) {
+    return OutlineInputBorder(
+      borderRadius: borderRadius,
+      borderSide: BorderSide.none,
     );
   }
 }

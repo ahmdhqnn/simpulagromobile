@@ -69,7 +69,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
       if (userAsync.isLoading) {
         return AdminFormScaffold(
-          title: context.l10n.adminLoadingTitle,
+          title: context.l10n.adminEditUserTitle,
           body: const AdminFormScreenSkeleton(
             titleWidth: 158,
             sectionFieldCounts: [4, 2, 2],
@@ -103,25 +103,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(
               horizontal: context.rw(0.051),
               vertical: context.rh(0.01),
             ),
             children: [
-              SizedBox(height: context.rh(0.01)),
-              Text(
-                isEditMode
-                    ? context.l10n.adminEditUserTitle
-                    : context.l10n.adminAddUserTitle,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(22),
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1D1D1D),
-                  height: 1.0,
-                ),
-              ),
-              SizedBox(height: context.rh(0.014)),
               AdminSectionCard(
                 title: context.l10n.adminAccountInfoSection,
                 child: Column(
@@ -317,53 +304,21 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
   }
 
   Widget _buildPasswordField(BuildContext context) {
-    return TextFormField(
+    return AdminFormFields.buildField(
+      context,
       controller: _passwordController,
+      label: context.l10n.adminPasswordLabel,
+      hint: context.l10n.adminPasswordHint,
+      icon: Icons.lock,
+      required: true,
       obscureText: _obscurePassword,
-      style: TextStyle(
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: context.sp(14),
-        color: const Color(0xFF1D1D1D),
-      ),
-      decoration: InputDecoration(
-        labelText: '${context.l10n.adminPasswordLabel} *',
-        hintText: context.l10n.adminPasswordHint,
-        prefixIcon: const Icon(Icons.lock, size: 20),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility_off : Icons.visibility,
-            size: 20,
-            color: const Color(0xFF1D1D1D).withValues(alpha: 0.4),
-          ),
-          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+          size: 20,
+          color: AppColors.textPrimary.withValues(alpha: 0.4),
         ),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        labelStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: context.sp(14),
-          color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-        ),
+        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
       ),
       validator: (v) {
         if (v == null || v.isEmpty) return context.l10n.adminPasswordRequired;
@@ -435,7 +390,7 @@ class _ReadOnlyInfoRow extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         children: [
