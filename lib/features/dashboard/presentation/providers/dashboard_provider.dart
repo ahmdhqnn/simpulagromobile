@@ -92,24 +92,26 @@ final dashboardSummaryProvider =
       final sensorUseCase = ref.watch(getSensorSummaryUseCaseProvider);
       final plantUseCase = ref.watch(getPlantSummaryUseCaseProvider);
 
-      final device = await deviceUseCase(
+      final deviceFuture = deviceUseCase(
         siteId,
       ).then((result) => result.fold((_) => null, (entity) => entity));
-      await Future<void>.delayed(const Duration(milliseconds: 180));
+      final sensorFuture = sensorUseCase(
+        siteId,
+      ).then((result) => result.fold((_) => null, (entity) => entity));
+      final plantFuture = plantUseCase(
+        siteId,
+      ).then((result) => result.fold((_) => null, (entity) => entity));
 
-      final sensor = await sensorUseCase(
-        siteId,
-      ).then((result) => result.fold((_) => null, (entity) => entity));
-      await Future<void>.delayed(const Duration(milliseconds: 180));
-
-      final plant = await plantUseCase(
-        siteId,
-      ).then((result) => result.fold((_) => null, (entity) => entity));
+      final results = await Future.wait<Object?>([
+        deviceFuture,
+        sensorFuture,
+        plantFuture,
+      ]);
 
       return DashboardSummarySnapshot(
-        deviceSummary: device,
-        sensorSummary: sensor,
-        plantSummary: plant,
+        deviceSummary: results[0] as DeviceSummaryEntity?,
+        sensorSummary: results[1] as SensorSummaryEntity?,
+        plantSummary: results[2] as PlantSummaryEntity?,
       );
     });
 

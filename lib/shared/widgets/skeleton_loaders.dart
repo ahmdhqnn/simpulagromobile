@@ -832,11 +832,13 @@ class SiteNotesSectionSkeleton extends StatelessWidget {
 class CompactTextRowsSkeleton extends StatelessWidget {
   final int rowCount;
   final bool hasSubtitle;
+  final double rowGap;
 
   const CompactTextRowsSkeleton({
     super.key,
     this.rowCount = 3,
     this.hasSubtitle = false,
+    this.rowGap = 8,
   });
 
   @override
@@ -845,7 +847,7 @@ class CompactTextRowsSkeleton extends StatelessWidget {
       children: List.generate(
         rowCount,
         (index) => _SkeletonPanel(
-          margin: EdgeInsets.only(bottom: index == rowCount - 1 ? 0 : 8),
+          margin: EdgeInsets.only(bottom: index == rowCount - 1 ? 0 : rowGap),
           padding: const EdgeInsets.all(14),
           radius: AppRadius.sm,
           child: Row(
@@ -1662,31 +1664,104 @@ class MapCardSkeleton extends StatelessWidget {
 }
 
 class SiteSelectorSkeleton extends StatelessWidget {
-  const SiteSelectorSkeleton({super.key});
+  final bool showSelector;
+
+  const SiteSelectorSkeleton({super.key, this.showSelector = true});
 
   @override
   Widget build(BuildContext context) {
-    return const _SkeletonCard(
-      height: 64,
-      radius: AppRadius.lg,
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
+    return _SkeletonCard(
+      height: 112,
+      radius: AppRadius.xl,
+      padding: const EdgeInsets.all(12),
+      child: Stack(
         children: [
-          SkeletonBox(width: 40, height: 40, borderRadius: AppRadius.xs),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          Positioned(
+            left: 0,
+            top: 0,
+            right: showSelector ? 112 : 60,
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonLine(width: 132, height: 14),
-                SizedBox(height: 5),
-                SkeletonLine(width: 92, height: 10),
+                SkeletonLine(width: 146, height: 22),
+                SizedBox(height: 6),
+                SkeletonLine(width: 190, height: 12),
               ],
             ),
           ),
-          SkeletonCircle(size: 24),
+          if (showSelector)
+            const Positioned(
+              right: 0,
+              top: 0,
+              child: SkeletonBox(
+                width: 86,
+                height: 32,
+                borderRadius: AppRadius.pill,
+              ),
+            ),
+          const Positioned(
+            right: 0,
+            bottom: 0,
+            child: SkeletonBox(width: 24, height: 24, borderRadius: 6),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class LatestSensorReadsSkeleton extends StatelessWidget {
+  final int rowCount;
+
+  const LatestSensorReadsSkeleton({super.key, this.rowCount = 5});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonPanel(
+      width: double.infinity,
+      radius: AppRadius.lg,
+      child: Column(
+        children: List.generate(
+          rowCount,
+          (index) => Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    SkeletonBox(
+                      width: 40,
+                      height: 40,
+                      borderRadius: AppRadius.xs,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SkeletonLine(width: 128, height: 14),
+                          SizedBox(height: 5),
+                          SkeletonLine(width: 88, height: 11),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    SkeletonLine(width: 64, height: 14),
+                  ],
+                ),
+              ),
+              if (index != rowCount - 1)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SkeletonBox(
+                    width: double.infinity,
+                    height: 1,
+                    borderRadius: 0,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1769,8 +1844,13 @@ class RecommendationOverviewCardSkeleton extends StatelessWidget {
 
 class RecommendationOverviewListSkeleton extends StatelessWidget {
   final int count;
+  final double cardGap;
 
-  const RecommendationOverviewListSkeleton({super.key, this.count = 3});
+  const RecommendationOverviewListSkeleton({
+    super.key,
+    this.count = 3,
+    this.cardGap = 12,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1778,7 +1858,7 @@ class RecommendationOverviewListSkeleton extends StatelessWidget {
       children: List.generate(
         count,
         (index) => Padding(
-          padding: EdgeInsets.only(bottom: index == count - 1 ? 0 : 12),
+          padding: EdgeInsets.only(bottom: index == count - 1 ? 0 : cardGap),
           child: const RecommendationOverviewCardSkeleton(),
         ),
       ),
@@ -2170,13 +2250,14 @@ class _CircularFormActionsSkeleton extends StatelessWidget {
 }
 
 class SummaryGridSkeleton extends StatelessWidget {
-  const SummaryGridSkeleton({super.key});
+  final double spacing;
+
+  const SummaryGridSkeleton({super.key, this.spacing = 10});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const spacing = 10.0;
         final cardWidth = (constraints.maxWidth - spacing) / 2;
         const cardHeight = 90.0;
 
@@ -2190,6 +2271,47 @@ class SummaryGridSkeleton extends StatelessWidget {
           children: List.generate(4, (_) => const _SummaryCardSkeleton()),
         );
       },
+    );
+  }
+}
+
+class TaskOverviewSkeleton extends StatelessWidget {
+  const TaskOverviewSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonPanel(
+      width: double.infinity,
+      padding: EdgeInsets.all(12),
+      radius: AppRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLine(width: 176, height: 22),
+                    SizedBox(height: 6),
+                    SkeletonLine(width: 118, height: 12),
+                  ],
+                ),
+              ),
+              SkeletonBox(width: 50, height: 50, borderRadius: AppRadius.sm),
+            ],
+          ),
+          SizedBox(height: 12),
+          SkeletonLine(width: 54, height: 22),
+          SizedBox(height: 8),
+          SkeletonBox(
+            width: double.infinity,
+            height: 8,
+            borderRadius: AppRadius.xs,
+          ),
+        ],
+      ),
     );
   }
 }

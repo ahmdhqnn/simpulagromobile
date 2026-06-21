@@ -24,9 +24,11 @@ class DashboardHeaderWidget extends ConsumerWidget {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rw(0.051),
-        vertical: context.rh(0.015),
+      padding: EdgeInsets.fromLTRB(
+        context.rw(0.051),
+        context.rh(0.015),
+        context.rw(0.051),
+        0,
       ),
       child: Row(
         children: [

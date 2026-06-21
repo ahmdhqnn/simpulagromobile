@@ -45,8 +45,14 @@ class DashboardScreen extends ConsumerWidget {
     final healthAsync = ref.watch(environmentalHealthProvider);
     final dashboardSummaryAsync = ref.watch(dashboardSummaryProvider);
     final latestReadsAsync = ref.watch(latestSensorReadsProvider);
+    final taskListAsync = ref.watch(taskListProvider);
     final taskStats = ref.watch(taskStatsProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
+    final isTaskStatsLoading =
+        taskListAsync.isLoading && taskListAsync.valueOrNull == null;
+    final horizontalPadding = context.rw(0.051);
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -75,8 +81,9 @@ class DashboardScreen extends ConsumerWidget {
                   role: authState.isAdmin ? l10n.roleAdmin : l10n.roleUser,
                   onProfileTap: () => context.push('/profile'),
                 ),
+                SizedBox(height: sectionGap),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -89,18 +96,29 @@ class DashboardScreen extends ConsumerWidget {
                           return SiteSelectorWidget(
                             sites: sites,
                             selectedSite: selectedSite,
-                            onSiteSelected: (site) => ref
-                                .read(selectedSiteProvider.notifier)
-                                .selectSite(site),
+                            canSelectSite: authState.isAdmin,
+                            onOpenDetail: selectedSite == null
+                                ? null
+                                : () => context.push(
+                                    '/site/${selectedSite.siteId}',
+                                  ),
+                            onSiteSelected: (site) {
+                              if (!authState.isAdmin) return;
+                              ref
+                                  .read(selectedSiteProvider.notifier)
+                                  .selectSite(site);
+                            },
                           );
                         },
-                        loading: () => const SiteSelectorSkeleton(),
+                        loading: () => SiteSelectorSkeleton(
+                          showSelector: authState.isAdmin,
+                        ),
                         error: (e, _) => ErrorStateCardWidget(
                           message: l10n.errorLoadSite,
                           onRetry: () => ref.invalidate(sitesProvider),
                         ),
                       ),
-                      SizedBox(height: context.rh(0.016)),
+                      SizedBox(height: sectionGap),
 
                       if (selectedSite == null)
                         InfoStateWidget.icon(
@@ -110,7 +128,7 @@ class DashboardScreen extends ConsumerWidget {
                         )
                       else ...[
                         SectionHeaderWidget(title: l10n.healthSectionTitle),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         healthAsync.when(
                           skipLoadingOnReload: true,
                           skipLoadingOnRefresh: true,
@@ -132,10 +150,10 @@ class DashboardScreen extends ConsumerWidget {
                                 ref.invalidate(environmentalHealthProvider),
                           ),
                         ),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(title: l10n.sensorSectionTitle),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         healthAsync.when(
                           skipLoadingOnReload: true,
                           skipLoadingOnRefresh: true,
@@ -160,26 +178,26 @@ class DashboardScreen extends ConsumerWidget {
                             height: 195,
                           ),
                         ),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(
                           title: l10n.dashboardTodayDailyRecap,
                         ),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         const DashboardDailyRecapCard(),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(
                           title: l10n.dashboardLatestRecommendations,
                         ),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         const DashboardRecommendationCard(),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(
                           title: l10n.dashboardLatestActivity,
                         ),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         latestReadsAsync.when(
                           skipLoadingOnReload: true,
                           skipLoadingOnRefresh: true,
@@ -188,34 +206,35 @@ class DashboardScreen extends ConsumerWidget {
                             reads: reads,
                             metadataAdapter: metadataAdapter,
                           ),
-                          loading: () => const SimpleRowsCardSkeleton(
-                            rowCount: 5,
-                            rowHeight: 40,
-                            iconSize: 40,
-                          ),
+                          loading: () =>
+                              const LatestSensorReadsSkeleton(rowCount: 5),
                           error: (_, __) => ErrorStateCardWidget(
                             message: l10n.dashboardActivityLoadFailed,
                             onRetry: () =>
                                 ref.invalidate(latestSensorReadsProvider),
                           ),
                         ),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(title: l10n.dashboardLatestNotes),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         const LatestNotesCardWidget(),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
 
                         SectionHeaderWidget(title: l10n.summarySectionTitle),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            if (dashboardSummaryAsync.isLoading &&
-                                dashboardSummaryAsync.valueOrNull == null) {
-                              return const SummaryGridSkeleton();
+                            if ((dashboardSummaryAsync.isLoading &&
+                                    dashboardSummaryAsync.valueOrNull ==
+                                        null) ||
+                                isTaskStatsLoading) {
+                              return SummaryGridSkeleton(
+                                spacing: contentGap.clamp(8.0, 12.0),
+                              );
                             }
 
-                            final spacing = context.rw(0.025).clamp(8.0, 12.0);
+                            final spacing = contentGap.clamp(8.0, 12.0);
                             final cardWidth =
                                 (constraints.maxWidth - spacing) / 2;
                             final cardHeight = 90.0;
@@ -297,19 +316,22 @@ class DashboardScreen extends ConsumerWidget {
                             );
                           },
                         ),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: contentGap),
 
-                        TaskOverviewWidget(
-                          totalTasks: taskStats.total,
-                          completedTasks: taskStats.completed,
-                        ),
-                        SizedBox(height: context.rh(0.024)),
+                        if (isTaskStatsLoading)
+                          const TaskOverviewSkeleton()
+                        else
+                          TaskOverviewWidget(
+                            totalTasks: taskStats.total,
+                            completedTasks: taskStats.completed,
+                          ),
+                        SizedBox(height: sectionGap),
 
                         // Quick Actions
                         SectionHeaderWidget(
                           title: l10n.quickActionSectionTitle,
                         ),
-                        SizedBox(height: context.rh(0.014)),
+                        SizedBox(height: contentGap),
                         const QuickActionsWidget(),
                       ],
                       SizedBox(height: bottomNavigationContentSpace(context)),

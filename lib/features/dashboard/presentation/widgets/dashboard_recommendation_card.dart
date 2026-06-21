@@ -32,7 +32,8 @@ class DashboardRecommendationCard extends ConsumerWidget {
           _buildPhaseCard(context, ref, snapshot.phaseSnapshot),
         ],
       ),
-      loading: () => const RecommendationOverviewListSkeleton(),
+      loading: () =>
+          RecommendationOverviewListSkeleton(cardGap: context.rh(0.012)),
       error: (error, _) =>
           _buildErrorCard(context, toUiErrorMessage(error, context.l10n)),
     );

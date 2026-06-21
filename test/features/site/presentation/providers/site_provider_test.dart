@@ -87,6 +87,49 @@ void main() {
     });
   });
 
+  group('SiteDetail provider', () {
+    test(
+      'loads detail for a site available in the accessible site list',
+      () async {
+        final repo = _FakeSiteRepository()
+          ..sites = const [Site(siteId: 'SITE_1', siteName: 'List Site')]
+          ..detailSites = const {
+            'SITE_1': Site(siteId: 'SITE_1', siteName: 'Detail Site'),
+          };
+        final container = ProviderContainer(
+          overrides: [siteRepositoryProvider.overrideWithValue(repo)],
+        );
+        addTearDown(container.dispose);
+
+        final site = await container.read(siteDetailProvider('SITE_1').future);
+
+        expect(site.siteName, 'Detail Site');
+        expect(repo.getSiteByIdCalls, 1);
+      },
+    );
+
+    test(
+      'rejects detail access for a site outside the accessible site list',
+      () async {
+        final repo = _FakeSiteRepository()
+          ..sites = const [Site(siteId: 'SITE_1', siteName: 'List Site')]
+          ..detailSites = const {
+            'SITE_2': Site(siteId: 'SITE_2', siteName: 'Hidden Site'),
+          };
+        final container = ProviderContainer(
+          overrides: [siteRepositoryProvider.overrideWithValue(repo)],
+        );
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container.read(siteDetailProvider('SITE_2').future),
+          throwsA(isA<PermissionFailure>()),
+        );
+        expect(repo.getSiteByIdCalls, 0);
+      },
+    );
+  });
+
   group('SiteMemberInviteNotifier', () {
     test('returns noSiteSelected when site context is missing', () async {
       final container = ProviderContainer(
@@ -147,6 +190,9 @@ class _FakeSecureStorage extends SecureStorage {
 
 class _FakeSiteRepository implements SiteRepository {
   Either<Failure, void> inviteResult = const Right(null);
+  List<Site> sites = const <Site>[];
+  Map<String, Site> detailSites = const <String, Site>{};
+  int getSiteByIdCalls = 0;
 
   @override
   Future<Either<Failure, void>> inviteMember(
@@ -163,12 +209,15 @@ class _FakeSiteRepository implements SiteRepository {
 
   @override
   Future<Either<Failure, Site>> getSiteById(String siteId) async {
-    throw UnimplementedError();
+    getSiteByIdCalls += 1;
+    final site = detailSites[siteId];
+    if (site == null) return const Left(NotFoundFailure('SITE_NOT_FOUND'));
+    return Right(site);
   }
 
   @override
   Future<Either<Failure, List<Site>>> getSites() async {
-    throw UnimplementedError();
+    return Right(sites);
   }
 
   @override

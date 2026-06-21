@@ -39,10 +39,23 @@ final siteDetailProvider = FutureProvider.autoDispose.family<Site, String>((
   siteId,
 ) async {
   ref.cacheFor(const Duration(minutes: 5));
+  final accessibleSites = await ref.watch(siteListProvider.future);
+  final accessibleSite = accessibleSites
+      .where((site) => site.siteId == siteId)
+      .firstOrNull;
+  if (accessibleSite == null) {
+    throw const PermissionFailure(
+      'Anda tidak memiliki akses ke site ini. Minta admin mengundang Anda terlebih dahulu.',
+    );
+  }
+
   final repository = ref.watch(siteRepositoryProvider);
   return ref.retryOnError(() async {
     final result = await repository.getSiteById(siteId);
-    return result.fold((failure) => throw failure, (site) => site);
+    return result.fold((failure) => throw failure, (site) {
+      if (site.siteId == siteId) return site;
+      return accessibleSite;
+    });
   });
 });
 
