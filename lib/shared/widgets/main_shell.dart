@@ -11,6 +11,9 @@ import 'package:simpulagromobile/features/forum/presentation/screens/forum_scree
 import 'package:simpulagromobile/features/forum/presentation/providers/forum_provider.dart';
 import 'package:simpulagromobile/features/site/presentation/providers/site_provider.dart';
 import 'package:simpulagromobile/shared/widgets/custom_bottom_navigation.dart';
+import 'package:simpulagromobile/features/notification/presentation/providers/notification_provider.dart';
+import 'package:simpulagromobile/features/notification/presentation/widgets/in_app_popup_banner.dart';
+import 'package:simpulagromobile/features/notification/domain/entities/notification.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -100,6 +103,15 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(mainShellTabIndexProvider);
+
+    ref.listen<AppNotification?>(newNotificationEventProvider, (prev, next) {
+      if (next != null) {
+        InAppPopupBannerManager.show(context, next);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(newNotificationEventProvider.notifier).state = null;
+        });
+      }
+    });
 
     return Scaffold(
       extendBody: true,
