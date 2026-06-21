@@ -14,6 +14,7 @@ import '../../../forum/presentation/providers/forum_provider.dart';
 import '../../../dashboard/domain/entities/dashboard_entity.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/providers/app_providers.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository();
@@ -71,6 +72,11 @@ class NotificationNotifier extends StateNotifier<List<AppNotification>> {
   }
 
   void addNotification(AppNotification notification) {
+    // Check if notifications are enabled in settings
+    final settings = _ref.read(settingsProvider);
+    final notificationsEnabled = settings['notifications'] ?? true;
+    if (!notificationsEnabled) return;
+
     final newState = _sortNotifications([notification, ...state]);
     state = newState;
     _repository.saveNotifications(newState);

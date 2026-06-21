@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simpulagromobile/features/notification/domain/entities/notification.dart';
 import 'package:simpulagromobile/features/notification/presentation/providers/notification_provider.dart';
+import 'package:simpulagromobile/core/providers/app_providers.dart';
 import 'package:simpulagromobile/features/task/domain/entities/task.dart';
 import 'package:simpulagromobile/features/task/presentation/providers/task_provider.dart';
 import 'package:simpulagromobile/features/site/domain/entities/site.dart';
@@ -345,5 +346,67 @@ void main() {
         );
       },
     );
+
+    test('does not add notification when notifications are disabled in settings', () async {
+      final container = ProviderContainer(
+        overrides: [
+          siteListProvider.overrideWith((ref) => <Site>[]),
+          taskListProvider.overrideWith((ref) => <Task>[]),
+          recommendationHubDashboardSnapshotProvider.overrideWith(
+            (ref) => const RecommendationDashboardSnapshot(
+              siteItems: [],
+              plantItems: [],
+              phaseSnapshot: RecommendationPhaseSnapshot(
+                phaseId: null,
+                phaseName: null,
+                items: [],
+              ),
+            ),
+          ),
+          forumProvider.overrideWith((ref) => FakeForumNotifier()),
+          environmentalHealthProvider.overrideWith(
+            (ref) => const EnvironmentalHealthEntity(
+              overallHealth: 100.0,
+              totalSensors: 0,
+              sensors: [],
+            ),
+          ),
+          authProvider.overrideWith((ref) => FakeAuthNotifier()),
+          appSettingsProvider.overrideWith(
+            () => _TestAppSettings({
+              ...AppSettings.defaults,
+              'notifications': false,
+            }),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(notificationProvider.notifier);
+      await notifier.loadNotifications();
+
+      final notification = AppNotification(
+        id: '1',
+        type: NotificationType.general,
+        title: 'Test Notification',
+        body: 'This is a test notification',
+        timestamp: DateTime.now(),
+        isRead: false,
+      );
+
+      notifier.addNotification(notification);
+
+      expect(container.read(notificationProvider), isEmpty);
+      expect(container.read(unreadNotificationCountProvider), 0);
+    });
   });
+}
+
+class _TestAppSettings extends AppSettings {
+  _TestAppSettings(this._state);
+
+  final Map<String, dynamic> _state;
+
+  @override
+  Map<String, dynamic> build() => _state;
 }
