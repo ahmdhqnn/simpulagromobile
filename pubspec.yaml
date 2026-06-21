@@ -42,6 +42,7 @@ dev_dependencies:
   custom_lint: 0.7.3
   riverpod_lint: 2.6.4
   mocktail: ^1.0.4
+  flutter_launcher_icons: ^0.13.1
 
 dependency_overrides:
   analyzer: 7.3.0
@@ -93,3 +94,9 @@ flutter:
         - asset: assets/fonts/PlusJakartaSans-ExtraBoldItalic.ttf
           weight: 800
           style: italic
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/app_icon.png"
+  remove_alpha_ios: true
