@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_theme.dart';
 import '../../l10n/l10n.dart';
 
 /// Show confirmation dialog with consistent design
@@ -17,32 +18,57 @@ Future<bool> showConfirmationDialog(
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      backgroundColor: AppColors.surface,
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       title: Text(
         title,
         style: const TextStyle(
           fontFamily: 'Plus Jakarta Sans',
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w300,
+          fontSize: 22,
+          color: AppColors.textPrimary,
         ),
       ),
       content: Text(
         message,
-        style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+        style: const TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          height: 1.5,
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.textPrimary,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
           child: Text(
             cancelText ?? l10n.commonCancel,
-            style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
+            style: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontWeight: FontWeight.w400,
+              fontSize: 14,
+            ),
           ),
         ),
-        ElevatedButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: confirmColor ?? (isDangerous ? Colors.red : null),
+          style: FilledButton.styleFrom(
+            backgroundColor:
+                confirmColor ??
+                (isDangerous ? AppColors.error : AppColors.primary),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
           ),
           child: Text(
@@ -50,6 +76,7 @@ Future<bool> showConfirmationDialog(
             style: const TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontWeight: FontWeight.w600,
+              fontSize: 14,
             ),
           ),
         ),

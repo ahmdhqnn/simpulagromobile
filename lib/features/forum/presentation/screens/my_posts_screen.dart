@@ -8,6 +8,7 @@ import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/entities/post.dart';
 import '../providers/forum_provider.dart';
@@ -156,57 +157,22 @@ class MyPostsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, String postId) {
+  void _confirmDelete(BuildContext context, WidgetRef ref, String postId) async {
     final l10n = context.l10n;
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        title: Text(
-          l10n.forumDeletePost,
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        content: Text(
-          l10n.forumDeletePostPermanent,
-          style: AppTextStyles.label(
-            context,
-            size: 13,
-            weight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text(
-              l10n.commonCancel,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogCtx);
-              await ref.read(forumProvider.notifier).deletePost(postId);
-              ref.invalidate(myPostsProvider);
-              if (!context.mounted) return;
-              SnackbarHelper.showSuccess(context, l10n.forumPostDeleted);
-            },
-            child: Text(
-              l10n.commonDelete,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final ok = await showConfirmationDialog(
+      context,
+      title: l10n.forumDeletePost,
+      message: l10n.forumDeletePostPermanent,
+      confirmText: l10n.commonDelete,
+      isDangerous: true,
     );
+    if (ok && context.mounted) {
+      await ref.read(forumProvider.notifier).deletePost(postId);
+      ref.invalidate(myPostsProvider);
+      if (context.mounted) {
+        SnackbarHelper.showSuccess(context, l10n.forumPostDeleted);
+      }
+    }
   }
 
   Future<void> _sharePost(

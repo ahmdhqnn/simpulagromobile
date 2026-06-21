@@ -9,6 +9,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../domain/entities/user_comment.dart';
 import '../providers/forum_provider.dart';
@@ -403,48 +404,12 @@ class _CommentCard extends ConsumerWidget {
 
   Future<void> _deleteComment(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        title: Text(
-          l10n.forumDeleteComment,
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        content: Text(
-          l10n.forumDeleteCommentPermanent,
-          style: AppTextStyles.label(
-            context,
-            size: 13,
-            weight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              l10n.commonCancel,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              l10n.commonDelete,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final ok = await showConfirmationDialog(
+      context,
+      title: l10n.forumDeleteComment,
+      message: l10n.forumDeleteCommentPermanent,
+      confirmText: l10n.commonDelete,
+      isDangerous: true,
     );
     if (ok != true || !context.mounted) return;
 
