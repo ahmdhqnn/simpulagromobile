@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../admin/presentation/widgets/admin_form_fields.dart';
@@ -55,11 +56,9 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingData = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.siteLoadDataFailed(e.toString())),
-            backgroundColor: AppColors.error,
-          ),
+        SnackbarHelper.showError(
+          context,
+          context.l10n.siteLoadDataFailed(e.toString()),
         );
       }
     }
@@ -379,16 +378,11 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isEdit
-                ? context.l10n.siteUpdateSuccess
-                : context.l10n.siteCreateSuccess,
-            style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-          ),
-          backgroundColor: AppColors.success,
-        ),
+      SnackbarHelper.showSuccess(
+        context,
+        isEdit
+            ? context.l10n.siteUpdateSuccess
+            : context.l10n.siteCreateSuccess,
       );
       Navigator.pop(context);
     }

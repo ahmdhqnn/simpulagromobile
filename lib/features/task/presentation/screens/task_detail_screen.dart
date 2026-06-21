@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
@@ -434,18 +435,16 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final messenger = ScaffoldMessenger.of(context);
               final l10n = context.l10n;
               final repository = ref.read(taskRepositoryProvider);
               final result = await repository.deleteTask(siteId, task.taskId);
               if (!mounted) return;
+              if (!context.mounted) return;
               result.fold(
                 (failure) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.taskDeleteFailure(failure.message)),
-                      backgroundColor: AppColors.error,
-                    ),
+                  SnackbarHelper.showError(
+                    context,
+                    l10n.taskDeleteFailure(failure.message),
                   );
                 },
                 (_) async {
@@ -455,14 +454,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     taskId: task.taskId,
                   );
                   if (context.mounted) {
+                    SnackbarHelper.showSuccess(context, l10n.taskDeleteSuccess);
                     context.pop(true);
                   }
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.taskDeleteSuccess),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
                 },
               );
             },
@@ -482,7 +476,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     Task task,
     TaskStatus status,
   ) async {
-    final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final statusLabel = status.localizedLabel(l10n);
     final repository = ref.read(taskRepositoryProvider);
@@ -492,22 +485,20 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       status,
     );
     if (!mounted) return;
+    if (!context.mounted) return;
     result.fold(
       (failure) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.taskUpdateStatusFailure(failure.message)),
-            backgroundColor: AppColors.error,
-          ),
+        SnackbarHelper.showError(
+          context,
+          l10n.taskUpdateStatusFailure(failure.message),
         );
       },
       (_) async {
         await refreshTaskCache(ref, siteId: siteId, taskId: task.taskId);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.taskStatusUpdated(statusLabel)),
-            backgroundColor: AppColors.success,
-          ),
+        if (!context.mounted) return;
+        SnackbarHelper.showSuccess(
+          context,
+          l10n.taskStatusUpdated(statusLabel),
         );
       },
     );

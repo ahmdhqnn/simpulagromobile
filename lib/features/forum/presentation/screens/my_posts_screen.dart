@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
@@ -192,11 +193,7 @@ class MyPostsScreen extends ConsumerWidget {
               await ref.read(forumProvider.notifier).deletePost(postId);
               ref.invalidate(myPostsProvider);
               if (!context.mounted) return;
-              _showSnackBar(
-                context,
-                l10n.forumPostDeleted,
-                backgroundColor: AppColors.success,
-              );
+              SnackbarHelper.showSuccess(context, l10n.forumPostDeleted);
             },
             child: Text(
               l10n.commonDelete,
@@ -221,29 +218,6 @@ class MyPostsScreen extends ConsumerWidget {
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(myPostsProvider);
     if (!context.mounted) return;
-    _showSnackBar(
-      context,
-      l10n.forumPostShared,
-      backgroundColor: AppColors.success,
-    );
-  }
-
-  void _showSnackBar(
-    BuildContext context,
-    String message, {
-    required Color backgroundColor,
-  }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        backgroundColor: backgroundColor,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackbarHelper.showSuccess(context, l10n.forumPostShared);
   }
 }

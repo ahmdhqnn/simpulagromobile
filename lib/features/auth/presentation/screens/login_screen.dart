@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_pill_input.dart';
@@ -30,15 +31,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (widget.sessionExpiredMessage) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.authSessionExpired,
-                style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-              ),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 4),
-            ),
+          SnackbarHelper.showWarning(
+            context,
+            context.l10n.authSessionExpired,
           );
         }
       });
