@@ -55,6 +55,7 @@ import '../../features/plant/presentation/screens/plant_detail_screen.dart'
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_form_screen.dart';
 import '../../features/admin/presentation/screens/device_sensors/device_sensor_detail_screen.dart';
 import '../../shared/widgets/main_shell.dart';
+import '../../features/notification/presentation/screens/notification_screen.dart';
 
 import '../../features/device/presentation/screens/device_list_screen.dart'
     as monitoring_device_list;
@@ -124,6 +125,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(path: '/', builder: (_, __) => const MainShell()),
+      GoRoute(
+        path: '/notifications',
+        builder: (_, __) => const NotificationScreen(),
+      ),
 
       // Task
       GoRoute(path: '/tasks', builder: (_, __) => const TaskListScreen()),

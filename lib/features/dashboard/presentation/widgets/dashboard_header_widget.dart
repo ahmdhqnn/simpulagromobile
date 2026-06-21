@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
 
-class DashboardHeaderWidget extends StatelessWidget {
+class DashboardHeaderWidget extends ConsumerWidget {
   final String userName;
   final String role;
   final VoidCallback onProfileTap;
@@ -17,7 +20,9 @@ class DashboardHeaderWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: context.rw(0.051),
@@ -58,9 +63,23 @@ class DashboardHeaderWidget extends StatelessWidget {
               ],
             ),
           ),
-          CircularBackButtonWidget(
-            onPressed: () {},
-            svgIconPath: 'assets/icons/message-outline-icon.svg',
+          Badge(
+            isLabelVisible: unreadCount > 0,
+            label: Text(
+              '$unreadCount',
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: AppColors.error,
+            offset: const Offset(-2, 2),
+            child: CircularBackButtonWidget(
+              onPressed: () => context.push('/notifications'),
+              svgIconPath: 'assets/icons/message-outline-icon.svg',
+            ),
           ),
         ],
       ),
