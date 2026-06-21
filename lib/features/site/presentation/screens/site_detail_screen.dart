@@ -11,6 +11,7 @@ import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../admin/presentation/widgets/admin_scaffold.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../notes/presentation/widgets/site_notes_section_widget.dart';
 import '../../domain/entities/site.dart';
 import '../providers/site_provider.dart';
@@ -43,23 +44,27 @@ class _SiteDetailScreenState extends ConsumerState<SiteDetailScreen>
   @override
   Widget build(BuildContext context) {
     final siteAsync = ref.watch(siteDetailProvider(widget.siteId));
+    final isAdmin = ref.watch(authProvider).isAdmin;
 
     return AdminScaffold(
       title: context.l10n.siteDetailTitle,
-      action: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularIconActionWidget(
-            onPressed: () => context.push('/site/${widget.siteId}/invite'),
-            svgIconPath: 'assets/icons/user-outline-icon.svg',
-          ),
-          const Gap(8),
-          CircularIconActionWidget(
-            onPressed: () => context.push('/site/${widget.siteId}/edit'),
-            svgIconPath: 'assets/icons/edit-outline-icon.svg',
-          ),
-        ],
-      ),
+      action: isAdmin
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularIconActionWidget(
+                  onPressed: () =>
+                      context.push('/site/${widget.siteId}/invite'),
+                  svgIconPath: 'assets/icons/user-outline-icon.svg',
+                ),
+                const Gap(8),
+                CircularIconActionWidget(
+                  onPressed: () => context.push('/site/${widget.siteId}/edit'),
+                  svgIconPath: 'assets/icons/edit-outline-icon.svg',
+                ),
+              ],
+            )
+          : null,
       headerContent: Padding(
         padding: EdgeInsets.fromLTRB(
           context.rw(0.051),

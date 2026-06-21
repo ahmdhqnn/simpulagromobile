@@ -3,20 +3,27 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../site/domain/entities/site.dart';
 
 class SiteSelectorWidget extends StatelessWidget {
-  final List sites;
-  final dynamic selectedSite;
-  final ValueChanged<dynamic> onSiteSelected;
+  final List<Site> sites;
+  final Site? selectedSite;
+  final ValueChanged<Site> onSiteSelected;
+  final VoidCallback? onOpenDetail;
+  final bool canSelectSite;
 
   const SiteSelectorWidget({
     super.key,
     required this.sites,
     required this.selectedSite,
     required this.onSiteSelected,
+    this.onOpenDetail,
+    this.canSelectSite = true,
   });
 
   void _showSiteSheet(BuildContext context) {
+    if (!canSelectSite) return;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -126,88 +133,121 @@ class SiteSelectorWidget extends StatelessWidget {
         selectedSite?.siteName ??
         selectedSite?.siteId ??
         context.l10n.siteSelect;
-    final siteAddress = selectedSite?.siteAddress as String?;
+    final siteAddress = selectedSite?.siteAddress;
 
-    return GestureDetector(
-      onTap: () => _showSiteSheet(context),
-      child: Container(
-        width: double.infinity,
-        height: context.rh(0.14).clamp(100.0, 120.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/maps-image.png',
-                  fit: BoxFit.cover,
-                ),
+    return Container(
+      width: double.infinity,
+      height: context.rh(0.14).clamp(100.0, 120.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/maps-image.png',
+                fit: BoxFit.cover,
               ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.92),
-                        Colors.white.withValues(alpha: 0.3),
-                      ],
-                    ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.92),
+                      Colors.white.withValues(alpha: 0.3),
+                    ],
                   ),
                 ),
               ),
-              Positioned(
-                left: 12,
-                top: 12,
-                right: 60,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+            ),
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: selectedSite == null ? null : onOpenDetail,
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 12,
+              top: 12,
+              right: canSelectSite ? 112 : 60,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    siteName,
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(22),
+                      fontWeight: FontWeight.w300,
+                      color: AppColors.textPrimary,
+                      height: 1.0,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (siteAddress != null) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      siteName,
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: context.sp(22),
-                        fontWeight: FontWeight.w300,
-                        color: AppColors.textPrimary,
-                        height: 1.0,
-                      ),
+                      siteAddress,
+                      style: AppTextStyles.hint(context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (siteAddress != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        siteAddress,
-                        style: AppTextStyles.hint(context),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
+            ),
+            if (canSelectSite)
               Positioned(
                 right: 12,
-                bottom: 12,
-                child: SvgPicture.asset(
-                  'assets/icons/maps-dot-outline-icon.svg',
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.textPrimary,
-                    BlendMode.srcIn,
+                top: 12,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showSiteSheet(context),
+                  child: Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      context.l10n.siteSelect,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: context.sp(11),
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+            Positioned(
+              right: 12,
+              bottom: 12,
+              child: SvgPicture.asset(
+                'assets/icons/maps-dot-outline-icon.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textPrimary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

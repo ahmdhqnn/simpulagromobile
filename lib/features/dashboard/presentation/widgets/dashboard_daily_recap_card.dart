@@ -30,9 +30,12 @@ class DashboardDailyRecapCard extends ConsumerWidget {
         }
         final preview = items.take(4).toList();
         return Column(
-          children: preview.map((r) {
+          children: List.generate(preview.length, (index) {
+            final r = preview[index];
             return Container(
-              margin: EdgeInsets.only(bottom: context.rh(0.01)),
+              margin: EdgeInsets.only(
+                bottom: index == preview.length - 1 ? 0 : context.rh(0.012),
+              ),
               padding: EdgeInsets.all(context.rw(0.035)),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -63,10 +66,11 @@ class DashboardDailyRecapCard extends ConsumerWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
         );
       },
-      loading: () => const CompactTextRowsSkeleton(rowCount: 4),
+      loading: () =>
+          CompactTextRowsSkeleton(rowCount: 4, rowGap: context.rh(0.012)),
       error: (e, _) => InfoStateWidget.icon(
         icon: Icons.error_outline,
         message: toUiErrorMessage(e, context.l10n),
