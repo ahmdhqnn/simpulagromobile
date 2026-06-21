@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../domain/entities/device.dart';
 import '../providers/device_provider.dart';
@@ -250,15 +251,14 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
     if (success && mounted) {
       ref.invalidate(deviceListProvider(widget.siteId));
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.device == null
-                ? l10n.deviceCreateSuccess
-                : l10n.deviceUpdateSuccess,
-          ),
-        ),
-      );
+      if (context.mounted) {
+        SnackbarHelper.showSuccess(
+          context,
+          widget.device == null
+              ? l10n.deviceCreateSuccess
+              : l10n.deviceUpdateSuccess,
+        );
+      }
     }
   }
 }

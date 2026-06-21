@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -340,7 +341,7 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
     final l10n = context.l10n;
     final readId = _readIdController.text.trim();
     if (readId.isEmpty) {
-      _showSnackBar(l10n.monitoringReadIdRequired);
+      SnackbarHelper.showError(context, l10n.monitoringReadIdRequired);
       return;
     }
 
@@ -349,13 +350,13 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         ? null
         : double.tryParse(valueText.replaceAll(',', '.'));
     if (valueText.isNotEmpty && value == null) {
-      _showSnackBar(l10n.monitoringReadValueMustBeNumber);
+      SnackbarHelper.showError(context, l10n.monitoringReadValueMustBeNumber);
       return;
     }
 
     final sts = _readStsController.text.trim();
     if (value == null && sts.isEmpty) {
-      _showSnackBar(l10n.monitoringReadValueOrStatusRequired);
+      SnackbarHelper.showError(context, l10n.monitoringReadValueOrStatusRequired);
       return;
     }
 
@@ -368,16 +369,16 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
           readSts: sts.isEmpty ? null : sts,
         );
     if (!mounted) return;
-    _showSnackBar(
-      ok ? l10n.monitoringReadUpdated : l10n.monitoringReadUpdateFailed,
-    );
     if (ok) {
+      SnackbarHelper.showSuccess(context, l10n.monitoringReadUpdated);
       _readIdController.clear();
       _readValueController.clear();
       _readStsController.clear();
       ref.invalidate(latestReadsProvider);
       ref.invalidate(todayReadsProvider);
       ref.invalidate(historyReadsProvider);
+    } else {
+      SnackbarHelper.showError(context, l10n.monitoringReadUpdateFailed);
     }
   }
 
@@ -388,23 +389,14 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         .read(dailyRekapTriggerProvider.notifier)
         .trigger(siteId, day);
     if (!mounted) return;
-    _showSnackBar(
-      ok
-          ? l10n.monitoringDailyRecapTriggered(day)
-          : l10n.monitoringDailyRecapTriggerFailed,
-    );
     if (ok) {
+      SnackbarHelper.showSuccess(context, l10n.monitoringDailyRecapTriggered(day));
       ref.invalidate(dailyTodayProvider);
       ref.invalidate(dailyByDayProvider);
       ref.invalidate(dailyReadsProvider);
+    } else {
+      SnackbarHelper.showError(context, l10n.monitoringDailyRecapTriggerFailed);
     }
-  }
-
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

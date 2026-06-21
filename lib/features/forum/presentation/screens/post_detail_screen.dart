@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
@@ -68,15 +69,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       _commentFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.forumSendCommentFailed(
-                e.toString().replaceAll('Exception: ', ''),
-              ),
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-            backgroundColor: AppColors.error,
+        SnackbarHelper.showError(
+          context,
+          l10n.forumSendCommentFailed(
+            e.toString().replaceAll('Exception: ', ''),
           ),
         );
       }
@@ -1017,15 +1013,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 // ignore: use_build_context_synchronously
                 context.pop();
                 // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.forumPostDeleted,
-                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-                    ),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
+                SnackbarHelper.showSuccess(context, l10n.forumPostDeleted);
               }
             },
             child: Text(
@@ -1079,9 +1067,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         .read(commentsProvider(widget.postId).notifier)
         .updateComment(comment.commentId, content);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.forumCommentUpdated)));
+    SnackbarHelper.showSuccess(context, l10n.forumCommentUpdated);
   }
 
   void _confirmDeleteComment(BuildContext context, String commentId) {
@@ -1141,15 +1127,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(postDetailProvider(widget.postId));
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.forumPostShared,
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
+      SnackbarHelper.showSuccess(context, l10n.forumPostShared);
     }
   }
 }

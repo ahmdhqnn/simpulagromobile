@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
@@ -391,19 +392,11 @@ class _CommentCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     result.fold(
-      (failure) => _showSnackBar(
-        context,
-        failure.message,
-        backgroundColor: AppColors.error,
-      ),
+      (failure) => SnackbarHelper.showError(context, failure.message),
       (_) {
         ref.invalidate(myCommentsProvider);
         ref.invalidate(commentsProvider(comment.forumId));
-        _showSnackBar(
-          context,
-          l10n.forumCommentUpdated,
-          backgroundColor: AppColors.success,
-        );
+        SnackbarHelper.showSuccess(context, l10n.forumCommentUpdated);
       },
     );
   }
@@ -460,11 +453,7 @@ class _CommentCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     result.fold(
-      (failure) => _showSnackBar(
-        context,
-        failure.message,
-        backgroundColor: AppColors.error,
-      ),
+      (failure) => SnackbarHelper.showError(context, failure.message),
       (_) {
         ref.invalidate(myCommentsProvider);
         ref.invalidate(postDetailProvider(comment.forumId));
@@ -472,31 +461,8 @@ class _CommentCard extends ConsumerWidget {
         ref
             .read(forumProvider.notifier)
             .updateCommentCount(comment.forumId, -1);
-        _showSnackBar(
-          context,
-          l10n.forumCommentDeleted,
-          backgroundColor: AppColors.success,
-        );
+        SnackbarHelper.showSuccess(context, l10n.forumCommentDeleted);
       },
-    );
-  }
-
-  void _showSnackBar(
-    BuildContext context,
-    String message, {
-    required Color backgroundColor,
-  }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        backgroundColor: backgroundColor,
-        behavior: SnackBarBehavior.floating,
-      ),
     );
   }
 }

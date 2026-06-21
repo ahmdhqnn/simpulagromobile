@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -92,10 +93,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 onPressed: () {
                   // Image picker belum diimplementasi — perlu package image_picker
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.profilePhotoUploadComingSoon),
-                    ),
+                  SnackbarHelper.showInfo(
+                    context,
+                    context.l10n.profilePhotoUploadComingSoon,
                   );
                 },
               ),
@@ -198,22 +198,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.profileUpdateSuccess),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackbarHelper.showSuccess(context, l10n.profileUpdateSuccess);
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.commonError}: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarHelper.showError(context, '${l10n.commonError}: $e');
       }
     } finally {
       if (mounted) {

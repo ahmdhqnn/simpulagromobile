@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -122,17 +123,6 @@ class LikedPostsScreen extends ConsumerWidget {
     await ref.read(forumProvider.notifier).sharePost(postId);
     ref.invalidate(likedPostsProvider);
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.forumPostShared,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackbarHelper.showSuccess(context, l10n.forumPostShared);
   }
 }

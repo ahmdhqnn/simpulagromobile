@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
@@ -385,14 +386,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               Navigator.pop(dialogCtx);
               ref.read(forumProvider.notifier).deletePost(postId);
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      context.l10n.forumPostDeleted,
-                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-                    ),
-                    backgroundColor: AppColors.success,
-                  ),
+                SnackbarHelper.showSuccess(
+                  context,
+                  context.l10n.forumPostDeleted,
                 );
               }
             },
@@ -446,14 +442,9 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
               Navigator.pop(dialogCtx);
               await ref.read(forumProvider.notifier).sharePost(postId);
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.forumPostShared,
-                      style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-                    ),
-                    backgroundColor: AppColors.success,
-                  ),
+                SnackbarHelper.showSuccess(
+                  context,
+                  l10n.forumPostShared,
                 );
               }
             },

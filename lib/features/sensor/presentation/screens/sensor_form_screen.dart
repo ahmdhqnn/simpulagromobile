@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../providers/sensor_provider.dart';
 import '../../../../l10n/l10n.dart';
@@ -386,16 +387,11 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.sensorId != null
-                ? context.l10n.sensorUpdatedSuccess
-                : context.l10n.sensorCreatedSuccess,
-            style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-          ),
-          backgroundColor: AppColors.success,
-        ),
+      SnackbarHelper.showSuccess(
+        context,
+        widget.sensorId != null
+            ? context.l10n.sensorUpdatedSuccess
+            : context.l10n.sensorCreatedSuccess,
       );
       Navigator.pop(context);
     }
