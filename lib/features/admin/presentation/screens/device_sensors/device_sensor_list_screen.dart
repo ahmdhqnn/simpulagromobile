@@ -227,7 +227,7 @@ class _DeviceSensorCard extends ConsumerWidget {
         deviceSensor.devId,
       ),
       icon: Icons.cable,
-      iconColor: deviceSensor.isActive ? const Color(0xFF26C6DA) : Colors.grey,
+      iconColor: deviceSensor.isActive ? AppColors.ph : Colors.grey,
       isActive: deviceSensor.isActive,
       onTap: () => context.push('/admin/device-sensors/${deviceSensor.dsId}'),
       trailing: canUpdate ? _buildActionsMenu(context) : null,
@@ -235,7 +235,7 @@ class _DeviceSensorCard extends ConsumerWidget {
         if (deviceSensor.sensId != null)
           AdminBadge(
             label: context.l10n.adminSensIdBadge(deviceSensor.sensId!),
-            color: Colors.purple,
+            color: AppColors.purple,
             icon: Icons.sensors,
           ),
         if (deviceSensor.unitId != null)

@@ -17,38 +17,22 @@ _StatusInfo _statusInfoFor(AppLocalizations l10n, double persentase) {
   if (persentase >= 80) {
     return _StatusInfo(
       label: l10n.commonOptimal,
-      gradientColors: const [
-        Color(0xFF72E85A),
-        Color(0xFF4DC934),
-        Color(0xFF2FA010),
-      ],
+      gradientColors: const [Color(0xFFA5D6A7), AppColors.success],
     );
   } else if (persentase >= 60) {
     return _StatusInfo(
       label: l10n.commonFair,
-      gradientColors: const [
-        Color(0xFF72E85A),
-        Color(0xFF4DC934),
-        Color(0xFF2FA010),
-      ],
+      gradientColors: const [Color(0xFFA5D6A7), AppColors.success],
     );
   } else if (persentase >= 40) {
     return _StatusInfo(
       label: l10n.commonPoor,
-      gradientColors: const [
-        Color(0xFFFFCC55),
-        Color(0xFFFFAA22),
-        Color(0xFFE07800),
-      ],
+      gradientColors: const [Color(0xFFFFCC80), AppColors.warning],
     );
   } else {
     return _StatusInfo(
       label: l10n.commonCritical,
-      gradientColors: const [
-        Color(0xFFFF7A7A),
-        Color(0xFFFF4444),
-        Color(0xFFCC1111),
-      ],
+      gradientColors: const [Color(0xFFEF9A9A), AppColors.error],
     );
   }
 }
@@ -61,47 +45,27 @@ _StatusInfo _statusInfoForReadingStatus(
     case SensorReadingStatus.optimal:
       return _StatusInfo(
         label: l10n.commonOptimal,
-        gradientColors: const [
-          Color(0xFF72E85A),
-          Color(0xFF4DC934),
-          Color(0xFF2FA010),
-        ],
+        gradientColors: const [Color(0xFFA5D6A7), AppColors.success],
       );
     case SensorReadingStatus.warning:
       return _StatusInfo(
         label: l10n.commonWarning,
-        gradientColors: const [
-          Color(0xFFFFCC55),
-          Color(0xFFFFAA22),
-          Color(0xFFE07800),
-        ],
+        gradientColors: const [Color(0xFFFFCC80), AppColors.warning],
       );
     case SensorReadingStatus.critical:
       return _StatusInfo(
         label: l10n.commonCritical,
-        gradientColors: const [
-          Color(0xFFFF7A7A),
-          Color(0xFFFF4444),
-          Color(0xFFCC1111),
-        ],
+        gradientColors: const [Color(0xFFEF9A9A), AppColors.error],
       );
     case SensorReadingStatus.offline:
       return _StatusInfo(
         label: l10n.commonOffline,
-        gradientColors: const [
-          Color(0xFFBDBDBD),
-          Color(0xFF9E9E9E),
-          Color(0xFF757575),
-        ],
+        gradientColors: const [Color(0xFFBDBDBD), AppColors.muted],
       );
     case SensorReadingStatus.unknown:
       return _StatusInfo(
         label: l10n.commonActive,
-        gradientColors: const [
-          Color(0xFF72E85A),
-          Color(0xFF4DC934),
-          Color(0xFF2FA010),
-        ],
+        gradientColors: const [Color(0xFFA5D6A7), AppColors.success],
       );
   }
 }
@@ -209,7 +173,6 @@ class SensorStatusCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: status.gradientColors,
-                stops: const [0.0, 0.5, 1.0],
               ),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(AppRadius.lg),
@@ -226,13 +189,6 @@ class SensorStatusCard extends StatelessWidget {
                 fontFamily: AppTextStyles.fontFamily,
                 fontWeight: FontWeight.w700,
                 height: 1.0,
-                shadows: const [
-                  Shadow(
-                    color: Color(0x33000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
               ),
             ),
           ),

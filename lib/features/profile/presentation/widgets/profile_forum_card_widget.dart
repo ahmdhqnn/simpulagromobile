@@ -35,7 +35,7 @@ class _ProfileForumCardWidgetState extends State<ProfileForumCardWidget> {
                   const IconBadgeWidget.svg(
                     svgIconPath: 'assets/icons/forum-filled-icon.svg',
                     background: AppColors.softBlue,
-                    tint: Color(0xFF42A5F5),
+                    tint: AppColors.info,
                     radius: 10,
                   ),
                   SizedBox(width: context.rw(0.02)),

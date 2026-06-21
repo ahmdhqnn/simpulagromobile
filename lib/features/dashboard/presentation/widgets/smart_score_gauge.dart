@@ -102,8 +102,22 @@ class SmartScoreGauge extends StatelessWidget {
         const SizedBox(height: 12),
 
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: statusColor.withValues(alpha: 0.15),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: statusColor.withValues(alpha: 0.12),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -111,27 +125,22 @@ class SmartScoreGauge extends StatelessWidget {
                 statusLabel,
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
-                  fontSize: sw / 390 * 14,
+                  fontSize: sw / 390 * 12,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 6),
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(width: 1.2, color: Colors.black26),
-                ),
-                child: Center(
-                  child: Icon(
-                    statusIcon,
-                    size: statusIconSize,
-                    color: Colors.white,
+              Icon(
+                statusIcon,
+                size: statusIconSize,
+                color: statusColor,
+                shadows: [
+                  Shadow(
+                    color: statusColor.withValues(alpha: 0.6),
+                    blurRadius: 6,
                   ),
-                ),
+                ],
               ),
             ],
           ),

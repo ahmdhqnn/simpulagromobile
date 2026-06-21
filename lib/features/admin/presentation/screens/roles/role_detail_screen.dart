@@ -144,7 +144,7 @@ class _RoleDetailBody extends ConsumerWidget {
             title: role.displayName,
             subtitle: role.roleId,
             icon: Icons.admin_panel_settings,
-            iconColor: const Color(0xFF66BB6A),
+            iconColor: AppColors.accent,
             isActive: role.isActive,
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -103,7 +104,7 @@ class _SensorCard extends ConsumerWidget {
       title: sensor.displayName,
       subtitle: context.l10n.adminIdPrefix(sensor.sensId),
       icon: Icons.sensors,
-      iconColor: sensor.isActive ? const Color(0xFF42A5F5) : Colors.grey,
+      iconColor: sensor.isActive ? AppColors.info : Colors.grey,
       isActive: sensor.isActive,
       onTap: () => context.push('/admin/sensors/${sensor.sensId}'),
       trailing: canUpdate ? _buildActionsMenu(context) : null,
@@ -111,20 +112,20 @@ class _SensorCard extends ConsumerWidget {
         if (sensor.devId != null)
           AdminBadge(
             label: context.l10n.adminDevicePrefix(sensor.devId!),
-            color: const Color(0xFF42A5F5),
+            color: AppColors.info,
             icon: Icons.device_hub,
           ),
         if (sensor.sensAddress != null)
           AdminBadge(
             label: sensor.sensAddress!,
-            color: Colors.purple,
+            color: AppColors.purple,
             icon: Icons.location_searching,
           ),
         AdminBadge(
           label: sensor.isActive
               ? context.l10n.commonActive
               : context.l10n.commonInactive,
-          color: sensor.isActive ? const Color(0xFF4CAF50) : Colors.grey,
+          color: sensor.isActive ? AppColors.success : Colors.grey,
           icon: sensor.isActive ? Icons.check_circle : Icons.cancel,
         ),
       ],

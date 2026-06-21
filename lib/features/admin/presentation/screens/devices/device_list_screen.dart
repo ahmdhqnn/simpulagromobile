@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -123,7 +124,7 @@ class _DeviceCard extends ConsumerWidget {
       title: device.displayName,
       subtitle: context.l10n.adminIdPrefix(device.devId),
       icon: Icons.device_hub,
-      iconColor: device.isActive ? const Color(0xFFFF7043) : Colors.grey,
+      iconColor: device.isActive ? AppColors.temperature : Colors.grey,
       isActive: device.isActive,
       onTap: () => context.push('/admin/devices/${device.devId}'),
       trailing: items.isEmpty ? null : _buildActionsMenu(context, ref, items),
@@ -131,20 +132,20 @@ class _DeviceCard extends ConsumerWidget {
         if (device.connectionInfo != null)
           AdminBadge(
             label: device.connectionInfo!,
-            color: const Color(0xFF42A5F5),
+            color: AppColors.info,
             icon: Icons.wifi,
           ),
         if (device.devLocation != null)
           AdminBadge(
             label: device.devLocation!,
-            color: Colors.purple,
+            color: AppColors.purple,
             icon: Icons.location_on,
           ),
         AdminBadge(
           label: device.isActive
               ? context.l10n.commonActive
               : context.l10n.commonInactive,
-          color: device.isActive ? const Color(0xFF4CAF50) : Colors.grey,
+          color: device.isActive ? AppColors.success : Colors.grey,
           icon: device.isActive ? Icons.check_circle : Icons.cancel,
         ),
       ],
