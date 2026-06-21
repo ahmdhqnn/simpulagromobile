@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/user_profile.dart';
@@ -289,54 +290,19 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        title: Text(
-          context.l10n.profileLogoutTitle,
-          style: const TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          context.l10n.profileLogoutMessage,
-          style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              context.l10n.commonCancel,
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) {
-                context.go('/login');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-            ),
-            child: Text(
-              context.l10n.profileLogoutConfirm,
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-          ),
-        ],
-      ),
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) async {
+    final ok = await showConfirmationDialog(
+      context,
+      title: context.l10n.profileLogoutTitle,
+      message: context.l10n.profileLogoutMessage,
+      confirmText: context.l10n.profileLogoutConfirm,
+      isDangerous: true,
     );
+    if (ok && context.mounted) {
+      await ref.read(authProvider.notifier).logout();
+      if (context.mounted) {
+        context.go('/login');
+      }
+    }
   }
 }

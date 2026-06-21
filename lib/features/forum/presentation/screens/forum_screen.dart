@@ -8,6 +8,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
@@ -351,114 +352,38 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     );
   }
 
-  void _confirmDelete(BuildContext context, String postId) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        title: Text(
-          context.l10n.forumDeletePost,
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        content: Text(
-          context.l10n.forumDeletePostConfirm,
-          style: AppTextStyles.label(
-            context,
-            size: 13,
-            weight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text(
-              context.l10n.commonCancel,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              ref.read(forumProvider.notifier).deletePost(postId);
-              if (context.mounted) {
-                SnackbarHelper.showSuccess(
-                  context,
-                  context.l10n.forumPostDeleted,
-                );
-              }
-            },
-            child: Text(
-              context.l10n.commonDelete,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+  void _confirmDelete(BuildContext context, String postId) async {
+    final ok = await showConfirmationDialog(
+      context,
+      title: context.l10n.forumDeletePost,
+      message: context.l10n.forumDeletePostConfirm,
+      confirmText: context.l10n.commonDelete,
+      isDangerous: true,
     );
+    if (ok && context.mounted) {
+      ref.read(forumProvider.notifier).deletePost(postId);
+      SnackbarHelper.showSuccess(
+        context,
+        context.l10n.forumPostDeleted,
+      );
+    }
   }
 
-  void _showShareDialog(BuildContext context, String postId) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        title: Text(
-          context.l10n.forumSharePostTitle,
-          style: AppTextStyles.cardTitle(context, 16),
-        ),
-        content: Text(
-          context.l10n.forumSharePostMessage,
-          style: AppTextStyles.label(
-            context,
-            size: 13,
-            weight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text(
-              context.l10n.commonCancel,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final l10n = context.l10n;
-              Navigator.pop(dialogCtx);
-              await ref.read(forumProvider.notifier).sharePost(postId);
-              if (context.mounted) {
-                SnackbarHelper.showSuccess(
-                  context,
-                  l10n.forumPostShared,
-                );
-              }
-            },
-            child: Text(
-              context.l10n.forumShare,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+  void _showShareDialog(BuildContext context, String postId) async {
+    final ok = await showConfirmationDialog(
+      context,
+      title: context.l10n.forumSharePostTitle,
+      message: context.l10n.forumSharePostMessage,
+      confirmText: context.l10n.forumShare,
     );
+    if (ok && context.mounted) {
+      await ref.read(forumProvider.notifier).sharePost(postId);
+      if (context.mounted) {
+        SnackbarHelper.showSuccess(
+          context,
+          context.l10n.forumPostShared,
+        );
+      }
+    }
   }
 }

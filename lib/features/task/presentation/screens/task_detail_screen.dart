@@ -9,6 +9,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/action_popup_menu_button.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/confirmation_dialog.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
@@ -421,53 +422,40 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, String siteId, Task task) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.taskDeleteTitle),
-        content: Text(context.l10n.taskDeleteMessage(task.taskName)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final l10n = context.l10n;
-              final repository = ref.read(taskRepositoryProvider);
-              final result = await repository.deleteTask(siteId, task.taskId);
-              if (!mounted) return;
-              if (!context.mounted) return;
-              result.fold(
-                (failure) {
-                  SnackbarHelper.showError(
-                    context,
-                    l10n.taskDeleteFailure(failure.message),
-                  );
-                },
-                (_) async {
-                  await refreshTaskCache(
-                    ref,
-                    siteId: siteId,
-                    taskId: task.taskId,
-                  );
-                  if (context.mounted) {
-                    SnackbarHelper.showSuccess(context, l10n.taskDeleteSuccess);
-                    context.pop(true);
-                  }
-                },
-              );
-            },
-            child: Text(
-              context.l10n.commonDelete,
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+  void _showDeleteDialog(BuildContext context, String siteId, Task task) async {
+    final l10n = context.l10n;
+    final ok = await showConfirmationDialog(
+      context,
+      title: l10n.taskDeleteTitle,
+      message: l10n.taskDeleteMessage(task.taskName),
+      confirmText: l10n.commonDelete,
+      isDangerous: true,
     );
+    if (ok && context.mounted) {
+      final repository = ref.read(taskRepositoryProvider);
+      final result = await repository.deleteTask(siteId, task.taskId);
+      if (!mounted) return;
+      if (!context.mounted) return;
+      result.fold(
+        (failure) {
+          SnackbarHelper.showError(
+            context,
+            l10n.taskDeleteFailure(failure.message),
+          );
+        },
+        (_) async {
+          await refreshTaskCache(
+            ref,
+            siteId: siteId,
+            taskId: task.taskId,
+          );
+          if (context.mounted) {
+            SnackbarHelper.showSuccess(context, l10n.taskDeleteSuccess);
+            context.pop(true);
+          }
+        },
+      );
+    }
   }
 
   Future<void> _changeStatus(
