@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -83,13 +84,13 @@ class _UserCard extends StatelessWidget {
     final badges = <Widget>[
       AdminBadge(
         label: user.isAdmin ? 'Admin' : 'User',
-        color: user.isAdmin ? const Color(0xFFEF5350) : const Color(0xFF42A5F5),
+        color: user.isAdmin ? AppColors.error : AppColors.info,
         icon: Icons.admin_panel_settings,
       ),
       if (user.userEmail != null)
         AdminBadge(
           label: user.userEmail!,
-          color: Colors.purple,
+          color: AppColors.purple,
           icon: Icons.email,
         ),
     ];
@@ -98,7 +99,7 @@ class _UserCard extends StatelessWidget {
       title: user.userName,
       subtitle: context.l10n.adminIdPrefix(user.userId),
       icon: Icons.person,
-      iconColor: user.isActive ? const Color(0xFFFFA726) : Colors.grey,
+      iconColor: user.isActive ? AppColors.warning : Colors.grey,
       isActive: user.isActive,
       onTap: () => context.push('/admin/users/${user.userId}'),
       badges: badges,

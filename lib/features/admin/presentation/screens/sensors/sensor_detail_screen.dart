@@ -71,7 +71,7 @@ class _SensorDetailBody extends ConsumerWidget {
             title: sensor.displayName,
             subtitle: sensor.sensId,
             icon: Icons.sensors,
-            iconColor: const Color(0xFF42A5F5),
+            iconColor: AppColors.info,
             isActive: sensor.isActive,
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,

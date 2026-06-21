@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Primary - Rich greens for agriculture theme
   static const Color primary = Color(0xFF1B5E20);
-  static const Color primaryLight = Color(0xFF4CAF50);
+  static const Color primaryLight = Color(0xFF81C784);
   static const Color primaryDark = Color(0xFF0D3B0F);
 
   // Secondary - Warm earth tones
@@ -12,24 +12,24 @@ class AppColors {
   static const Color secondaryLight = Color(0xFFA1887F);
 
   // Accent
-  static const Color accent = Color(0xFF66BB6A);
+  static const Color accent = Color(0xFF81C784);
   static const Color accentDark = Color(0xFF388E3C);
 
   // Semantic
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFFA726);
-  static const Color error = Color(0xFFEF5350);
-  static const Color errorDark = Color(0xFFD32F2F);
-  static const Color info = Color(0xFF42A5F5);
-  static const Color infoDeep = Color(0xFF1E88E5);
+  static const Color success = Color(0xFF81C784);
+  static const Color warning = Color(0xFFFFB74D);
+  static const Color error = Color(0xFFE57373);
+  static const Color errorDark = Color(0xFFD35252);
+  static const Color info = Color(0xFF64B5F6);
+  static const Color infoDeep = Color(0xFF42A5F5);
 
   // Recommendation type colors
-  static const Color recWatering = Color(0xFF1E88E5);
-  static const Color recHarvesting = Color(0xFFF57C00);
-  static const Color recPlanting = Color(0xFF2E7D32);
+  static const Color recWatering = Color(0xFF64B5F6);
+  static const Color recHarvesting = Color(0xFFFFB74D);
+  static const Color recPlanting = Color(0xFF81C784);
 
   // Muted / disabled
-  static const Color muted = Color(0xFF757575);
+  static const Color muted = Color(0xFF9E9E9E);
 
   // Neutral
   static const Color background = Color(0xFFF0F0F0);
@@ -46,18 +46,22 @@ class AppColors {
   static const Color shimmerHighlight = Color(0xFFF5F5F5);
 
   // Sensor-specific colors
-  static const Color temperature = Color(0xFFFF7043);
-  static const Color humidity = Color(0xFF42A5F5);
-  static const Color nitrogen = Color(0xFF66BB6A);
-  static const Color phosphorus = Color(0xFFAB47BC);
-  static const Color potassium = Color(0xFFFFA726);
-  static const Color ph = Color(0xFF26C6DA);
+  static const Color temperature = Color(0xFFFF8A65);
+  static const Color humidity = Color(0xFF64B5F6);
+  static const Color nitrogen = Color(0xFF81C784);
+  static const Color phosphorus = Color(0xFFBA68C8);
+  static const Color potassium = Color(0xFFFFB74D);
+  static const Color ph = Color(0xFF4DD0E1);
 
   // Soft accent backgrounds (commonly used for icon badges)
   static const Color softGreen = Color(0xFFEDF7EE);
   static const Color softBlue = Color(0xFFECF6FE);
   static const Color softOrange = Color(0xFFFFF6E9);
   static const Color softGreenAlt = Color(0xFFE8EFE9);
+
+  // Custom helpers
+  static const Color teal = Color(0xFF4DB6AC);
+  static const Color purple = Color(0xFFBA68C8);
 
   // Health card gradient colors
   static const Color healthGradientStart = Color(0xFFE1F3E2);

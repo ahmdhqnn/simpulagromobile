@@ -49,31 +49,31 @@ class HealthCardWidget extends StatelessWidget {
       return _HealthStatus(
         label: l10n.monitoringHealthExcellent,
         color: AppColors.healthStatusGood,
-        icon: Icons.verified_rounded,
-        iconSize: 13,
+        icon: Icons.spa_rounded,
+        iconSize: 16,
       );
     }
     if (score >= 60) {
       return _HealthStatus(
         label: l10n.monitoringHealthGood,
         color: AppColors.healthStatusGood,
-        icon: Icons.check_circle_rounded,
-        iconSize: 13,
+        icon: Icons.check_rounded,
+        iconSize: 16,
       );
     }
     if (score >= 40) {
       return _HealthStatus(
         label: l10n.monitoringHealthFair,
         color: AppColors.healthStatusWarning,
-        icon: Icons.info_rounded,
-        iconSize: 13,
+        icon: Icons.info_outline_rounded,
+        iconSize: 16,
       );
     }
     return _HealthStatus(
       label: l10n.monitoringHealthNeedsAttention,
       color: AppColors.healthStatusCritical,
       icon: Icons.warning_amber_rounded,
-      iconSize: 14,
+      iconSize: 16,
     );
   }
 }

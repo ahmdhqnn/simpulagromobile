@@ -43,7 +43,7 @@ class EtcWidget extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.opacity,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.success,
                   size: 20,
                 ),
               ),

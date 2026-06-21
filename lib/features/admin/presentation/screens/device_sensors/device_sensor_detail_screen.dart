@@ -76,7 +76,7 @@ class _DeviceSensorDetailBody extends ConsumerWidget {
             title: deviceSensor.displayName,
             subtitle: '${deviceSensor.dsId} - ${deviceSensor.devId}',
             icon: Icons.cable,
-            iconColor: const Color(0xFF26C6DA),
+            iconColor: AppColors.ph,
             isActive: deviceSensor.isActive,
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,

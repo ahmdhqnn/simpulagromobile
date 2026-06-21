@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -84,20 +85,20 @@ class _UnitCard extends ConsumerWidget {
       title: unit.displayNameWithSymbol,
       subtitle: context.l10n.adminIdPrefix(unit.unitId),
       icon: Icons.straighten,
-      iconColor: unit.isActive ? const Color(0xFFAB47BC) : Colors.grey,
+      iconColor: unit.isActive ? AppColors.phosphorus : Colors.grey,
       isActive: unit.isActive,
       onTap: () => _showOptions(context, ref),
       badges: [
         if (unit.unitSymbol != null)
           AdminBadge(
             label: unit.unitSymbol!,
-            color: const Color(0xFFAB47BC),
+            color: AppColors.phosphorus,
             icon: Icons.text_fields,
           ),
         if (unit.unitDesc != null)
           AdminBadge(
             label: unit.unitDesc!,
-            color: const Color(0xFF42A5F5),
+            color: AppColors.info,
             icon: Icons.info_outline,
           ),
       ],

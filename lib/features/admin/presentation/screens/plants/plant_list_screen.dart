@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -85,11 +86,11 @@ class _PlantCard extends ConsumerWidget {
   Color _cropColor(CropType? type) {
     switch (type) {
       case CropType.padi:
-        return const Color(0xFF4CAF50);
+        return AppColors.success;
       case CropType.jagung:
-        return const Color(0xFFFFA726);
+        return AppColors.warning;
       case CropType.kedelai:
-        return const Color(0xFF795548);
+        return AppColors.secondary;
       default:
         return Colors.grey;
     }
@@ -98,8 +99,8 @@ class _PlantCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final iconColor = plant.isHarvested
-        ? const Color(0xFFFFA726)
-        : (plant.isActive ? const Color(0xFF4CAF50) : Colors.grey);
+        ? AppColors.warning
+        : (plant.isActive ? AppColors.success : Colors.grey);
 
     return AdminListItem(
       title: plant.displayName,
@@ -118,13 +119,13 @@ class _PlantCard extends ConsumerWidget {
         if (plant.hst != null)
           AdminBadge(
             label: context.l10n.recommendationHstLabel(plant.hst!),
-            color: const Color(0xFF42A5F5),
+            color: AppColors.info,
             icon: Icons.calendar_today,
           ),
         if (plant.isHarvested)
           AdminBadge(
             label: context.l10n.plantStatusHarvested,
-            color: const Color(0xFFFFA726),
+            color: AppColors.warning,
             icon: Icons.agriculture,
           ),
       ],
@@ -140,15 +141,15 @@ class _PlantCard extends ConsumerWidget {
           value: 'edit',
           icon: Icons.edit_outlined,
           label: context.l10n.plantActionEdit,
-          iconColor: const Color(0xFF1B5E20),
+          iconColor: AppColors.primary,
         ),
       if (canUpdate && plant.isCurrentPlanting)
         ActionPopupMenuItem(
           value: 'harvest',
           icon: Icons.agriculture,
           label: context.l10n.plantActionHarvest,
-          iconColor: const Color(0xFFFFA726),
-          labelColor: const Color(0xFFFFA726),
+          iconColor: AppColors.warning,
+          labelColor: AppColors.warning,
         ),
       if (isAdmin)
         ActionPopupMenuItem(
@@ -190,7 +191,7 @@ class _PlantCard extends ConsumerWidget {
       title: context.l10n.plantHarvestDialogTitle,
       message: context.l10n.plantHarvestDialogMessage(plant.displayName),
       confirmText: context.l10n.plantHarvestConfirm,
-      confirmColor: const Color(0xFFFFA726),
+      confirmColor: AppColors.warning,
     );
 
     if (!confirmed || !context.mounted) return;

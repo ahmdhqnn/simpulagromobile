@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 /// Helper class for showing consistent snackbars across the app
 class SnackbarHelper {
@@ -11,7 +12,7 @@ class SnackbarHelper {
           children: [
             const Icon(
               Icons.check_circle_rounded,
-              color: Color(0xFF10B981),
+              color: AppColors.success,
               size: 22,
             ),
             const SizedBox(width: 12),
@@ -46,7 +47,7 @@ class SnackbarHelper {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_rounded, color: Color(0xFFEF4444), size: 22),
+            const Icon(Icons.error_rounded, color: AppColors.error, size: 22),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -78,7 +79,7 @@ class SnackbarHelper {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.info_rounded, color: Color(0xFF3B82F6), size: 22),
+            const Icon(Icons.info_rounded, color: AppColors.info, size: 22),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -112,7 +113,7 @@ class SnackbarHelper {
           children: [
             const Icon(
               Icons.warning_rounded,
-              color: Color(0xFFF59E0B),
+              color: AppColors.warning,
               size: 22,
             ),
             const SizedBox(width: 12),

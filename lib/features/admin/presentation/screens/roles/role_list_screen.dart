@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
@@ -144,20 +145,20 @@ class _RoleCard extends ConsumerWidget {
       title: role.displayName,
       subtitle: context.l10n.adminIdPrefix(role.roleId),
       icon: Icons.admin_panel_settings,
-      iconColor: role.isActive ? const Color(0xFF66BB6A) : Colors.grey,
+      iconColor: role.isActive ? AppColors.accent : Colors.grey,
       isActive: role.isActive,
       onTap: () => context.push('/admin/roles/${role.roleId}'),
       trailing: items.isEmpty ? null : _buildActionsMenu(context, ref, items),
       badges: [
         AdminBadge(
           label: context.l10n.adminPermissionBadge(permissionCount),
-          color: const Color(0xFF42A5F5),
+          color: AppColors.info,
           icon: Icons.lock_outline,
         ),
         if (role.roleDesc != null)
           AdminBadge(
             label: role.roleDesc!,
-            color: Colors.purple,
+            color: AppColors.purple,
             icon: Icons.info_outline,
           ),
       ],

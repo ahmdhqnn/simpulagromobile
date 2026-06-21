@@ -39,7 +39,7 @@ class VdpWidget extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.water_drop,
-                  color: Color(0xFF42A5F5),
+                  color: AppColors.info,
                   size: 20,
                 ),
               ),
