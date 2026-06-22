@@ -41,11 +41,11 @@ class PlantDetailScreen extends ConsumerWidget {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Gap(10),
+                const Gap(AppSpacing.lg),
                 AdminSectionTitle(l10n.plantDetailTitle),
-                const Gap(14),
+                const Gap(AppSpacing.sm),
                 const PlantDetailSkeleton(),
-                const Gap(20),
+                const Gap(AppSpacing.lg),
               ],
             ),
           ),
@@ -55,9 +55,9 @@ class PlantDetailScreen extends ConsumerWidget {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Gap(10),
+                const Gap(AppSpacing.lg),
                 AdminSectionTitle(l10n.plantDetailTitle),
-                const Gap(14),
+                const Gap(AppSpacing.sm),
                 ConstrainedBox(
                   constraints: BoxConstraints(minHeight: context.sh * 0.62),
                   child: _buildErrorState(context, ref, error),
@@ -83,18 +83,18 @@ class PlantDetailScreen extends ConsumerWidget {
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Gap(10),
+                  const Gap(AppSpacing.lg),
                   AdminSectionTitle(l10n.plantDetailTitle),
-                  const Gap(14),
+                  const Gap(AppSpacing.sm),
                   PlantHeaderCardWidget(plant: plant),
-                  const Gap(14),
+                  const Gap(AppSpacing.sm),
                   if (plant.isCurrentPlanting) ...[
                     PlantGrowthCardWidget(plant: plant),
-                    const Gap(14),
+                    const Gap(AppSpacing.sm),
                   ],
                   PlantInfoCardWidget(plant: plant),
                   if (plant.isCurrentPlanting) ...[
-                    const Gap(16),
+                    const Gap(AppSpacing.sm),
                     PlantActionButtonsWidget(
                       plant: plant,
                       onHarvest: () => PlantMutationActions.confirmAndHarvest(
@@ -104,7 +104,7 @@ class PlantDetailScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
-                  const Gap(20),
+                  const Gap(AppSpacing.lg),
                 ],
               ),
             ),
@@ -259,9 +259,9 @@ class PlantDetailSkeleton extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PlantHeaderCardSkeleton(),
-        Gap(14),
+        Gap(AppSpacing.sm),
         PlantGrowthCardSkeleton(),
-        Gap(14),
+        Gap(AppSpacing.sm),
         PlantInfoCardSkeleton(),
       ],
     );

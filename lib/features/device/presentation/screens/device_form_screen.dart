@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../domain/entities/device.dart';
@@ -89,7 +90,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 return null;
               },
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             TextFormField(
               controller: _devNameController,
               decoration: InputDecoration(
@@ -103,7 +104,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 return null;
               },
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             TextFormField(
               controller: _devLocationController,
               decoration: InputDecoration(
@@ -111,7 +112,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -137,7 +138,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 ),
               ],
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             TextFormField(
               controller: _devAltController,
               decoration: InputDecoration(
@@ -146,7 +147,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             TextFormField(
               controller: _devNumberIdController,
               decoration: InputDecoration(
@@ -154,7 +155,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -180,13 +181,13 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                 ),
               ],
             ),
-            const Gap(16),
+            const Gap(AppSpacing.sm),
             SwitchListTile(
               title: Text(context.l10n.deviceStatusActive),
               value: _isActive,
               onChanged: (value) => setState(() => _isActive = value),
             ),
-            const Gap(24),
+            const Gap(AppSpacing.xl),
             if (formState.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -209,6 +210,7 @@ class _DeviceFormScreenState extends ConsumerState<DeviceFormScreen> {
                           : context.l10n.deviceAddTitle,
                     ),
             ),
+            const Gap(AppSpacing.xxl),
           ],
         ),
       ),

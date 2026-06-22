@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 
@@ -49,13 +50,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             _buildAvatarSection(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             _buildNameField(context),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sm),
             _buildEmailField(context),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sm),
             _buildPhoneField(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             _buildSaveButton(context),
           ],
         ),

@@ -140,7 +140,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildField(
                       controller: _nameController,
                       label: context.l10n.adminSensorNameLabel,
@@ -157,12 +157,12 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildDeviceDropdown(),
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               // ── Konfigurasi ──────────────────────────────
               AdminSectionCard(
@@ -175,7 +175,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                       hint: context.l10n.adminSensorAddressHint,
                       icon: Icons.location_searching,
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildField(
                       controller: _locationController,
                       label: context.l10n.commonLocation,
@@ -186,7 +186,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               // ── Koordinat ────────────────────────────────
               AdminSectionCard(
@@ -241,7 +241,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildField(
                       controller: _altController,
                       label: context.l10n.adminAltitudeLabel,
@@ -254,7 +254,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               // ── Status ───────────────────────────────────
               AdminSectionCard(
@@ -265,7 +265,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
               ),
-              SizedBox(height: context.rh(0.03)),
+              const SizedBox(height: AppSpacing.xl),
 
               // ── Submit ───────────────────────────────────
               AdminSubmitButton(
@@ -274,7 +274,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                     : context.l10n.adminAddSensorTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

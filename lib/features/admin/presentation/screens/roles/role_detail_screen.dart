@@ -37,7 +37,8 @@ class RoleDetailScreen extends ConsumerWidget {
             roleAsync.when(
               skipLoadingOnReload: true,
               data: (role) => _RoleDetailBody(role: role),
-              loading: () => const AdminDetailScreenSkeleton(),
+              loading: () =>
+                  const AdminDetailScreenSkeleton(sectionRowCounts: [5, 4]),
               error: (error, _) => AdminErrorState(
                 error: error,
                 onRetry: () => ref.invalidate(adminRoleDetailProvider(roleId)),
@@ -149,7 +150,7 @@ class _RoleDetailBody extends ConsumerWidget {
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: context.l10n.adminRoleInfoSection,
             child: Column(
@@ -170,11 +171,7 @@ class _RoleDetailBody extends ConsumerWidget {
                     label: context.l10n.adminPermissionTitle,
                     value: permissions.length.toString(),
                   ),
-                  loading: () => AdminDetailRow(
-                    icon: Icons.lock_outline,
-                    label: context.l10n.adminPermissionTitle,
-                    value: '...',
-                  ),
+                  loading: () => const AdminDetailRowSkeleton(),
                   error: (_, __) => AdminDetailRow(
                     icon: Icons.lock_outline,
                     label: context.l10n.adminPermissionTitle,
@@ -195,7 +192,7 @@ class _RoleDetailBody extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: context.l10n.adminRolePermissionSection,
             child: permissionsAsync.when(
@@ -221,7 +218,7 @@ class _RoleDetailBody extends ConsumerWidget {
                   }),
                 );
               },
-              loading: () => const LinearProgressIndicator(),
+              loading: () => const AdminDetailRowsSkeleton(rowCount: 4),
               error: (error, _) => Text(error.toString()),
             ),
           ),

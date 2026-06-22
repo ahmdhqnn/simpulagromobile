@@ -58,7 +58,7 @@ class _SiteMemberInviteScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _SiteInfo(siteId: widget.siteId),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.sm),
                   usersAsync.when(
                     skipLoadingOnReload: true,
                     skipLoadingOnRefresh: true,
@@ -89,12 +89,13 @@ class _SiteMemberInviteScreenState
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: context.l10n.siteInviteSubmit,
               isLoading: inviteState.isLoading,
               onPressed: _submit,
             ),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

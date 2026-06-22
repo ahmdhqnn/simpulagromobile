@@ -149,7 +149,7 @@ class _UserDetailBody extends ConsumerWidget {
             child: Column(
               children: [
                 _AvatarHeader(user: user),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.sm),
                 _DetailRow(
                   icon: Icons.tag_outlined,
                   label: context.l10n.adminUserIdLabel,
@@ -184,12 +184,8 @@ class _UserDetailBody extends ConsumerWidget {
                     value: count.toString(),
                     showDivider: false,
                   ),
-                  loading: () => _DetailRow(
-                    icon: Icons.lock_outline,
-                    label: context.l10n.adminPermissionTitle,
-                    value: '...',
-                    showDivider: false,
-                  ),
+                  loading: () =>
+                      const AdminDetailRowSkeleton(showDivider: false),
                   error: (_, __) => _DetailRow(
                     icon: Icons.lock_outline,
                     label: context.l10n.adminPermissionTitle,

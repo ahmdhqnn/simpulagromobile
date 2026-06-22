@@ -2030,22 +2030,22 @@ class PlantFormCardSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.sm),
         ],
         const _SkeletonCard(
-          radius: AppRadius.xl,
-          padding: EdgeInsets.all(20),
+          radius: AppRadius.lg,
+          padding: AppSpacing.card,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _FormFieldBlockSkeleton(labelWidth: 104),
-              SizedBox(height: 20),
+              SizedBox(height: AppSpacing.sm),
               _FormFieldBlockSkeleton(labelWidth: 136, trailingIcon: true),
-              SizedBox(height: 20),
+              SizedBox(height: AppSpacing.sm),
               _FormFieldBlockSkeleton(labelWidth: 92, trailingIcon: true),
-              SizedBox(height: 20),
+              SizedBox(height: AppSpacing.sm),
               _FormFieldBlockSkeleton(labelWidth: 112, trailingIcon: true),
-              SizedBox(height: 28),
+              SizedBox(height: AppSpacing.xl),
               _CircularFormActionsSkeleton(),
             ],
           ),
@@ -2063,34 +2063,34 @@ class TaskFormCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SkeletonCard(
-      radius: AppRadius.xl,
-      padding: const EdgeInsets.all(20),
+      radius: AppRadius.lg,
+      padding: AppSpacing.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isEditMode) ...[
             const _FormFieldBlockSkeleton(labelWidth: 54, trailingIcon: true),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.sm),
           ],
           const _FormFieldBlockSkeleton(labelWidth: 96),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.sm),
           const _FormFieldBlockSkeleton(
             labelWidth: 86,
             height: 108,
             borderRadius: AppRadius.xl,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.sm),
           const _ChoiceGroupSkeleton(labelWidth: 80, pillWidths: [92, 84, 78]),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.sm),
           const _ChoiceGroupSkeleton(labelWidth: 70, pillWidths: [74, 92, 78]),
           if (isEditMode) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.sm),
             const _ChoiceGroupSkeleton(
               labelWidth: 64,
               pillWidths: [76, 88, 78, 70],
             ),
           ],
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
           const _CircularFormActionsSkeleton(),
         ],
       ),
@@ -2121,7 +2121,11 @@ class AdminFormScreenSkeleton extends StatelessWidget {
             fieldCount: sectionFieldCounts[i],
             titleWidth: i.isEven ? 154 : 126,
           ),
-          const SizedBox(height: 16),
+          SizedBox(
+            height: i == sectionFieldCounts.length - 1
+                ? AppSpacing.xl
+                : AppSpacing.sm,
+          ),
         ],
         if (showSubmitButton) ...[
           const SkeletonContainer(
@@ -2131,7 +2135,7 @@ class AdminFormScreenSkeleton extends StatelessWidget {
               borderRadius: AppRadius.pill,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
         ],
       ],
     );
@@ -2150,13 +2154,13 @@ class _AdminFormSectionSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SkeletonCard(
-      radius: 20,
-      padding: const EdgeInsets.all(12),
+      radius: AppRadius.lg,
+      padding: AppSpacing.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SkeletonLine(width: titleWidth, height: 16),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.sm),
           for (var i = 0; i < fieldCount; i++) ...[
             SkeletonBox(
               width: double.infinity,
@@ -2485,6 +2489,222 @@ class DetailScreenSkeleton extends StatelessWidget {
   }
 }
 
+/// Loading layout for the site-level device and sensor detail screens.
+///
+/// The real screens use a compact identity/status card followed by one or more
+/// information cards. Keeping that structure here avoids the large header and
+/// action button used by the legacy generic detail skeleton.
+class EntityDetailContentSkeleton extends StatelessWidget {
+  final int infoRowCount;
+  final int secondaryRowCount;
+  final bool circularIcon;
+
+  const EntityDetailContentSkeleton({
+    super.key,
+    this.infoRowCount = 5,
+    this.secondaryRowCount = 0,
+    this.circularIcon = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _EntityStatusCardSkeleton(circularIcon: circularIcon),
+          const SizedBox(height: AppSpacing.sm),
+          _EntityInfoCardSkeleton(rowCount: infoRowCount),
+          if (secondaryRowCount > 0) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _EntityInfoCardSkeleton(rowCount: secondaryRowCount),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _EntityStatusCardSkeleton extends StatelessWidget {
+  final bool circularIcon;
+
+  const _EntityStatusCardSkeleton({required this.circularIcon});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonCard(
+      radius: AppRadius.lg,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          if (circularIcon)
+            const SkeletonCircle(size: 60)
+          else
+            const SkeletonBox(width: 56, height: 56, borderRadius: 14),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonLine(width: 164, height: 18),
+                SizedBox(height: 8),
+                SkeletonBox(width: 72, height: 24, borderRadius: 10),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EntityInfoCardSkeleton extends StatelessWidget {
+  final int rowCount;
+
+  const _EntityInfoCardSkeleton({required this.rowCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonCard(
+      radius: AppRadius.lg,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonLine(width: 132, height: 16),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 4),
+          for (int index = 0; index < rowCount; index++) ...[
+            const InfoRowSkeleton(),
+            if (index != rowCount - 1) const SizedBox(height: 2),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Mirrors the four cards rendered by TaskDetailScreen.
+class TaskDetailContentSkeleton extends StatelessWidget {
+  const TaskDetailContentSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _TaskStatusDetailCardSkeleton(),
+        SizedBox(height: AppSpacing.sm),
+        _TaskInfoDetailCardSkeleton(rowCount: 2),
+        SizedBox(height: AppSpacing.sm),
+        _TaskInfoDetailCardSkeleton(rowCount: 3),
+        SizedBox(height: AppSpacing.sm),
+        _TaskTimelineDetailCardSkeleton(),
+      ],
+    );
+  }
+}
+
+class _TaskStatusDetailCardSkeleton extends StatelessWidget {
+  const _TaskStatusDetailCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      radius: AppRadius.md,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonLine(width: 190, height: 22),
+          SizedBox(height: 5),
+          SkeletonLine(width: 230, height: 12),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _TaskBadgeSkeleton()),
+              SizedBox(width: 12),
+              Expanded(child: _TaskBadgeSkeleton()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TaskBadgeSkeleton extends StatelessWidget {
+  const _TaskBadgeSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonPanel(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      radius: AppRadius.sm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonLine(width: 54, height: 10),
+          SizedBox(height: 6),
+          SkeletonLine(width: 76, height: 13),
+        ],
+      ),
+    );
+  }
+}
+
+class _TaskInfoDetailCardSkeleton extends StatelessWidget {
+  final int rowCount;
+
+  const _TaskInfoDetailCardSkeleton({required this.rowCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SkeletonCard(
+      radius: AppRadius.md,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonLine(width: 122, height: 14),
+          const SizedBox(height: 12),
+          for (int index = 0; index < rowCount; index++) ...[
+            const _IconTextRowSkeleton(),
+            if (index != rowCount - 1) const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TaskTimelineDetailCardSkeleton extends StatelessWidget {
+  const _TaskTimelineDetailCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      radius: AppRadius.md,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonLine(width: 104, height: 14),
+          SizedBox(height: AppSpacing.sm),
+          _TimelineRowSkeleton(),
+          SizedBox(height: AppSpacing.sm),
+          _TimelineRowSkeleton(),
+          SizedBox(height: AppSpacing.sm),
+          _TimelineRowSkeleton(),
+        ],
+      ),
+    );
+  }
+}
+
 class PlantOverviewSkeleton extends StatelessWidget {
   const PlantOverviewSkeleton({super.key});
 
@@ -2679,18 +2899,31 @@ class PhaseDetailContentSkeleton extends StatelessWidget {
     return const SingleChildScrollView(
       physics: AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 8),
-          _PhaseHeaderCardSkeleton(),
-          SizedBox(height: 24),
-          _PhaseProgressCardSkeleton(),
-          SizedBox(height: 24),
-          _PhaseTimelineCardSkeleton(),
-          SizedBox(height: 24),
-        ],
-      ),
+      child: PhaseDetailCardsSkeleton(),
+    );
+  }
+}
+
+/// The three cards shared by the phase detail data and loading layouts.
+///
+/// This variant intentionally has no scroll view or horizontal padding so it
+/// can be embedded in PhaseDetailScreen's existing full-page scroll shell.
+class PhaseDetailCardsSkeleton extends StatelessWidget {
+  const PhaseDetailCardsSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 8),
+        _PhaseHeaderCardSkeleton(),
+        SizedBox(height: AppSpacing.sm),
+        _PhaseProgressCardSkeleton(),
+        SizedBox(height: AppSpacing.sm),
+        _PhaseTimelineCardSkeleton(),
+        SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 }
@@ -3304,6 +3537,221 @@ class PostCardSkeleton extends StatelessWidget {
   }
 }
 
+/// Mirrors the post card, comments header, and initial comment list shown by
+/// PostDetailScreen while the post request is loading.
+class PostDetailContentSkeleton extends StatelessWidget {
+  const PostDetailContentSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SingleChildScrollView(
+      physics: AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _PostDetailCardSkeleton(),
+          SizedBox(height: 12),
+          _PostCommentsHeaderSkeleton(),
+          SizedBox(height: 12),
+          PostCommentCardSkeleton(),
+          SizedBox(height: 12),
+          PostCommentCardSkeleton(),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _PostDetailCardSkeleton extends StatelessWidget {
+  const _PostDetailCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      radius: AppRadius.md,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SkeletonCircle(size: 44),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLine(width: 126, height: 13),
+                    SizedBox(height: 4),
+                    SkeletonLine(width: 104, height: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          SkeletonLine(width: 218, height: 20),
+          SizedBox(height: 8),
+          SkeletonLine(width: double.infinity, height: 12),
+          SizedBox(height: 6),
+          SkeletonLine(width: double.infinity, height: 12),
+          SizedBox(height: 6),
+          SkeletonLine(width: 210, height: 12),
+          SizedBox(height: 16),
+          SkeletonBox(width: double.infinity, height: 156, borderRadius: 12),
+          SizedBox(height: 16),
+          _PostMetricsBarSkeleton(),
+          SizedBox(height: 12),
+          _PostActionsRowSkeleton(),
+        ],
+      ),
+    );
+  }
+}
+
+class _PostMetricsBarSkeleton extends StatelessWidget {
+  const _PostMetricsBarSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonPanel(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      radius: AppRadius.sm,
+      child: Row(
+        children: [
+          Expanded(child: SkeletonLine(width: 54, height: 14)),
+          SkeletonBox(width: 1, height: 24, borderRadius: 0),
+          Expanded(child: SkeletonLine(width: 54, height: 14)),
+          SkeletonBox(width: 1, height: 24, borderRadius: 0),
+          Expanded(child: SkeletonLine(width: 54, height: 14)),
+        ],
+      ),
+    );
+  }
+}
+
+class _PostActionsRowSkeleton extends StatelessWidget {
+  const _PostActionsRowSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 36,
+            borderRadius: 18,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 36,
+            borderRadius: 18,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 36,
+            borderRadius: 18,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 36,
+            borderRadius: 18,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PostCommentsHeaderSkeleton extends StatelessWidget {
+  const _PostCommentsHeaderSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      radius: AppRadius.md,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          SkeletonLine(width: 82, height: 14),
+          SizedBox(width: 8),
+          SkeletonBox(width: 30, height: 20, borderRadius: 10),
+        ],
+      ),
+    );
+  }
+}
+
+class PostCommentCardSkeleton extends StatelessWidget {
+  const PostCommentCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SkeletonCard(
+      radius: AppRadius.md,
+      padding: EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonCircle(size: 36),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonLine(width: 116, height: 12),
+                SizedBox(height: 4),
+                SkeletonLine(width: 72, height: 10),
+                SizedBox(height: 10),
+                SkeletonLine(width: double.infinity, height: 12),
+                SizedBox(height: 5),
+                SkeletonLine(width: 176, height: 12),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PostCommentInputSkeleton extends StatelessWidget {
+  const PostCommentInputSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: SkeletonContainer(
+              child: SkeletonBox(
+                width: double.infinity,
+                height: 44,
+                borderRadius: 22,
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          SkeletonContainer(child: SkeletonCircle(size: 44)),
+        ],
+      ),
+    );
+  }
+}
+
 class DashboardCardSkeleton extends StatelessWidget {
   const DashboardCardSkeleton({super.key});
 
@@ -3635,8 +4083,8 @@ class SiteDetailOverviewSkeleton extends StatelessWidget {
         children: [
           _SkeletonPanel(
             width: double.infinity,
-            padding: EdgeInsets.all(16),
-            radius: 20,
+            padding: AppSpacing.card,
+            radius: AppRadius.lg,
             child: Row(
               children: [
                 SkeletonBox(width: 56, height: 56, borderRadius: 16),
@@ -3660,11 +4108,11 @@ class SiteDetailOverviewSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 14),
+          SizedBox(height: AppSpacing.sm),
           _SkeletonPanel(
             width: double.infinity,
-            padding: EdgeInsets.all(12),
-            radius: 20,
+            padding: AppSpacing.card,
+            radius: AppRadius.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3676,11 +4124,11 @@ class SiteDetailOverviewSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 14),
+          SizedBox(height: AppSpacing.sm),
           _SkeletonPanel(
             width: double.infinity,
-            padding: EdgeInsets.all(12),
-            radius: 20,
+            padding: AppSpacing.card,
+            radius: AppRadius.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3692,11 +4140,11 @@ class SiteDetailOverviewSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 14),
+          SizedBox(height: AppSpacing.sm),
           _SkeletonPanel(
             width: double.infinity,
-            padding: EdgeInsets.all(12),
-            radius: 20,
+            padding: AppSpacing.card,
+            radius: AppRadius.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3751,8 +4199,8 @@ class AdminUserDetailSkeleton extends StatelessWidget {
         children: [
           _SkeletonPanel(
             width: double.infinity,
-            padding: EdgeInsets.all(12),
-            radius: 20,
+            padding: AppSpacing.card,
+            radius: AppRadius.lg,
             child: Column(
               children: [
                 Row(
@@ -3771,7 +4219,7 @@ class AdminUserDetailSkeleton extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: AppSpacing.sm),
                 _AdminUserDetailRowSkeleton(),
                 _AdminUserDetailRowSkeleton(),
                 _AdminUserDetailRowSkeleton(),

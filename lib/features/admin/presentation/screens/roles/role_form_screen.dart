@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
@@ -125,7 +126,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
@@ -143,7 +144,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _descController,
@@ -155,7 +156,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               AdminSectionCard(
                 title: context.l10n.adminStatusSection,
@@ -166,7 +167,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               AdminSectionCard(
                 title: context.l10n.adminRolePermissionSection,
@@ -176,7 +177,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                       setState(() => _selectedPermissionIds = ids),
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.xl),
 
               AdminSubmitButton(
                 label: isEditMode
@@ -184,7 +185,7 @@ class _RoleFormScreenState extends ConsumerState<RoleFormScreen> {
                     : context.l10n.adminAddRoleTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

@@ -73,7 +73,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       }
 
       final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId!)));
-      
+
       return taskAsync.when(
         skipLoadingOnReload: true,
         skipLoadingOnRefresh: true,
@@ -95,7 +95,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         ),
         data: (task) {
           _hydrateOnce(task);
-          return _buildFormScaffold(siteLabel: null); // Edit doesn't need site selector
+          return _buildFormScaffold(
+            siteLabel: null,
+          ); // Edit doesn't need site selector
         },
       );
     }
@@ -141,7 +143,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                       child: Container(
                         height: context.rh(0.05).clamp(44.0, 48.0),
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.rw(0.041),
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceVariant,
                           borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -159,7 +163,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                   AdminFormFields.buildField(
                     context,
@@ -176,7 +180,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildField(
                     context,
                     controller: _taskDescriptionController,
@@ -186,20 +190,20 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                     textInputAction: TextInputAction.newline,
                     maxLines: 4,
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildFieldShell(
                     context,
                     label: context.l10n.taskTypeLabel,
                     child: _buildTypeSelector(),
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildFieldShell(
                     context,
                     label: context.l10n.commonPriority,
                     child: _buildPrioritySelector(),
                   ),
                   if (isEditMode) ...[
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildFieldShell(
                       context,
                       label: context.l10n.commonStatus,
@@ -209,14 +213,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: isEditMode
                   ? context.l10n.commonSaveChanges
                   : context.l10n.taskAddTitle,
               onPressed: _handleSubmit,
             ),
-            SizedBox(height: context.rh(0.04)),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
@@ -230,18 +234,18 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         alignment: WrapAlignment.start,
         spacing: 8,
         runSpacing: 8,
-      children: TaskType.values.map((type) {
-        final isSelected = type == _selectedType;
-        return _buildChoiceChip(
-          label: type.localizedLabel(context.l10n),
-          isSelected: isSelected,
-          backgroundColor: AppColors.surfaceVariant,
-          selectedColor: AppColors.primary,
-          selectedTextColor: Colors.white,
-          unselectedTextColor: AppColors.textSecondary,
-          onTap: () => setState(() => _selectedType = type),
-        );
-      }).toList(),
+        children: TaskType.values.map((type) {
+          final isSelected = type == _selectedType;
+          return _buildChoiceChip(
+            label: type.localizedLabel(context.l10n),
+            isSelected: isSelected,
+            backgroundColor: AppColors.surfaceVariant,
+            selectedColor: AppColors.primary,
+            selectedTextColor: Colors.white,
+            unselectedTextColor: AppColors.textSecondary,
+            onTap: () => setState(() => _selectedType = type),
+          );
+        }).toList(),
       ),
     );
   }
@@ -253,21 +257,21 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         alignment: WrapAlignment.start,
         spacing: 8,
         runSpacing: 8,
-      children: TaskPriority.values.map((priority) {
-        final isSelected = priority == _selectedPriority;
-        final color = _priorityColor(priority);
-        return _buildChoiceChip(
-          label: priority.localizedLabel(context.l10n),
-          isSelected: isSelected,
-          backgroundColor: color.withValues(alpha: 0.12),
-          selectedColor: color,
-          selectedTextColor: Colors.white,
-          unselectedTextColor: color,
-          icon: Icons.flag,
-          iconColor: isSelected ? Colors.white : color,
-          onTap: () => setState(() => _selectedPriority = priority),
-        );
-      }).toList(),
+        children: TaskPriority.values.map((priority) {
+          final isSelected = priority == _selectedPriority;
+          final color = _priorityColor(priority);
+          return _buildChoiceChip(
+            label: priority.localizedLabel(context.l10n),
+            isSelected: isSelected,
+            backgroundColor: color.withValues(alpha: 0.12),
+            selectedColor: color,
+            selectedTextColor: Colors.white,
+            unselectedTextColor: color,
+            icon: Icons.flag,
+            iconColor: isSelected ? Colors.white : color,
+            onTap: () => setState(() => _selectedPriority = priority),
+          );
+        }).toList(),
       ),
     );
   }
@@ -279,19 +283,19 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         alignment: WrapAlignment.start,
         spacing: 8,
         runSpacing: 8,
-      children: TaskStatus.values.map((status) {
-        final isSelected = status == _selectedStatus;
-        final color = _statusColor(status);
-        return _buildChoiceChip(
-          label: status.localizedLabel(context.l10n),
-          isSelected: isSelected,
-          backgroundColor: color.withValues(alpha: 0.12),
-          selectedColor: color,
-          selectedTextColor: Colors.white,
-          unselectedTextColor: color,
-          onTap: () => setState(() => _selectedStatus = status),
-        );
-      }).toList(),
+        children: TaskStatus.values.map((status) {
+          final isSelected = status == _selectedStatus;
+          final color = _statusColor(status);
+          return _buildChoiceChip(
+            label: status.localizedLabel(context.l10n),
+            isSelected: isSelected,
+            backgroundColor: color.withValues(alpha: 0.12),
+            selectedColor: color,
+            selectedTextColor: Colors.white,
+            unselectedTextColor: color,
+            onTap: () => setState(() => _selectedStatus = status),
+          );
+        }).toList(),
       ),
     );
   }

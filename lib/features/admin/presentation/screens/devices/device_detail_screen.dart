@@ -36,7 +36,8 @@ class AdminDeviceDetailScreen extends ConsumerWidget {
             deviceAsync.when(
               skipLoadingOnReload: true,
               data: (device) => _DeviceDetailBody(device: device),
-              loading: () => const AdminDetailScreenSkeleton(),
+              loading: () =>
+                  const AdminDetailScreenSkeleton(sectionRowCounts: [7, 2]),
               error: (error, _) => AdminErrorState(
                 error: error,
                 onRetry: () =>
@@ -144,7 +145,7 @@ class _DeviceDetailBody extends ConsumerWidget {
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: context.l10n.adminBasicInfoSection,
             child: Column(
@@ -190,7 +191,7 @@ class _DeviceDetailBody extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: 'Metadata',
             child: Column(
