@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -10,10 +9,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../providers/forum_provider.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
+import '../../../admin/presentation/widgets/admin_form_fields.dart';
 
 class PostFormScreen extends ConsumerStatefulWidget {
   final String? postId;
@@ -329,328 +329,168 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     final selectedSite = ref.watch(selectedSiteProvider);
 
     if (!_isEditMode && selectedSite == null) {
-      return _buildScreenShell(
-        child: _buildMessageCard(
+      return AdminFormScaffold(
+        title: _screenTitle(context),
+        body: AdminEmptyState(
           icon: Icons.location_off_outlined,
-          iconColor: AppColors.warning,
           title: context.l10n.forumSiteNotSelectedTitle,
-          description: context.l10n.forumSelectActiveSiteBeforePosting,
-          actionLabel: context.l10n.commonBack,
-          onAction: () => context.pop(),
+          message: context.l10n.forumSelectActiveSiteBeforePosting,
         ),
       );
     }
 
     final siteLabel = _isEditMode ? _siteLabel : selectedSite?.displayName;
 
-    Widget child;
     if (_isLoadingData) {
-      child = _buildLoadingCard();
-    } else if (_loadErrorMessage != null) {
-      child = _buildMessageCard(
-        icon: Icons.error_outline,
-        iconColor: AppColors.error,
-        title: context.l10n.forumLoadPostsFailed,
-        description: _loadErrorMessage!,
-        actionLabel: context.l10n.commonRetry,
-        onAction: _loadPostData,
+      return AdminFormScaffold(
+        title: _screenTitle(context),
+        body: const AdminFormScreenSkeleton(
+          titleWidth: 150,
+          sectionFieldCounts: [4],
+        ),
       );
-    } else {
-      child = _buildFormCard(siteLabel);
     }
 
-    return _buildScreenShell(child: child);
-  }
-
-  Widget _buildScreenShell({required Widget child}) {
-    final hPad = context.rw(0.051);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: hPad),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: context.rh(0.015)),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: CircularBackButtonWidget(
-                    onPressed: () => context.pop(),
-                  ),
-                ),
-                SizedBox(height: context.rh(0.03)),
-                Text(
-                  _screenTitle(context),
-                  style: AppTextStyles.sectionTitle(context),
-                ),
-                SizedBox(height: context.rh(0.03)),
-                child,
-                SizedBox(
-                  height:
-                      context.rh(0.02) + MediaQuery.paddingOf(context).bottom,
-                ),
-              ],
-            ),
-          ),
+    if (_loadErrorMessage != null) {
+      return AdminFormScaffold(
+        title: _screenTitle(context),
+        body: AdminErrorState(
+          error: _loadErrorMessage!,
+          onRetry: _loadPostData,
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildLoadingCard() =>
-      const FormCardSkeleton(fieldCount: 3, hasLargeField: true);
-
-  Widget _buildMessageCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String description,
-    required String actionLabel,
-    required VoidCallback onAction,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: context.rw(0.143).clamp(52.0, 60.0),
-            color: iconColor,
-          ),
-          SizedBox(height: context.rh(0.02)),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.cardTitle(context, context.sp(16)),
-          ),
-          SizedBox(height: context.rh(0.01)),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption(context, size: context.sp(13)),
-          ),
-          SizedBox(height: context.rh(0.03)),
-          ElevatedButton(
-            onPressed: onAction,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            ),
-            child: Text(
-              actionLabel,
-              style: AppTextStyles.label(
-                context,
-                size: context.sp(14),
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFormCard(String? siteLabel) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Form(
+    return AdminFormScaffold(
+      title: _screenTitle(context),
+      isLoading: _isSubmitting,
+      body: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rw(0.051),
+            vertical: context.rh(0.01),
+          ),
           children: [
-            if (siteLabel != null && siteLabel.trim().isNotEmpty) ...[
-              _FormField(
-                label: context.l10n.siteTitle,
-                child: _buildReadOnlyField(siteLabel),
-              ),
-              SizedBox(height: context.rh(0.025)),
-            ],
-            _FormField(
-              label: context.l10n.forumPostTitleLabel,
-              child: _buildTextField(
-                controller: _titleController,
-                hintText: context.l10n.forumPostTitleHint,
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.forumPostTitleRequired;
-                  }
-                  if (value.trim().length < 3) {
-                    return context.l10n.forumPostTitleMinLength;
-                  }
-                  return null;
-                },
-              ),
-            ),
-            SizedBox(height: context.rh(0.025)),
-            _FormField(
-              label: context.l10n.forumPostContentLabel,
-              child: _buildTextField(
-                controller: _contentController,
-                hintText: context.l10n.forumPostContentHint,
-                maxLines: 6,
-                textInputAction: TextInputAction.newline,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.forumPostContentRequired;
-                  }
-                  if (value.trim().length < 10) {
-                    return context.l10n.forumPostContentMinLength;
-                  }
-                  return null;
-                },
-              ),
-            ),
-            SizedBox(height: context.rh(0.025)),
-            _FormField(
-              label: context.l10n.forumMediaLabel,
-              child: _buildImageField(),
-            ),
-            SizedBox(height: context.rh(0.025)),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(context.rw(0.036)),
-              decoration: BoxDecoration(
-                color: AppColors.softOrange,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Row(
+            AdminSectionCard(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.info_outline,
-                    color: AppColors.warning,
-                    size: 18,
-                  ),
-                  SizedBox(width: context.rw(0.026)),
-                  Expanded(
-                    child: Text(
-                      context.l10n.forumPostGuideline,
-                      style: AppTextStyles.caption(
-                        context,
-                        size: context.sp(11),
-                        color: const Color(0xFF856404),
+                  if (siteLabel != null && siteLabel.trim().isNotEmpty) ...[
+                    AdminFormFields.buildFieldShell(
+                      context,
+                      label: context.l10n.siteTitle,
+                      child: Container(
+                        height: context.rh(0.05).clamp(44.0, 48.0),
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          siteLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.label(
+                            context,
+                            size: context.sp(14),
+                            weight: FontWeight.w400,
+                          ),
+                        ),
                       ),
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                  ],
+                  AdminFormFields.buildField(
+                    context,
+                    controller: _titleController,
+                    label: context.l10n.forumPostTitleLabel,
+                    hint: context.l10n.forumPostTitleHint,
+                    icon: Icons.title_outlined,
+                    textInputAction: TextInputAction.next,
+                    required: true,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return context.l10n.forumPostTitleRequired;
+                      }
+                      if (value.trim().length < 3) {
+                        return context.l10n.forumPostTitleMinLength;
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildField(
+                    context,
+                    controller: _contentController,
+                    label: context.l10n.forumPostContentLabel,
+                    hint: context.l10n.forumPostContentHint,
+                    icon: Icons.article_outlined,
+                    maxLines: 6,
+                    textInputAction: TextInputAction.newline,
+                    required: true,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return context.l10n.forumPostContentRequired;
+                      }
+                      if (value.trim().length < 10) {
+                        return context.l10n.forumPostContentMinLength;
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildFieldShell(
+                    context,
+                    label: context.l10n.forumMediaLabel,
+                    child: _buildImageField(),
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(context.rw(0.036)),
+                    decoration: BoxDecoration(
+                      color: AppColors.softOrange,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: AppColors.warning,
+                          size: 18,
+                        ),
+                        SizedBox(width: context.rw(0.026)),
+                        Expanded(
+                          child: Text(
+                            context.l10n.forumPostGuideline,
+                            style: AppTextStyles.caption(
+                              context,
+                              size: context.sp(11),
+                              color: const Color(0xFF856404),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.037)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _CircleActionButton(
-                  svgPath: 'assets/icons/close-icon.svg',
-                  onTap: () => context.pop(),
-                ),
-                _CircleActionButton(
-                  svgPath: 'assets/icons/check-icon.svg',
-                  onTap: _isSubmitting ? null : _submit,
-                  isLoading: _isSubmitting,
-                ),
-              ],
+            SizedBox(height: context.rh(0.03)),
+            AdminSubmitButton(
+              label: _isEditMode
+                  ? context.l10n.commonSaveChanges
+                  : context.l10n.forumAddPost,
+              onPressed: _submit,
+              isLoading: _isSubmitting,
             ),
+            SizedBox(height: context.rh(0.04)),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputAction? textInputAction,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    final isMultiline = maxLines > 1;
-    final borderRadius = BorderRadius.circular(
-      isMultiline ? AppRadius.xl : AppRadius.pill,
-    );
-
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      maxLines: maxLines,
-      textInputAction: textInputAction,
-      style: AppTextStyles.label(
-        context,
-        size: context.sp(14),
-        weight: FontWeight.w400,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        focusColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        border: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: context.rw(0.041),
-          vertical: isMultiline ? context.rh(0.016) : context.rh(0.012),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReadOnlyField(String value) {
-    return Container(
-      height: context.rh(0.05).clamp(44.0, 48.0),
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.label(
-          context,
-          size: context.sp(14),
-          weight: FontWeight.w400,
         ),
       ),
     );
@@ -822,32 +662,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   }
 }
 
-class _FormField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _FormField({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label(
-            context,
-            size: context.sp(14),
-            weight: FontWeight.w400,
-          ),
-        ),
-        SizedBox(height: context.rh(0.01)),
-        child,
-      ],
-    );
-  }
-}
-
 class _InlineActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -889,61 +703,6 @@ class _InlineActionButton extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircleActionButton extends StatelessWidget {
-  final String svgPath;
-  final VoidCallback? onTap;
-  final bool isLoading;
-
-  const _CircleActionButton({
-    required this.svgPath,
-    required this.onTap,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final size = context.rw(0.128).clamp(48.0, 56.0);
-    final iconSize = context.rw(0.062).clamp(22.0, 28.0);
-    final isDisabled = onTap == null;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: isDisabled
-              ? AppColors.surfaceVariant.withValues(alpha: 0.5)
-              : AppColors.surfaceVariant,
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: isLoading
-              ? SizedBox(
-                  width: iconSize,
-                  height: iconSize,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.textPrimary,
-                  ),
-                )
-              : SvgPicture.asset(
-                  svgPath,
-                  width: iconSize,
-                  height: iconSize,
-                  colorFilter: ColorFilter.mode(
-                    isDisabled
-                        ? AppColors.textPrimary.withValues(alpha: 0.3)
-                        : AppColors.textPrimary,
-                    BlendMode.srcIn,
-                  ),
-                ),
         ),
       ),
     );

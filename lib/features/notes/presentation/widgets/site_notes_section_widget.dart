@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/locale_formatters.dart';
-import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -19,7 +19,6 @@ class SiteNotesSectionWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notesAsync = ref.watch(siteNotesBySiteProvider(siteId));
-    final createState = ref.watch(createNoteProvider);
 
     if (notesAsync.isLoading && !notesAsync.hasValue) {
       return const SiteNotesSectionSkeleton();
@@ -37,19 +36,8 @@ class SiteNotesSectionWidget extends ConsumerWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: FilledButton.icon(
-              onPressed: createState.isLoading
-                  ? null
-                  : () => _showCreateDialog(context, ref),
-              icon: createState.isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : const Icon(Icons.add, size: 18),
+              onPressed: () => context.push('/site/$siteId/note/create'),
+              icon: const Icon(Icons.add, size: 18),
               label: Text(context.l10n.notesNew),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -114,98 +102,6 @@ class SiteNotesSectionWidget extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _showCreateDialog(BuildContext context, WidgetRef ref) async {
-    final formKey = GlobalKey<FormState>();
-    final l10n = context.l10n;
-    var title = '';
-    var desc = '';
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.notesNew),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  maxLength: 32,
-                  autofocus: true,
-                  onChanged: (value) => title = value,
-                  decoration: InputDecoration(
-                    labelText: l10n.forumPostTitleLabel,
-                    border: const OutlineInputBorder(),
-                    counterText: '',
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return l10n.forumPostTitleRequired;
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  maxLines: 4,
-                  onChanged: (value) => desc = value,
-                  decoration: InputDecoration(
-                    labelText: l10n.commonDescription,
-                    hintText: l10n.notesContentHint,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return l10n.commonRequired;
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx, true);
-              }
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-    );
-
-    if (ok != true || !context.mounted) return;
-    final success = await ref
-        .read(createNoteProvider.notifier)
-        .create(siteId: siteId, title: title.trim(), desc: desc.trim());
-    if (!context.mounted) return;
-
-    if (success) {
-      SnackbarHelper.showSuccess(context, l10n.notesSaved);
-      return;
-    }
-
-    final error = ref.read(createNoteProvider).error;
-    SnackbarHelper.showError(
-      context,
-      _errorMessage(error) ?? l10n.notesSaveFailed,
-    );
-  }
-
-  String? _errorMessage(Object? error) {
-    final message = error?.toString().trim();
-    if (message == null || message.isEmpty) return null;
-    return message.replaceFirst(RegExp(r'^Exception:\s*'), '');
   }
 }
 

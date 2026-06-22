@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -8,13 +7,12 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
-import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
-import '../../../site/domain/entities/site.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
+import '../../../admin/presentation/widgets/admin_form_fields.dart';
 
 class TaskFormScreen extends ConsumerStatefulWidget {
   final String? taskId;
@@ -33,7 +31,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   TaskType _selectedType = TaskType.monitoring;
   TaskStatus _selectedStatus = TaskStatus.pending;
   TaskPriority _selectedPriority = TaskPriority.medium;
-  Site? _selectedSite;
 
   String? _editSiteId;
 
@@ -65,497 +62,174 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       _editSiteId ??= ref.read(selectedSiteIdProvider);
       final siteId = _editSiteId;
       if (siteId == null) {
-        final l10n = context.l10n;
-        return _buildScreenShell(
-          child: _buildMessageCard(
+        return AdminFormScaffold(
+          title: context.l10n.taskEditTitle,
+          body: AdminEmptyState(
             icon: Icons.location_off_outlined,
-            iconColor: AppColors.warning,
-            title: l10n.taskSiteRequiredForEditTitle,
-            description: l10n.taskSiteRequiredForEditMessage,
-            actionLabel: l10n.commonBack,
-            onAction: () => context.pop(),
+            title: context.l10n.taskSiteRequiredForEditTitle,
+            message: context.l10n.taskSiteRequiredForEditMessage,
           ),
         );
       }
 
       final taskAsync = ref.watch(taskDetailProvider((siteId, widget.taskId!)));
+      
       return taskAsync.when(
         skipLoadingOnReload: true,
         skipLoadingOnRefresh: true,
         skipError: true,
-        loading: () => _buildScreenShell(child: _buildLoadingCard()),
-        error: (error, _) => _buildScreenShell(
-          child: _buildMessageCard(
-            icon: Icons.error_outline,
-            iconColor: AppColors.error,
-            title: context.l10n.taskLoadFailed,
-            description: error.toString(),
-            actionLabel: context.l10n.commonRetry,
-            onAction: () =>
+        loading: () => AdminFormScaffold(
+          title: context.l10n.taskEditTitle,
+          body: const AdminFormScreenSkeleton(
+            titleWidth: 150,
+            sectionFieldCounts: [4],
+          ),
+        ),
+        error: (error, _) => AdminFormScaffold(
+          title: context.l10n.taskEditTitle,
+          body: AdminErrorState(
+            error: error,
+            onRetry: () =>
                 ref.invalidate(taskDetailProvider((siteId, widget.taskId!))),
           ),
         ),
         data: (task) {
           _hydrateOnce(task);
-          return _buildScreenShell(child: _buildFormCard());
+          return _buildFormScaffold(siteLabel: null); // Edit doesn't need site selector
         },
       );
     }
 
-    _selectedSite ??= ref.watch(selectedSiteProvider);
-    return _buildScreenShell(child: _buildFormCard());
-  }
+    final selectedSite = ref.watch(selectedSiteProvider);
 
-  Widget _buildScreenShell({required Widget child}) {
-    final hPad = context.rw(0.051);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: hPad),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: context.rh(0.015)),
-                _buildTopBar(),
-                SizedBox(height: context.rh(0.03)),
-                Text(
-                  isEditMode
-                      ? context.l10n.taskEditTitle
-                      : context.l10n.taskAddTitle,
-                  style: AppTextStyles.sectionTitle(context),
-                ),
-                SizedBox(height: context.rh(0.03)),
-                child,
-                SizedBox(
-                  height:
-                      context.rh(0.02) + MediaQuery.paddingOf(context).bottom,
-                ),
-              ],
-            ),
-          ),
+    if (selectedSite == null) {
+      return AdminFormScaffold(
+        title: context.l10n.taskAddTitle,
+        body: AdminEmptyState(
+          icon: Icons.location_off_outlined,
+          title: context.l10n.forumSiteNotSelectedTitle,
+          message: context.l10n.forumSelectActiveSiteBeforePosting,
         ),
-      ),
-    );
+      );
+    }
+
+    return _buildFormScaffold(siteLabel: selectedSite.displayName);
   }
 
-  Widget _buildTopBar() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: CircularBackButtonWidget(onPressed: () => context.pop()),
-    );
-  }
-
-  Widget _buildLoadingCard() => TaskFormCardSkeleton(isEditMode: isEditMode);
-
-  Widget _buildMessageCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String description,
-    required String actionLabel,
-    required VoidCallback onAction,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: context.rw(0.143).clamp(52.0, 60.0),
-            color: iconColor,
-          ),
-          SizedBox(height: context.rh(0.02)),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.cardTitle(context, context.sp(16)),
-          ),
-          SizedBox(height: context.rh(0.01)),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption(context, size: context.sp(13)),
-          ),
-          SizedBox(height: context.rh(0.03)),
-          ElevatedButton(
-            onPressed: onAction,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            ),
-            child: Text(
-              actionLabel,
-              style: AppTextStyles.label(
-                context,
-                size: context.sp(14),
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFormCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Form(
+  Widget _buildFormScaffold({required String? siteLabel}) {
+    return AdminFormScaffold(
+      title: isEditMode
+          ? context.l10n.taskEditTitle
+          : context.l10n.taskAddTitle,
+      isLoading: _isSubmitting,
+      body: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rw(0.051),
+            vertical: context.rh(0.01),
+          ),
           children: [
-            if (!isEditMode) ...[
-              _FormField(
-                label: context.l10n.siteTitle,
-                child: _buildSiteSelector(),
+            AdminSectionCard(
+              child: Column(
+                children: [
+                  if (siteLabel != null && !isEditMode) ...[
+                    AdminFormFields.buildFieldShell(
+                      context,
+                      label: context.l10n.siteTitle,
+                      child: Container(
+                        height: context.rh(0.05).clamp(44.0, 48.0),
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          siteLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.label(
+                            context,
+                            size: context.sp(14),
+                            weight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: context.rh(0.016)),
+                  ],
+                  AdminFormFields.buildField(
+                    context,
+                    controller: _taskNameController,
+                    label: context.l10n.taskNameLabel,
+                    hint: context.l10n.taskNameHint,
+                    icon: Icons.assignment_outlined,
+                    textInputAction: TextInputAction.next,
+                    required: true,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return context.l10n.taskNameRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildField(
+                    context,
+                    controller: _taskDescriptionController,
+                    label: context.l10n.commonDescription,
+                    hint: context.l10n.taskDescriptionHint,
+                    icon: Icons.description_outlined,
+                    textInputAction: TextInputAction.newline,
+                    maxLines: 4,
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildFieldShell(
+                    context,
+                    label: context.l10n.taskTypeLabel,
+                    child: _buildTypeSelector(),
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildFieldShell(
+                    context,
+                    label: context.l10n.commonPriority,
+                    child: _buildPrioritySelector(),
+                  ),
+                  if (isEditMode) ...[
+                    SizedBox(height: context.rh(0.016)),
+                    AdminFormFields.buildFieldShell(
+                      context,
+                      label: context.l10n.commonStatus,
+                      child: _buildStatusSelector(),
+                    ),
+                  ],
+                ],
               ),
-              SizedBox(height: context.rh(0.025)),
-            ],
-            _FormField(
-              label: context.l10n.taskNameLabel,
-              child: _buildTextField(
-                controller: _taskNameController,
-                hintText: context.l10n.taskNameHint,
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.taskNameRequired;
-                  }
-                  return null;
-                },
-              ),
             ),
-            SizedBox(height: context.rh(0.025)),
-            _FormField(
-              label: context.l10n.commonDescription,
-              child: _buildTextField(
-                controller: _taskDescriptionController,
-                hintText: context.l10n.taskDescriptionHint,
-                maxLines: 4,
-                textInputAction: TextInputAction.newline,
-              ),
+            SizedBox(height: context.rh(0.03)),
+            AdminSubmitButton(
+              label: isEditMode
+                  ? context.l10n.commonSaveChanges
+                  : context.l10n.taskAddTitle,
+              onPressed: _handleSubmit,
             ),
-            SizedBox(height: context.rh(0.025)),
-            _FormField(
-              label: context.l10n.taskTypeLabel,
-              child: _buildTypeSelector(),
-            ),
-            SizedBox(height: context.rh(0.025)),
-            _FormField(
-              label: context.l10n.commonPriority,
-              child: _buildPrioritySelector(),
-            ),
-            if (isEditMode) ...[
-              SizedBox(height: context.rh(0.025)),
-              _FormField(
-                label: context.l10n.commonStatus,
-                child: _buildStatusSelector(),
-              ),
-            ],
-            SizedBox(height: context.rh(0.037)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _CircleActionButton(
-                  svgPath: 'assets/icons/close-icon.svg',
-                  onTap: () => context.pop(),
-                ),
-                _CircleActionButton(
-                  svgPath: 'assets/icons/check-icon.svg',
-                  onTap: _isSubmitting ? null : _handleSubmit,
-                  isLoading: _isSubmitting,
-                ),
-              ],
-            ),
+            SizedBox(height: context.rh(0.04)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputAction? textInputAction,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    final isMultiline = maxLines > 1;
-    final borderRadius = BorderRadius.circular(
-      isMultiline ? AppRadius.xl : AppRadius.pill,
-    );
-
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      maxLines: maxLines,
-      textInputAction: textInputAction,
-      style: AppTextStyles.label(
-        context,
-        size: context.sp(14),
-        weight: FontWeight.w400,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        hoverColor: Colors.transparent,
-        border: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: context.rw(0.041),
-          vertical: isMultiline ? context.rh(0.016) : context.rh(0.012),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSiteSelector() {
-    final sitesAsync = ref.watch(sitesProvider);
-
-    return sitesAsync.when(
-      skipLoadingOnReload: true,
-      skipLoadingOnRefresh: true,
-      skipError: true,
-      loading: () => Container(
-        height: context.rh(0.05).clamp(44.0, 48.0),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-        ),
-        child: const SkeletonContainer(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SkeletonLine(width: 140, height: 13),
-            ),
-          ),
-        ),
-      ),
-      error: (error, _) => Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(context.rw(0.036)),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Text(
-          context.l10n.taskLoadSiteFailed(error.toString()),
-          style: AppTextStyles.label(
-            context,
-            size: context.sp(12),
-            color: AppColors.error,
-          ),
-        ),
-      ),
-      data: (sites) {
-        if (sites.isEmpty) {
-          return Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(context.rw(0.036)),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: Text(
-              context.l10n.taskNoSite,
-              style: AppTextStyles.label(
-                context,
-                size: context.sp(13),
-                weight: FontWeight.w400,
-              ),
-            ),
-          );
-        }
-
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _showSitePicker(sites),
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            hoverColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            child: Container(
-              height: context.rh(0.05).clamp(44.0, 48.0),
-              padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _selectedSite?.siteName ?? context.l10n.siteSelectFirst,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                          (_selectedSite == null
-                                  ? AppTextStyles.hint(
-                                      context,
-                                      size: context.sp(14),
-                                    )
-                                  : AppTextStyles.label(
-                                      context,
-                                      size: context.sp(14),
-                                      weight: FontWeight.w400,
-                                    ))
-                              .copyWith(height: 1),
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: AppColors.textPrimary,
-                    size: context.sp(22),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showSitePicker(List<Site> sites) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.l10n.siteSelect,
-                  style: AppTextStyles.cardTitle(sheetContext, 16),
-                ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: context.rh(0.55)),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: sites.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (_, index) {
-                      final site = sites[index];
-                      final isSelected = _selectedSite?.siteId == site.siteId;
-
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                          onTap: () {
-                            setState(() => _selectedSite = site);
-                            Navigator.of(sheetContext).pop();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.surfaceVariant
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(AppRadius.lg),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    site.siteName ?? site.siteId,
-                                    style: AppTextStyles.label(
-                                      sheetContext,
-                                      size: context.sp(14),
-                                      weight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
-                                if (isSelected)
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildTypeSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        spacing: 8,
+        runSpacing: 8,
       children: TaskType.values.map((type) {
         final isSelected = type == _selectedType;
         return _buildChoiceChip(
@@ -568,13 +242,17 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           onTap: () => setState(() => _selectedType = type),
         );
       }).toList(),
+      ),
     );
   }
 
   Widget _buildPrioritySelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        spacing: 8,
+        runSpacing: 8,
       children: TaskPriority.values.map((priority) {
         final isSelected = priority == _selectedPriority;
         final color = _priorityColor(priority);
@@ -590,13 +268,17 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           onTap: () => setState(() => _selectedPriority = priority),
         );
       }).toList(),
+      ),
     );
   }
 
   Widget _buildStatusSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        spacing: 8,
+        runSpacing: 8,
       children: TaskStatus.values.map((status) {
         final isSelected = status == _selectedStatus;
         final color = _statusColor(status);
@@ -610,6 +292,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           onTap: () => setState(() => _selectedStatus = status),
         );
       }).toList(),
+      ),
     );
   }
 
@@ -663,12 +346,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
 
-    if (!isEditMode && _selectedSite == null) {
+    final selectedSite = ref.read(selectedSiteProvider);
+    if (!isEditMode && selectedSite == null) {
       _showError(messenger, l10n.siteSelectFirst);
       return;
     }
 
-    final siteId = isEditMode ? _editSiteId : _selectedSite?.siteId;
+    final siteId = isEditMode ? _editSiteId : selectedSite?.siteId;
     if (siteId == null) {
       _showError(messenger, l10n.taskSiteIdMissing);
       return;
@@ -760,86 +444,5 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       case TaskStatus.failed:
         return AppColors.error;
     }
-  }
-}
-
-class _FormField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _FormField({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label(
-            context,
-            size: context.sp(14),
-            weight: FontWeight.w400,
-          ),
-        ),
-        SizedBox(height: context.rh(0.01)),
-        child,
-      ],
-    );
-  }
-}
-
-class _CircleActionButton extends StatelessWidget {
-  final String svgPath;
-  final VoidCallback? onTap;
-  final bool isLoading;
-
-  const _CircleActionButton({
-    required this.svgPath,
-    required this.onTap,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final size = context.rw(0.128).clamp(48.0, 56.0);
-    final iconSize = context.rw(0.062).clamp(22.0, 28.0);
-    final isDisabled = onTap == null;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: isDisabled
-              ? AppColors.surfaceVariant.withValues(alpha: 0.5)
-              : AppColors.surfaceVariant,
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: isLoading
-              ? SizedBox(
-                  width: iconSize,
-                  height: iconSize,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.textPrimary,
-                  ),
-                )
-              : SvgPicture.asset(
-                  svgPath,
-                  width: iconSize,
-                  height: iconSize,
-                  colorFilter: ColorFilter.mode(
-                    isDisabled
-                        ? AppColors.textPrimary.withValues(alpha: 0.3)
-                        : AppColors.textPrimary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-        ),
-      ),
-    );
   }
 }

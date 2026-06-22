@@ -46,6 +46,7 @@ class AdminFormFields {
           enabled: enabled,
           suffixText: suffixText,
           suffixIcon: suffixIcon,
+          isMultiline: maxLines > 1,
         ),
         validator: validator,
       ),
@@ -97,8 +98,9 @@ class AdminFormFields {
     bool enabled = true,
     String? suffixText,
     Widget? suffixIcon,
+    bool isMultiline = false,
   }) {
-    final borderRadius = BorderRadius.circular(AppRadius.pill);
+    final borderRadius = BorderRadius.circular(isMultiline ? AppRadius.lg : AppRadius.pill);
 
     return InputDecoration(
       hintText: hintText == null || hintText.isEmpty ? null : hintText,
@@ -173,7 +175,7 @@ class AdminFormFields {
       ),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         children: [
