@@ -73,7 +73,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.sm),
                   _buildPasswordField(
                     context,
                     controller: _newPasswordController,
@@ -90,7 +90,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.sm),
                   _buildPasswordField(
                     context,
                     controller: _confirmPasswordController,
@@ -115,12 +115,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: l10n.changePasswordSubmit,
               isLoading: changePasswordState.isLoading,
               onPressed: _submit,
             ),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

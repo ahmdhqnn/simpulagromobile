@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/l10n.dart';
@@ -32,15 +33,15 @@ class _SiteNoteFormScreenState extends ConsumerState<SiteNoteFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final l10n = context.l10n;
     setState(() => _isSubmitting = true);
 
     final success = await ref
         .read(createNoteProvider.notifier)
         .create(
-          siteId: widget.siteId, 
-          title: _titleController.text.trim(), 
+          siteId: widget.siteId,
+          title: _titleController.text.trim(),
           desc: _descController.text.trim(),
         );
 
@@ -98,7 +99,7 @@ class _SiteNoteFormScreenState extends ConsumerState<SiteNoteFormScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildField(
                     context,
                     controller: _descController,
@@ -117,13 +118,13 @@ class _SiteNoteFormScreenState extends ConsumerState<SiteNoteFormScreen> {
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: l10n.commonSave,
               onPressed: _submit,
               isLoading: _isSubmitting,
             ),
-            SizedBox(height: context.rh(0.04)),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

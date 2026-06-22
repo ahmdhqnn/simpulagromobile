@@ -128,7 +128,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
             ],
 
             AdminSectionCard(
@@ -145,15 +145,15 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                         ? l10n.plantNameRequired
                         : null,
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   _buildVarietasField(context, l10n, varietasAsync),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildFieldShell(
                     context,
                     label: l10n.plantTypeLabel,
                     child: _buildPlantTypeDropdown(context, l10n),
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildFieldShell(
                     context,
                     label: l10n.plantDateLabel,
@@ -162,14 +162,14 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
                 ],
               ),
             ),
-            
-            SizedBox(height: context.rh(0.03)),
+
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: _isEditMode ? l10n.commonSaveChanges : l10n.plantAddTitle,
               onPressed: hasActivePlant ? () {} : _submitForm,
               isLoading: _isSubmitting || isProviderSubmitting,
             ),
-            SizedBox(height: context.rh(0.04)),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

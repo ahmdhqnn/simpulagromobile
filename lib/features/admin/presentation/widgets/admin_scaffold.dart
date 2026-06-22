@@ -46,7 +46,7 @@ class AdminScaffold extends StatelessWidget {
                         context.rw(0.051),
                         0,
                         context.rw(0.051),
-                        context.rh(0.014),
+                        AppSpacing.sm,
                       ),
                       child: AdminSectionTitle(title),
                     ),
@@ -129,7 +129,7 @@ class AdminFormScaffold extends StatelessWidget {
                         context.rw(0.051),
                         0,
                         context.rw(0.051),
-                        context.rh(0.014),
+                        AppSpacing.sm,
                       ),
                       child: AdminSectionTitle(title),
                     ),
@@ -319,7 +319,12 @@ class AdminErrorState extends StatelessWidget {
 }
 
 class AdminDetailScreenSkeleton extends StatelessWidget {
-  const AdminDetailScreenSkeleton({super.key});
+  const AdminDetailScreenSkeleton({
+    super.key,
+    this.sectionRowCounts = const [5, 3],
+  });
+
+  final List<int> sectionRowCounts;
 
   @override
   Widget build(BuildContext context) {
@@ -329,13 +334,17 @@ class AdminDetailScreenSkeleton extends StatelessWidget {
         horizontal: context.rw(0.051),
         vertical: context.rh(0.01),
       ),
-      children: const [
-        _AdminDetailHeaderSkeleton(),
-        SizedBox(height: 14),
-        KeyValueRowsCardSkeleton(rowCount: 5),
-        SizedBox(height: 14),
-        KeyValueRowsCardSkeleton(rowCount: 3),
-        SizedBox(height: 24),
+      children: [
+        const _AdminDetailHeaderSkeleton(),
+        const SizedBox(height: AppSpacing.sm),
+        for (int index = 0; index < sectionRowCounts.length; index++) ...[
+          _AdminDetailSectionSkeleton(rowCount: sectionRowCounts[index]),
+          SizedBox(
+            height: index == sectionRowCounts.length - 1
+                ? AppSpacing.xl
+                : AppSpacing.sm,
+          ),
+        ],
       ],
     );
   }
@@ -371,6 +380,82 @@ class _AdminDetailHeaderSkeleton extends StatelessWidget {
   }
 }
 
+class _AdminDetailSectionSkeleton extends StatelessWidget {
+  const _AdminDetailSectionSkeleton({required this.rowCount});
+
+  final int rowCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return AdminSectionCard(
+      child: SkeletonContainer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SkeletonLine(width: 132, height: 16),
+            const SizedBox(height: 10),
+            for (int index = 0; index < rowCount; index++)
+              AdminDetailRowSkeleton(showDivider: index != rowCount - 1),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AdminDetailRowsSkeleton extends StatelessWidget {
+  const AdminDetailRowsSkeleton({super.key, required this.rowCount});
+
+  final int rowCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (int index = 0; index < rowCount; index++)
+          AdminDetailRowSkeleton(showDivider: index != rowCount - 1),
+      ],
+    );
+  }
+}
+
+class AdminDetailRowSkeleton extends StatelessWidget {
+  const AdminDetailRowSkeleton({super.key, this.showDivider = true});
+
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonContainer(
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(width: 36, height: 36, borderRadius: 10),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLine(width: 92, height: 12),
+                      SizedBox(height: 6),
+                      SkeletonLine(width: 148, height: 14),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (showDivider) const Divider(height: 1, color: AppColors.divider),
+        ],
+      ),
+    );
+  }
+}
+
 class AdminPermissionLoadingState extends StatelessWidget {
   const AdminPermissionLoadingState({super.key});
 
@@ -384,9 +469,9 @@ class AdminPermissionLoadingState extends StatelessWidget {
       ),
       children: const [
         CompactStatsCardSkeleton(itemCount: 2),
-        SizedBox(height: 14),
+        SizedBox(height: AppSpacing.sm),
         KeyValueRowsCardSkeleton(rowCount: 4),
-        SizedBox(height: 14),
+        SizedBox(height: AppSpacing.sm),
         KeyValueRowsCardSkeleton(rowCount: 4),
         SizedBox(height: 24),
       ],

@@ -131,7 +131,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
@@ -149,7 +149,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _emailController,
@@ -173,7 +173,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _phoneController,
@@ -193,14 +193,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               if (!isEditMode) ...[
                 AdminSectionCard(
                   title: context.l10n.adminSecuritySection,
                   child: _buildPasswordField(context),
                 ),
-                SizedBox(height: context.rh(0.02)),
+                const SizedBox(height: AppSpacing.sm),
               ],
 
               AdminSectionCard(
@@ -230,14 +230,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                         ],
                         onChanged: (v) => setState(() => _selectedRoleId = v),
                       ),
-                      SizedBox(height: context.rh(0.016)),
+                      const SizedBox(height: AppSpacing.sm),
                     ] else if (_selectedRoleId != null) ...[
                       _ReadOnlyInfoRow(
                         icon: Icons.admin_panel_settings,
                         label: context.l10n.adminRoleLabel,
                         value: _roleLabel(context, _selectedRoleId!),
                       ),
-                      SizedBox(height: context.rh(0.016)),
+                      const SizedBox(height: AppSpacing.sm),
                     ],
                     AdminFormFields.buildDropdown<String>(
                       context,
@@ -260,7 +260,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.03)),
+              const SizedBox(height: AppSpacing.xl),
 
               AdminSubmitButton(
                 label: isEditMode
@@ -268,7 +268,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     : context.l10n.adminAddUserTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

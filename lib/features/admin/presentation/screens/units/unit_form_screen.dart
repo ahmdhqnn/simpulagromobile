@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:simpulagromobile/core/theme/app_theme.dart';
 import 'package:simpulagromobile/core/utils/responsive.dart';
 import 'package:simpulagromobile/core/utils/snackbar_helper.dart';
 import 'package:simpulagromobile/l10n/l10n.dart';
@@ -125,7 +126,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _nameController,
@@ -143,7 +144,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _symbolController,
@@ -158,7 +159,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildField(
                       context,
                       controller: _descController,
@@ -170,7 +171,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               AdminSectionCard(
                 title: context.l10n.adminStatusSection,
@@ -181,7 +182,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
               ),
-              SizedBox(height: context.rh(0.03)),
+              const SizedBox(height: AppSpacing.xl),
 
               AdminSubmitButton(
                 label: isEditMode
@@ -189,7 +190,7 @@ class _UnitFormScreenState extends ConsumerState<UnitFormScreen> {
                     : context.l10n.adminAddUnitTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

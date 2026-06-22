@@ -158,7 +158,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                             return null;
                           },
                         ),
-                        const Gap(16),
+                        const Gap(AppSpacing.sm),
                       ],
                       _buildField(
                         label: '${context.l10n.siteNameLabel} *',
@@ -175,7 +175,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           return null;
                         },
                       ),
-                      const Gap(16),
+                      const Gap(AppSpacing.sm),
                       _buildField(
                         label: isEdit
                             ? context.l10n.commonAddress
@@ -194,7 +194,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     ],
                   ),
 
-                  const Gap(16),
+                  const Gap(AppSpacing.sm),
 
                   _buildCard(
                     context,
@@ -208,7 +208,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           color: const Color(0xFF1D1D1D),
                         ),
                       ),
-                      const Gap(12),
+                      const Gap(AppSpacing.sm),
                       Row(
                         children: [
                           Expanded(
@@ -239,7 +239,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                               },
                             ),
                           ),
-                          const Gap(12),
+                          const Gap(AppSpacing.sm),
                           Expanded(
                             child: _buildField(
                               label: isEdit
@@ -270,7 +270,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                           ),
                         ],
                       ),
-                      const Gap(16),
+                      const Gap(AppSpacing.sm),
                       _buildField(
                         label: isEdit
                             ? context.l10n.siteAltitudeLabel
@@ -297,7 +297,7 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     ],
                   ),
 
-                  const Gap(16),
+                  const Gap(AppSpacing.sm),
 
                   AdminSectionCard(
                     child: AdminFormFields.buildStatusToggle(
@@ -308,12 +308,13 @@ class _SiteFormScreenState extends ConsumerState<SiteFormScreen> {
                     ),
                   ),
 
-                  SizedBox(height: context.rh(0.03)),
+                  const SizedBox(height: AppSpacing.xl),
                   AdminSubmitButton(
                     label: submitLabel,
                     isLoading: formState.isLoading,
                     onPressed: _handleSave,
                   ),
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),

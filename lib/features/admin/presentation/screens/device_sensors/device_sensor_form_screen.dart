@@ -139,7 +139,7 @@ class _DeviceSensorFormScreenState
                 onSensorChanged: (v) => setState(() => _selectedSensorId = v),
                 onUnitChanged: (v) => setState(() => _selectedUnitId = v),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
               _ThresholdSection(
                 normalValueController: _normalValueController,
                 minNormController: _minNormController,
@@ -149,7 +149,7 @@ class _DeviceSensorFormScreenState
                 minWarnController: _minWarnController,
                 maxWarnController: _maxWarnController,
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
               AdminSectionCard(
                 title: context.l10n.adminStatusSection,
                 child: AdminFormFields.buildStatusToggle(
@@ -159,14 +159,14 @@ class _DeviceSensorFormScreenState
                   onChanged: (v) => setState(() => _status = v ? 1 : 0),
                 ),
               ),
-              SizedBox(height: context.rh(0.03)),
+              const SizedBox(height: AppSpacing.xl),
               AdminSubmitButton(
                 label: _isEditMode
                     ? context.l10n.commonSaveChanges
                     : context.l10n.adminAddDeviceSensorTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
@@ -397,7 +397,7 @@ class _MappingInfoSection extends ConsumerWidget {
                 ? context.l10n.adminDsIdRequired
                 : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AdminFormFields.buildField(
             context,
             controller: nameController,
@@ -409,7 +409,7 @@ class _MappingInfoSection extends ConsumerWidget {
                 ? context.l10n.adminNameRequired
                 : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminDeviceListProvider),
             value: selectedDeviceId,
@@ -430,7 +430,7 @@ class _MappingInfoSection extends ConsumerWidget {
             validator: (v) =>
                 v == null ? context.l10n.adminDeviceRequired : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminSensorListProvider),
             value: selectedSensorId,
@@ -453,7 +453,7 @@ class _MappingInfoSection extends ConsumerWidget {
             onChanged: onSensorChanged,
             validator: (v) => v == null ? context.l10n.commonRequired : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AsyncDropdownWidget<dynamic, String>(
             async: ref.watch(adminUnitListProvider),
             value: selectedUnitId,
@@ -476,7 +476,7 @@ class _MappingInfoSection extends ConsumerWidget {
             onChanged: onUnitChanged,
             validator: (v) => v == null ? context.l10n.commonRequired : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AdminFormFields.buildField(
             context,
             controller: addressController,
@@ -488,7 +488,7 @@ class _MappingInfoSection extends ConsumerWidget {
                 ? context.l10n.commonRequired
                 : null,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           AdminFormFields.buildField(
             context,
             controller: seqController,
@@ -542,7 +542,7 @@ class _ThresholdSection extends StatelessWidget {
             icon: Icons.check_circle_outline,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           ThresholdRowWidget(
             leftController: minNormController,
             leftLabel: context.l10n.adminMinNormalLabel,
@@ -553,7 +553,7 @@ class _ThresholdSection extends StatelessWidget {
             rightIcon: Icons.arrow_upward,
             rightColor: AppColors.success,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           ThresholdRowWidget(
             leftController: minValueController,
             leftLabel: context.l10n.adminMinAbsoluteLabel,
@@ -564,7 +564,7 @@ class _ThresholdSection extends StatelessWidget {
             rightIcon: Icons.arrow_upward,
             rightColor: AppColors.info,
           ),
-          SizedBox(height: context.rh(0.016)),
+          const SizedBox(height: AppSpacing.sm),
           ThresholdRowWidget(
             leftController: minWarnController,
             leftLabel: context.l10n.adminMinWarningLabel,

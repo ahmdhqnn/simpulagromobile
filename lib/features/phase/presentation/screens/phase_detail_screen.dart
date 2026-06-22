@@ -93,11 +93,7 @@ class PhaseDetailScreen extends ConsumerWidget {
       ref,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.xs),
-          buildListSkeleton(count: 3, type: 'phase', padding: EdgeInsets.zero),
-          const SizedBox(height: AppSpacing.lg),
-        ],
+        children: [const PhaseDetailCardsSkeleton()],
       ),
     );
   }

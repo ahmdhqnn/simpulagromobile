@@ -166,7 +166,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         textInputAction: TextInputAction.next,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sm),
 
                       // Tipe Sensor
                       DropdownButtonFormField<String>(
@@ -200,7 +200,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sm),
 
                       // Satuan
                       TextFormField(
@@ -219,7 +219,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                         textInputAction: TextInputAction.next,
                         style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sm),
 
                       // Deskripsi
                       TextFormField(
@@ -236,7 +236,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.sm),
 
                   // Status aktif
                   Container(
@@ -268,7 +268,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Submit Button
                   SizedBox(
@@ -302,6 +302,7 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
                             ),
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),

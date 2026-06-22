@@ -119,7 +119,8 @@ class _PlantList extends ConsumerWidget {
                 vertical: context.rh(0.01),
               ),
               itemCount: plants.length,
-              separatorBuilder: (_, __) => SizedBox(height: context.rh(0.014)),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppSpacing.sm),
               itemBuilder: (_, index) => _PlantCard(plant: plants[index]),
             ),
           ),

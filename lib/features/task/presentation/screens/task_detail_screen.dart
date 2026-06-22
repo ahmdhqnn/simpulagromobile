@@ -41,7 +41,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
                 child: _buildTopBar(context),
               ),
-              SizedBox(height: context.rh(0.024)),
+              const SizedBox(height: AppSpacing.lg),
               _buildErrorState(context, context.l10n.siteSelectFirst, null),
             ],
           ),
@@ -73,23 +73,20 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 padding: EdgeInsets.fromLTRB(hPad, context.rh(0.015), hPad, 0),
                 child: _buildTopBar(context, siteId: siteId, task: task),
               ),
-              SizedBox(height: context.rh(0.024)),
+              const SizedBox(height: AppSpacing.lg),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: hPad),
                 child: taskAsync.when(
                   skipLoadingOnReload: true,
                   skipLoadingOnRefresh: true,
                   skipError: true,
-                  loading: () => const DetailScreenSkeleton(
-                    infoRowCount: 6,
-                    hasDescription: true,
-                  ),
+                  loading: () => const TaskDetailContentSkeleton(),
                   error: (error, _) =>
                       _buildErrorState(context, error.toString(), siteId),
                   data: (task) => _buildContent(context, task),
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
@@ -179,11 +176,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildStatusCard(context, task),
-        SizedBox(height: context.rh(0.02)),
+        const SizedBox(height: AppSpacing.sm),
         _buildInfoCard(context, task),
-        SizedBox(height: context.rh(0.02)),
+        const SizedBox(height: AppSpacing.sm),
         _buildDetailsCard(context, task),
-        SizedBox(height: context.rh(0.02)),
+        const SizedBox(height: AppSpacing.sm),
         _buildTimelineCard(context, task),
       ],
     );
@@ -218,7 +215,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             const SizedBox(height: 1),
             Text(task.taskDescription!, style: AppTextStyles.hint(context)),
           ],
-          SizedBox(height: context.rh(0.02)),
+          const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
@@ -257,7 +254,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             context.l10n.taskInfoTitle,
             style: AppTextStyles.cardTitle(context, 14),
           ),
-          SizedBox(height: context.rh(0.015)),
+          const SizedBox(height: AppSpacing.sm),
           TaskInfoRowWidget(
             icon: Icons.category_outlined,
             label: context.l10n.taskTypeLabel,
@@ -288,7 +285,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             context.l10n.taskTimeDetailsTitle,
             style: AppTextStyles.cardTitle(context, 14),
           ),
-          SizedBox(height: context.rh(0.015)),
+          const SizedBox(height: AppSpacing.sm),
           if (task.createdAt != null)
             TaskInfoRowWidget(
               icon: Icons.add_circle_outline,
@@ -333,7 +330,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             context.l10n.taskTimelineTitle,
             style: AppTextStyles.cardTitle(context, 14),
           ),
-          SizedBox(height: context.rh(0.015)),
+          const SizedBox(height: AppSpacing.sm),
           if (task.createdAt != null)
             TaskTimelineItemWidget(
               icon: Icons.add_circle,
@@ -376,18 +373,18 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            SizedBox(height: context.rh(0.02)),
+            const SizedBox(height: AppSpacing.md),
             Text(
               context.l10n.commonError,
               style: AppTextStyles.cardTitle(context),
             ),
-            SizedBox(height: context.rh(0.01)),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               error,
               textAlign: TextAlign.center,
               style: AppTextStyles.caption(context, size: 13),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -444,11 +441,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           );
         },
         (_) async {
-          await refreshTaskCache(
-            ref,
-            siteId: siteId,
-            taskId: task.taskId,
-          );
+          await refreshTaskCache(ref, siteId: siteId, taskId: task.taskId);
           if (context.mounted) {
             SnackbarHelper.showSuccess(context, l10n.taskDeleteSuccess);
             context.pop(true);

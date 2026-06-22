@@ -161,9 +161,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   padding: EdgeInsets.only(
                                     bottom: context.rh(0.012),
                                   ),
-                                  child: const PostCardSkeleton(
-                                    hasImage: false,
-                                  ),
+                                  child: const PostCommentCardSkeleton(),
                                 ),
                                 childCount: 2,
                               ),
@@ -206,11 +204,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           const SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
-                              child: SimpleRowsCardSkeleton(
-                                rowCount: 2,
-                                rowHeight: 42,
-                                iconSize: 32,
-                              ),
+                              child: PostCommentCardSkeleton(),
                             ),
                           ),
                         SliverToBoxAdapter(
@@ -236,13 +230,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: hPad),
-                  child: const DetailScreenSkeleton(
-                    infoRowCount: 3,
-                    hasDescription: true,
-                    headerHeight: 120,
-                  ),
+                  child: const PostDetailContentSkeleton(),
                 ),
               ),
+              const PostCommentInputSkeleton(),
             ],
           ),
         ),

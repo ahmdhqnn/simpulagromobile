@@ -141,7 +141,7 @@ class SensorDetailScreen extends ConsumerWidget {
                   ),
                 ),
 
-                SizedBox(height: context.rh(0.02)),
+                const SizedBox(height: AppSpacing.sm),
 
                 // Information Card
                 Container(
@@ -202,7 +202,7 @@ class SensorDetailScreen extends ConsumerWidget {
                   ),
                 ),
 
-                SizedBox(height: context.rh(0.02)),
+                const SizedBox(height: AppSpacing.lg),
 
                 // Delete Button - Hidden as it is unsupported on the backend
                 const SizedBox.shrink(),
@@ -210,11 +210,7 @@ class SensorDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        loading: () => const DetailScreenSkeleton(
-          infoRowCount: 5,
-          hasDescription: true,
-          headerHeight: 0,
-        ),
+        loading: () => const EntityDetailContentSkeleton(infoRowCount: 5),
         error: (error, stack) => Center(
           child: Padding(
             padding: EdgeInsets.all(context.rw(0.061)),

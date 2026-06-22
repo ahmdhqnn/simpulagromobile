@@ -384,7 +384,9 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                       child: Container(
                         height: context.rh(0.05).clamp(44.0, 48.0),
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.rw(0.041),
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceVariant,
                           borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -402,7 +404,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                   AdminFormFields.buildField(
                     context,
@@ -422,7 +424,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildField(
                     context,
                     controller: _contentController,
@@ -442,13 +444,13 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   AdminFormFields.buildFieldShell(
                     context,
                     label: context.l10n.forumMediaLabel,
                     child: _buildImageField(),
                   ),
-                  SizedBox(height: context.rh(0.016)),
+                  const SizedBox(height: AppSpacing.sm),
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(context.rw(0.036)),
@@ -481,7 +483,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                 ],
               ),
             ),
-            SizedBox(height: context.rh(0.03)),
+            const SizedBox(height: AppSpacing.xl),
             AdminSubmitButton(
               label: _isEditMode
                   ? context.l10n.commonSaveChanges
@@ -489,7 +491,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
               onPressed: _submit,
               isLoading: _isSubmitting,
             ),
-            SizedBox(height: context.rh(0.04)),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

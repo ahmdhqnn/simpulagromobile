@@ -37,7 +37,8 @@ class AdminSensorDetailScreen extends ConsumerWidget {
         body: sensorAsync.when(
           skipLoadingOnReload: true,
           data: (sensor) => _SensorDetailBody(sensor: sensor),
-          loading: () => const AdminDetailScreenSkeleton(),
+          loading: () =>
+              const AdminDetailScreenSkeleton(sectionRowCounts: [6, 2]),
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () => ref.invalidate(adminSensorDetailProvider(sensorId)),
@@ -76,7 +77,7 @@ class _SensorDetailBody extends ConsumerWidget {
             activeLabel: context.l10n.commonActive,
             inactiveLabel: context.l10n.commonInactive,
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: context.l10n.adminBasicInfoSection,
             child: Column(
@@ -117,7 +118,7 @@ class _SensorDetailBody extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(height: context.rh(0.014)),
+          const SizedBox(height: AppSpacing.sm),
           AdminSectionCard(
             title: 'Metadata',
             child: Column(

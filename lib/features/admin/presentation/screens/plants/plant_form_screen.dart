@@ -123,7 +123,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                         icon: Icons.tag,
                         enabled: false,
                       ),
-                      SizedBox(height: context.rh(0.016)),
+                      const SizedBox(height: AppSpacing.sm),
                     ],
                     AdminFormFields.buildField(
                       context,
@@ -142,7 +142,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     AdminFormFields.buildDropdown<CropType>(
                       context,
                       value: _selectedCropType,
@@ -167,18 +167,18 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                       validator: (v) =>
                           v == null ? context.l10n.adminCropTypeRequired : null,
                     ),
-                    SizedBox(height: context.rh(0.016)),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildVarietasInput(context, varietasAsync),
                   ],
                 ),
               ),
-              SizedBox(height: context.rh(0.02)),
+              const SizedBox(height: AppSpacing.sm),
 
               AdminSectionCard(
                 title: context.l10n.adminPlantingDateSection,
                 child: _buildDatePicker(context),
               ),
-              SizedBox(height: context.rh(0.03)),
+              const SizedBox(height: AppSpacing.xl),
 
               AdminSubmitButton(
                 label: isEditMode
@@ -186,7 +186,7 @@ class _PlantFormScreenState extends ConsumerState<PlantFormScreen> {
                     : context.l10n.adminAddPlantTitle,
                 onPressed: _handleSubmit,
               ),
-              SizedBox(height: context.rh(0.04)),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

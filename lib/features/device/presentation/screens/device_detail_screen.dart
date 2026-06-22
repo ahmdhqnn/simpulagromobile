@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -104,7 +105,7 @@ class DeviceDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const Gap(16),
+              const Gap(AppSpacing.sm),
 
               // Information Card
               Card(
@@ -139,7 +140,7 @@ class DeviceDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const Gap(16),
+              const Gap(AppSpacing.sm),
 
               // Coordinates Card
               if (device.hasCoordinates)
@@ -174,10 +175,10 @@ class DeviceDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        loading: () => const DetailScreenSkeleton(
+        loading: () => const EntityDetailContentSkeleton(
           infoRowCount: 5,
-          hasDescription: false,
-          headerHeight: 0,
+          secondaryRowCount: 3,
+          circularIcon: true,
         ),
         error: (error, stack) => Center(
           child: Padding(
