@@ -295,10 +295,20 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        title: Text(title, style: AppTextStyles.cardTitle(context, 18)),
-        contentPadding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        backgroundColor: AppColors.surface,
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+        contentPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w300,
+            fontSize: 22,
+            color: AppColors.textPrimary,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -309,10 +319,10 @@ class SettingsScreen extends ConsumerWidget {
                 activeColor: AppColors.primary,
                 title: Text(
                   option.label,
-                  style: AppTextStyles.label(
-                    context,
-                    size: 14,
-                    weight: FontWeight.w400,
+                  style: const TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
                     height: 1.4,
                   ),
                 ),
@@ -333,27 +343,47 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        title: Text(title, style: AppTextStyles.cardTitle(context, 18)),
+        backgroundColor: AppColors.surface,
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w300,
+            fontSize: 22,
+            color: AppColors.textPrimary,
+          ),
+        ),
         content: Text(
           content,
-          style: AppTextStyles.label(
-            context,
-            size: 14,
-            weight: FontWeight.w400,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 14,
+            color: AppColors.textSecondary,
             height: 1.5,
           ),
         ),
         actions: [
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(dialogContext),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+            ),
             child: Text(
               context.l10n.commonOk,
-              style: AppTextStyles.label(
-                context,
-                size: 14,
-                color: AppColors.primary,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ),
