@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
-import '../../../../shared/widgets/circular_back_button_widget.dart';
 import '../../../../shared/widgets/skeleton_elements.dart';
 import '../../domain/entities/plant.dart';
 import '../providers/plant_provider.dart';
 import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../varietas/domain/entities/varietas_item.dart';
 import '../../../varietas/presentation/providers/varietas_provider.dart';
+import '../../../admin/presentation/widgets/admin_scaffold.dart';
+import '../../../admin/presentation/widgets/admin_form_fields.dart';
 
 class PlantInputForm extends ConsumerStatefulWidget {
   final String siteId;
@@ -85,25 +85,18 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     }
     _syncVarietasSelection(varietasAsync.valueOrNull ?? const <VarietasItem>[]);
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: context.rw(0.051)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return AdminFormScaffold(
+      title: _isEditMode ? l10n.plantEditTitle : l10n.plantAddTitle,
+      isLoading: _isSubmitting || isProviderSubmitting,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rw(0.051),
+            vertical: context.rh(0.01),
+          ),
           children: [
-            SizedBox(height: context.rh(0.015)),
-
-            CircularBackButtonWidget(onPressed: widget.onCancel),
-
-            SizedBox(height: context.rh(0.03)),
-
-            Text(
-              _isEditMode ? l10n.plantEditTitle : l10n.plantAddTitle,
-              style: AppTextStyles.sectionTitle(context),
-            ),
-
-            SizedBox(height: context.rh(0.03)),
-
             if (hasActivePlant) ...[
               Container(
                 width: double.infinity,
@@ -138,77 +131,45 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
               SizedBox(height: context.rh(0.02)),
             ],
 
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(context.rw(0.051)),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _FormField(
-                      label: l10n.plantNameLabel,
-                      child: _buildTextField(
-                        context,
-                        controller: _plantNameController,
-                        hintText: l10n.plantNameHint,
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? l10n.plantNameRequired
-                            : null,
-                      ),
-                    ),
-
-                    SizedBox(height: context.rh(0.025)),
-
-                    _FormField(
-                      label: l10n.plantVarietasIdLabel,
-                      child: _buildVarietasField(context, l10n, varietasAsync),
-                    ),
-
-                    SizedBox(height: context.rh(0.025)),
-
-                    _FormField(
-                      label: l10n.plantTypeLabel,
-                      child: _buildPlantTypeDropdown(context, l10n),
-                    ),
-
-                    SizedBox(height: context.rh(0.025)),
-
-                    _FormField(
-                      label: l10n.plantDateLabel,
-                      child: _buildDatePicker(context),
-                    ),
-
-                    SizedBox(height: context.rh(0.037)),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _CircleActionButton(
-                          svgPath: 'assets/icons/close-icon.svg',
-                          onTap: widget.onCancel,
-                        ),
-                        _CircleActionButton(
-                          svgPath: 'assets/icons/check-icon.svg',
-                          onTap:
-                              _isSubmitting ||
-                                  isProviderSubmitting ||
-                                  hasActivePlant
-                              ? null
-                              : _submitForm,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+            AdminSectionCard(
+              child: Column(
+                children: [
+                  AdminFormFields.buildField(
+                    context,
+                    controller: _plantNameController,
+                    label: l10n.plantNameLabel,
+                    hint: l10n.plantNameHint,
+                    icon: Icons.eco_outlined,
+                    required: true,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? l10n.plantNameRequired
+                        : null,
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  _buildVarietasField(context, l10n, varietasAsync),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildFieldShell(
+                    context,
+                    label: l10n.plantTypeLabel,
+                    child: _buildPlantTypeDropdown(context, l10n),
+                  ),
+                  SizedBox(height: context.rh(0.016)),
+                  AdminFormFields.buildFieldShell(
+                    context,
+                    label: l10n.plantDateLabel,
+                    child: _buildDatePicker(context),
+                  ),
+                ],
               ),
             ),
-
-            SizedBox(height: context.rh(0.02)),
+            
+            SizedBox(height: context.rh(0.03)),
+            AdminSubmitButton(
+              label: _isEditMode ? l10n.commonSaveChanges : l10n.plantAddTitle,
+              onPressed: hasActivePlant ? () {} : _submitForm,
+              isLoading: _isSubmitting || isProviderSubmitting,
+            ),
+            SizedBox(height: context.rh(0.04)),
           ],
         ),
       ),
@@ -224,10 +185,13 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextField(
+          AdminFormFields.buildField(
             context,
             controller: _varietasIdController,
-            hintText: l10n.plantVarietasIdHint,
+            label: l10n.plantVarietasIdLabel,
+            hint: l10n.plantVarietasIdHint,
+            icon: Icons.tag,
+            required: true,
             validator: (v) => (v == null || v.trim().isEmpty)
                 ? l10n.plantVarietasIdRequired
                 : null,
@@ -251,10 +215,13 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
+              AdminFormFields.buildField(
                 context,
                 controller: _varietasIdController,
-                hintText: l10n.plantVarietasIdHint,
+                label: l10n.plantVarietasIdLabel,
+                hint: l10n.plantVarietasIdHint,
+                icon: Icons.tag,
+                required: true,
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? l10n.plantVarietasIdRequired
                     : null,
@@ -271,48 +238,32 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: context.rh(0.05).clamp(40.0, 48.0),
-              padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedVarietasId,
-                  hint: Text(
-                    l10n.plantVarietasIdHint,
-                    style: AppTextStyles.hint(context, size: context.sp(14)),
+            AdminFormFields.buildDropdown<String>(
+              context,
+              value: _selectedVarietasId,
+              label: l10n.plantVarietasIdLabel,
+              hint: l10n.plantVarietasIdHint,
+              icon: Icons.grass_outlined,
+              required: true,
+              items: activeItems.map((item) {
+                return DropdownMenuItem<String>(
+                  value: item.varietasId,
+                  child: Text(
+                    item.displayName,
+                    style: AppTextStyles.label(
+                      context,
+                      size: context.sp(14),
+                      weight: FontWeight.w400,
+                    ),
                   ),
-                  isExpanded: true,
-                  focusColor: Colors.transparent,
-                  icon: Icon(
-                    Icons.keyboard_arrow_down,
-                    color: AppColors.textPrimary,
-                    size: context.sp(22),
-                  ),
-                  items: activeItems.map((item) {
-                    return DropdownMenuItem<String>(
-                      value: item.varietasId,
-                      child: Text(
-                        item.displayName,
-                        style: AppTextStyles.label(
-                          context,
-                          size: context.sp(14),
-                          weight: FontWeight.w400,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedVarietasId = value;
-                      _varietasIdController.text = value ?? '';
-                    });
-                  },
-                ),
-              ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedVarietasId = value;
+                  _varietasIdController.text = value ?? '';
+                });
+              },
             ),
             SizedBox(height: context.rh(0.008)),
             Align(
@@ -325,18 +276,22 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
           ],
         );
       },
-      loading: () => Container(
-        height: context.rh(0.05).clamp(40.0, 48.0),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-        ),
-        child: const SkeletonContainer(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SkeletonLine(width: 150, height: 13),
+      loading: () => AdminFormFields.buildFieldShell(
+        context,
+        label: l10n.plantVarietasIdLabel,
+        child: Container(
+          height: context.rh(0.05).clamp(44.0, 48.0),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+          child: const SkeletonContainer(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SkeletonLine(width: 150, height: 13),
+              ),
             ),
           ),
         ),
@@ -344,10 +299,13 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
       error: (_, __) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextField(
+          AdminFormFields.buildField(
             context,
             controller: _varietasIdController,
-            hintText: l10n.plantVarietasIdHint,
+            label: l10n.plantVarietasIdLabel,
+            hint: l10n.plantVarietasIdHint,
+            icon: Icons.tag,
+            required: true,
             validator: (v) => (v == null || v.trim().isEmpty)
                 ? l10n.plantVarietasIdRequired
                 : null,
@@ -366,51 +324,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     );
   }
 
-  Widget _buildTextField(
-    BuildContext context, {
-    required TextEditingController controller,
-    required String hintText,
-    bool enabled = true,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      validator: validator,
-      style: AppTextStyles.label(
-        context,
-        size: context.sp(14),
-        weight: FontWeight.w400,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTextStyles.hint(context, size: context.sp(14)),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        hoverColor: Colors.transparent,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: context.rw(0.041),
-          vertical: context.rh(0.012),
-        ),
-      ),
-    );
-  }
-
   Widget _buildPlantTypeDropdown(BuildContext context, AppLocalizations l10n) {
     return Container(
-      height: context.rh(0.05).clamp(40.0, 48.0),
+      height: context.rh(0.05).clamp(44.0, 48.0),
       padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
@@ -453,7 +369,7 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     return GestureDetector(
       onTap: _selectDate,
       child: Container(
-        height: context.rh(0.05).clamp(40.0, 48.0),
+        height: context.rh(0.05).clamp(44.0, 48.0),
         padding: EdgeInsets.symmetric(horizontal: context.rw(0.041)),
         decoration: BoxDecoration(
           color: AppColors.surfaceVariant,
@@ -633,72 +549,5 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     final fromInput = _varietasIdController.text.trim();
     if (fromInput.isEmpty) return null;
     return fromInput;
-  }
-}
-
-class _FormField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _FormField({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label(
-            context,
-            size: context.sp(14),
-            weight: FontWeight.w400,
-          ),
-        ),
-        SizedBox(height: context.rh(0.01)),
-        child,
-      ],
-    );
-  }
-}
-
-class _CircleActionButton extends StatelessWidget {
-  final String svgPath;
-  final VoidCallback? onTap;
-
-  const _CircleActionButton({required this.svgPath, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final size = context.rw(0.128).clamp(48.0, 56.0);
-    final iconSize = context.rw(0.062).clamp(22.0, 28.0);
-    final isDisabled = onTap == null;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: isDisabled
-              ? AppColors.surfaceVariant.withValues(alpha: 0.5)
-              : AppColors.surfaceVariant,
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: SvgPicture.asset(
-            svgPath,
-            width: iconSize,
-            height: iconSize,
-            colorFilter: ColorFilter.mode(
-              isDisabled
-                  ? AppColors.textPrimary.withValues(alpha: 0.3)
-                  : AppColors.textPrimary,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

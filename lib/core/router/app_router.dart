@@ -21,6 +21,7 @@ import '../../features/site/presentation/screens/site_detail_screen.dart';
 import '../../features/site/presentation/screens/site_member_invite_screen.dart';
 import '../../features/site/presentation/screens/site_form_screen.dart';
 import '../../features/site/presentation/screens/site_list_screen.dart';
+import '../../features/notes/presentation/screens/site_note_form_screen.dart';
 import '../../features/plant/presentation/screens/plant_list_screen.dart';
 import '../../features/plant/presentation/screens/plant_detail_screen.dart';
 import '../../features/plant/presentation/screens/plant_form_screen.dart';
@@ -195,6 +196,16 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(path: '/site/create', builder: (_, __) => const SiteFormScreen()),
       GoRoute(
+        path: '/site/:id/note/create',
+        builder: (_, state) =>
+            SiteNoteFormScreen(siteId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/site/:id/invite',
+        builder: (_, state) =>
+            SiteMemberInviteScreen(siteId: state.pathParameters['id']!),
+      ),
+      GoRoute(
         path: '/site/:id/edit',
         builder: (_, state) =>
             SiteFormScreen(siteId: state.pathParameters['id']),
@@ -203,11 +214,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/site/:id',
         builder: (_, state) =>
             SiteDetailScreen(siteId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/site/:id/invite',
-        builder: (_, state) =>
-            SiteMemberInviteScreen(siteId: state.pathParameters['id']!),
       ),
 
       GoRoute(path: '/plants', builder: (_, __) => const PlantListScreen()),
