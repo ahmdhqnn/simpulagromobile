@@ -35,6 +35,8 @@ class DailyRecapTab extends ConsumerWidget {
         : ref.watch(dailyByDayProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
     final fmt = context.dateFormat('dd MMM yyyy');
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -56,7 +58,7 @@ class DailyRecapTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(title: l10n.monitoringDailyTodaySection),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             todayAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -71,10 +73,10 @@ class DailyRecapTab extends ConsumerWidget {
                 onRetry: () => ref.invalidate(dailyTodayProvider),
               ),
             ),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
             SectionHeaderWidget(title: l10n.monitoringDailyByDateSection),
-            SizedBox(height: context.rh(0.01)),
-            OutlinedButton.icon(
+            SizedBox(height: contentGap),
+            FilledButton.icon(
               onPressed: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -88,8 +90,24 @@ class DailyRecapTab extends ConsumerWidget {
               },
               icon: const Icon(Icons.calendar_today, size: 18),
               label: Text(fmt.format(selectedDay)),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.textPrimary,
+                disabledBackgroundColor: Colors.white.withValues(alpha: 0.7),
+                disabledForegroundColor: AppColors.textPrimary.withValues(
+                  alpha: 0.45,
+                ),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
             ),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             byDayAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -128,6 +146,7 @@ class _DailyRecapList extends StatefulWidget {
 }
 
 class _DailyRecapListState extends State<_DailyRecapList> {
+  static const int _collapsedItemCount = 4;
   bool _expanded = false;
 
   @override
@@ -151,7 +170,7 @@ class _DailyRecapListState extends State<_DailyRecapList> {
       });
     final visibleCount = _expanded
         ? sorted.length
-        : sorted.length.clamp(0, 8).toInt();
+        : sorted.length.clamp(0, _collapsedItemCount).toInt();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,7 +192,7 @@ class _DailyRecapListState extends State<_DailyRecapList> {
             ),
           ),
         ),
-        if (sorted.length > 8) ...[
+        if (sorted.length > _collapsedItemCount) ...[
           const SizedBox(height: 10),
           GestureDetector(
             onTap: () => setState(() => _expanded = !_expanded),

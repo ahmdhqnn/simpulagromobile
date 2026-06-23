@@ -22,6 +22,8 @@ class HistoryTab extends ConsumerWidget {
     final historyAsync = ref.watch(historyReadsProvider);
     final selectedParam = ref.watch(selectedSensorParamProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -38,10 +40,10 @@ class HistoryTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const HistoryFilterWidget(),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
             SectionHeaderWidget(title: l10n.monitoringHistoryChartSection),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
 
             historyAsync.when(
               skipLoadingOnReload: true,
@@ -103,7 +105,7 @@ class HistoryTab extends ConsumerWidget {
               },
             ),
 
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
             // Data Table
             historyAsync.when(
@@ -146,7 +148,7 @@ class HistoryTab extends ConsumerWidget {
                     SectionHeaderWidget(
                       title: l10n.monitoringHistoryDataSection,
                     ),
-                    SizedBox(height: context.rh(0.014)),
+                    SizedBox(height: contentGap),
                     HistoryDataTableWidget(
                       reads: filtered.take(50).toList(),
                       metadataAdapter: metadataAdapter,

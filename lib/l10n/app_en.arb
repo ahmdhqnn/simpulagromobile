@@ -10,7 +10,7 @@
   "dashboardTitle": "Dashboard",
   "recentActivityTitle": "Recent Activity",
   "recentActivityEmpty": "No activity today.",
-  "sensorSectionTitle": "Sensor Status",
+  "sensorSectionTitle": "Sensor Parameter Status",
   "activeSensors": "{count} Active",
   "plantSectionTitle": "Plants",
   "activePlants": "{count} Active Phases",
@@ -66,7 +66,7 @@
   "errorLoadSite": "Failed to load site",
   "errorLoadHealth": "Failed to load health data",
   "emptySite": "Please select a site first",
-  "emptySensor": "No sensor data available",
+  "emptySensor": "No sensor parameter data available",
   "taskTitle": "Task",
   "taskSummarySectionTitle": "Task Summary",
   "quickActionSectionTitle": "Quick Actions",
@@ -251,10 +251,10 @@
   "monitoringNoActivePlantMessage": "Sensor data still updates. Add a plant so monitoring recommendations can follow the planting cycle.",
   "monitoringAddPlant": "Add Plant",
   "monitoringViewPlantList": "View plant list",
-  "monitoringLatestStatusTitle": "Latest Sensor Status",
+  "monitoringLatestStatusTitle": "Latest Parameter Status",
   "monitoringTodayChartSection": "Today's Chart",
-  "monitoringSensorDetailSection": "Sensor Status Detail",
-  "monitoringEmptySensor": "No sensor data yet",
+  "monitoringSensorDetailSection": "Sensor Parameter Status Detail",
+  "monitoringEmptySensor": "No sensor parameter data yet",
   "monitoringEmptyTodayChart": "No chart data for today yet",
   "monitoringHistoryChartSection": "History Chart",
   "monitoringEmptyHistory": "No history data yet",
@@ -1128,10 +1128,10 @@
       }
     }
   },
-  "monitoringActionRequiredDescription": "0 sensors available, no configuration yet. Configure sensors to start monitoring",
-  "monitoringEnvironmentSubtitle": "Condition score for sensors at the active site",
-  "monitoringNoSensorsConfiguredStatus": "No sensors are available yet. Configure sensors to start monitoring.",
-  "monitoringSensorsStableStatus": "{total} sensors available, monitoring conditions are stable.",
+  "monitoringActionRequiredDescription": "No sensor parameters can be evaluated yet. Check the configuration and latest sensor data.",
+  "monitoringEnvironmentSubtitle": "Environmental parameter score for the active site",
+  "monitoringNoSensorsConfiguredStatus": "No sensor parameters can be evaluated yet. Check the configuration and latest data.",
+  "monitoringSensorsStableStatus": "{total} parameters monitored, environmental conditions are stable.",
   "@monitoringSensorsStableStatus": {
     "placeholders": {
       "total": {
@@ -1139,7 +1139,7 @@
       }
     }
   },
-  "monitoringSensorsAttentionStatus": "{total} sensors available, some parameters need attention.",
+  "monitoringSensorsAttentionStatus": "{total} parameters monitored, some parameters need attention.",
   "@monitoringSensorsAttentionStatus": {
     "placeholders": {
       "total": {
@@ -1156,7 +1156,7 @@
   "monitoringHealthFairDesc": "Some parameters need attention",
   "monitoringHealthNeedsAttention": "Needs Attention",
   "monitoringHealthNeedsAttentionDesc": "Environmental conditions require immediate improvement",
-  "monitoringSensorsMonitoredCount": "{count} sensors monitored",
+  "monitoringSensorsMonitoredCount": "{count} parameters monitored",
   "@monitoringSensorsMonitoredCount": {
     "placeholders": {
       "count": {
@@ -1537,7 +1537,7 @@
   "commonPhosphorus": "Phosphorus",
   "commonPotassium": "Potassium",
   "monitoringActionRequiredTitle": "Action Required",
-  "monitoringNoSensorConfiguredDesc": "0 sensors available, no configuration yet. Please configure sensors to start monitoring",
+  "monitoringNoSensorConfiguredDesc": "No sensor parameters can be evaluated yet. Check the configuration and latest sensor data.",
   "monitoringPlantCompositionTitle": "Distribution by Type",
   "monitoringChartTypeLabel": "Chart Type",
   "monitoringChartTypeLine": "Line",
@@ -1612,7 +1612,7 @@
   },
   "dashboardSelectSitePrompt": "Select a site to load monitoring and recommendation data",
   "dashboardNoSensorReadings": "No sensor readings yet",
-  "dashboardActiveSensorsCount": "{count} Active {count, plural, =1{Sensor} other{Sensors}}",
+  "dashboardActiveSensorsCount": "{count} {count, plural, =1{Parameter} other{Parameters}} Monitored",
   "@dashboardActiveSensorsCount": {
     "placeholders": {
       "count": {
@@ -1624,7 +1624,7 @@
   "dashboardNoActivities": "No activities yet",
   "dashboardTaskSummaryTitle": "Task Summary",
   "dashboardCompletionRateLabel": "Completion Rate",
-  "dashboardShowOtherSensors": "Show {count} other {count, plural, =1{sensor} other{sensors}}",
+  "dashboardShowOtherSensors": "Show {count} other {count, plural, =1{parameter} other{parameters}}",
   "@dashboardShowOtherSensors": {
     "placeholders": {
       "count": {

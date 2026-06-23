@@ -83,13 +83,21 @@ class SmartScoreGauge extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      context.l10n.dashboardActiveSensorsCount(totalSensors),
-                      style: TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        fontSize: sw / 390 * 12,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
+                    SizedBox(
+                      width: gaugeW,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          context.l10n.dashboardActiveSensorsCount(
+                            totalSensors,
+                          ),
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: sw / 390 * 12,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
                     ),
                   ],

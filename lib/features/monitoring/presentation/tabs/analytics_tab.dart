@@ -38,6 +38,8 @@ class AnalyticsTab extends ConsumerWidget {
     final plant = activePlantAsync.valueOrNull;
     final monthlyAsync = ref.watch(monthlyReadsProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -65,7 +67,7 @@ class AnalyticsTab extends ConsumerWidget {
             SectionHeaderWidget(
               title: context.l10n.monitoringAnalyticsOverview,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
 
             // Environmental Health
             envAsync.when(
@@ -79,16 +81,14 @@ class AnalyticsTab extends ConsumerWidget {
               ),
               data: (health) => EnvironmentalHealthCardWidget(health: health),
             ),
-            SizedBox(height: context.rh(0.025)),
-
             // Action Required (when no sensors)
             envAsync.whenOrNull(
                   data: (health) {
                     if (health.totalSensors == 0) {
                       return Column(
                         children: [
+                          SizedBox(height: contentGap),
                           const ActionRequiredCardWidget(),
-                          SizedBox(height: context.rh(0.025)),
                         ],
                       );
                     }
@@ -96,6 +96,7 @@ class AnalyticsTab extends ConsumerWidget {
                   },
                 ) ??
                 const SizedBox.shrink(),
+            SizedBox(height: sectionGap),
 
             activePlantAsync.when(
               skipLoadingOnReload: true,
@@ -104,7 +105,7 @@ class AnalyticsTab extends ConsumerWidget {
               loading: () => Column(
                 children: [
                   const NoActivePlantCardSkeleton(),
-                  SizedBox(height: context.rh(0.025)),
+                  SizedBox(height: sectionGap),
                 ],
               ),
               error: (_, __) => const SizedBox.shrink(),
@@ -112,7 +113,7 @@ class AnalyticsTab extends ConsumerWidget {
                   ? Column(
                       children: [
                         const NoActivePlantCardWidget(),
-                        SizedBox(height: context.rh(0.025)),
+                        SizedBox(height: sectionGap),
                       ],
                     )
                   : const SizedBox.shrink(),
@@ -122,25 +123,24 @@ class AnalyticsTab extends ConsumerWidget {
             SectionHeaderWidget(
               title: context.l10n.monitoringPlantStatisticsSection,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
             if (activePlantAsync.isLoading && plant == null)
               const CompactStatsCardSkeleton()
             else
               PlantStatisticsCardWidget(plant: plant),
-            SizedBox(height: context.rh(0.025)),
-
             if (plant != null) ...[
+              SizedBox(height: contentGap),
               GrowthPhaseCardWidget(plant: plant),
-              SizedBox(height: context.rh(0.025)),
+              SizedBox(height: contentGap),
               PlantDistributionCardWidget(plant: plant),
-              SizedBox(height: context.rh(0.025)),
             ],
+            SizedBox(height: sectionGap),
 
             // Plant Recommendation
             SectionHeaderWidget(
               title: context.l10n.monitoringPlantRecommendationSection,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
             plantRecAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -159,13 +159,13 @@ class AnalyticsTab extends ConsumerWidget {
               data: (rec) =>
                   PlantRecommendationCardWidget(recommendations: rec),
             ),
-            SizedBox(height: context.rh(0.025)),
+            SizedBox(height: sectionGap),
 
             // Device & Sensor Overview
             SectionHeaderWidget(
               title: context.l10n.monitoringDeviceSensorOverviewSection,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
             devicesAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -192,23 +192,34 @@ class AnalyticsTab extends ConsumerWidget {
                 );
               },
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: sectionGap),
 
             devicesAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
               skipError: true,
-              loading: () => const SimpleRowsCardSkeleton(rowCount: 2),
+              loading: () => Column(
+                children: [
+                  const SimpleRowsCardSkeleton(rowCount: 2),
+                  SizedBox(height: sectionGap),
+                ],
+              ),
               error: (_, __) => const SizedBox.shrink(),
-              data: (devices) => SensorByTypeCardWidget(devices: devices),
+              data: (devices) => devices.isEmpty
+                  ? const SizedBox.shrink()
+                  : Column(
+                      children: [
+                        SensorByTypeCardWidget(devices: devices),
+                        SizedBox(height: sectionGap),
+                      ],
+                    ),
             ),
-            SizedBox(height: context.rh(0.025)),
 
             // Daily Sensor Analysis
             SectionHeaderWidget(
               title: context.l10n.monitoringDailyAnalyticsTitle,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
             dailyAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -224,13 +235,13 @@ class AnalyticsTab extends ConsumerWidget {
                 metadataAdapter: metadataAdapter,
               ),
             ),
-            SizedBox(height: context.rh(0.025)),
+            SizedBox(height: sectionGap),
 
             // Monthly Recap
             SectionHeaderWidget(
               title: context.l10n.monitoringMonthlySensorRecap,
             ),
-            SizedBox(height: context.rh(0.015)),
+            SizedBox(height: contentGap),
             monthlyAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -246,7 +257,6 @@ class AnalyticsTab extends ConsumerWidget {
                 metadataAdapter: metadataAdapter,
               ),
             ),
-            SizedBox(height: context.rh(0.025)),
           ],
         ),
       ),

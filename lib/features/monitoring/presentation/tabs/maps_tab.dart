@@ -22,6 +22,8 @@ class MapsTab extends ConsumerWidget {
     final devicesAsync = ref.watch(devicesProvider);
     final selectedSite = ref.watch(selectedSiteProvider);
     final sensorCountAsync = ref.watch(monitoringSensorCountProvider);
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -66,11 +68,11 @@ class MapsTab extends ConsumerWidget {
               loading: () => const CompactStatsCardSkeleton(),
               error: (_, __) => const SizedBox.shrink(),
             ),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
             // Map
             SectionHeaderWidget(title: context.l10n.monitoringTabMaps),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             devicesAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -107,11 +109,11 @@ class MapsTab extends ConsumerWidget {
                 );
               },
             ),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
             // Device List (reuse SensorByTypeCardWidget from analytics)
             SectionHeaderWidget(title: context.l10n.monitoringDeviceSensorList),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             devicesAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,

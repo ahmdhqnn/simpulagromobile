@@ -30,6 +30,8 @@ class RealtimeTab extends ConsumerWidget {
     final envHealthAsync = ref.watch(envHealthProvider);
     final activePlantAsync = ref.watch(ongoingPlantProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
+    final sectionGap = context.rh(0.024);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -59,7 +61,7 @@ class RealtimeTab extends ConsumerWidget {
               loading: () => Column(
                 children: [
                   const NoActivePlantCardSkeleton(),
-                  SizedBox(height: context.rh(0.024)),
+                  SizedBox(height: sectionGap),
                 ],
               ),
               error: (_, __) => const SizedBox.shrink(),
@@ -67,7 +69,7 @@ class RealtimeTab extends ConsumerWidget {
                   ? Column(
                       children: [
                         const NoActivePlantCardWidget(),
-                        SizedBox(height: context.rh(0.024)),
+                        SizedBox(height: sectionGap),
                       ],
                     )
                   : const SizedBox.shrink(),
@@ -78,7 +80,7 @@ class RealtimeTab extends ConsumerWidget {
 
             // Sensor Grid
             SectionHeaderWidget(title: l10n.monitoringLatestStatusTitle),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             latestAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -100,11 +102,11 @@ class RealtimeTab extends ConsumerWidget {
                       metadataAdapter: metadataAdapter,
                     ),
             ),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
             // Today Chart
             SectionHeaderWidget(title: l10n.monitoringTodayChartSection),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             todayAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -125,11 +127,11 @@ class RealtimeTab extends ConsumerWidget {
                       metadataAdapter: metadataAdapter,
                     ),
             ),
-            SizedBox(height: context.rh(0.024)),
+            SizedBox(height: sectionGap),
 
-            // Sensor Status Detail
+            // Sensor parameter status detail
             SectionHeaderWidget(title: l10n.monitoringSensorDetailSection),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             latestAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
@@ -148,8 +150,6 @@ class RealtimeTab extends ConsumerWidget {
                       metadataAdapter: metadataAdapter,
                     ),
             ),
-            SizedBox(height: context.rh(0.024)),
-
             // Log Sensor (Disabled - unsupported by backend live)
             const SizedBox.shrink(),
           ],

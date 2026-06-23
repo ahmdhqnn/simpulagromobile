@@ -39,7 +39,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get recentActivityEmpty => 'Tidak ada aktivitas hari ini.';
 
   @override
-  String get sensorSectionTitle => 'Status Sensor';
+  String get sensorSectionTitle => 'Status Parameter Sensor';
 
   @override
   String activeSensors(int count) {
@@ -196,7 +196,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get emptySite => 'Pilih site terlebih dahulu';
 
   @override
-  String get emptySensor => 'Belum ada data sensor';
+  String get emptySensor => 'Belum ada data parameter sensor';
 
   @override
   String get taskTitle => 'Task';
@@ -549,16 +549,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get monitoringViewPlantList => 'Lihat daftar tanaman';
 
   @override
-  String get monitoringLatestStatusTitle => 'Status Sensor Terkini';
+  String get monitoringLatestStatusTitle => 'Status Parameter Terkini';
 
   @override
   String get monitoringTodayChartSection => 'Grafik Hari Ini';
 
   @override
-  String get monitoringSensorDetailSection => 'Detail Status Sensor';
+  String get monitoringSensorDetailSection => 'Detail Status Parameter Sensor';
 
   @override
-  String get monitoringEmptySensor => 'Belum ada data sensor';
+  String get monitoringEmptySensor => 'Belum ada data parameter sensor';
 
   @override
   String get monitoringEmptyTodayChart => 'Belum ada data grafik hari ini';
@@ -2394,23 +2394,24 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get monitoringActionRequiredDescription =>
-      '0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring';
+      'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.';
 
   @override
-  String get monitoringEnvironmentSubtitle => 'Skor kondisi sensor site aktif';
+  String get monitoringEnvironmentSubtitle =>
+      'Skor kondisi parameter lingkungan pada site aktif';
 
   @override
   String get monitoringNoSensorsConfiguredStatus =>
-      'Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.';
+      'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data terbaru.';
 
   @override
   String monitoringSensorsStableStatus(int total) {
-    return '$total sensor tersedia, kondisi monitoring stabil.';
+    return '$total parameter dipantau, kondisi lingkungan stabil.';
   }
 
   @override
   String monitoringSensorsAttentionStatus(int total) {
-    return '$total sensor tersedia, beberapa parameter perlu perhatian.';
+    return '$total parameter dipantau, beberapa parameter perlu perhatian.';
   }
 
   @override
@@ -2445,7 +2446,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String monitoringSensorsMonitoredCount(int count) {
-    return '$count sensor dipantau';
+    return '$count parameter dipantau';
   }
 
   @override
@@ -3395,7 +3396,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get monitoringNoSensorConfiguredDesc =>
-      '0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring';
+      'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.';
 
   @override
   String get monitoringPlantCompositionTitle => 'Distribusi Berdasarkan Jenis';
@@ -3505,7 +3506,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String dashboardActiveSensorsCount(num count) {
-    return '$count Sensor Aktif';
+    return '$count Parameter Dipantau';
   }
 
   @override
@@ -3522,7 +3523,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String dashboardShowOtherSensors(num count) {
-    return 'Lihat $count sensor lainnya';
+    return 'Lihat $count parameter lainnya';
   }
 
   @override

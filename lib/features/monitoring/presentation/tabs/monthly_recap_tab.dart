@@ -18,6 +18,7 @@ class MonthlyRecapTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final monthlyAsync = ref.watch(monthlyReadsProvider);
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
+    final contentGap = context.rh(0.012);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -34,7 +35,7 @@ class MonthlyRecapTab extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(title: l10n.monitoringMonthlyRecapSection),
-            SizedBox(height: context.rh(0.014)),
+            SizedBox(height: contentGap),
             monthlyAsync.when(
               skipLoadingOnReload: true,
               skipLoadingOnRefresh: true,
