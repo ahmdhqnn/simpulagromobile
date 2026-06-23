@@ -20,8 +20,9 @@ class Sensor with _$Sensor {
     DateTime? sensUpdate,
   }) = _Sensor;
 
-  /// Check if sensor is active
-  bool get isActive => sensSts == 1;
+  /// Backend can omit sens_sts on list/detail responses.
+  /// Treat only an explicit 0 as inactive.
+  bool get isActive => sensSts != 0;
 
   /// Check if sensor has coordinates
   bool get hasCoordinates => sensLat != null && sensLon != null;

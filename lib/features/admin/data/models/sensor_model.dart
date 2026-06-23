@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/sensor.dart';
 import '../../../../core/utils/safe_double_converter.dart';
+import 'admin_model_parsers.dart';
 
 part 'sensor_model.freezed.dart';
 part 'sensor_model.g.dart';
@@ -25,8 +26,64 @@ class SensorModel with _$SensorModel {
     @JsonKey(name: 'sens_update') DateTime? sensUpdate,
   }) = _SensorModel;
 
-  factory SensorModel.fromJson(Map<String, dynamic> json) =>
-      _$SensorModelFromJson(json);
+  factory SensorModel.fromJson(Map<String, dynamic> json) {
+    final device = json['device'];
+    final deviceMap = device is Map ? Map<String, dynamic>.from(device) : null;
+
+    return SensorModel(
+      sensId: adminStringValue(
+        adminFirstOf(json, const [
+              'sens_id',
+              'sensId',
+              'sensor_id',
+              'sensorId',
+              'id',
+            ]) ??
+            adminFirstOf(deviceMap ?? const {}, const ['sens_id', 'sensId']),
+      ),
+      devId: adminNullableString(
+        adminFirstOf(json, const [
+              'dev_id',
+              'devId',
+              'device_id',
+              'deviceId',
+            ]) ??
+            adminFirstOf(deviceMap ?? const {}, const ['dev_id', 'devId']),
+      ),
+      sensName: adminNullableString(
+        adminFirstOf(json, const ['sens_name', 'sensName', 'name']),
+      ),
+      sensAddress: adminNullableString(
+        adminFirstOf(json, const ['sens_address', 'sensAddress', 'address']),
+      ),
+      sensLocation: adminNullableString(
+        adminFirstOf(json, const ['sens_location', 'sensLocation', 'location']),
+      ),
+      sensLat: adminDoubleValue(
+        adminFirstOf(json, const ['sens_lat', 'sensLat', 'lat', 'latitude']),
+      ),
+      sensLon: adminDoubleValue(
+        adminFirstOf(json, const ['sens_lon', 'sensLon', 'lon', 'longitude']),
+      ),
+      sensAlt: adminDoubleValue(
+        adminFirstOf(json, const ['sens_alt', 'sensAlt', 'alt', 'altitude']),
+      ),
+      sensSts: adminIntValue(
+        adminFirstOf(json, const [
+          'sens_sts',
+          'sensSts',
+          'sensor_status',
+          'sensorStatus',
+          'is_active',
+          'isActive',
+          'active',
+          'status',
+        ]),
+      ),
+      sensCreated: adminDateTimeValue(adminCreatedValue(json, 'sens')),
+      sensUpdate: adminDateTimeValue(adminUpdatedValue(json, 'sens')),
+    );
+  }
 
   /// Convert Model to Entity
   Sensor toEntity() => Sensor(

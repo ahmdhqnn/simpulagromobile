@@ -56,19 +56,42 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
   @override
   Future<DeviceModel> getDeviceById(String siteId, String deviceId) async {
     try {
-      final response = await dio.get(ApiEndpoints.deviceById(siteId, deviceId));
-
-      return DeviceModel.fromJson(
-        _normalizeDevice(ResponseParser.extractDataMap(response.data)),
+      final response = await dio.get(
+        ApiEndpoints.devices(siteId),
+        queryParameters: {'dev_id': deviceId},
       );
+      final model = _deviceFromResponse(response.data, deviceId);
+      if (model.devId.isNotEmpty) return model;
+      return _findDeviceFromLegacyEndpointOrList(siteId, deviceId);
     } on DioException catch (e) {
-      if (_shouldFallbackToList(e)) {
-        return _findDeviceFromList(siteId, deviceId);
+      if (_shouldFallbackToLegacyEndpointOrList(e)) {
+        return _findDeviceFromLegacyEndpointOrList(siteId, deviceId);
       }
       throw _handleDioError(e);
     } catch (e) {
-      throw Exception('Failed to get device: $e');
+      try {
+        return await _findDeviceFromLegacyEndpointOrList(siteId, deviceId);
+      } catch (_) {
+        throw Exception('Failed to get device: $e');
+      }
     }
+  }
+
+  Future<DeviceModel> _findDeviceFromLegacyEndpointOrList(
+    String siteId,
+    String deviceId,
+  ) async {
+    try {
+      final response = await dio.get(ApiEndpoints.deviceById(siteId, deviceId));
+      final model = _deviceFromResponse(response.data, deviceId);
+      if (model.devId.isNotEmpty) return model;
+    } on DioException catch (e) {
+      if (!_shouldFallbackToLegacyEndpointOrList(e)) {
+        throw _handleDioError(e);
+      }
+    }
+
+    return _findDeviceFromList(siteId, deviceId);
   }
 
   Future<DeviceModel> _findDeviceFromList(
@@ -84,9 +107,45 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
     return matches.first;
   }
 
-  bool _shouldFallbackToList(DioException e) {
+  bool _shouldFallbackToLegacyEndpointOrList(DioException e) {
     final code = e.response?.statusCode;
     return code == 404 || code == 405 || code == 501;
+  }
+
+  DeviceModel _deviceFromResponse(dynamic body, String deviceId) {
+    try {
+      final model = DeviceModel.fromJson(
+        _normalizeDevice(ResponseParser.extractDataMap(body)),
+      );
+      if (model.devId.isNotEmpty) return model;
+    } catch (_) {
+      // Fallback to collection parsing below.
+    }
+
+    final rows = ResponseParser.extractDataList(
+      body,
+    ).whereType<Map>().map((json) => Map<String, dynamic>.from(json)).toList();
+    if (rows.isNotEmpty) {
+      final row = rows.firstWhere(
+        (item) => _matchesDeviceId(item, deviceId),
+        orElse: () => rows.first,
+      );
+      return DeviceModel.fromJson(_normalizeDevice(row));
+    }
+
+    return DeviceModel.fromJson(
+      _normalizeDevice(ResponseParser.extractDataMap(body)),
+    );
+  }
+
+  bool _matchesDeviceId(Map<String, dynamic> json, String deviceId) {
+    final id =
+        json['dev_id'] ??
+        json['devId'] ??
+        json['device_id'] ??
+        json['deviceId'] ??
+        json['id'];
+    return id?.toString().trim() == deviceId.trim();
   }
 
   @override
@@ -183,7 +242,22 @@ class DeviceRemoteDatasourceImpl implements DeviceRemoteDatasource {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is bool) return value ? 1 : 0;
-    if (value is String) return int.tryParse(value.trim());
+    if (value is String) {
+      final text = value.trim().toLowerCase();
+      if (text == 'active' ||
+          text == 'aktif' ||
+          text == 'enabled' ||
+          text == 'true') {
+        return 1;
+      }
+      if (text == 'inactive' ||
+          text == 'nonaktif' ||
+          text == 'disabled' ||
+          text == 'false') {
+        return 0;
+      }
+      return int.tryParse(text);
+    }
     return null;
   }
 

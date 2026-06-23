@@ -32,9 +32,17 @@ class DeviceSensorRepositoryImpl implements DeviceSensorRepository {
   }
 
   @override
-  Future<DeviceSensor> getDeviceSensorById(String siteId, String dsId) async {
+  Future<DeviceSensor> getDeviceSensorById(
+    String siteId,
+    String dsId, {
+    String? devId,
+  }) async {
     try {
-      final model = await remoteDatasource.getDeviceSensorById(siteId, dsId);
+      final model = await remoteDatasource.getDeviceSensorById(
+        siteId,
+        dsId,
+        devId: devId,
+      );
       return model.toEntity();
     } catch (e) {
       rethrow;

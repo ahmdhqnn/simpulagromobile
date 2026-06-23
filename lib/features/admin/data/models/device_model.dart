@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/device.dart';
 import '../../../../core/utils/safe_double_converter.dart';
+import 'admin_model_parsers.dart';
 
 part 'device_model.freezed.dart';
 part 'device_model.g.dart';
@@ -30,8 +31,81 @@ class DeviceModel with _$DeviceModel {
     @JsonKey(name: 'dev_update') DateTime? devUpdate,
   }) = _DeviceModel;
 
-  factory DeviceModel.fromJson(Map<String, dynamic> json) =>
-      _$DeviceModelFromJson(json);
+  factory DeviceModel.fromJson(Map<String, dynamic> json) {
+    final site = json['site'];
+    final siteMap = site is Map ? Map<String, dynamic>.from(site) : null;
+    final user = json['user'];
+    final userMap = user is Map ? Map<String, dynamic>.from(user) : null;
+
+    return DeviceModel(
+      devId: adminStringValue(
+        adminFirstOf(json, const [
+          'dev_id',
+          'devId',
+          'device_id',
+          'deviceId',
+          'id',
+        ]),
+      ),
+      siteId: adminNullableString(
+        adminFirstOf(json, const ['site_id', 'siteId']) ??
+            adminFirstOf(siteMap ?? const {}, const ['site_id', 'siteId']),
+      ),
+      userId: adminNullableString(
+        adminFirstOf(json, const ['user_id', 'userId']) ??
+            adminFirstOf(userMap ?? const {}, const ['user_id', 'userId']),
+      ),
+      devName: adminNullableString(
+        adminFirstOf(json, const ['dev_name', 'devName', 'name']),
+      ),
+      devToken: adminNullableString(
+        adminFirstOf(json, const ['dev_token', 'devToken', 'token']),
+      ),
+      devLocation: adminNullableString(
+        adminFirstOf(json, const ['dev_location', 'devLocation', 'location']),
+      ),
+      devLon: adminDoubleValue(
+        adminFirstOf(json, const ['dev_lon', 'devLon', 'lon', 'longitude']),
+      ),
+      devLat: adminDoubleValue(
+        adminFirstOf(json, const ['dev_lat', 'devLat', 'lat', 'latitude']),
+      ),
+      devAlt: adminDoubleValue(
+        adminFirstOf(json, const ['dev_alt', 'devAlt', 'alt', 'altitude']),
+      ),
+      devNumberId: adminNullableString(
+        adminFirstOf(json, const [
+          'dev_number_id',
+          'devNumberId',
+          'number_id',
+          'numberId',
+        ]),
+      ),
+      devIp: adminNullableString(
+        adminFirstOf(json, const ['dev_ip', 'devIp', 'ip']),
+      ),
+      devPort: adminNullableString(
+        adminFirstOf(json, const ['dev_port', 'devPort', 'port']),
+      ),
+      devImg: adminNullableString(
+        adminFirstOf(json, const ['dev_img', 'devImg', 'image', 'img']),
+      ),
+      devSts: adminIntValue(
+        adminFirstOf(json, const [
+          'dev_sts',
+          'devSts',
+          'device_status',
+          'deviceStatus',
+          'is_active',
+          'isActive',
+          'active',
+          'status',
+        ]),
+      ),
+      devCreated: adminDateTimeValue(adminCreatedValue(json, 'dev')),
+      devUpdate: adminDateTimeValue(adminUpdatedValue(json, 'dev')),
+    );
+  }
 
   /// Convert Model to Entity
   Device toEntity() => Device(

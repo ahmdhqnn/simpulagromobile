@@ -75,6 +75,7 @@ void main() {
               'site_alt': 42,
               'site_sts': 'active',
               'site_created': '2026-06-01T00:00:00.000Z',
+              'updated_at': '2026-06-02T00:00:00.000Z',
             },
           },
         }),
@@ -86,6 +87,7 @@ void main() {
       expect(result.siteAddress, '12');
       expect(result.siteSts, 1);
       expect(result.siteCreated, DateTime.parse('2026-06-01T00:00:00.000Z'));
+      expect(result.siteUpdate, DateTime.parse('2026-06-02T00:00:00.000Z'));
     });
 
     test('getSiteById uses documented site_id query filter', () async {

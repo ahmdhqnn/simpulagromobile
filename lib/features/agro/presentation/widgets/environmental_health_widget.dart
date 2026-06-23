@@ -6,11 +6,23 @@ import '../../domain/entities/agro_entity.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/l10n.dart';
 
-class EnvironmentalHealthWidget extends StatelessWidget {
+class EnvironmentalHealthWidget extends StatefulWidget {
   final AgroEntity? agroData;
   final AgroEnvironmentalHealthEntity? healthData;
 
   const EnvironmentalHealthWidget({super.key, this.agroData, this.healthData});
+
+  @override
+  State<EnvironmentalHealthWidget> createState() =>
+      _EnvironmentalHealthWidgetState();
+}
+
+class _EnvironmentalHealthWidgetState extends State<EnvironmentalHealthWidget> {
+  static const int _collapsedSensorCount = 3;
+  bool _showAllSensors = false;
+
+  AgroEntity? get agroData => widget.agroData;
+  AgroEnvironmentalHealthEntity? get healthData => widget.healthData;
 
   @override
   Widget build(BuildContext context) {
@@ -126,56 +138,107 @@ class EnvironmentalHealthWidget extends StatelessWidget {
 
   Widget _buildBackendHealthData(BuildContext context) {
     final sensors = healthData!.sensors;
+    final visibleSensors = _showAllSensors
+        ? sensors
+        : sensors.take(_collapsedSensorCount).toList();
+    final hasMoreSensors = sensors.length > _collapsedSensorCount;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.sensors, color: AppColors.primary, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(
-                    context,
-                  )!.monitoringSensorsMonitoredCount(healthData!.totalSensors),
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: context.sp(13),
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+              Row(
+                children: [
+                  const Icon(Icons.sensors, color: AppColors.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(
+                        context,
+                      )!.monitoringSensorsMonitoredCount(
+                        healthData!.totalSensors,
+                      ),
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: context.sp(13),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${healthData!.overallHealth.toStringAsFixed(1)}/100',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: context.sp(12),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              if (sensors.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                ...visibleSensors.map(
+                  (sensor) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _buildSensorHealthRow(context, sensor),
                   ),
                 ),
-              ),
-              Text(
-                '${healthData!.overallHealth.toStringAsFixed(1)}/100',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: context.sp(12),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
+              ],
             ],
           ),
-          if (sensors.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ...sensors.map(
-              (sensor) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _buildSensorHealthRow(context, sensor),
+        ),
+        if (hasMoreSensors) ...[
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => setState(() => _showAllSensors = !_showAllSensors),
+            child: Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _showAllSensors
+                        ? context.l10n.commonHide
+                        : context.l10n.monitoringShowAllCount(sensors.length),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(13),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  AnimatedRotation(
+                    turns: _showAllSensors ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 

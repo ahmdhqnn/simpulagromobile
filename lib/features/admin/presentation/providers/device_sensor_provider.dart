@@ -43,15 +43,35 @@ final deviceSensorThresholdValuesProvider =
       return ds.getThresholdValues(siteId);
     });
 
+String adminDeviceSensorLookupKey(String dsId, {String? devId}) {
+  final trimmedDevId = devId?.trim();
+  if (trimmedDevId == null || trimmedDevId.isEmpty) return dsId;
+  return '${Uri.encodeComponent(dsId)}|${Uri.encodeComponent(trimmedDevId)}';
+}
+
+({String dsId, String? devId}) _parseDeviceSensorLookupKey(String key) {
+  final parts = key.split('|');
+  if (parts.length < 2) return (dsId: key, devId: null);
+  return (
+    dsId: Uri.decodeComponent(parts.first),
+    devId: Uri.decodeComponent(parts.sublist(1).join('|')),
+  );
+}
+
 // ═══════════════════════════════════════════════════════════
 // DEVICE SENSOR DETAIL PROVIDER
 // ═══════════════════════════════════════════════════════════
 final adminDeviceSensorDetailProvider =
-    FutureProvider.family<DeviceSensor, String>((ref, dsId) async {
+    FutureProvider.family<DeviceSensor, String>((ref, lookupKey) async {
       final repository = ref.watch(adminDeviceSensorRepositoryProvider);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) throw Exception('No site selected');
-      return repository.getDeviceSensorById(siteId, dsId);
+      final lookup = _parseDeviceSensorLookupKey(lookupKey);
+      return repository.getDeviceSensorById(
+        siteId,
+        lookup.dsId,
+        devId: lookup.devId,
+      );
     });
 
 // ═══════════════════════════════════════════════════════════
@@ -130,6 +150,11 @@ class DeviceSensorFormNotifier extends StateNotifier<DeviceSensorFormState> {
       state = DeviceSensorFormState(savedDeviceSensor: saved);
       _ref.invalidate(adminDeviceSensorListProvider);
       _ref.invalidate(adminDeviceSensorDetailProvider(dsId));
+      _ref.invalidate(
+        adminDeviceSensorDetailProvider(
+          adminDeviceSensorLookupKey(dsId, devId: deviceSensor.devId),
+        ),
+      );
       return true;
     } catch (e) {
       state = DeviceSensorFormState(error: e.toString());

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
@@ -8,7 +9,7 @@ import '../../../recommendation/presentation/widgets/recommendation_color_helper
 import '../../../../l10n/app_localizations.dart';
 import '../../../../l10n/localized_labels.dart';
 
-class AgroRecommendationWidget extends StatelessWidget {
+class AgroRecommendationWidget extends StatefulWidget {
   const AgroRecommendationWidget({super.key, required this.recommendations})
     : errorMessage = null,
       onRetry = null;
@@ -25,13 +26,22 @@ class AgroRecommendationWidget extends StatelessWidget {
   final VoidCallback? onRetry;
 
   @override
+  State<AgroRecommendationWidget> createState() =>
+      _AgroRecommendationWidgetState();
+}
+
+class _AgroRecommendationWidgetState extends State<AgroRecommendationWidget> {
+  static const int _collapsedRecommendationCount = 2;
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (errorMessage != null) {
-      return _buildErrorState(context, errorMessage!, onRetry);
+    if (widget.errorMessage != null) {
+      return _buildErrorState(context, widget.errorMessage!, widget.onRetry);
     }
 
     final sortedRecommendations = sortRecommendationOverviewItems(
-      recommendations,
+      widget.recommendations,
     );
 
     if (sortedRecommendations.isEmpty) {
@@ -39,73 +49,125 @@ class AgroRecommendationWidget extends StatelessWidget {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    final visibleRecommendations = _expanded
+        ? sortedRecommendations
+        : sortedRecommendations.take(_collapsedRecommendationCount).toList();
+    final hasMoreRecommendations =
+        sortedRecommendations.length > _collapsedRecommendationCount;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.lightbulb_outline,
-                  color: Color(0xFFFFC107),
-                  size: 20,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8E1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.lightbulb_outline,
+                      color: Color(0xFFFFC107),
+                      size: 20,
+                    ),
+                  ),
+                  SizedBox(width: context.rw(0.02)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.recommendationSiteTitle,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          l10n.recommendationSiteSubtitle,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: context.sp(12),
+                            fontWeight: FontWeight.w300,
+                            color: const Color(0xFF1D1D1D),
+                            height: 1.83,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: context.rw(0.02)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.agroSmartRecommendation,
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(22),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      l10n.agroRecommendationSubtitle,
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: context.sp(12),
-                        fontWeight: FontWeight.w300,
-                        color: const Color(0xFF1D1D1D),
-                        height: 1.83,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 20),
+              ...visibleRecommendations.map(
+                (rec) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildRecommendationCard(context, rec),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          ...sortedRecommendations.map(
-            (rec) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildRecommendationCard(context, rec),
+        ),
+        if (hasMoreRecommendations) ...[
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _expanded
+                        ? l10n.commonHide
+                        : l10n.monitoringShowAllCount(
+                            sortedRecommendations.length,
+                          ),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(13),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
-      ),
+      ],
     );
   }
 
@@ -167,13 +229,21 @@ class AgroRecommendationWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(
-                    rec.hasError
-                        ? Icons.warning_amber_rounded
-                        : Icons.arrow_forward_rounded,
-                    size: 16,
-                    color: rec.hasError ? AppColors.warning : priorityColor,
-                  ),
+                  rec.hasError
+                      ? const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 16,
+                          color: AppColors.warning,
+                        )
+                      : SvgPicture.asset(
+                          'assets/icons/arrow-up-right-long-outline-icon.svg',
+                          width: 16,
+                          height: 16,
+                          colorFilter: ColorFilter.mode(
+                            priorityColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                 ],
               ),
               const SizedBox(height: 12),

@@ -34,8 +34,8 @@ class SiteModel with _$SiteModel {
     siteLat: _toDouble(json['site_lat'] ?? json['siteLat'] ?? json['lat']),
     siteAlt: _toDouble(json['site_alt'] ?? json['siteAlt'] ?? json['alt']),
     siteSts: _toInt(json['site_sts'] ?? json['siteSts'] ?? json['status']),
-    siteCreated: _toDateTime(json['site_created'] ?? json['siteCreated']),
-    siteUpdate: _toDateTime(json['site_update'] ?? json['siteUpdate']),
+    siteCreated: _toDateTime(_createdValue(json, 'site')),
+    siteUpdate: _toDateTime(_updatedValue(json, 'site')),
   );
 
   /// Convert Model to Entity
@@ -91,5 +91,63 @@ int? _toInt(dynamic value) {
 DateTime? _toDateTime(dynamic value) {
   if (value == null) return null;
   if (value is DateTime) return value;
-  return DateTime.tryParse(value.toString().trim());
+  if (value is num) {
+    final raw = value.toInt();
+    final millis = raw > 1000000000000 ? raw : raw * 1000;
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+  final text = value.toString().trim();
+  return DateTime.tryParse(text) ??
+      DateTime.tryParse(text.replaceFirst(' ', 'T'));
+}
+
+dynamic _firstOf(Map<String, dynamic> json, Iterable<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value != null) return value;
+  }
+  return null;
+}
+
+dynamic _createdValue(Map<String, dynamic> json, String prefix) {
+  return _firstOf(json, [
+    '${prefix}_created',
+    '${prefix}_created_at',
+    '${prefix}_createdAt',
+    '${prefix}_create',
+    '${prefix}Created',
+    '${prefix}CreatedAt',
+    'created_at',
+    'createdAt',
+    'created_date',
+    'createdDate',
+    'date_created',
+    'dateCreated',
+    'created',
+  ]);
+}
+
+dynamic _updatedValue(Map<String, dynamic> json, String prefix) {
+  return _firstOf(json, [
+    '${prefix}_update',
+    '${prefix}_updated',
+    '${prefix}_updated_at',
+    '${prefix}_update_at',
+    '${prefix}_updatedAt',
+    '${prefix}_updateAt',
+    '${prefix}Update',
+    '${prefix}Updated',
+    '${prefix}UpdatedAt',
+    '${prefix}UpdateAt',
+    'updated_at',
+    'updatedAt',
+    'updated_date',
+    'updatedDate',
+    'date_updated',
+    'dateUpdated',
+    'modified_at',
+    'modifiedAt',
+    'updated',
+    'modified',
+  ]);
 }

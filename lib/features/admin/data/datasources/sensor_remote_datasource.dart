@@ -75,12 +75,23 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
       }
 
       // Extract sensor data from response
-      final sensorData = _extractSensorData(data);
-      return SensorModel.fromJson(_normalizeSensor(sensorData));
+      final sensorData = _extractSensorData(data, sensorId);
+      final model = SensorModel.fromJson(_normalizeSensor(sensorData));
+      if (model.sensId.isEmpty) {
+        return _findSensorFromList(siteId, sensorId);
+      }
+      return model;
     } on DioException catch (e) {
+      if (_shouldFallbackToList(e)) {
+        return _findSensorFromList(siteId, sensorId);
+      }
       throw _handleDioError(e);
     } catch (e) {
-      throw Exception('Failed to get sensor: $e');
+      try {
+        return await _findSensorFromList(siteId, sensorId);
+      } catch (_) {
+        throw Exception('Failed to get sensor: $e');
+      }
     }
   }
 
@@ -139,8 +150,46 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
     );
   }
 
-  Map<String, dynamic> _extractSensorData(dynamic body) {
+  Future<SensorModel> _findSensorFromList(
+    String siteId,
+    String sensorId,
+  ) async {
+    final sensors = await getSensorsBySite(siteId);
+    final normalizedId = sensorId.trim();
+    final matches = sensors.where((sensor) => sensor.sensId == normalizedId);
+    if (matches.isEmpty) {
+      throw Exception('Sensor tidak ditemukan');
+    }
+    return matches.first;
+  }
+
+  bool _shouldFallbackToList(DioException e) {
+    final code = e.response?.statusCode;
+    return code == 404 || code == 405 || code == 501;
+  }
+
+  Map<String, dynamic> _extractSensorData(dynamic body, [String? sensorId]) {
+    final rows = ResponseParser.extractDataList(
+      body,
+    ).whereType<Map>().map((json) => Map<String, dynamic>.from(json)).toList();
+    if (rows.isNotEmpty) {
+      return rows.firstWhere(
+        (row) => sensorId != null && _matchesSensorId(row, sensorId),
+        orElse: () => rows.first,
+      );
+    }
+
     return ResponseParser.extractDataMap(body);
+  }
+
+  bool _matchesSensorId(Map<String, dynamic> json, String sensorId) {
+    final id =
+        json['sens_id'] ??
+        json['sensId'] ??
+        json['sensor_id'] ??
+        json['sensorId'] ??
+        json['id'];
+    return id?.toString().trim() == sensorId.trim();
   }
 
   Map<String, dynamic> _normalizeSensor(Map<String, dynamic> json) {
@@ -167,7 +216,22 @@ class SensorRemoteDatasourceImpl implements SensorRemoteDatasource {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is bool) return value ? 1 : 0;
-    if (value is String) return int.tryParse(value.trim());
+    if (value is String) {
+      final text = value.trim().toLowerCase();
+      if (text == 'active' ||
+          text == 'aktif' ||
+          text == 'enabled' ||
+          text == 'true') {
+        return 1;
+      }
+      if (text == 'inactive' ||
+          text == 'nonaktif' ||
+          text == 'disabled' ||
+          text == 'false') {
+        return 0;
+      }
+      return int.tryParse(text);
+    }
     return null;
   }
 
