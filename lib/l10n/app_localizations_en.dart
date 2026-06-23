@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentActivityEmpty => 'No activity today.';
 
   @override
-  String get sensorSectionTitle => 'Sensor Status';
+  String get sensorSectionTitle => 'Sensor Parameter Status';
 
   @override
   String activeSensors(int count) {
@@ -199,7 +199,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptySite => 'Please select a site first';
 
   @override
-  String get emptySensor => 'No sensor data available';
+  String get emptySensor => 'No sensor parameter data available';
 
   @override
   String get taskTitle => 'Task';
@@ -550,16 +550,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monitoringViewPlantList => 'View plant list';
 
   @override
-  String get monitoringLatestStatusTitle => 'Latest Sensor Status';
+  String get monitoringLatestStatusTitle => 'Latest Parameter Status';
 
   @override
   String get monitoringTodayChartSection => 'Today\'s Chart';
 
   @override
-  String get monitoringSensorDetailSection => 'Sensor Status Detail';
+  String get monitoringSensorDetailSection => 'Sensor Parameter Status Detail';
 
   @override
-  String get monitoringEmptySensor => 'No sensor data yet';
+  String get monitoringEmptySensor => 'No sensor parameter data yet';
 
   @override
   String get monitoringEmptyTodayChart => 'No chart data for today yet';
@@ -2397,24 +2397,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monitoringActionRequiredDescription =>
-      '0 sensors available, no configuration yet. Configure sensors to start monitoring';
+      'No sensor parameters can be evaluated yet. Check the configuration and latest sensor data.';
 
   @override
   String get monitoringEnvironmentSubtitle =>
-      'Condition score for sensors at the active site';
+      'Environmental parameter score for the active site';
 
   @override
   String get monitoringNoSensorsConfiguredStatus =>
-      'No sensors are available yet. Configure sensors to start monitoring.';
+      'No sensor parameters can be evaluated yet. Check the configuration and latest data.';
 
   @override
   String monitoringSensorsStableStatus(int total) {
-    return '$total sensors available, monitoring conditions are stable.';
+    return '$total parameters monitored, environmental conditions are stable.';
   }
 
   @override
   String monitoringSensorsAttentionStatus(int total) {
-    return '$total sensors available, some parameters need attention.';
+    return '$total parameters monitored, some parameters need attention.';
   }
 
   @override
@@ -2449,7 +2449,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String monitoringSensorsMonitoredCount(int count) {
-    return '$count sensors monitored';
+    return '$count parameters monitored';
   }
 
   @override
@@ -3397,7 +3397,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monitoringNoSensorConfiguredDesc =>
-      '0 sensors available, no configuration yet. Please configure sensors to start monitoring';
+      'No sensor parameters can be evaluated yet. Check the configuration and latest sensor data.';
 
   @override
   String get monitoringPlantCompositionTitle => 'Distribution by Type';
@@ -3527,10 +3527,10 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Sensors',
-      one: 'Sensor',
+      other: 'Parameters',
+      one: 'Parameter',
     );
-    return '$count Active $_temp0';
+    return '$count $_temp0 Monitored';
   }
 
   @override
@@ -3550,8 +3550,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'sensors',
-      one: 'sensor',
+      other: 'parameters',
+      one: 'parameter',
     );
     return 'Show $count other $_temp0';
   }

@@ -27,9 +27,12 @@ class SensorByTypeCardWidget extends StatelessWidget {
       children: [
         if (showHeader) ...[
           SectionHeaderWidget(title: context.l10n.monitoringSensorByTypeTitle),
-          SizedBox(height: context.rh(0.015)),
+          SizedBox(height: context.rh(0.012)),
         ],
-        ...devices.map((d) => _ExpandableDeviceCard(device: d)),
+        for (var index = 0; index < devices.length; index++) ...[
+          _ExpandableDeviceCard(device: devices[index]),
+          if (index < devices.length - 1) SizedBox(height: context.rh(0.012)),
+        ],
       ],
     );
   }
@@ -49,51 +52,48 @@ class _ExpandableDeviceCardState extends State<_ExpandableDeviceCard> {
   @override
   Widget build(BuildContext context) {
     final d = widget.device;
-    return Padding(
-      padding: EdgeInsets.only(bottom: context.rh(0.012)),
-      child: AppCardWidget.elevated(
-        boxShadow: null,
-        radius: AppRadius.lg,
-        padding: EdgeInsets.zero,
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () => setState(() => _expanded = !_expanded),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: MonitoringCardHeaderWidget.svg(
-                  svgIconPath: 'assets/icons/device-filled-icon.svg',
-                  title: d.devName ?? d.devId,
-                  description: _deviceDescription(context, d),
-                  background: AppColors.softGreenAlt,
-                  tint: AppColors.primary,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _DeviceStatusBadge(active: d.isActive),
-                      const SizedBox(width: 8),
-                      AnimatedRotation(
-                        turns: _expanded ? 0.25 : 0,
-                        duration: const Duration(milliseconds: 180),
-                        child: SvgPicture.asset(
-                          'assets/icons/chevron-right-icon.svg',
-                          width: 20,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.textSecondary,
-                            BlendMode.srcIn,
-                          ),
+    return AppCardWidget.elevated(
+      boxShadow: null,
+      radius: AppRadius.lg,
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: MonitoringCardHeaderWidget.svg(
+                svgIconPath: 'assets/icons/device-filled-icon.svg',
+                title: d.devName ?? d.devId,
+                description: _deviceDescription(context, d),
+                background: AppColors.softGreenAlt,
+                tint: AppColors.primary,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _DeviceStatusBadge(active: d.isActive),
+                    const SizedBox(width: 8),
+                    AnimatedRotation(
+                      turns: _expanded ? 0.25 : 0,
+                      duration: const Duration(milliseconds: 180),
+                      child: SvgPicture.asset(
+                        'assets/icons/chevron-right-icon.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.textSecondary,
+                          BlendMode.srcIn,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            if (_expanded) _buildSensorList(context, d),
-          ],
-        ),
+          ),
+          if (_expanded) _buildSensorList(context, d),
+        ],
       ),
     );
   }

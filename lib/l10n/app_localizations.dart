@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @sensorSectionTitle.
   ///
   /// In id, this message translates to:
-  /// **'Status Sensor'**
+  /// **'Status Parameter Sensor'**
   String get sensorSectionTitle;
 
   /// No description provided for @activeSensors.
@@ -455,7 +455,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptySensor.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada data sensor'**
+  /// **'Belum ada data parameter sensor'**
   String get emptySensor;
 
   /// No description provided for @taskTitle.
@@ -1103,7 +1103,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringLatestStatusTitle.
   ///
   /// In id, this message translates to:
-  /// **'Status Sensor Terkini'**
+  /// **'Status Parameter Terkini'**
   String get monitoringLatestStatusTitle;
 
   /// No description provided for @monitoringTodayChartSection.
@@ -1115,13 +1115,13 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringSensorDetailSection.
   ///
   /// In id, this message translates to:
-  /// **'Detail Status Sensor'**
+  /// **'Detail Status Parameter Sensor'**
   String get monitoringSensorDetailSection;
 
   /// No description provided for @monitoringEmptySensor.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada data sensor'**
+  /// **'Belum ada data parameter sensor'**
   String get monitoringEmptySensor;
 
   /// No description provided for @monitoringEmptyTodayChart.
@@ -4463,31 +4463,31 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringActionRequiredDescription.
   ///
   /// In id, this message translates to:
-  /// **'0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring'**
+  /// **'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.'**
   String get monitoringActionRequiredDescription;
 
   /// No description provided for @monitoringEnvironmentSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Skor kondisi sensor site aktif'**
+  /// **'Skor kondisi parameter lingkungan pada site aktif'**
   String get monitoringEnvironmentSubtitle;
 
   /// No description provided for @monitoringNoSensorsConfiguredStatus.
   ///
   /// In id, this message translates to:
-  /// **'Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.'**
+  /// **'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data terbaru.'**
   String get monitoringNoSensorsConfiguredStatus;
 
   /// No description provided for @monitoringSensorsStableStatus.
   ///
   /// In id, this message translates to:
-  /// **'{total} sensor tersedia, kondisi monitoring stabil.'**
+  /// **'{total} parameter dipantau, kondisi lingkungan stabil.'**
   String monitoringSensorsStableStatus(int total);
 
   /// No description provided for @monitoringSensorsAttentionStatus.
   ///
   /// In id, this message translates to:
-  /// **'{total} sensor tersedia, beberapa parameter perlu perhatian.'**
+  /// **'{total} parameter dipantau, beberapa parameter perlu perhatian.'**
   String monitoringSensorsAttentionStatus(int total);
 
   /// No description provided for @monitoringHealthNeedsSetup.
@@ -4547,7 +4547,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringSensorsMonitoredCount.
   ///
   /// In id, this message translates to:
-  /// **'{count} sensor dipantau'**
+  /// **'{count} parameter dipantau'**
   String monitoringSensorsMonitoredCount(int count);
 
   /// No description provided for @agroParameterScoreTitle.
@@ -6323,7 +6323,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringNoSensorConfiguredDesc.
   ///
   /// In id, this message translates to:
-  /// **'0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring'**
+  /// **'Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.'**
   String get monitoringNoSensorConfiguredDesc;
 
   /// No description provided for @monitoringPlantCompositionTitle.
@@ -6515,7 +6515,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardActiveSensorsCount.
   ///
   /// In id, this message translates to:
-  /// **'{count} Sensor Aktif'**
+  /// **'{count} Parameter Dipantau'**
   String dashboardActiveSensorsCount(num count);
 
   /// No description provided for @dashboardRecentActivities.
@@ -6545,7 +6545,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardShowOtherSensors.
   ///
   /// In id, this message translates to:
-  /// **'Lihat {count} sensor lainnya'**
+  /// **'Lihat {count} parameter lainnya'**
   String dashboardShowOtherSensors(num count);
 
   /// No description provided for @dashboardAverageLabel.

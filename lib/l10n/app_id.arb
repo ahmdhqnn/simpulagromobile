@@ -13,7 +13,7 @@
   "dashboardTitle": "Dashboard",
   "recentActivityTitle": "Aktivitas Terkini",
   "recentActivityEmpty": "Tidak ada aktivitas hari ini.",
-  "sensorSectionTitle": "Status Sensor",
+  "sensorSectionTitle": "Status Parameter Sensor",
   "activeSensors": "{count} Aktif",
   "@activeSensors": {
     "placeholders": {
@@ -83,7 +83,7 @@
   "errorLoadSite": "Gagal memuat site",
   "errorLoadHealth": "Gagal memuat data kesehatan",
   "emptySite": "Pilih site terlebih dahulu",
-  "emptySensor": "Belum ada data sensor",
+  "emptySensor": "Belum ada data parameter sensor",
   "taskTitle": "Task",
   "taskSummarySectionTitle": "Ringkasan Task",
   "quickActionSectionTitle": "Aksi Cepat",
@@ -268,10 +268,10 @@
   "monitoringNoActivePlantMessage": "Data sensor tetap diperbarui. Tambahkan tanaman agar rekomendasi monitoring terhubung ke siklus tanam.",
   "monitoringAddPlant": "Tambah Tanaman",
   "monitoringViewPlantList": "Lihat daftar tanaman",
-  "monitoringLatestStatusTitle": "Status Sensor Terkini",
+  "monitoringLatestStatusTitle": "Status Parameter Terkini",
   "monitoringTodayChartSection": "Grafik Hari Ini",
-  "monitoringSensorDetailSection": "Detail Status Sensor",
-  "monitoringEmptySensor": "Belum ada data sensor",
+  "monitoringSensorDetailSection": "Detail Status Parameter Sensor",
+  "monitoringEmptySensor": "Belum ada data parameter sensor",
   "monitoringEmptyTodayChart": "Belum ada data grafik hari ini",
   "monitoringHistoryChartSection": "Riwayat Grafik",
   "monitoringEmptyHistory": "Belum ada data riwayat",
@@ -1145,10 +1145,10 @@
       }
     }
   },
-  "monitoringActionRequiredDescription": "0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring",
-  "monitoringEnvironmentSubtitle": "Skor kondisi sensor site aktif",
-  "monitoringNoSensorsConfiguredStatus": "Belum ada sensor tersedia, silakan konfigurasi untuk mulai monitoring.",
-  "monitoringSensorsStableStatus": "{total} sensor tersedia, kondisi monitoring stabil.",
+  "monitoringActionRequiredDescription": "Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.",
+  "monitoringEnvironmentSubtitle": "Skor kondisi parameter lingkungan pada site aktif",
+  "monitoringNoSensorsConfiguredStatus": "Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data terbaru.",
+  "monitoringSensorsStableStatus": "{total} parameter dipantau, kondisi lingkungan stabil.",
   "@monitoringSensorsStableStatus": {
     "placeholders": {
       "total": {
@@ -1156,7 +1156,7 @@
       }
     }
   },
-  "monitoringSensorsAttentionStatus": "{total} sensor tersedia, beberapa parameter perlu perhatian.",
+  "monitoringSensorsAttentionStatus": "{total} parameter dipantau, beberapa parameter perlu perhatian.",
   "@monitoringSensorsAttentionStatus": {
     "placeholders": {
       "total": {
@@ -1173,7 +1173,7 @@
   "monitoringHealthFairDesc": "Beberapa parameter perlu perhatian",
   "monitoringHealthNeedsAttention": "Perlu Perhatian",
   "monitoringHealthNeedsAttentionDesc": "Kondisi lingkungan memerlukan perbaikan segera",
-  "monitoringSensorsMonitoredCount": "{count} sensor dipantau",
+  "monitoringSensorsMonitoredCount": "{count} parameter dipantau",
   "@monitoringSensorsMonitoredCount": {
     "placeholders": {
       "count": {
@@ -1554,7 +1554,7 @@
   "commonPhosphorus": "Fosfor",
   "commonPotassium": "Kalium",
   "monitoringActionRequiredTitle": "Tindakan Diperlukan",
-  "monitoringNoSensorConfiguredDesc": "0 sensor tersedia, belum ada konfigurasi. Silakan konfigurasi sensor untuk mulai monitoring",
+  "monitoringNoSensorConfiguredDesc": "Belum ada parameter sensor yang dapat dievaluasi. Periksa konfigurasi dan data sensor terbaru.",
   "monitoringPlantCompositionTitle": "Distribusi Berdasarkan Jenis",
   "monitoringChartTypeLabel": "Tipe Grafik",
   "monitoringChartTypeLine": "Garis",
@@ -1629,7 +1629,7 @@
   },
   "dashboardSelectSitePrompt": "Pilih site untuk memuat data monitoring dan rekomendasi",
   "dashboardNoSensorReadings": "Belum ada bacaan sensor",
-  "dashboardActiveSensorsCount": "{count} Sensor Aktif",
+  "dashboardActiveSensorsCount": "{count} Parameter Dipantau",
   "@dashboardActiveSensorsCount": {
     "placeholders": {
       "count": {
@@ -1641,7 +1641,7 @@
   "dashboardNoActivities": "Belum ada aktivitas",
   "dashboardTaskSummaryTitle": "Ringkasan Task",
   "dashboardCompletionRateLabel": "Tingkat Penyelesaian",
-  "dashboardShowOtherSensors": "Lihat {count} sensor lainnya",
+  "dashboardShowOtherSensors": "Lihat {count} parameter lainnya",
   "@dashboardShowOtherSensors": {
     "placeholders": {
       "count": {

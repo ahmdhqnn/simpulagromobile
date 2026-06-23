@@ -130,7 +130,7 @@ void main() {
         _testApp(const EnvironmentalHealthWidget(healthData: health)),
       );
 
-      expect(find.text('12 sensor dipantau'), findsOneWidget);
+      expect(find.text('12 parameter dipantau'), findsOneWidget);
       expect(find.text('88.5/100'), findsOneWidget);
       expect(find.text('DEV_001 - 25.3'), findsOneWidget);
       expect(find.text('85%'), findsOneWidget);
