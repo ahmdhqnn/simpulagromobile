@@ -133,6 +133,62 @@ class AgroIndicatorScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SectionHeaderWidget(title: l10n.healthSectionTitle),
+        SizedBox(height: context.rh(0.014)),
+        healthAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          data: (health) =>
+              EnvironmentalHealthWidget(agroData: agroData, healthData: health),
+          loading: () => const AgroEnvironmentalHealthCardSkeleton(),
+          error: (error, _) => Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              error.toString(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: context.sp(13),
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(height: context.rh(0.024)),
+
+        phaseAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
+          data: (phase) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
+                SizedBox(height: context.rh(0.014)),
+                AgroPhaseWidget(phase: phase),
+                SizedBox(height: context.rh(0.024)),
+              ],
+            );
+          },
+          loading: () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
+              SizedBox(height: context.rh(0.014)),
+              const AgroPhaseCardSkeleton(),
+              SizedBox(height: context.rh(0.024)),
+            ],
+          ),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+
         recommendationsAsync.when(
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
@@ -175,62 +231,6 @@ class AgroIndicatorScreen extends ConsumerWidget {
             ],
           ),
         ),
-
-        phaseAsync.when(
-          skipLoadingOnReload: true,
-          skipLoadingOnRefresh: true,
-          skipError: true,
-          data: (phase) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
-                SizedBox(height: context.rh(0.014)),
-                AgroPhaseWidget(phase: phase),
-                SizedBox(height: context.rh(0.024)),
-              ],
-            );
-          },
-          loading: () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
-              SizedBox(height: context.rh(0.014)),
-              const AgroPhaseCardSkeleton(),
-              SizedBox(height: context.rh(0.024)),
-            ],
-          ),
-          error: (_, __) => const SizedBox.shrink(),
-        ),
-
-        SectionHeaderWidget(title: l10n.healthSectionTitle),
-        SizedBox(height: context.rh(0.014)),
-        healthAsync.when(
-          skipLoadingOnReload: true,
-          skipLoadingOnRefresh: true,
-          data: (health) =>
-              EnvironmentalHealthWidget(agroData: agroData, healthData: health),
-          loading: () => const AgroEnvironmentalHealthCardSkeleton(),
-          error: (error, _) => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                color: AppColors.error,
-              ),
-            ),
-          ),
-        ),
-
-        SizedBox(height: context.rh(0.024)),
 
         SectionHeaderWidget(title: l10n.agroVdpTitle),
         SizedBox(height: context.rh(0.014)),
@@ -287,9 +287,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
+        SectionHeaderWidget(title: l10n.healthSectionTitle),
         SizedBox(height: context.rh(0.014)),
-        const AgroRecommendationCardSkeleton(),
+        const AgroEnvironmentalHealthCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
         SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
@@ -297,9 +297,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
         const AgroPhaseCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
-        SectionHeaderWidget(title: l10n.healthSectionTitle),
+        SectionHeaderWidget(title: l10n.agroActionRecommendationTitle),
         SizedBox(height: context.rh(0.014)),
-        const AgroEnvironmentalHealthCardSkeleton(),
+        const AgroRecommendationCardSkeleton(),
         SizedBox(height: context.rh(0.024)),
 
         SectionHeaderWidget(title: l10n.agroVdpTitle),

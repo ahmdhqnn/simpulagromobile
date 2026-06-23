@@ -108,6 +108,33 @@ void main() {
       },
     );
 
+    test('fills missing detail metadata from accessible site list', () async {
+      final created = DateTime(2026, 6, 1, 8);
+      final updated = DateTime(2026, 6, 2, 9);
+      final repo = _FakeSiteRepository()
+        ..sites = [
+          Site(
+            siteId: 'SITE_1',
+            siteName: 'List Site',
+            siteCreated: created,
+            siteUpdate: updated,
+          ),
+        ]
+        ..detailSites = const {
+          'SITE_1': Site(siteId: 'SITE_1', siteName: 'Detail Site'),
+        };
+      final container = ProviderContainer(
+        overrides: [siteRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+
+      final site = await container.read(siteDetailProvider('SITE_1').future);
+
+      expect(site.siteName, 'Detail Site');
+      expect(site.siteCreated, created);
+      expect(site.siteUpdate, updated);
+    });
+
     test(
       'rejects detail access for a site outside the accessible site list',
       () async {

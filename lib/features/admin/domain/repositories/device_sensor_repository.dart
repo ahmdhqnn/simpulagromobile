@@ -6,7 +6,11 @@ abstract class DeviceSensorRepository {
     String deviceId,
   );
   Future<List<DeviceSensor>> getAllDeviceSensors(String siteId);
-  Future<DeviceSensor> getDeviceSensorById(String siteId, String dsId);
+  Future<DeviceSensor> getDeviceSensorById(
+    String siteId,
+    String dsId, {
+    String? devId,
+  });
   Future<DeviceSensor> createDeviceSensor(
     String siteId,
     DeviceSensor deviceSensor,

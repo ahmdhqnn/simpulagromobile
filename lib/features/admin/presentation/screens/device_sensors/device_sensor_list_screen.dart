@@ -229,7 +229,7 @@ class _DeviceSensorCard extends ConsumerWidget {
       icon: Icons.cable,
       iconColor: deviceSensor.isActive ? AppColors.ph : Colors.grey,
       isActive: deviceSensor.isActive,
-      onTap: () => context.push('/admin/device-sensors/${deviceSensor.dsId}'),
+      onTap: () => context.push(_detailRoute(deviceSensor)),
       trailing: canUpdate ? _buildActionsMenu(context) : null,
       badges: [
         if (deviceSensor.sensId != null)
@@ -264,8 +264,19 @@ class _DeviceSensorCard extends ConsumerWidget {
           iconColor: const Color(0xFF1D1D1D),
         ),
       ],
-      onSelected: (_) =>
-          context.push('/admin/device-sensors/${deviceSensor.dsId}/edit'),
+      onSelected: (_) => context.push(_editRoute(deviceSensor)),
     );
+  }
+
+  String _detailRoute(DeviceSensor deviceSensor) {
+    final dsId = Uri.encodeComponent(deviceSensor.dsId);
+    final devId = Uri.encodeQueryComponent(deviceSensor.devId);
+    return '/admin/device-sensors/$dsId?devId=$devId';
+  }
+
+  String _editRoute(DeviceSensor deviceSensor) {
+    final dsId = Uri.encodeComponent(deviceSensor.dsId);
+    final devId = Uri.encodeQueryComponent(deviceSensor.devId);
+    return '/admin/device-sensors/$dsId/edit?devId=$devId';
   }
 }

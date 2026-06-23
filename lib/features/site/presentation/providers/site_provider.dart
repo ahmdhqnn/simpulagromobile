@@ -53,11 +53,24 @@ final siteDetailProvider = FutureProvider.autoDispose.family<Site, String>((
   return ref.retryOnError(() async {
     final result = await repository.getSiteById(siteId);
     return result.fold((failure) => throw failure, (site) {
-      if (site.siteId == siteId) return site;
+      if (site.siteId == siteId) return _mergeSiteDetail(site, accessibleSite);
       return accessibleSite;
     });
   });
 });
+
+Site _mergeSiteDetail(Site detail, Site fallback) {
+  return detail.copyWith(
+    siteName: detail.siteName ?? fallback.siteName,
+    siteAddress: detail.siteAddress ?? fallback.siteAddress,
+    siteLon: detail.siteLon ?? fallback.siteLon,
+    siteLat: detail.siteLat ?? fallback.siteLat,
+    siteAlt: detail.siteAlt ?? fallback.siteAlt,
+    siteSts: detail.siteSts ?? fallback.siteSts,
+    siteCreated: detail.siteCreated ?? fallback.siteCreated,
+    siteUpdate: detail.siteUpdate ?? fallback.siteUpdate,
+  );
+}
 
 @Riverpod(keepAlive: true)
 class SelectedSite extends _$SelectedSite {

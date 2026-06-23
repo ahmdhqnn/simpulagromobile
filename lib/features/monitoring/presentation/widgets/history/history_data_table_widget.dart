@@ -38,13 +38,14 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
         ? widget.reads.length
         : (widget.reads.length > 5 ? 5 : widget.reads.length);
 
-    return AppCardWidget.elevated(
-      boxShadow: null,
-      radius: AppRadius.lg,
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          ListView.separated(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppCardWidget.elevated(
+          boxShadow: null,
+          radius: AppRadius.lg,
+          padding: EdgeInsets.zero,
+          child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
@@ -90,30 +91,50 @@ class _HistoryDataTableWidgetState extends State<HistoryDataTableWidget> {
               );
             },
           ),
-          if (widget.reads.length > 5)
-            InkWell(
-              onTap: () => setState(() => _expanded = !_expanded),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.only(bottom: 12, top: context.rh(0.01)),
-                alignment: Alignment.center,
-                child: Text(
-                  _expanded
-                      ? context.l10n.monitoringShowLess
-                      : context.l10n.monitoringShowAllCount(
-                          widget.reads.length,
-                        ),
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: context.sp(12),
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+        ),
+        if (widget.reads.length > 5) ...[
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _expanded
+                        ? context.l10n.commonHide
+                        : context.l10n.monitoringShowAllCount(
+                            widget.reads.length,
+                          ),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(13),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }

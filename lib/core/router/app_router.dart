@@ -422,13 +422,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/admin/device-sensors/:id/edit',
-        builder: (_, state) =>
-            DeviceSensorFormScreen(dsId: state.pathParameters['id']),
+        builder: (_, state) => DeviceSensorFormScreen(
+          dsId: state.pathParameters['id'],
+          devId: state.uri.queryParameters['devId'],
+        ),
       ),
       GoRoute(
         path: '/admin/device-sensors/:id',
-        builder: (_, state) =>
-            DeviceSensorDetailScreen(dsId: state.pathParameters['id']!),
+        builder: (_, state) => DeviceSensorDetailScreen(
+          dsId: state.pathParameters['id']!,
+          devId: state.uri.queryParameters['devId'],
+        ),
       ),
 
       GoRoute(path: '/utilitas', redirect: (_, __) => '/admin'),

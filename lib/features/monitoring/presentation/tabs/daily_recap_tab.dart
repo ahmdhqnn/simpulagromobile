@@ -153,13 +153,14 @@ class _DailyRecapListState extends State<_DailyRecapList> {
         ? sorted.length
         : sorted.length.clamp(0, 8).toInt();
 
-    return AppCardWidget.elevated(
-      boxShadow: null,
-      radius: AppRadius.lg,
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          ListView.separated(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppCardWidget.elevated(
+          boxShadow: null,
+          radius: AppRadius.lg,
+          padding: EdgeInsets.zero,
+          child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
@@ -171,28 +172,48 @@ class _DailyRecapListState extends State<_DailyRecapList> {
               metadataAdapter: widget.metadataAdapter,
             ),
           ),
-          if (sorted.length > 8)
-            InkWell(
-              onTap: () => setState(() => _expanded = !_expanded),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(AppRadius.lg),
+        ),
+        if (sorted.length > 8) ...[
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: Text(
-                  _expanded
-                      ? l10n.monitoringShowLess
-                      : l10n.monitoringShowAllCount(sorted.length),
-                  style: AppTextStyles.label(
-                    context,
-                    color: AppColors.primary,
-                    weight: FontWeight.w700,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _expanded
+                        ? l10n.commonHide
+                        : l10n.monitoringShowAllCount(sorted.length),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: context.sp(13),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }

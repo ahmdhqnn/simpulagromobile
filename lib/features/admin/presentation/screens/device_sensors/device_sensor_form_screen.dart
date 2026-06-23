@@ -19,8 +19,9 @@ import 'package:simpulagromobile/shared/widgets/skeleton_loaders.dart';
 
 class DeviceSensorFormScreen extends ConsumerStatefulWidget {
   final String? dsId;
+  final String? devId;
 
-  const DeviceSensorFormScreen({super.key, this.dsId});
+  const DeviceSensorFormScreen({super.key, this.dsId, this.devId});
 
   @override
   ConsumerState<DeviceSensorFormScreen> createState() =>
@@ -76,7 +77,11 @@ class _DeviceSensorFormScreenState
     final formState = ref.watch(adminDeviceSensorFormProvider);
 
     if (_isEditMode && !_isInitialized) {
-      final dsAsync = ref.watch(adminDeviceSensorDetailProvider(widget.dsId!));
+      final lookupKey = adminDeviceSensorLookupKey(
+        widget.dsId!,
+        devId: widget.devId,
+      );
+      final dsAsync = ref.watch(adminDeviceSensorDetailProvider(lookupKey));
       dsAsync.whenData((ds) {
         if (!_isInitialized) _initializeForm(ds);
       });
@@ -96,7 +101,7 @@ class _DeviceSensorFormScreenState
           body: AdminErrorState(
             error: dsAsync.error!,
             onRetry: () =>
-                ref.invalidate(adminDeviceSensorDetailProvider(widget.dsId!)),
+                ref.invalidate(adminDeviceSensorDetailProvider(lookupKey)),
           ),
         );
       }

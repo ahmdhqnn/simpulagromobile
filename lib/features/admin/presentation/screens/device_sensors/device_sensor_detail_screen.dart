@@ -12,13 +12,15 @@ import 'package:simpulagromobile/features/admin/presentation/widgets/permission_
 import 'package:simpulagromobile/l10n/l10n.dart';
 
 class DeviceSensorDetailScreen extends ConsumerWidget {
-  const DeviceSensorDetailScreen({super.key, required this.dsId});
+  const DeviceSensorDetailScreen({super.key, required this.dsId, this.devId});
 
   final String dsId;
+  final String? devId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dsAsync = ref.watch(adminDeviceSensorDetailProvider(dsId));
+    final lookupKey = adminDeviceSensorLookupKey(dsId, devId: devId);
+    final dsAsync = ref.watch(adminDeviceSensorDetailProvider(lookupKey));
 
     return PermissionGuardScreen(
       permission: 'ds:read',
@@ -29,9 +31,7 @@ class DeviceSensorDetailScreen extends ConsumerWidget {
             permission: 'ds:update',
             child: AdminCircleActionButton(
               svgIconPath: 'assets/icons/edit-outline-icon.svg',
-              onTap: () => context.push(
-                '/admin/device-sensors/${deviceSensor.dsId}/edit',
-              ),
+              onTap: () => context.push(_editRoute(deviceSensor)),
             ),
           ),
           orElse: () => null,
@@ -45,7 +45,7 @@ class DeviceSensorDetailScreen extends ConsumerWidget {
           error: (error, _) => AdminErrorState(
             error: error,
             onRetry: () =>
-                ref.invalidate(adminDeviceSensorDetailProvider(dsId)),
+                ref.invalidate(adminDeviceSensorDetailProvider(lookupKey)),
           ),
         ),
       ),
@@ -63,7 +63,14 @@ class _DeviceSensorDetailBody extends ConsumerWidget {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        ref.invalidate(adminDeviceSensorDetailProvider(deviceSensor.dsId));
+        ref.invalidate(
+          adminDeviceSensorDetailProvider(
+            adminDeviceSensorLookupKey(
+              deviceSensor.dsId,
+              devId: deviceSensor.devId,
+            ),
+          ),
+        );
         ref.invalidate(deviceSensorThresholdValuesProvider);
       },
       child: ListView(
@@ -100,7 +107,10 @@ class _DeviceSensorDetailBody extends ConsumerWidget {
                 AdminDetailRow(
                   icon: Icons.sensors_outlined,
                   label: context.l10n.adminSensorLabel,
-                  value: deviceSensor.sensId ?? '-',
+                  value:
+                      _text(deviceSensor.sensId) ??
+                      _text(deviceSensor.dsName) ??
+                      '-',
                 ),
                 AdminDetailRow(
                   icon: Icons.straighten,
@@ -179,8 +189,19 @@ class _DeviceSensorDetailBody extends ConsumerWidget {
 
   String _number(double? value) => value?.toString() ?? '-';
 
+  String? _text(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
   String _date(BuildContext context, DateTime? date) {
     if (date == null) return '-';
     return context.dateFormat('dd MMM yyyy HH:mm').format(date.toLocal());
   }
+}
+
+String _editRoute(DeviceSensor deviceSensor) {
+  final dsId = Uri.encodeComponent(deviceSensor.dsId);
+  final devId = Uri.encodeQueryComponent(deviceSensor.devId);
+  return '/admin/device-sensors/$dsId/edit?devId=$devId';
 }
