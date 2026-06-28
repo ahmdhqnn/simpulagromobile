@@ -2249,7 +2249,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginFailedMessage.
   ///
   /// In id, this message translates to:
-  /// **'Username atau password salah'**
+  /// **'Username atau kata sandi salah. Periksa kembali data login Anda.'**
   String get loginFailedMessage;
 
   /// No description provided for @authSessionExpired.
@@ -2975,7 +2975,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileSignout.
   ///
   /// In id, this message translates to:
-  /// **'Signout'**
+  /// **'Keluar'**
   String get profileSignout;
 
   /// No description provided for @profileLogoutTitle.

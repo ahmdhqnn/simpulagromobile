@@ -31,10 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (widget.sessionExpiredMessage) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          SnackbarHelper.showWarning(
-            context,
-            context.l10n.authSessionExpired,
-          );
+          SnackbarHelper.showWarning(context, context.l10n.authSessionExpired);
         }
       });
     }
@@ -139,7 +136,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               top: context.rh(0.012),
               left: context.rw(0.051),
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                key: const Key('loginBackButton'),
+                onTap: () => context.go('/onboarding'),
                 child: Container(
                   width: context.rw(0.148).clamp(48.0, 64.0),
                   height: context.rw(0.148).clamp(48.0, 64.0),
@@ -235,21 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
 
-                    SizedBox(height: context.rh(0.01)),
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        context.l10n.loginForgotPassword,
-                        style: TextStyle(
-                          fontFamily: "Plus Jakarta Sans",
-                          fontSize: context.sp(10),
-                          color: const Color(0xFF1D1D1D),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: context.rh(0.036)),
+                    SizedBox(height: context.rh(0.058)),
 
                     AuthPillButton(
                       text: context.l10n.loginSignIn,

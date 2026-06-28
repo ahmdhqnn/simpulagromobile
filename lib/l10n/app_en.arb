@@ -512,7 +512,7 @@
   "loginForgotPassword": "Forgot Password?",
   "loginSignIn": "Sign In",
   "loginFailedTitle": "Login Failed",
-  "loginFailedMessage": "Username or password is incorrect",
+  "loginFailedMessage": "Username or password is incorrect. Please check your login details.",
   "authSessionExpired": "Your session has expired. Please sign in again.",
   "siteListTitle": "Select Location",
   "siteDetailTitle": "Location Detail",

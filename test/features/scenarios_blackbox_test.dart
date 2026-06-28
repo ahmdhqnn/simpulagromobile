@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -11,6 +12,7 @@ import 'package:simpulagromobile/core/providers/core_providers.dart';
 import 'package:simpulagromobile/core/network/paginated_result.dart';
 import 'package:simpulagromobile/core/storage/secure_storage.dart';
 import 'package:simpulagromobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:simpulagromobile/features/auth/domain/constants/auth_failure_messages.dart';
 import 'package:simpulagromobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simpulagromobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
@@ -46,6 +48,15 @@ Widget _localizedApp({required Widget home}) {
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: home,
+  );
+}
+
+Widget _localizedRouterApp({required GoRouter router}) {
+  return MaterialApp.router(
+    locale: const Locale('id'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    routerConfig: router,
   );
 }
 
@@ -111,6 +122,7 @@ void main() {
 
       // Verify page loaded
       expect(find.text("Masa Depan\nBertani, Hari Ini."), findsOneWidget);
+      expect(find.text('Lupa Password?'), findsNothing);
 
       // Input invalid credentials
       final textFields = find.byType(TextField);
@@ -130,7 +142,7 @@ void main() {
       // Verify that AlertDialog was displayed with error message
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text('Gagal Login'), findsOneWidget);
-      expect(find.text('Username atau Password salah'), findsOneWidget);
+      expect(find.text(AuthFailureMessages.invalidCredentials), findsOneWidget);
 
       // Verify we can dismiss it
       await tester.tap(find.text('OK'));
@@ -138,6 +150,46 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       }
       expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('Back button navigates to onboarding route', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        initialLocation: '/login',
+        routes: [
+          GoRoute(
+            path: '/login',
+            builder: (context, state) => const LoginScreen(),
+          ),
+          GoRoute(
+            path: '/onboarding',
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('Onboarding Route'))),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: _localizedRouterApp(router: router),
+        ),
+      );
+
+      expect(find.byType(LoginScreen), findsOneWidget);
+      await tester.tap(find.byKey(const Key('loginBackButton')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Onboarding Route'), findsOneWidget);
     });
   });
 
@@ -468,12 +520,12 @@ void main() {
     'Scenario 8 & 9 & 10: Critical offline connection handling & recommendations',
     () {
       test(
-        'Maps socket timeout / offline exceptions to "Tidak Ada Koneksi Internet"',
+        'Maps socket timeout / offline exceptions to friendly network message',
         () async {
           // Offline/Timeout simulation throwing SocketException equivalent error
           when(() => mockAuthRepository.login('admin', 'timeout')).thenAnswer(
             (_) async =>
-                const dz.Left(ServerFailure('Tidak Ada Koneksi Internet')),
+                const dz.Left(NetworkFailure('Tidak Ada Koneksi Internet')),
           );
 
           final container = ProviderContainer(
@@ -488,7 +540,7 @@ void main() {
           expect(result, isFalse);
           expect(
             container.read(authProvider).error,
-            equals('Tidak Ada Koneksi Internet'),
+            equals(AuthFailureMessages.network),
           );
         },
       );

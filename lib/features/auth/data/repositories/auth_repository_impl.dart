@@ -4,6 +4,7 @@ import '../../../../core/error/exception_mapper.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/auth/token_manager.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../domain/constants/auth_failure_messages.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -33,12 +34,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return Right(response.user);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        return const Left(AuthFailure('Invalid username or password'));
-      }
-      return Left(ServerFailure(e.message ?? 'Server error occurred'));
+      return Left(_mapLoginFailure(e));
     } catch (e) {
-      return Left(UnknownFailure(e.toString()));
+      return const Left(UnknownFailure(AuthFailureMessages.unknown));
     }
   }
 
@@ -121,5 +119,27 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (_) {
       return null;
     }
+  }
+
+  Failure _mapLoginFailure(DioException exception) {
+    if (exception.type == DioExceptionType.cancel) {
+      return const UnknownFailure(AuthFailureMessages.unknown);
+    }
+
+    if (exception.response == null) {
+      return const NetworkFailure(AuthFailureMessages.network);
+    }
+
+    final statusCode = exception.response?.statusCode ?? 0;
+
+    if (statusCode == 400 || statusCode == 401 || statusCode == 403) {
+      return const AuthFailure(AuthFailureMessages.invalidCredentials);
+    }
+
+    if (statusCode >= 500) {
+      return ServerFailure(AuthFailureMessages.server, statusCode: statusCode);
+    }
+
+    return const UnknownFailure(AuthFailureMessages.unknown);
   }
 }

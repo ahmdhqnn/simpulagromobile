@@ -6,6 +6,7 @@ import '../../../../core/storage/secure_storage.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/constants/auth_failure_messages.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -111,7 +112,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       (failure) {
         state = AuthState(
           status: AuthStatus.unauthenticated,
-          error: failure.message,
+          error: _loginFailureMessage(failure),
         );
         return false;
       },
@@ -152,6 +153,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     result.fold((_) {}, (perms) {
       if (mounted) state = state.copyWith(permissions: perms);
     });
+  }
+
+  String _loginFailureMessage(Failure failure) {
+    return switch (failure) {
+      AuthFailure() ||
+      ValidationFailure() => AuthFailureMessages.invalidCredentials,
+      NetworkFailure() => AuthFailureMessages.network,
+      ServerFailure() => AuthFailureMessages.server,
+      _ => AuthFailureMessages.unknown,
+    };
   }
 }
 

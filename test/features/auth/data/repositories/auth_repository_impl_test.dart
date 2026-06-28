@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:dio/dio.dart';
 import 'package:simpulagromobile/core/auth/token_manager.dart';
 import 'package:simpulagromobile/core/storage/secure_storage.dart';
+import 'package:simpulagromobile/features/auth/domain/constants/auth_failure_messages.dart';
 import 'package:simpulagromobile/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:simpulagromobile/features/auth/data/models/user_model.dart';
 import 'package:simpulagromobile/features/auth/data/repositories/auth_repository_impl.dart';
@@ -13,6 +14,27 @@ class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
 class MockSecureStorage extends Mock implements SecureStorage {}
 
 class MockTokenManager extends Mock implements TokenManager {}
+
+DioException loginDioException({
+  required DioExceptionType type,
+  int? statusCode,
+  Object? data,
+  String? message,
+}) {
+  final requestOptions = RequestOptions(path: '/auth/login');
+  return DioException(
+    requestOptions: requestOptions,
+    type: type,
+    message: message,
+    response: statusCode == null
+        ? null
+        : Response(
+            requestOptions: requestOptions,
+            statusCode: statusCode,
+            data: data,
+          ),
+  );
+}
 
 void main() {
   late MockAuthRemoteDataSource mockRemoteDataSource;
@@ -76,17 +98,77 @@ void main() {
         verify(() => mockStorage.saveUserData(any())).called(1);
       });
 
-      test('throws on login failure', () async {
-        when(
-          () => mockRemoteDataSource.login('john', 'wrong'),
-        ).thenThrow(Exception('Invalid credentials'));
+      test(
+        'maps invalid credential response to friendly auth failure',
+        () async {
+          when(() => mockRemoteDataSource.login('john', 'wrong')).thenThrow(
+            loginDioException(
+              type: DioExceptionType.badResponse,
+              statusCode: 401,
+              data: {'message': 'ERR_AUTH_401: invalid credential hash'},
+            ),
+          );
 
-        final result = await repository.login('john', 'wrong');
-        result.fold(
-          (failure) => expect(failure, isA<UnknownFailure>()),
-          (_) => fail('Should fail'),
+          final result = await repository.login('john', 'wrong');
+          result.fold((failure) {
+            expect(failure, isA<AuthFailure>());
+            expect(
+              failure.message,
+              equals(AuthFailureMessages.invalidCredentials),
+            );
+            expect(failure.message, isNot(contains('ERR_AUTH_401')));
+          }, (_) => fail('Should fail'));
+        },
+      );
+
+      test('maps login timeout to friendly network failure', () async {
+        when(() => mockRemoteDataSource.login('john', 'pass123')).thenThrow(
+          loginDioException(
+            type: DioExceptionType.connectionTimeout,
+            message: 'Connection timed out after 0:00:30',
+          ),
         );
+
+        final result = await repository.login('john', 'pass123');
+        result.fold((failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, equals(AuthFailureMessages.network));
+          expect(failure.message, isNot(contains('Connection timed out')));
+        }, (_) => fail('Should fail'));
       });
+
+      test('maps server error to friendly login failure', () async {
+        when(() => mockRemoteDataSource.login('john', 'pass123')).thenThrow(
+          loginDioException(
+            type: DioExceptionType.badResponse,
+            statusCode: 500,
+            data: 'NullReferenceException at AuthController.login',
+          ),
+        );
+
+        final result = await repository.login('john', 'pass123');
+        result.fold((failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, equals(AuthFailureMessages.server));
+          expect(failure.message, isNot(contains('NullReferenceException')));
+        }, (_) => fail('Should fail'));
+      });
+
+      test(
+        'maps unexpected login failure to friendly unknown failure',
+        () async {
+          when(
+            () => mockRemoteDataSource.login('john', 'wrong'),
+          ).thenThrow(Exception('Invalid credentials'));
+
+          final result = await repository.login('john', 'wrong');
+          result.fold((failure) {
+            expect(failure, isA<UnknownFailure>());
+            expect(failure.message, equals(AuthFailureMessages.unknown));
+            expect(failure.message, isNot(contains('Invalid credentials')));
+          }, (_) => fail('Should fail'));
+        },
+      );
     });
 
     group('logout', () {

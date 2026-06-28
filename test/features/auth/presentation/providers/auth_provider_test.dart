@@ -6,6 +6,7 @@ import 'package:simpulagromobile/features/auth/domain/entities/user.dart';
 import 'package:simpulagromobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:simpulagromobile/core/error/failures.dart';
+import 'package:simpulagromobile/features/auth/domain/constants/auth_failure_messages.dart';
 import 'package:simpulagromobile/features/auth/presentation/providers/auth_provider.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -97,19 +98,22 @@ void main() {
         expect(result, isFalse);
         expect(notifier.state.status, equals(AuthStatus.unauthenticated));
         expect(notifier.state.error, isNotNull);
-        expect(notifier.state.error, contains('Username atau Password salah'));
+        expect(
+          notifier.state.error,
+          equals(AuthFailureMessages.invalidCredentials),
+        );
       });
 
       test('sets connection error message on network failure', () async {
         when(() => mockRepository.login('john', 'pass')).thenAnswer(
-          (_) async => const Left(ServerFailure('Tidak Ada Koneksi Internet')),
+          (_) async => const Left(NetworkFailure('Tidak Ada Koneksi Internet')),
         );
 
         final notifier = AuthNotifier(mockRepository);
         final result = await notifier.login('john', 'pass');
 
         expect(result, isFalse);
-        expect(notifier.state.error, contains('Tidak Ada Koneksi Internet'));
+        expect(notifier.state.error, equals(AuthFailureMessages.network));
       });
     });
 
