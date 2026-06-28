@@ -74,6 +74,12 @@ Plant? _resolveCurrentPlant(Iterable<Plant> plants) {
   return null;
 }
 
+bool _shouldFallbackActivePlantQuery(Failure failure) {
+  return failure is UnsupportedBackendEndpointFailure ||
+      failure is ValidationFailure ||
+      failure is NotFoundFailure;
+}
+
 // ─── List plants (AsyncNotifier) ─────────────────────────────────────────────
 
 /// Mengelola daftar tanaman per site dengan polling otomatis.
@@ -205,15 +211,20 @@ final ongoingPlantProvider = FutureProvider<Plant?>((ref) async {
 
   final useCase = ref.read(getPlantsUseCaseProvider);
   final filteredResult = await useCase(siteId, isOnGoingPlant: true);
-  final filteredPlants = filteredResult.fold(
-    (_) => const <Plant>[],
-    (plants) => _normalizePlants(plants),
-  );
+  final filteredPlants = filteredResult.fold((failure) {
+    if (_shouldFallbackActivePlantQuery(failure)) {
+      return const <Plant>[];
+    }
+    throw failure;
+  }, (plants) => _normalizePlants(plants));
   final filteredActivePlant = _resolveCurrentPlant(filteredPlants);
   if (filteredActivePlant != null) return filteredActivePlant;
 
   final allResult = await useCase(siteId);
-  return allResult.fold((_) => null, (plants) => _resolveCurrentPlant(plants));
+  return allResult.fold(
+    (failure) => throw failure,
+    (plants) => _resolveCurrentPlant(plants),
+  );
 });
 
 /// Tanaman aktif pertama — untuk guard form create & banner.

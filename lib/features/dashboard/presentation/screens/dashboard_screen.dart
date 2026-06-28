@@ -6,11 +6,13 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/ui_error_message.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../site/presentation/providers/site_provider.dart';
+import '../../../task/domain/entities/task.dart';
 import '../../../task/presentation/providers/task_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_header_widget.dart';
@@ -46,10 +48,13 @@ class DashboardScreen extends ConsumerWidget {
     final dashboardSummaryAsync = ref.watch(dashboardSummaryProvider);
     final latestReadsAsync = ref.watch(latestSensorReadsProvider);
     final taskListAsync = ref.watch(taskListProvider);
-    final taskStats = ref.watch(taskStatsProvider);
+    final taskStatsAsync = taskListAsync.whenData(_taskStatsFromTasks);
+    final taskStats = taskStatsAsync.valueOrNull ?? const TaskStats();
     final metadataAdapter = ref.watch(sensorMetadataAdapterProvider);
     final isTaskStatsLoading =
-        taskListAsync.isLoading && taskListAsync.valueOrNull == null;
+        taskStatsAsync.isLoading && taskStatsAsync.valueOrNull == null;
+    final isTaskStatsError =
+        taskStatsAsync.hasError && taskStatsAsync.valueOrNull == null;
     final horizontalPadding = context.rw(0.051);
     final sectionGap = context.rh(0.024);
     final contentGap = context.rh(0.012);
@@ -114,7 +119,11 @@ class DashboardScreen extends ConsumerWidget {
                           showSelector: authState.isAdmin,
                         ),
                         error: (e, _) => ErrorStateCardWidget(
-                          message: l10n.errorLoadSite,
+                          message: toUiErrorMessage(
+                            e,
+                            l10n,
+                            fallback: l10n.errorLoadSite,
+                          ),
                           onRetry: () => ref.invalidate(sitesProvider),
                         ),
                       ),
@@ -145,7 +154,11 @@ class DashboardScreen extends ConsumerWidget {
                           },
                           loading: () => const HealthCardSkeleton(),
                           error: (e, _) => ErrorStateCardWidget(
-                            message: l10n.errorLoadHealth,
+                            message: toUiErrorMessage(
+                              e,
+                              l10n,
+                              fallback: l10n.errorLoadHealth,
+                            ),
                             onRetry: () =>
                                 ref.invalidate(environmentalHealthProvider),
                           ),
@@ -172,10 +185,12 @@ class DashboardScreen extends ConsumerWidget {
                             );
                           },
                           loading: () => const SensorStatusGridSkeleton(),
-                          error: (_, __) => InfoStateWidget.svg(
-                            svgIconPath: 'assets/icons/sensor-icon.svg',
-                            message: l10n.emptySensor,
+                          error: (e, _) => ErrorStateCardWidget(
+                            message: e,
                             height: 195,
+                            svgIconPath: 'assets/icons/sensor-icon.svg',
+                            onRetry: () =>
+                                ref.invalidate(environmentalHealthProvider),
                           ),
                         ),
                         SizedBox(height: sectionGap),
@@ -208,8 +223,12 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           loading: () =>
                               const LatestSensorReadsSkeleton(rowCount: 5),
-                          error: (_, __) => ErrorStateCardWidget(
-                            message: l10n.dashboardActivityLoadFailed,
+                          error: (e, _) => ErrorStateCardWidget(
+                            message: toUiErrorMessage(
+                              e,
+                              l10n,
+                              fallback: l10n.dashboardActivityLoadFailed,
+                            ),
                             onRetry: () =>
                                 ref.invalidate(latestSensorReadsProvider),
                           ),
@@ -231,6 +250,16 @@ class DashboardScreen extends ConsumerWidget {
                                 isTaskStatsLoading) {
                               return SummaryGridSkeleton(
                                 spacing: contentGap.clamp(8.0, 12.0),
+                              );
+                            }
+
+                            if (dashboardSummaryAsync.hasError &&
+                                dashboardSummaryAsync.valueOrNull == null) {
+                              return ErrorStateCardWidget(
+                                message: dashboardSummaryAsync.error!,
+                                height: 192,
+                                onRetry: () =>
+                                    ref.invalidate(dashboardSummaryProvider),
                               );
                             }
 
@@ -302,7 +331,14 @@ class DashboardScreen extends ConsumerWidget {
                                 ),
                                 SummaryCardWidget(
                                   title: l10n.taskTitle,
-                                  value: taskStats.total.toString(),
+                                  value: taskStatsAsync.when(
+                                    skipLoadingOnReload: true,
+                                    skipLoadingOnRefresh: true,
+                                    skipError: true,
+                                    data: (stats) => stats.total.toString(),
+                                    loading: () => '...',
+                                    error: (_, __) => '-',
+                                  ),
                                   svgIcon:
                                       'assets/icons/task-overview-outline-icon.svg',
                                   iconBgColor: AppColors.softOrange,
@@ -320,6 +356,11 @@ class DashboardScreen extends ConsumerWidget {
 
                         if (isTaskStatsLoading)
                           const TaskOverviewSkeleton()
+                        else if (isTaskStatsError)
+                          ErrorStateCardWidget(
+                            message: taskStatsAsync.error!,
+                            onRetry: () => ref.invalidate(taskListProvider),
+                          )
                         else
                           TaskOverviewWidget(
                             totalTasks: taskStats.total,
@@ -343,6 +384,24 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  TaskStats _taskStatsFromTasks(List<Task> tasks) {
+    return TaskStats(
+      total: tasks.length,
+      pending: tasks
+          .where((task) => task.taskStatus == TaskStatus.pending)
+          .length,
+      progress: tasks
+          .where((task) => task.taskStatus == TaskStatus.progress)
+          .length,
+      complite: tasks
+          .where((task) => task.taskStatus == TaskStatus.complite)
+          .length,
+      failed: tasks
+          .where((task) => task.taskStatus == TaskStatus.failed)
+          .length,
     );
   }
 }

@@ -66,7 +66,10 @@ class MapsTab extends ConsumerWidget {
                 );
               },
               loading: () => const CompactStatsCardSkeleton(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => ErrorStateCardWidget(
+                message: e,
+                onRetry: () => ref.invalidate(devicesProvider),
+              ),
             ),
             SizedBox(height: sectionGap),
 
@@ -79,7 +82,8 @@ class MapsTab extends ConsumerWidget {
               skipError: true,
               loading: () => const MapCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
+                height: 195,
                 onRetry: () => ref.invalidate(devicesProvider),
               ),
               data: (devices) {
@@ -119,7 +123,10 @@ class MapsTab extends ConsumerWidget {
               skipLoadingOnRefresh: true,
               skipError: true,
               loading: () => const SimpleRowsCardSkeleton(rowCount: 2),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => ErrorStateCardWidget(
+                message: e,
+                onRetry: () => ref.invalidate(devicesProvider),
+              ),
               data: (devices) => devices.isEmpty
                   ? InfoStateWidget.svg(
                       svgIconPath: 'assets/icons/device-filled-icon.svg',

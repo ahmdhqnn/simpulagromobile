@@ -10,6 +10,7 @@ import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/localized_labels.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../domain/entities/recommendation.dart';
@@ -238,6 +239,7 @@ class _RecommendationHubScreenState
     return historyAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
+      skipError: true,
       data: (items) {
         final filteredItems = items.where((item) {
           if (query.isEmpty) return true;
@@ -411,6 +413,7 @@ class _RecommendationHubScreenState
     return statsAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
+      skipError: true,
       data: (stats) => Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -449,7 +452,8 @@ class _RecommendationHubScreenState
         ),
       ),
       loading: () => const InlineStatsCardSkeleton(itemCount: 4, height: 64),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (error, _) =>
+          ErrorStateCardWidget(message: error, onRetry: _refreshAll),
     );
   }
 
@@ -491,6 +495,7 @@ class _RecommendationHubScreenState
     return filteredAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
+      skipError: true,
       data: (rows) {
         if (rows.isEmpty) {
           return SliverToBoxAdapter(child: _buildEmptyState(context, scope));

@@ -26,6 +26,7 @@ final varietasRepositoryProvider = Provider<VarietasRepository>((ref) {
 final varietasListProvider = FutureProvider.autoDispose<List<VarietasItem>>((
   ref,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   final repository = ref.watch(varietasRepositoryProvider);
 
   return ref.retryOnError(() async {

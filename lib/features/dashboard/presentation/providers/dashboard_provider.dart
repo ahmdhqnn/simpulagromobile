@@ -83,7 +83,7 @@ final getTodayReadsUseCaseProvider = Provider<GetTodayReadsUseCase>((ref) {
 
 final dashboardSummaryProvider =
     FutureProvider.autoDispose<DashboardSummarySnapshot>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const DashboardSummarySnapshot();
       ref.watch(monitoringRefreshTickProvider(4));
@@ -119,7 +119,7 @@ final dashboardSummaryProvider =
 /// GET /sites/{siteId}/agro/environmental-health
 final environmentalHealthProvider =
     FutureProvider.autoDispose<EnvironmentalHealthEntity?>((ref) async {
-      ref.cacheFor(const Duration(minutes: 3));
+      ref.cacheFor(realtimeDataCardCacheDuration);
       final mHealth = await ref.watch(envHealthProvider.future);
       return mHealth.toEntity();
     });
@@ -129,7 +129,7 @@ final environmentalHealthProvider =
 final deviceSummaryProvider = FutureProvider.autoDispose<DeviceSummaryEntity?>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getDeviceSummaryUseCaseProvider);
@@ -144,7 +144,7 @@ final deviceSummaryProvider = FutureProvider.autoDispose<DeviceSummaryEntity?>((
 final sensorSummaryProvider = FutureProvider.autoDispose<SensorSummaryEntity?>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getSensorSummaryUseCaseProvider);
@@ -159,7 +159,7 @@ final sensorSummaryProvider = FutureProvider.autoDispose<SensorSummaryEntity?>((
 final plantSummaryProvider = FutureProvider.autoDispose<PlantSummaryEntity?>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return null;
   final useCase = ref.watch(getPlantSummaryUseCaseProvider);
@@ -173,7 +173,7 @@ final plantSummaryProvider = FutureProvider.autoDispose<PlantSummaryEntity?>((
 /// GET /sites/{siteId}/reads/updates
 final latestSensorReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 2));
+      ref.cacheFor(realtimeDataCardCacheDuration);
       final updates = await ref.watch(latestReadsProvider.future);
       return updates
           .map(
@@ -191,7 +191,7 @@ final latestSensorReadsProvider =
 /// GET /sites/{siteId}/reads/daily
 final sevenDayReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
       final useCase = ref.watch(getSevenDayReadsUseCaseProvider);
@@ -205,7 +205,7 @@ final sevenDayReadsProvider =
 /// GET /sites/{siteId}/reads/today
 final dashboardTodayReadsProvider =
     FutureProvider.autoDispose<List<SensorReadEntity>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 3));
+      ref.cacheFor(realtimeDataCardCacheDuration);
       final reads = await ref.watch(todayReadsProvider.future);
       return reads
           .map(

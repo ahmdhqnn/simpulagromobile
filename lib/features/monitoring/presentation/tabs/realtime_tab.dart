@@ -64,7 +64,15 @@ class RealtimeTab extends ConsumerWidget {
                   SizedBox(height: sectionGap),
                 ],
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => Column(
+                children: [
+                  ErrorStateCardWidget(
+                    message: e,
+                    onRetry: () => ref.invalidate(ongoingPlantProvider),
+                  ),
+                  SizedBox(height: sectionGap),
+                ],
+              ),
               data: (plant) => plant == null
                   ? Column(
                       children: [
@@ -87,7 +95,8 @@ class RealtimeTab extends ConsumerWidget {
               skipError: true,
               loading: () => const SensorStatusGridSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
+                height: 195,
                 onRetry: () => ref.invalidate(latestReadsProvider),
               ),
               data: (reads) => reads.isEmpty
@@ -113,7 +122,8 @@ class RealtimeTab extends ConsumerWidget {
               skipError: true,
               loading: () => const ChartCardSkeleton(chartHeight: 230),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
+                height: 260,
                 onRetry: () => ref.invalidate(todayReadsProvider),
               ),
               data: (reads) => reads.isEmpty
@@ -137,7 +147,10 @@ class RealtimeTab extends ConsumerWidget {
               skipLoadingOnRefresh: true,
               skipError: true,
               loading: () => const SimpleRowsCardSkeleton(rowCount: 3),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => ErrorStateCardWidget(
+                message: e,
+                onRetry: () => ref.invalidate(latestReadsProvider),
+              ),
               data: (reads) => reads.isEmpty
                   ? InfoStateWidget.svg(
                       svgIconPath: 'assets/icons/sensor-icon.svg',

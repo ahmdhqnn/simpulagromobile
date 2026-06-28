@@ -145,7 +145,7 @@ Future<void> invalidateRecommendationHubDataSpaced(WidgetRef ref) {
 
 final recommendationSiteFeedProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const [];
       return ref.watch(recommendationsBySiteProvider(siteId).future);
@@ -153,7 +153,7 @@ final recommendationSiteFeedProvider =
 
 final recommendationPlantFeedProvider =
     FutureProvider.autoDispose<List<Recommendation>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return const [];
       return ref.watch(plantRecommendationsBySiteProvider(siteId).future);
@@ -161,7 +161,7 @@ final recommendationPlantFeedProvider =
 
 final recommendationActivePhaseFeedProvider =
     FutureProvider.autoDispose<RecommendationPhaseSnapshot>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return _emptyPhaseSnapshot;
 
@@ -184,7 +184,7 @@ final recommendationActivePhaseFeedProvider =
 
 final recommendationCatalogProvider =
     FutureProvider.autoDispose<List<RecommendationCatalogItem>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteFuture = ref.watch(recommendationSiteFeedProvider.future);
       final plantFuture = ref.watch(recommendationPlantFeedProvider.future);
       final phaseFuture = ref.watch(
@@ -219,7 +219,7 @@ final recommendationCatalogProvider =
 
 final recommendationHubDashboardSnapshotProvider =
     FutureProvider.autoDispose<RecommendationDashboardSnapshot>((ref) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteFuture = ref.watch(recommendationSiteFeedProvider.future);
       final plantFuture = ref.watch(recommendationPlantFeedProvider.future);
       final phaseFuture = ref.watch(
@@ -288,6 +288,8 @@ final recommendationHubStatsProvider =
 
 final recommendationHubDetailItemProvider = FutureProvider.autoDispose
     .family<RecommendationCatalogItem, String>((ref, recommendationId) async {
+      ref.cacheFor(dataCardCacheDuration);
+
       RecommendationCatalogItem? find(
         List<RecommendationCatalogItem> rows,
         List<Recommendation> history,
@@ -346,6 +348,7 @@ final recommendationHubDetailItemProvider = FutureProvider.autoDispose
 
 final recommendationHubDetailProvider = FutureProvider.autoDispose
     .family<Recommendation, String>((ref, recommendationId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final item = await ref.watch(
         recommendationHubDetailItemProvider(recommendationId).future,
       );

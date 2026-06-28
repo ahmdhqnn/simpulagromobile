@@ -36,6 +36,8 @@ class UserDetailScreen extends ConsumerWidget {
           children: [
             userAsync.when(
               skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (user) => _UserDetailBody(user: user),
               loading: () => const AdminUserDetailSkeleton(),
               error: (error, _) => AdminErrorState(
@@ -178,6 +180,9 @@ class _UserDetailBody extends ConsumerWidget {
                   value: _roleLabel(context, user.roleId),
                 ),
                 permissionCountAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   data: (count) => _DetailRow(
                     icon: Icons.lock_outline,
                     label: context.l10n.adminPermissionTitle,

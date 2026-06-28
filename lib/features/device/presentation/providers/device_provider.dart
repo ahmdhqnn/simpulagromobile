@@ -27,6 +27,7 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 // ═══════════════════════════════════════════════════════════
 final deviceListProvider = FutureProvider.autoDispose
     .family<List<Device>, String>((ref, siteId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(deviceRepositoryProvider);
       return await ref.retryOnError(() async {
         final result = await repository.getDevices(siteId);
@@ -39,6 +40,7 @@ final deviceListProvider = FutureProvider.autoDispose
 // ═══════════════════════════════════════════════════════════
 final deviceDetailProvider = FutureProvider.autoDispose
     .family<Device, ({String siteId, String devId})>((ref, params) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(deviceRepositoryProvider);
       return await ref.retryOnError(() async {
         final result = await repository.getDeviceById(
@@ -54,6 +56,7 @@ final deviceDetailProvider = FutureProvider.autoDispose
 // ═══════════════════════════════════════════════════════════
 final deviceCoordinatesProvider = FutureProvider.autoDispose
     .family<List<Device>, String>((ref, siteId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(deviceRepositoryProvider);
       return await ref.retryOnError(() async {
         final result = await repository.getDeviceCoordinates(siteId);

@@ -35,6 +35,8 @@ class AdminDeviceDetailScreen extends ConsumerWidget {
           children: [
             deviceAsync.when(
               skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (device) => _DeviceDetailBody(device: device),
               loading: () =>
                   const AdminDetailScreenSkeleton(sectionRowCounts: [7, 2]),

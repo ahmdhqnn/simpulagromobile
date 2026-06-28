@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/provider_utils.dart';
 import '../../../site/presentation/providers/site_provider.dart';
 import '../../../plant/presentation/providers/plant_provider.dart'
     as plant_feature;
@@ -32,6 +33,7 @@ final adminPlantRepositoryProvider = Provider<PlantRepository>((ref) {
 final adminPlantListProvider = FutureProvider.autoDispose<List<Plant>>((
   ref,
 ) async {
+  ref.cacheFor(dataCardCacheDuration);
   final repository = ref.watch(adminPlantRepositoryProvider);
   final selectedSite = ref.watch(selectedSiteProvider);
 
@@ -48,6 +50,7 @@ final adminPlantListProvider = FutureProvider.autoDispose<List<Plant>>((
 // ═══════════════════════════════════════════════════════════
 final adminPlantDetailProvider = FutureProvider.autoDispose
     .family<Plant, String>((ref, plantId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(adminPlantRepositoryProvider);
       final selectedSite = ref.watch(selectedSiteProvider);
 

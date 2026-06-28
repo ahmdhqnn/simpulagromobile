@@ -181,51 +181,10 @@ class _PlantErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.rw(0.061)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: context.rw(0.164).clamp(48.0, 72.0),
-              color: AppColors.error,
-            ),
-            SizedBox(height: context.rh(0.02)),
-            Text(
-              l10n.plantErrorTitle,
-              style: AppTextStyles.cardTitle(context, context.sp(18)),
-            ),
-            SizedBox(height: context.rh(0.01)),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption(context, size: context.sp(14)),
-            ),
-            SizedBox(height: context.rh(0.03)),
-            ElevatedButton(
-              onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-              ),
-              child: Text(
-                l10n.retry,
-                style: AppTextStyles.label(context, size: context.sp(14)),
-              ),
-            ),
-          ],
-        ),
+        child: ErrorStateCardWidget(message: error, onRetry: onRetry),
       ),
     );
   }

@@ -85,7 +85,8 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                           hasSelector: false,
                         ),
                         error: (e, _) => ErrorStateCardWidget(
-                          message: e.toString(),
+                          message: e,
+                          height: 220,
                           onRetry: () {
                             ref.invalidate(historyReadsProvider);
                             ref.invalidate(dailyReadsProvider);
@@ -128,7 +129,8 @@ class _ChartDetailScreenState extends ConsumerState<ChartDetailScreen> {
                           hasStats: false,
                         ),
                         error: (e, _) => ErrorStateCardWidget(
-                          message: e.toString(),
+                          message: e,
+                          height: 220,
                           onRetry: () {
                             ref.invalidate(historyReadsProvider);
                             ref.invalidate(dailyReadsProvider);

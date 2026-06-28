@@ -36,6 +36,8 @@ class AdminSensorDetailScreen extends ConsumerWidget {
         ),
         body: sensorAsync.when(
           skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (sensor) => _SensorDetailBody(sensor: sensor),
           loading: () =>
               const AdminDetailScreenSkeleton(sectionRowCounts: [6, 2]),

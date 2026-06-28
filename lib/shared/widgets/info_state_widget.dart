@@ -91,47 +91,104 @@ class InfoStateWidget extends StatelessWidget {
 }
 
 class ErrorStateCardWidget extends StatelessWidget {
-  final String message;
+  final Object message;
   final VoidCallback onRetry;
+  final double? height;
+  final double? width;
+  final double radius;
+  final EdgeInsetsGeometry? padding;
+  final IconData icon;
+  final String? svgIconPath;
 
   const ErrorStateCardWidget({
     super.key,
     required this.message,
     required this.onRetry,
+    this.height,
+    this.width = double.infinity,
+    this.radius = AppRadius.lg,
+    this.padding,
+    this.icon = Icons.error_outline_rounded,
+    this.svgIconPath,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(context.rw(0.051)),
-      decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
-      ),
+    final retryIcon = SvgPicture.asset(
+      'assets/icons/arrow-rotate-left.svg',
+      width: 16,
+      height: 16,
+      colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+    );
+
+    final leading = svgIconPath == null
+        ? Icon(icon, color: AppColors.error, size: 24)
+        : SvgPicture.asset(
+            svgIconPath!,
+            width: 24,
+            height: 24,
+            colorFilter: const ColorFilter.mode(
+              AppColors.error,
+              BlendMode.srcIn,
+            ),
+          );
+
+    return AppCardWidget(
+      height: height,
+      width: width,
+      radius: radius,
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.error.withValues(alpha: 0.18)),
+      padding:
+          padding ??
+          EdgeInsets.symmetric(
+            horizontal: context.rw(0.04).clamp(14.0, 20.0),
+            vertical: 14,
+          ),
       child: Column(
+        mainAxisSize: height == null ? MainAxisSize.min : MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 28),
-          SizedBox(height: context.rh(0.01)),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            alignment: Alignment.center,
+            child: leading,
+          ),
+          const SizedBox(height: 10),
           Text(
             toUiErrorMessage(message, context.l10n),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: context.sp(12),
-              color: AppColors.error,
+            style: AppTextStyles.label(
+              context,
+              size: context.sp(12),
+              weight: FontWeight.w500,
+              color: AppColors.textPrimary,
+              height: 1.35,
             ),
           ),
-          SizedBox(height: context.rh(0.01)),
+          const SizedBox(height: 8),
           TextButton.icon(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh, size: 16),
-            label: Text(
-              context.l10n.commonRetry,
-              style: const TextStyle(fontFamily: AppTextStyles.fontFamily),
+            icon: retryIcon,
+            label: Text(context.l10n.commonRetry),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.error,
+              minimumSize: const Size(0, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
           ),
         ],
       ),

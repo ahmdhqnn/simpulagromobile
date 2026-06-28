@@ -51,11 +51,10 @@ class LatestNotesCardWidget extends ConsumerWidget {
         );
       },
       loading: () => const LatestNotesCardSkeleton(rowCount: 3),
-      error: (e, _) => InfoStateWidget.icon(
-        icon: Icons.error_outline,
+      error: (e, _) => ErrorStateCardWidget(
         message: toUiErrorMessage(e, context.l10n),
-        height: 104,
         radius: AppRadius.lg,
+        onRetry: () => ref.invalidate(latestNotesProvider),
       ),
     );
   }

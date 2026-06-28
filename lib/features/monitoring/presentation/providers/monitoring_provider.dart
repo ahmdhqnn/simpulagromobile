@@ -95,7 +95,7 @@ Future<void> _watchMonitoringRealtimeRefresh(
 final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(seconds: 45));
+  ref.cacheFor(realtimeDataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   await _watchMonitoringRealtimeRefresh(ref, 0);
@@ -115,7 +115,7 @@ final latestReadsProvider = FutureProvider.autoDispose<List<SensorReadUpdate>>((
 /// GET /api/sites/:siteId/device-sensors/values
 final deviceSensorThresholdValuesProvider =
     FutureProvider.autoDispose<List<DeviceSensorThresholdModel>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 10));
+      ref.cacheFor(stableDataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
 
@@ -157,7 +157,7 @@ final sensorMetadataAdapterProvider =
 final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 2));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   await _watchMonitoringRealtimeRefresh(ref, 1, intervalMultiplier: 4);
@@ -176,7 +176,7 @@ final todayReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 /// Log payload MQTT terbaru.
 /// GET /api/sites/logs
 final logsProvider = FutureProvider.autoDispose<List<LogModel>>((ref) async {
-  ref.cacheFor(const Duration(minutes: 2));
+  ref.cacheFor(dataCardCacheDuration);
   return ref.retryOnError(() async {
     final result = await ref.read(monitoringRepositoryProvider).getLogs();
     return result.fold((f) => throw f, (data) => data);
@@ -210,7 +210,7 @@ final selectedSensorParamProvider = StateProvider<String?>((_) => null);
 final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(seconds: 45));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
 
@@ -269,7 +269,7 @@ final historyReadsProvider = FutureProvider.autoDispose<List<SensorReadModel>>((
 final devicesProvider = FutureProvider.autoDispose<List<DeviceModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   return ref.retryOnError(() async {
@@ -288,7 +288,7 @@ final devicesProvider = FutureProvider.autoDispose<List<DeviceModel>>((
 final monitoringSensorCountProvider = FutureProvider.autoDispose<int>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return 0;
   return ref.retryOnError(() async {
@@ -311,7 +311,7 @@ final monitoringSensorCountProvider = FutureProvider.autoDispose<int>((
 final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 1));
+  ref.cacheFor(realtimeDataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return EnvironmentalHealth.empty();
   ref.watch(monitoringRefreshTickProvider(4));
@@ -334,7 +334,7 @@ final envHealthProvider = FutureProvider.autoDispose<EnvironmentalHealth>((
 /// GET /api/sites/:siteId/recommendations/plant-by-site
 final plantRecommendationProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 10));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return {};
 
@@ -354,7 +354,7 @@ final plantRecommendationProvider =
 final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
 
@@ -378,7 +378,7 @@ final dailyReadsProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 2));
+  ref.cacheFor(dataCardCacheDuration);
   return ref.retryOnError(() async {
     final result = await ref.read(monitoringRepositoryProvider).getAlarmData();
     return result.fold((f) => throw f, (data) => data);
@@ -394,7 +394,7 @@ final alarmDataProvider = FutureProvider.autoDispose<List<AlarmDataModel>>((
 final dailyTodayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');
@@ -418,7 +418,7 @@ final dailyByDayDateProvider = StateProvider<DateTime>((_) => DateTime.now());
 final dailyByDayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
   ref,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');
@@ -442,7 +442,7 @@ final dailyByDayProvider = FutureProvider.autoDispose<List<SensorDailyModel>>((
 /// GET /api/sites/:siteId/reads/mounth
 final monthlyReadsProvider =
     FutureProvider.autoDispose<List<MonthlyRekapModel>>((ref) async {
-      ref.cacheFor(const Duration(minutes: 10));
+      ref.cacheFor(stableDataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) return [];
 

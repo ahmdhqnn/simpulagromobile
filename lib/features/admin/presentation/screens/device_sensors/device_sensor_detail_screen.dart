@@ -38,6 +38,8 @@ class DeviceSensorDetailScreen extends ConsumerWidget {
         ),
         body: dsAsync.when(
           skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          skipError: true,
           data: (deviceSensor) =>
               _DeviceSensorDetailBody(deviceSensor: deviceSensor),
           loading: () =>

@@ -104,6 +104,52 @@ void main() {
     );
 
     test(
+      'ongoingPlantProvider surfaces network failure instead of empty plant',
+      () async {
+        final repository = _ActivePlantFailureRepository(
+          const NetworkFailure('SocketException: connection failed'),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            plantRepositoryProvider.overrideWithValue(repository),
+            selectedSiteIdProvider.overrideWith((_) => 'SITE_1'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container.read(ongoingPlantProvider.future),
+          throwsA(isA<NetworkFailure>()),
+        );
+        expect(repository.filteredCalls, 1);
+        expect(repository.allCalls, 0);
+      },
+    );
+
+    test(
+      'ongoingPlantProvider surfaces auth failure instead of empty plant',
+      () async {
+        final repository = _ActivePlantFailureRepository(
+          const AuthFailure('Unauthenticated.'),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            plantRepositoryProvider.overrideWithValue(repository),
+            selectedSiteIdProvider.overrideWith((_) => 'SITE_1'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container.read(ongoingPlantProvider.future),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(repository.filteredCalls, 1);
+        expect(repository.allCalls, 0);
+      },
+    );
+
+    test(
       'plantDetailProvider normalizes open lifecycle plant detail',
       () async {
         final repository = _OpenLifecyclePlantRepository();
@@ -158,6 +204,53 @@ class _TickDrivenPlantRepository implements PlantRepository {
         plantSts: 1,
       ),
     ]);
+  }
+
+  @override
+  Future<Either<Failure, Plant>> getPlantById(String siteId, String plantId) =>
+      Future.value(Left(NotFoundFailure('not found')));
+
+  @override
+  Future<Either<Failure, Plant>> createPlant(
+    String siteId,
+    Map<String, dynamic> data,
+  ) => Future.value(Left(UnknownFailure('skip')));
+
+  @override
+  Future<Either<Failure, Plant>> updatePlant(
+    String siteId,
+    String plantId,
+    Map<String, dynamic> data,
+  ) => Future.value(Left(UnknownFailure('skip')));
+
+  @override
+  Future<Either<Failure, Plant>> harvestPlant(String siteId, String plantId) =>
+      Future.value(Left(UnknownFailure('skip')));
+
+  @override
+  Future<Either<Failure, void>> deletePlant(String siteId, String plantId) =>
+      Future.value(Left(UnknownFailure('skip')));
+}
+
+class _ActivePlantFailureRepository implements PlantRepository {
+  _ActivePlantFailureRepository(this.failure);
+
+  final Failure failure;
+  int filteredCalls = 0;
+  int allCalls = 0;
+
+  @override
+  Future<Either<Failure, List<Plant>>> getPlants(
+    String siteId, {
+    bool? isOnGoingPlant,
+  }) async {
+    if (isOnGoingPlant == true) {
+      filteredCalls++;
+      return Left(failure);
+    }
+
+    allCalls++;
+    return const Right([]);
   }
 
   @override

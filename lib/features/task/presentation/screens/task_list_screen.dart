@@ -26,8 +26,8 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredTasksAsync = ref.watch(filteredTasksProvider);
+    final taskListAsync = ref.watch(taskListProvider);
     final currentFilter = ref.watch(taskFilterProvider);
-    final stats = ref.watch(taskStatsProvider);
     final l10n = context.l10n;
     final hPad = context.rw(0.051);
 
@@ -60,7 +60,22 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                 SizedBox(height: context.rh(0.024)),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: hPad),
-                  child: _buildStatsCards(context, stats),
+                  child: taskListAsync.when(
+                    skipLoadingOnReload: true,
+                    skipLoadingOnRefresh: true,
+                    skipError: true,
+                    data: (tasks) =>
+                        _buildStatsCards(context, _statsFromTasks(tasks)),
+                    loading: () => const LoadingCardWidget(
+                      height: 115,
+                      radius: AppRadius.lg,
+                    ),
+                    error: (error, _) => ErrorStateCardWidget(
+                      message: error,
+                      height: 115,
+                      onRetry: () => ref.invalidate(taskListProvider),
+                    ),
+                  ),
                 ),
                 SizedBox(height: context.rh(0.012)),
                 _buildFilterTabs(context, currentFilter, hPad),
@@ -73,7 +88,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     skipError: true,
                     loading: () => buildListSkeleton(count: 6, type: 'task'),
                     error: (error, _) => ErrorStateCardWidget(
-                      message: error.toString(),
+                      message: error,
                       onRetry: () => ref.invalidate(taskListProvider),
                     ),
                     data: (tasks) {
@@ -179,6 +194,24 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  TaskStats _statsFromTasks(List<Task> tasks) {
+    return TaskStats(
+      total: tasks.length,
+      pending: tasks
+          .where((task) => task.taskStatus == TaskStatus.pending)
+          .length,
+      progress: tasks
+          .where((task) => task.taskStatus == TaskStatus.progress)
+          .length,
+      complite: tasks
+          .where((task) => task.taskStatus == TaskStatus.complite)
+          .length,
+      failed: tasks
+          .where((task) => task.taskStatus == TaskStatus.failed)
+          .length,
     );
   }
 

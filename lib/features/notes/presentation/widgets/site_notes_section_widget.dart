@@ -95,7 +95,7 @@ class SiteNotesSectionWidget extends ConsumerWidget {
             },
             loading: () => const LatestNotesCardSkeleton(rowCount: 4),
             error: (e, _) => ErrorStateCardWidget(
-              message: e.toString(),
+              message: e,
               onRetry: () => ref.invalidate(siteNotesBySiteProvider(siteId)),
             ),
           ),

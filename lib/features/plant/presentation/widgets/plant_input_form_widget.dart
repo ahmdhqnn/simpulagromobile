@@ -209,6 +209,9 @@ class _PlantInputFormState extends ConsumerState<PlantInputForm> {
     }
 
     return varietasAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (items) {
         final activeItems = items.where((item) => item.isActive).toList();
         if (activeItems.isEmpty) {

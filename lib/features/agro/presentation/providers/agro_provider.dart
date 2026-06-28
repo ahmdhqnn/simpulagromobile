@@ -36,6 +36,7 @@ final getAgroEnvironmentalHealthUseCaseProvider =
 // ─── Agro Data Provider ───────────────────────────────────
 /// GET /sites/{siteId}/agro — mengembalikan AgroEntity (domain entity)
 final agroDataProvider = FutureProvider.autoDispose<AgroEntity>((ref) async {
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return const AgroEntity();
 
@@ -48,6 +49,7 @@ final agroDataProvider = FutureProvider.autoDispose<AgroEntity>((ref) async {
 
 final agroEnvironmentalHealthProvider =
     FutureProvider.autoDispose<AgroEnvironmentalHealthEntity>((ref) async {
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = ref.watch(selectedSiteIdProvider);
       if (siteId == null) {
         return const AgroEnvironmentalHealthEntity(

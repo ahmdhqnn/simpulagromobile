@@ -71,10 +71,9 @@ class DashboardDailyRecapCard extends ConsumerWidget {
       },
       loading: () =>
           CompactTextRowsSkeleton(rowCount: 4, rowGap: context.rh(0.012)),
-      error: (e, _) => InfoStateWidget.icon(
-        icon: Icons.error_outline,
+      error: (e, _) => ErrorStateCardWidget(
         message: toUiErrorMessage(e, context.l10n),
-        height: 72,
+        onRetry: () => ref.invalidate(dailyTodayProvider),
       ),
     );
   }

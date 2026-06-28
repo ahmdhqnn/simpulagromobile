@@ -927,6 +927,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: reactionsAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (reactions) {
                 if (reactions.isEmpty) {
                   return Text(context.l10n.forumNoReactions);
