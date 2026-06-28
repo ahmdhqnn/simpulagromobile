@@ -24,7 +24,7 @@ final siteRepositoryProvider = Provider<SiteRepository>((ref) {
 });
 
 final siteListProvider = FutureProvider.autoDispose<List<Site>>((ref) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(stableDataCardCacheDuration);
   final repository = ref.watch(siteRepositoryProvider);
   return ref.retryOnError(() async {
     final result = await repository.getSites();
@@ -38,7 +38,7 @@ final siteDetailProvider = FutureProvider.autoDispose.family<Site, String>((
   ref,
   siteId,
 ) async {
-  ref.cacheFor(const Duration(minutes: 5));
+  ref.cacheFor(stableDataCardCacheDuration);
   final accessibleSites = await ref.watch(siteListProvider.future);
   final accessibleSite = accessibleSites
       .where((site) => site.siteId == siteId)

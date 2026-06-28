@@ -23,6 +23,7 @@ final sensorRepositoryProvider = Provider<SensorRepository>((ref) {
 /// Mengambil semua sensor untuk site yang dipilih
 final sensorListProvider = FutureProvider.autoDispose
     .family<List<Sensor>, String>((ref, siteId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(sensorRepositoryProvider);
       return await ref.retryOnError(() async {
         final result = await repository.getSensors(siteId);
@@ -34,6 +35,7 @@ final sensorListProvider = FutureProvider.autoDispose
 /// Shortcut provider yang otomatis menggunakan selectedSiteProvider
 final sensorsForSelectedSiteProvider = FutureProvider.autoDispose<List<Sensor>>(
   (ref) async {
+    ref.cacheFor(dataCardCacheDuration);
     final siteId = ref.watch(selectedSiteIdProvider);
     if (siteId == null) return [];
     final repository = ref.watch(sensorRepositoryProvider);
@@ -48,6 +50,7 @@ final sensorsForSelectedSiteProvider = FutureProvider.autoDispose<List<Sensor>>(
 /// Mengambil detail sensor berdasarkan siteId dan sensId
 final sensorDetailProvider = FutureProvider.autoDispose
     .family<Sensor, ({String siteId, String sensId})>((ref, params) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(sensorRepositoryProvider);
       return await ref.retryOnError(() async {
         final result = await repository.getSensorById(

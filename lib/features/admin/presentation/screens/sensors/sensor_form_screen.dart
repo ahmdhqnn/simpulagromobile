@@ -324,6 +324,9 @@ class _SensorFormScreenState extends ConsumerState<SensorFormScreen> {
     final devicesAsync = ref.watch(devicesProvider);
 
     return devicesAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      skipError: true,
       data: (devices) => AdminFormFields.buildDropdown<String>(
         context,
         value: _selectedDeviceId,

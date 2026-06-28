@@ -47,7 +47,8 @@ class MonthlyRecapTab extends ConsumerWidget {
               loading: () =>
                   const ChartCardSkeleton(chartHeight: 200, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
+                height: 220,
                 onRetry: () => ref.invalidate(monthlyReadsProvider),
               ),
             ),

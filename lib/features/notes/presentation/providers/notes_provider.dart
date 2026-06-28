@@ -13,6 +13,7 @@ final notesRemoteDataSourceProvider = Provider<NotesRemoteDataSource>((ref) {
 final siteNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((
   ref,
 ) async {
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');
@@ -27,6 +28,7 @@ final siteNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((
 /// Catatan per site (untuk Site Detail)
 final siteNotesBySiteProvider = FutureProvider.autoDispose
     .family<List<SiteNote>, String>((ref, siteId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final ds = ref.watch(notesRemoteDataSourceProvider);
       return ref.retryOnError(() async {
         final models = await ds.getNotes(siteId, page: 1, limit: 50);
@@ -38,6 +40,7 @@ final siteNotesBySiteProvider = FutureProvider.autoDispose
 final latestNotesProvider = FutureProvider.autoDispose<List<SiteNote>>((
   ref,
 ) async {
+  ref.cacheFor(dataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) {
     throw StateError('Pilih site terlebih dahulu');

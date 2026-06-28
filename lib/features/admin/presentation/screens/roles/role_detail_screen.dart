@@ -36,6 +36,8 @@ class RoleDetailScreen extends ConsumerWidget {
           children: [
             roleAsync.when(
               skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (role) => _RoleDetailBody(role: role),
               loading: () =>
                   const AdminDetailScreenSkeleton(sectionRowCounts: [5, 4]),
@@ -166,6 +168,9 @@ class _RoleDetailBody extends ConsumerWidget {
                   value: role.roleDesc ?? '-',
                 ),
                 permissionsAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
+                  skipError: true,
                   data: (permissions) => AdminDetailRow(
                     icon: Icons.lock_outline,
                     label: context.l10n.adminPermissionTitle,
@@ -196,6 +201,9 @@ class _RoleDetailBody extends ConsumerWidget {
           AdminSectionCard(
             title: context.l10n.adminRolePermissionSection,
             child: permissionsAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
               data: (permissions) {
                 if (permissions.isEmpty) {
                   return Text(

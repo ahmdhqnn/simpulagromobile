@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/circular_back_button_widget.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/section_header_widget.dart';
 import '../../domain/entities/agro_entity.dart';
 import '../providers/agro_provider.dart';
@@ -138,25 +139,13 @@ class AgroIndicatorScreen extends ConsumerWidget {
         healthAsync.when(
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
+          skipError: true,
           data: (health) =>
               EnvironmentalHealthWidget(agroData: agroData, healthData: health),
           loading: () => const AgroEnvironmentalHealthCardSkeleton(),
-          error: (error, _) => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: context.sp(13),
-                color: AppColors.error,
-              ),
-            ),
+          error: (error, _) => ErrorStateCardWidget(
+            message: error,
+            onRetry: () => ref.invalidate(agroEnvironmentalHealthProvider),
           ),
         ),
 
@@ -186,7 +175,23 @@ class AgroIndicatorScreen extends ConsumerWidget {
               SizedBox(height: context.rh(0.024)),
             ],
           ),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (error, _) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderWidget(title: l10n.agroPlantingPhaseTitle),
+              SizedBox(height: context.rh(0.014)),
+              ErrorStateCardWidget(
+                message: error,
+                onRetry: () {
+                  final sid = ref.read(selectedSiteIdProvider);
+                  if (sid != null) {
+                    ref.invalidate(currentPhaseProvider(sid));
+                  }
+                },
+              ),
+              SizedBox(height: context.rh(0.024)),
+            ],
+          ),
         ),
 
         recommendationsAsync.when(
@@ -355,49 +360,9 @@ class AgroIndicatorScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: context.rw(0.164).clamp(48.0, 72.0),
-                    color: AppColors.error,
-                  ),
-                  SizedBox(height: context.rh(0.02)),
-                  Text(
-                    AppLocalizations.of(context)!.commonLoadFailed,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(18),
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1D1D1D),
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.01)),
-                  Text(
-                    error.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: context.sp(14),
-                      color: const Color(0xFF1D1D1D).withValues(alpha: 0.6),
-                    ),
-                  ),
-                  SizedBox(height: context.rh(0.03)),
-                  ElevatedButton(
-                    onPressed: () => ref.invalidate(agroDataProvider),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.retry,
-                      style: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-                    ),
+                  ErrorStateCardWidget(
+                    message: error,
+                    onRetry: () => ref.invalidate(agroDataProvider),
                   ),
                 ],
               ),

@@ -60,7 +60,7 @@ typedef SitePhaseRecommendationKey = ({String siteId, String phaseId});
 
 final recommendationsBySiteProvider = FutureProvider.autoDispose
     .family<List<Recommendation>, String>((ref, rawSiteId) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = rawSiteId.trim();
       if (siteId.isEmpty) return const [];
       ref.watch(recommendationRefreshTickProvider);
@@ -77,7 +77,7 @@ final recommendationsBySiteProvider = FutureProvider.autoDispose
 
 final plantRecommendationsBySiteProvider = FutureProvider.autoDispose
     .family<List<Recommendation>, String>((ref, rawSiteId) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = rawSiteId.trim();
       if (siteId.isEmpty) return const [];
       ref.watch(recommendationRefreshTickProvider);
@@ -94,7 +94,7 @@ final plantRecommendationsBySiteProvider = FutureProvider.autoDispose
 
 final recommendationsBySitePhaseProvider = FutureProvider.autoDispose
     .family<List<Recommendation>, SitePhaseRecommendationKey>((ref, key) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = key.siteId.trim();
       final phaseId = key.phaseId.trim();
       if (siteId.isEmpty || phaseId.isEmpty) return const [];
@@ -189,7 +189,7 @@ final getRecommendationHistoryUseCaseProvider =
 
 final recommendationHistoryProvider = FutureProvider.autoDispose
     .family<List<Recommendation>, String>((ref, rawSiteId) async {
-      ref.cacheFor(const Duration(minutes: 5));
+      ref.cacheFor(dataCardCacheDuration);
       final siteId = rawSiteId.trim();
       if (siteId.isEmpty) return const [];
 

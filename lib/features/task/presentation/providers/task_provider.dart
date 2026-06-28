@@ -122,6 +122,9 @@ final taskStatsProvider = Provider<TaskStats>((ref) {
   final tasksAsync = ref.watch(taskListProvider);
 
   return tasksAsync.when(
+    skipLoadingOnReload: true,
+    skipLoadingOnRefresh: true,
+    skipError: true,
     data: (tasks) {
       final total = tasks.length;
       final pending = tasks

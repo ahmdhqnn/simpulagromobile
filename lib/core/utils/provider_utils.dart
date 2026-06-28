@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../error/failures.dart';
 
+const Duration realtimeDataCardCacheDuration = Duration(minutes: 5);
+const Duration dataCardCacheDuration = Duration(minutes: 10);
+const Duration stableDataCardCacheDuration = Duration(minutes: 20);
+
 extension AutoRetryRef on Ref {
   /// Executes an async function. If it throws an error/exception, schedules
   /// an automatic retry (invalidation of the provider) after [delay].

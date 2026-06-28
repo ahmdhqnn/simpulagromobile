@@ -395,6 +395,7 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, String>((
   ref,
   postId,
 ) async {
+  ref.cacheFor(dataCardCacheDuration);
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getPostById(postId);
@@ -570,6 +571,7 @@ final commentsProvider = StateNotifierProvider.autoDispose
     });
 
 final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
+  ref.cacheFor(dataCardCacheDuration);
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getMyPosts();
@@ -578,6 +580,7 @@ final myPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
 });
 
 final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
+  ref.cacheFor(dataCardCacheDuration);
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getLikedPosts();
@@ -587,6 +590,7 @@ final likedPostsProvider = FutureProvider.autoDispose<List<Post>>((ref) async {
 
 final postReactionsProvider = FutureProvider.autoDispose
     .family<List<Reaction>, String>((ref, postId) async {
+      ref.cacheFor(dataCardCacheDuration);
       final repository = ref.watch(forumRepositoryProvider);
       return ref.retryOnError(() async {
         final result = await repository.getReactions(postId);
@@ -597,6 +601,7 @@ final postReactionsProvider = FutureProvider.autoDispose
 final myCommentsProvider = FutureProvider.autoDispose<List<UserComment>>((
   ref,
 ) async {
+  ref.cacheFor(dataCardCacheDuration);
   final repository = ref.watch(forumRepositoryProvider);
   return await ref.retryOnError(() async {
     final result = await repository.getMyComments();

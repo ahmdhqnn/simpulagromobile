@@ -5,7 +5,6 @@ import '../../../../core/utils/bottom_navigation_spacing.dart';
 import '../../../../core/utils/locale_formatters.dart';
 import '../../../../core/utils/provider_utils.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_card_widget.dart';
 import '../../../../shared/widgets/info_state_widget.dart';
@@ -69,7 +68,7 @@ class DailyRecapTab extends ConsumerWidget {
               ),
               loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: toUiErrorMessage(e, l10n),
+                message: e,
                 onRetry: () => ref.invalidate(dailyTodayProvider),
               ),
             ),
@@ -118,7 +117,7 @@ class DailyRecapTab extends ConsumerWidget {
               ),
               loading: () => const DailyRecapListSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: toUiErrorMessage(e, l10n),
+                message: e,
                 onRetry: () => ref.invalidate(dailyByDayProvider),
               ),
             ),

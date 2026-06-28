@@ -18,6 +18,7 @@ class DeviceSensorThresholdTab extends ConsumerWidget {
     return valuesAsync.when(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
+      skipError: true,
       data: (rows) {
         return RefreshIndicator(
           color: AppColors.primary,

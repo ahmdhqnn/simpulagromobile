@@ -52,7 +52,8 @@ class HistoryTab extends ConsumerWidget {
               loading: () =>
                   const ChartCardSkeleton(chartHeight: 220, hasSelector: false),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
+                height: 195,
                 onRetry: () => ref.invalidate(historyReadsProvider),
               ),
               data: (reads) {
@@ -113,7 +114,17 @@ class HistoryTab extends ConsumerWidget {
               skipLoadingOnRefresh: true,
               skipError: true,
               loading: () => const KeyValueRowsCardSkeleton(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionHeaderWidget(title: l10n.monitoringHistoryDataSection),
+                  SizedBox(height: contentGap),
+                  ErrorStateCardWidget(
+                    message: e,
+                    onRetry: () => ref.invalidate(historyReadsProvider),
+                  ),
+                ],
+              ),
               data: (reads) {
                 if (reads.isEmpty) {
                   return const SizedBox.shrink();

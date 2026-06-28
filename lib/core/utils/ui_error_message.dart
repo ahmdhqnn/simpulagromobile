@@ -8,6 +8,12 @@ String toUiErrorMessage(
 }) {
   final defaultFallback = fallback ?? l10n.errorLoadFailed;
 
+  if (error is NetworkFailure) return l10n.errorNetwork;
+  if (error is AuthFailure) return l10n.errorSessionExpired;
+  if (error is ServerFailure) return l10n.errorServer;
+  if (error is NotFoundFailure) return l10n.errorDataNotFound;
+  if (error is UnsupportedBackendEndpointFailure) return error.message;
+
   final raw = error is Failure ? error.message : error.toString();
   final singleLine = raw.split('\n').first.trim();
   final cleaned = singleLine
@@ -31,7 +37,10 @@ String toUiErrorMessage(
       text.contains('server')) {
     return l10n.errorServer;
   }
-  if (text.contains('unauthorized') || text.contains('token')) {
+  if (text.contains('unauthorized') ||
+      text.contains('unauthenticated') ||
+      text.contains('token') ||
+      (text.contains('sesi') && text.contains('berakhir'))) {
     return l10n.errorSessionExpired;
   }
   if (text.contains('tidak ditemukan') || text.contains('not found')) {

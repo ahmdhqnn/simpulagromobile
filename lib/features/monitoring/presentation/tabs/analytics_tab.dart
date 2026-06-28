@@ -76,7 +76,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipError: true,
               loading: () => const EnvironmentalHealthCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
                 onRetry: () => ref.invalidate(envHealthProvider),
               ),
               data: (health) => EnvironmentalHealthCardWidget(health: health),
@@ -108,7 +108,15 @@ class AnalyticsTab extends ConsumerWidget {
                   SizedBox(height: sectionGap),
                 ],
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => Column(
+                children: [
+                  ErrorStateCardWidget(
+                    message: e,
+                    onRetry: () => ref.invalidate(ongoingPlantProvider),
+                  ),
+                  SizedBox(height: sectionGap),
+                ],
+              ),
               data: (activePlant) => activePlant == null
                   ? Column(
                       children: [
@@ -124,10 +132,18 @@ class AnalyticsTab extends ConsumerWidget {
               title: context.l10n.monitoringPlantStatisticsSection,
             ),
             SizedBox(height: contentGap),
-            if (activePlantAsync.isLoading && plant == null)
-              const CompactStatsCardSkeleton()
-            else
-              PlantStatisticsCardWidget(plant: plant),
+            activePlantAsync.when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              skipError: true,
+              loading: () => const CompactStatsCardSkeleton(),
+              error: (e, _) => ErrorStateCardWidget(
+                message: e,
+                onRetry: () => ref.invalidate(ongoingPlantProvider),
+              ),
+              data: (activePlant) =>
+                  PlantStatisticsCardWidget(plant: activePlant),
+            ),
             if (plant != null) ...[
               SizedBox(height: contentGap),
               GrowthPhaseCardWidget(plant: plant),
@@ -147,7 +163,7 @@ class AnalyticsTab extends ConsumerWidget {
               skipError: true,
               loading: () => const RecommendationOverviewCardSkeleton(),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
                 onRetry: () {
                   final siteId = ref.read(selectedSiteIdProvider);
                   if (siteId != null) {
@@ -171,7 +187,10 @@ class AnalyticsTab extends ConsumerWidget {
               skipLoadingOnRefresh: true,
               skipError: true,
               loading: () => const SplitMetricCardsSkeleton(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => ErrorStateCardWidget(
+                message: e,
+                onRetry: () => ref.invalidate(devicesProvider),
+              ),
               data: (devices) {
                 final sensorCountAsync = ref.watch(
                   monitoringSensorCountProvider,
@@ -204,7 +223,15 @@ class AnalyticsTab extends ConsumerWidget {
                   SizedBox(height: sectionGap),
                 ],
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (e, _) => Column(
+                children: [
+                  ErrorStateCardWidget(
+                    message: e,
+                    onRetry: () => ref.invalidate(devicesProvider),
+                  ),
+                  SizedBox(height: sectionGap),
+                ],
+              ),
               data: (devices) => devices.isEmpty
                   ? const SizedBox.shrink()
                   : Column(
@@ -227,7 +254,7 @@ class AnalyticsTab extends ConsumerWidget {
               loading: () =>
                   const ChartCardSkeleton(chartHeight: 250, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
                 onRetry: () => ref.invalidate(dailyReadsProvider),
               ),
               data: (daily) => DailySensorChartWidget(
@@ -249,7 +276,7 @@ class AnalyticsTab extends ConsumerWidget {
               loading: () =>
                   const ChartCardSkeleton(chartHeight: 200, hasStats: false),
               error: (e, _) => ErrorStateCardWidget(
-                message: e.toString(),
+                message: e,
                 onRetry: () => ref.invalidate(monthlyReadsProvider),
               ),
               data: (monthly) => MonthlyTrendCardWidget(

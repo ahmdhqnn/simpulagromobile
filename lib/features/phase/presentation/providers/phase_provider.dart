@@ -48,6 +48,7 @@ final getPhaseHistoryUseCaseProvider = Provider<GetPhaseHistoryUseCase>((ref) {
 /// Mengambil semua fase untuk plant/site tertentu
 final phaseListProvider = FutureProvider.autoDispose
     .family<List<Phase>, String>((ref, plantId) async {
+      ref.cacheFor(stableDataCardCacheDuration);
       return ref.retryOnError(() async {
         final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
         final result = await useCase(plantId);
@@ -60,6 +61,7 @@ final phaseListProvider = FutureProvider.autoDispose
 final phasesForSelectedSiteProvider = FutureProvider.autoDispose<List<Phase>>((
   ref,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   final siteId = ref.watch(selectedSiteIdProvider);
   if (siteId == null) return [];
   return ref.retryOnError(() async {
@@ -74,6 +76,7 @@ final currentPhaseProvider = FutureProvider.autoDispose.family<Phase?, String>((
   ref,
   plantId,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   return ref.retryOnError(() async {
     final useCase = ref.watch(getCurrentPhaseUseCaseProvider);
     final result = await useCase(plantId);
@@ -86,6 +89,7 @@ final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
   ref,
   phaseId,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   return ref.retryOnError(() async {
     final useCase = ref.watch(getPhaseByIdUseCaseProvider);
     final result = await useCase(phaseId);
@@ -95,6 +99,7 @@ final phaseDetailProvider = FutureProvider.autoDispose.family<Phase, String>((
 
 final enrichedPhaseDetailProvider = FutureProvider.autoDispose
     .family<Phase, PhaseDetailRequest>((ref, request) async {
+      ref.cacheFor(stableDataCardCacheDuration);
       return ref.retryOnError(() async {
         final requestedSiteId = request.siteId?.trim();
         final selectedSiteId = ref.watch(selectedSiteIdProvider)?.trim();
@@ -119,6 +124,7 @@ final enrichedPhaseDetailProvider = FutureProvider.autoDispose
 // ─── Phase History Provider ───────────────────────────────
 final phaseHistoryProvider = FutureProvider.autoDispose
     .family<List<Phase>, String>((ref, plantId) async {
+      ref.cacheFor(stableDataCardCacheDuration);
       return ref.retryOnError(() async {
         final useCase = ref.watch(getPhaseHistoryUseCaseProvider);
         final result = await useCase(plantId);
@@ -129,6 +135,7 @@ final phaseHistoryProvider = FutureProvider.autoDispose
 // ─── Phase Statistics Provider ───────────────────────────
 final phaseStatsProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, plantId) async {
+      ref.cacheFor(stableDataCardCacheDuration);
       final phases = await ref.retryOnError(() async {
         final useCase = ref.watch(getPhasesByPlantUseCaseProvider);
         final result = await useCase(plantId);

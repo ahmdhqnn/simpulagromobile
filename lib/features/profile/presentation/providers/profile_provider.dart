@@ -22,6 +22,7 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 final userProfileProvider = FutureProvider.autoDispose<UserProfile>((
   ref,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   final repository = ref.watch(profileRepositoryProvider);
   return ref.retryOnError(() async {
     final result = await repository.getUserProfile();
@@ -32,6 +33,7 @@ final userProfileProvider = FutureProvider.autoDispose<UserProfile>((
 final userPermissionsProvider = FutureProvider.autoDispose<List<String>>((
   ref,
 ) async {
+  ref.cacheFor(stableDataCardCacheDuration);
   final datasource = ref.watch(profileRemoteDatasourceProvider);
   return ref.retryOnError(datasource.getUserPermissions);
 });

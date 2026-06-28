@@ -6,11 +6,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/ui_error_message.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/info_state_widget.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../phase/presentation/providers/phase_provider.dart';
 import '../../../recommendation/domain/entities/recommendation.dart';
 import '../../../recommendation/domain/entities/recommendation_bundle.dart';
 import '../../../recommendation/presentation/providers/recommendation_hub_provider.dart';
 import '../../../recommendation/presentation/providers/recommendation_provider.dart';
+import '../../../site/presentation/providers/site_provider.dart';
 
 class DashboardRecommendationCard extends ConsumerWidget {
   const DashboardRecommendationCard({super.key});
@@ -34,8 +37,7 @@ class DashboardRecommendationCard extends ConsumerWidget {
       ),
       loading: () =>
           RecommendationOverviewListSkeleton(cardGap: context.rh(0.012)),
-      error: (error, _) =>
-          _buildErrorCard(context, toUiErrorMessage(error, context.l10n)),
+      error: (error, _) => _buildErrorCards(context, ref, error),
     );
   }
 
@@ -415,30 +417,62 @@ class DashboardRecommendationCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorCard(BuildContext context, String message) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                fontSize: context.sp(12),
-                color: AppColors.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+  Widget _buildErrorCards(BuildContext context, WidgetRef ref, Object error) {
+    final gap = context.rh(0.012);
+    return Column(
+      children: [
+        ErrorStateCardWidget(
+          message: toUiErrorMessage(error, context.l10n),
+          height: 239,
+          icon: Icons.location_on_outlined,
+          onRetry: () =>
+              _retryRecommendationSection(ref, RecommendationScope.site),
+        ),
+        SizedBox(height: gap),
+        ErrorStateCardWidget(
+          message: toUiErrorMessage(error, context.l10n),
+          height: 239,
+          icon: Icons.eco_outlined,
+          onRetry: () =>
+              _retryRecommendationSection(ref, RecommendationScope.plant),
+        ),
+        SizedBox(height: gap),
+        ErrorStateCardWidget(
+          message: toUiErrorMessage(error, context.l10n),
+          height: 239,
+          icon: Icons.timeline_outlined,
+          onRetry: () =>
+              _retryRecommendationSection(ref, RecommendationScope.phase),
+        ),
+      ],
     );
+  }
+
+  void _retryRecommendationSection(WidgetRef ref, RecommendationScope scope) {
+    final siteId = ref.read(selectedSiteIdProvider);
+    switch (scope) {
+      case RecommendationScope.site:
+        if (siteId != null) {
+          ref.invalidate(recommendationsBySiteProvider(siteId));
+        }
+        ref.invalidate(recommendationSiteFeedProvider);
+        break;
+      case RecommendationScope.plant:
+        if (siteId != null) {
+          ref.invalidate(plantRecommendationsBySiteProvider(siteId));
+        }
+        ref.invalidate(recommendationPlantFeedProvider);
+        break;
+      case RecommendationScope.phase:
+        if (siteId != null) {
+          ref.invalidate(currentPhaseProvider(siteId));
+        }
+        ref.invalidate(recommendationActivePhaseFeedProvider);
+        break;
+      case RecommendationScope.all:
+        invalidateRecommendationHubData(ref);
+        break;
+    }
+    ref.invalidate(recommendationHubDashboardSnapshotProvider);
   }
 }

@@ -62,6 +62,7 @@ class _SiteMemberInviteScreenState
                   usersAsync.when(
                     skipLoadingOnReload: true,
                     skipLoadingOnRefresh: true,
+                    skipError: true,
                     data: (users) {
                       final availableUsers =
                           users
