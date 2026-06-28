@@ -1149,7 +1149,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginFailedTitle => 'Login Failed';
 
   @override
-  String get loginFailedMessage => 'Username or password is incorrect';
+  String get loginFailedMessage =>
+      'Username or password is incorrect. Please check your login details.';
 
   @override
   String get authSessionExpired =>

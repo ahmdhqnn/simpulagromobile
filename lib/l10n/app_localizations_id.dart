@@ -1151,7 +1151,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get loginFailedTitle => 'Gagal Login';
 
   @override
-  String get loginFailedMessage => 'Username atau password salah';
+  String get loginFailedMessage =>
+      'Username atau kata sandi salah. Periksa kembali data login Anda.';
 
   @override
   String get authSessionExpired =>
@@ -1541,7 +1542,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get profilePermissionsSection => 'Hak Akses';
 
   @override
-  String get profileSignout => 'Signout';
+  String get profileSignout => 'Keluar';
 
   @override
   String get profileLogoutTitle => 'Konfirmasi Keluar';
