@@ -1357,10 +1357,6 @@ class RecommendationRemoteDatasourceImpl
     }
   }
 
-
-
-
-
   String _mapNpkPriority(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'high':

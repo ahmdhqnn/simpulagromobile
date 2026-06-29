@@ -13,7 +13,9 @@ class NotificationRepository {
 
       final List<dynamic> decoded = jsonDecode(jsonStr);
       final list = decoded
-          .map((item) => AppNotification.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) => AppNotification.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList();
 
       // Filter out notifications older than 24 hours

@@ -362,10 +362,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     );
     if (ok && context.mounted) {
       ref.read(forumProvider.notifier).deletePost(postId);
-      SnackbarHelper.showSuccess(
-        context,
-        context.l10n.forumPostDeleted,
-      );
+      SnackbarHelper.showSuccess(context, context.l10n.forumPostDeleted);
     }
   }
 
@@ -379,10 +376,7 @@ class _ForumScreenState extends ConsumerState<ForumScreen>
     if (ok && context.mounted) {
       await ref.read(forumProvider.notifier).sharePost(postId);
       if (context.mounted) {
-        SnackbarHelper.showSuccess(
-          context,
-          context.l10n.forumPostShared,
-        );
+        SnackbarHelper.showSuccess(context, context.l10n.forumPostShared);
       }
     }
   }

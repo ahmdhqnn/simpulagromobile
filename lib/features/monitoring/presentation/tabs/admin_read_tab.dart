@@ -356,7 +356,10 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
 
     final sts = _readStsController.text.trim();
     if (value == null && sts.isEmpty) {
-      SnackbarHelper.showError(context, l10n.monitoringReadValueOrStatusRequired);
+      SnackbarHelper.showError(
+        context,
+        l10n.monitoringReadValueOrStatusRequired,
+      );
       return;
     }
 
@@ -390,7 +393,10 @@ class _AdminReadTabState extends ConsumerState<AdminReadTab> {
         .trigger(siteId, day);
     if (!mounted) return;
     if (ok) {
-      SnackbarHelper.showSuccess(context, l10n.monitoringDailyRecapTriggered(day));
+      SnackbarHelper.showSuccess(
+        context,
+        l10n.monitoringDailyRecapTriggered(day),
+      );
       ref.invalidate(dailyTodayProvider);
       ref.invalidate(dailyByDayProvider);
       ref.invalidate(dailyReadsProvider);

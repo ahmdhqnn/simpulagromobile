@@ -100,7 +100,9 @@ class AdminFormFields {
     Widget? suffixIcon,
     bool isMultiline = false,
   }) {
-    final borderRadius = BorderRadius.circular(isMultiline ? AppRadius.lg : AppRadius.pill);
+    final borderRadius = BorderRadius.circular(
+      isMultiline ? AppRadius.lg : AppRadius.pill,
+    );
 
     return InputDecoration(
       hintText: hintText == null || hintText.isEmpty ? null : hintText,
