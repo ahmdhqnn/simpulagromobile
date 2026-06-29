@@ -347,58 +347,61 @@ void main() {
       },
     );
 
-    test('does not add notification when notifications are disabled in settings', () async {
-      final container = ProviderContainer(
-        overrides: [
-          siteListProvider.overrideWith((ref) => <Site>[]),
-          taskListProvider.overrideWith((ref) => <Task>[]),
-          recommendationHubDashboardSnapshotProvider.overrideWith(
-            (ref) => const RecommendationDashboardSnapshot(
-              siteItems: [],
-              plantItems: [],
-              phaseSnapshot: RecommendationPhaseSnapshot(
-                phaseId: null,
-                phaseName: null,
-                items: [],
+    test(
+      'does not add notification when notifications are disabled in settings',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            siteListProvider.overrideWith((ref) => <Site>[]),
+            taskListProvider.overrideWith((ref) => <Task>[]),
+            recommendationHubDashboardSnapshotProvider.overrideWith(
+              (ref) => const RecommendationDashboardSnapshot(
+                siteItems: [],
+                plantItems: [],
+                phaseSnapshot: RecommendationPhaseSnapshot(
+                  phaseId: null,
+                  phaseName: null,
+                  items: [],
+                ),
               ),
             ),
-          ),
-          forumProvider.overrideWith((ref) => FakeForumNotifier()),
-          environmentalHealthProvider.overrideWith(
-            (ref) => const EnvironmentalHealthEntity(
-              overallHealth: 100.0,
-              totalSensors: 0,
-              sensors: [],
+            forumProvider.overrideWith((ref) => FakeForumNotifier()),
+            environmentalHealthProvider.overrideWith(
+              (ref) => const EnvironmentalHealthEntity(
+                overallHealth: 100.0,
+                totalSensors: 0,
+                sensors: [],
+              ),
             ),
-          ),
-          authProvider.overrideWith((ref) => FakeAuthNotifier()),
-          appSettingsProvider.overrideWith(
-            () => _TestAppSettings({
-              ...AppSettings.defaults,
-              'notifications': false,
-            }),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+            authProvider.overrideWith((ref) => FakeAuthNotifier()),
+            appSettingsProvider.overrideWith(
+              () => _TestAppSettings({
+                ...AppSettings.defaults,
+                'notifications': false,
+              }),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(notificationProvider.notifier);
-      await notifier.loadNotifications();
+        final notifier = container.read(notificationProvider.notifier);
+        await notifier.loadNotifications();
 
-      final notification = AppNotification(
-        id: '1',
-        type: NotificationType.general,
-        title: 'Test Notification',
-        body: 'This is a test notification',
-        timestamp: DateTime.now(),
-        isRead: false,
-      );
+        final notification = AppNotification(
+          id: '1',
+          type: NotificationType.general,
+          title: 'Test Notification',
+          body: 'This is a test notification',
+          timestamp: DateTime.now(),
+          isRead: false,
+        );
 
-      notifier.addNotification(notification);
+        notifier.addNotification(notification);
 
-      expect(container.read(notificationProvider), isEmpty);
-      expect(container.read(unreadNotificationCountProvider), 0);
-    });
+        expect(container.read(notificationProvider), isEmpty);
+        expect(container.read(unreadNotificationCountProvider), 0);
+      },
+    );
   });
 }
 

@@ -97,13 +97,6 @@ class AppNotification {
   }
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        type,
-        title,
-        body,
-        timestamp,
-        isRead,
-        redirectPath,
-      );
+  int get hashCode =>
+      Object.hash(id, type, title, body, timestamp, isRead, redirectPath);
 }

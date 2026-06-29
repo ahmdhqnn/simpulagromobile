@@ -157,7 +157,11 @@ class MyPostsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, String postId) async {
+  void _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    String postId,
+  ) async {
     final l10n = context.l10n;
     final ok = await showConfirmationDialog(
       context,
